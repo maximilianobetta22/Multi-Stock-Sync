@@ -6,60 +6,20 @@
 
 .main-section {
     flex: 1;
-    width: 50%; /* Adjust width to 50% */
+    width: 50%;
     padding: 20px;
-    border-left: 1px solid #ddd; /* Change border to left */
-    overflow-y: auto; /* Permite scroll si el contenido es muy largo */
+    overflow-y: auto;
 }
 
 .sidebar {
     flex: 1;
-    width: 50%; /* Adjust width to 50% */
+    width: 50%;
     display: flex;
     flex-direction: column;
     align-items: center;
     background-color: #f8f9fa;
     padding: 20px;
-    overflow-y: auto; /* Scroll vertical si hay muchos botones */
-    max-height: 100%;
-    border-right: 1px solid #ddd; /* Add border to right */
-}
-
-.sidebar-button {
-    margin: 10px;
-    background-color: transparent;
-    border: none;
-    cursor: pointer;
-    font-size: 20px;
-    color: gray; /* Default color gray */
-    transition: color 0.2s;
-    border-radius: 50%; /* Circular shape */
-    padding: 10px; /* Add padding for circular ring */
-    border: 2px solid gray; /* Default border gray */
-}
-
-.sidebar-button.active {
-    color: #007bff; /* Active color blue */
-    border-color: #007bff; /* Active border color blue */
-}
-
-.sidebar-button:hover {
-    color: #0056b3;
-}
-
-.icon-circle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: transparent; /* Remove background color */
-}
-
-.sidebar-button .icon-circle .fa-icon {
-    width: 20px; /* Adjust as needed */
-    height: 20px; /* Adjust as needed */
+    overflow-y: auto;
 }
 
 .search-bar {
@@ -79,9 +39,8 @@
     margin-left: 10px;
     padding: 10px;
     border: none;
-    background-color: transparent; /* Make button background transparent */
+    background-color: transparent;
     cursor: pointer;
-    font-size: 20px; /* Ensure the icon is visible */
 }
 
 .icon-circle-cyan {
@@ -91,56 +50,108 @@
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    color: #00bfff; /* Cyan color for FontAwesome icon */
-    border: 2px solid #00bfff; /* Cyan border */
-}
-
-.search-button .icon-circle-cyan .fa-search {
-    color: #00bfff; /* Ensure the search icon is cyan */
-}
-
-.content-area {
-    padding: 20px;
-    border: 1px solid #ddd;
-    background-color: white;
-    height: 100%;
-    overflow-y: auto;
+    color: #00bfff;
+    border: 2px solid #00bfff;
 }
 
 .footer-actions {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 10px 20px;
-    border-top: 1px solid #ddd;
+    padding: 15px 20px;
     background-color: #f8f9fa;
+    border-top: 1px solid #ddd;
+    gap: 10px;
 }
 
 .footer-left {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    gap: 10px;
+    width: 70%;
 }
 
 .footer-right {
     display: flex;
-    justify-content: center; /* Center the buttons */
+    justify-content: flex-end;
+    gap: 10px;
+    width: 30%;
+}
+
+.footer-top {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    width: 100%;
 }
 
-.footer-button {
-    padding: 10px 20px;
-    border: none;
-    background-color: #007bff;
-    color: white;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-right: 10px;
-}
-
-.total-container {
+.client-search {
     display: flex;
     align-items: center;
+}
+
+.client-label {
+    margin-right: 10px;
+    font-weight: bold;
+    color: #555;
+}
+
+.client-search-bar {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    padding: 5px;
+    background-color: white;
+}
+
+.client-search-input {
+    border: none;
+    outline: none;
+    padding: 5px;
+    font-size: 14px;
+    width: 150px;
+}
+
+.client-search-button {
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    color: #00bfff;
+    margin-left: 5px;
+}
+
+.total-display {
+    display: flex;
+    align-items: center;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.total-amount {
+    margin-left: 5px;
+    color: #28a745;
+}
+
+.footer-bottom {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+}
+
+.footer-gray-button {
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    background-color: #f1f1f1;
+    color: #333;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.footer-gray-button:hover {
+    background-color: #e0e0e0;
+    color: #000;
 }
 
 .pay-button {
@@ -150,5 +161,36 @@
     color: white;
     border-radius: 4px;
     cursor: pointer;
-    margin-left: 10px;
+}
+
+.sidebar-button {
+    margin: 10px;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 20px;
+    color: gray;
+    transition: color 0.2s;
+    border-radius: 50%;
+    padding: 10px;
+    border: 2px solid gray;
+}
+
+.sidebar-button.active {
+    color: #007bff;
+    border-color: #007bff;
+}
+
+.sidebar-button:hover {
+    color: #0056b3;
+}
+
+.icon-circle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: transparent;
 }
