@@ -10,9 +10,9 @@ const PuntoVentaNavbar: React.FC = () => {
     };
 
     return (
-        <nav className="main-navbar navbar navbar-expand-lg bg-light border-bottom-orange">
+        <nav className="main-navbar punto-venta-navbar navbar navbar-expand-lg bg-light border-bottom-orange">
             <div className="container-fluid">
-                {/* Dropdown a la izquierda */}
+                
                 <div className="dropdown">
                     <button
                         className="btn dropdown-toggle btn-orange-border"
@@ -45,11 +45,11 @@ const PuntoVentaNavbar: React.FC = () => {
                     </ul>
                 </div>
 
-                {/* Logo centrado */}
+                
                 <div className="navbar-brand mx-auto">
                     <img
                         src="/path-to-logo.png"
-                        alt="Logo"
+                        alt="Multi-Stock-Sync"
                         className="navbar-logo"
                     />
                 </div>
