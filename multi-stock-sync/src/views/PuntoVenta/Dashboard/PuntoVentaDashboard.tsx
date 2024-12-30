@@ -50,7 +50,7 @@ const PuntoVentaDashboard = () => {
 
 const FooterActions = ({ selectedOption, setSelectedOption }: { selectedOption: string, setSelectedOption: React.Dispatch<React.SetStateAction<string>> }) => (
     <div className="footer-actions">
-        {/* Sección izquierda del footer */}
+        {/* Left side footer */}
         <div className="footer-left">
             <div className="footer-top">
                 <div className="client-search">
@@ -79,7 +79,7 @@ const FooterActions = ({ selectedOption, setSelectedOption }: { selectedOption: 
             </div>
         </div>
 
-        {/* Sección derecha del footer */}
+        {/* Right side footer */}
         <div className="footer-right">
             <button
                 className={`sidebar-button ${selectedOption === 'destacados' ? 'active' : ''}`}
