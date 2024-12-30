@@ -1,0 +1,29 @@
+.main-navbar {
+    border-bottom: 4px solid #FF7F00; 
+}
+
+.navbar-logo {
+    height: 40px;
+    width: auto;
+}
+
+.dropdown-menu {
+    border: 2px solid #FF7F00; 
+    border-radius: 4px;
+}
+
+.btn-orange-border {
+    border: 2px solid #FF7F00;
+    color: #FF7F00;
+    background-color: white;
+}
+
+.btn-orange-border:hover {
+    background-color: #FF7F00;
+    color: white;
+}
+
+.dropdown-menu .dropdown-item:hover {
+    background-color: #FF7F00;
+    color: white;
+}

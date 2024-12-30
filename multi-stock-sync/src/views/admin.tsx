@@ -2,6 +2,7 @@ import Navbar from '../components/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDesktop, faFileInvoiceDollar, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import './admin.css';
+import { Link } from 'react-router-dom';
 
 function Admin() {
   return (
@@ -12,9 +13,11 @@ function Admin() {
           <div className="row align-items-center">
             {/* Punto de Venta */}
             <div className="col-md-5">
-              <FontAwesomeIcon icon={faDesktop} className="fa-4x text-primary" />
-              <h3 className="mt-3">PUNTO DE VENTA</h3>
-              <p className="mt-3 text-muted">Atiende al público</p>
+              <Link to="/punto-venta">
+                <FontAwesomeIcon icon={faDesktop} className="fa-4x text-primary" />
+                <h3 className="mt-3">PUNTO DE VENTA</h3>
+                <p className="mt-3 text-muted">Atiende al público</p>
+              </Link>
             </div>
 
             {/* Arrow */}
