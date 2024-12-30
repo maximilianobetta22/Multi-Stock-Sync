@@ -2,7 +2,13 @@ import React, { useState } from 'react';
 import './PuntoVentaNavbar.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
+import {
+    faPrint,
+    faCheckCircle,
+    faArrowRight,
+    faTimesCircle,
+    faQuestionCircle
+} from '@fortawesome/free-solid-svg-icons';
 
 const PuntoVentaNavbar: React.FC = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -31,17 +37,57 @@ const PuntoVentaNavbar: React.FC = () => {
                     >
                         <li>
                             <a className="dropdown-item" href="#">
-                                Opción 1
+                                Reimprimir <FontAwesomeIcon icon={faPrint} />
                             </a>
                         </li>
                         <li>
                             <a className="dropdown-item" href="#">
-                                Opción 2
+                                Ventas <FontAwesomeIcon icon={faCheckCircle} />
                             </a>
                         </li>
                         <li>
                             <a className="dropdown-item" href="#">
-                                Opción 3
+                                Despacho <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item" href="#">
+                                Devolución <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item" href="#">
+                                Abono de cliente <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item" href="#">
+                                Movimientos de efectivo <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item" href="#">
+                                Cierre de caja <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item" href="#">
+                                Recepción de stock <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item" href="#">
+                                Maestros <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item" href="#">
+                                Reportes <FontAwesomeIcon icon={faArrowRight} />
+                            </a>
+                        </li>
+                        <li>
+                            <a className="dropdown-item text-danger" href="/">
+                                Cerrar punto de venta <FontAwesomeIcon icon={faTimesCircle} />
                             </a>
                         </li>
                     </ul>
@@ -55,6 +101,8 @@ const PuntoVentaNavbar: React.FC = () => {
                         className="navbar-logo"
                     />
                 </div>
+
+                
                 <div className="help-icon">
                     <FontAwesomeIcon icon={faQuestionCircle} />
                 </div>
