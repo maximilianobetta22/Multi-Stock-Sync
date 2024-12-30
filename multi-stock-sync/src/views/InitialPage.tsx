@@ -1,10 +1,10 @@
 import Navbar from '../components/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDesktop, faFileInvoiceDollar, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import './admin.css';
+import './InitialPage.css';
 import { Link } from 'react-router-dom';
 
-function Admin() {
+function InitialPage() {
   return (
     <>
       <Navbar />
@@ -38,4 +38,4 @@ function Admin() {
   );
 }
 
-export default Admin;
+export default InitialPage;

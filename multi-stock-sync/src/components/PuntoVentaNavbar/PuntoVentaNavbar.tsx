@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import './PuntoVentaNavbar.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 
 const PuntoVentaNavbar: React.FC = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -52,6 +54,9 @@ const PuntoVentaNavbar: React.FC = () => {
                         alt="Multi-Stock-Sync"
                         className="navbar-logo"
                     />
+                </div>
+                <div className="help-icon">
+                    <FontAwesomeIcon icon={faQuestionCircle} />
                 </div>
             </div>
         </nav>
