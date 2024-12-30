@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import './PuntoVentaDashboard.css';
 import PuntoVentaNavbar from '../../../components/PuntoVentaNavbar/PuntoVentaNavbar';
+import Destacados from './Destacados/Destacados';
+import BorradoresVenta from './BorradoresVenta/BorradoresVenta';
+import ProductosServicios from './ProductosServicios/ProductosServicios';
+import Clientes from './Clientes/Clientes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faStar, faFileAlt, faBoxes, faUser } from '@fortawesome/free-solid-svg-icons';
 
@@ -10,13 +14,19 @@ const PuntoVentaDashboard = () => {
     const renderContent = () => {
         switch (selectedOption) {
             case 'destacados':
-                return <p>Contenido de destacados</p>;
+                return <Destacados />;
+            case 'borradores':
+                return <BorradoresVenta />;
+            case 'productos':
+                return <ProductosServicios />;
+            case 'clientes':
+                return <Clientes />;
             case 'documentos':
-                return <p>Contenido de Documentos</p>;
+                return <BorradoresVenta />; // Assuming 'documentos' should render 'BorradoresVenta'
             case 'stock':
-                return <p>Contenido de Stock</p>;
+                return <ProductosServicios />; // Assuming 'stock' should render 'ProductosServicios'
             case 'cliente':
-                return <p>Contenido de Cliente</p>;
+                return <Clientes />; // Assuming 'cliente' should render 'Clientes'
             default:
                 return <p>Seleccione una opción</p>;
         }
