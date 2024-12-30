@@ -35,7 +35,9 @@ const PuntoVentaDashboard = () => {
                         placeholder="Ingresa aquí el producto o servicio"
                       />
                       <button className="search-button">
-                        <FontAwesomeIcon icon={faSearch} />
+                        <div className="icon-circle-cyan">
+                            <FontAwesomeIcon icon={faSearch} />
+                        </div>
                       </button>
                     </div>
                 </div>
@@ -43,12 +45,12 @@ const PuntoVentaDashboard = () => {
                     {renderContent()}
                 </div>
             </div>
-            <FooterActions setSelectedOption={setSelectedOption} />
+            <FooterActions selectedOption={selectedOption} setSelectedOption={setSelectedOption} />
         </>
     );
 };
 
-const FooterActions = ({ setSelectedOption }: { setSelectedOption: React.Dispatch<React.SetStateAction<string>> }) => (
+const FooterActions = ({ selectedOption, setSelectedOption }: { selectedOption: string, setSelectedOption: React.Dispatch<React.SetStateAction<string>> }) => (
     <div className="footer-actions">
         <div className="footer-left">
             <button className="footer-button">Cancelar</button>
@@ -60,28 +62,36 @@ const FooterActions = ({ setSelectedOption }: { setSelectedOption: React.Dispatc
         </div>
         <div className="footer-right">
             <button
-                className="sidebar-button"
+                className={`sidebar-button ${selectedOption === 'destacados' ? 'active' : ''}`}
                 onClick={() => setSelectedOption('destacados')}
             >
-                <FontAwesomeIcon icon={faStar} />
+                <div className="icon-circle">
+                    <FontAwesomeIcon icon={faStar} />
+                </div>
             </button>
             <button
-                className="sidebar-button"
+                className={`sidebar-button ${selectedOption === 'documentos' ? 'active' : ''}`}
                 onClick={() => setSelectedOption('documentos')}
             >
-                <FontAwesomeIcon icon={faFileAlt} />
+                <div className="icon-circle">
+                    <FontAwesomeIcon icon={faFileAlt} />
+                </div>
             </button>
             <button
-                className="sidebar-button"
+                className={`sidebar-button ${selectedOption === 'stock' ? 'active' : ''}`}
                 onClick={() => setSelectedOption('stock')}
             >
-                <FontAwesomeIcon icon={faBoxes} />
+                <div className="icon-circle">
+                    <FontAwesomeIcon icon={faBoxes} />
+                </div>
             </button>
             <button
-                className="sidebar-button"
+                className={`sidebar-button ${selectedOption === 'cliente' ? 'active' : ''}`}
                 onClick={() => setSelectedOption('cliente')}
             >
-                <FontAwesomeIcon icon={faUser} />
+                <div className="icon-circle">
+                    <FontAwesomeIcon icon={faUser} />
+                </div>
             </button>
         </div>
     </div>
