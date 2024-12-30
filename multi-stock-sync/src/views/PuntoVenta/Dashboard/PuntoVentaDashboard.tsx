@@ -35,50 +35,54 @@ const PuntoVentaDashboard = () => {
                         placeholder="Ingresa aquí el producto o servicio"
                       />
                       <button className="search-button">
-                        <FontAwesomeIcon icon={faSearch} /> {/* FontAwesome icon from NPM */}
+                        <FontAwesomeIcon icon={faSearch} />
                       </button>
                     </div>
-                    <div className="content-area">{renderContent()}</div>
                 </div>
                 <div className="sidebar">
-                    <button
-                        className="sidebar-button"
-                        onClick={() => setSelectedOption('destacados')}
-                    >
-                        <FontAwesomeIcon icon={faStar} />
-                    </button>
-                    <button
-                        className="sidebar-button"
-                        onClick={() => setSelectedOption('documentos')}
-                    >
-                        <FontAwesomeIcon icon={faFileAlt} />
-                    </button>
-                    <button
-                        className="sidebar-button"
-                        onClick={() => setSelectedOption('stock')}
-                    >
-                        <FontAwesomeIcon icon={faBoxes} />
-                    </button>
-                    <button
-                        className="sidebar-button"
-                        onClick={() => setSelectedOption('cliente')}
-                    >
-                        <FontAwesomeIcon icon={faUser} />
-                    </button>
+                    {renderContent()}
                 </div>
             </div>
-            <FooterActions />
+            <FooterActions setSelectedOption={setSelectedOption} />
         </>
     );
 };
 
-const FooterActions = () => (
+const FooterActions = ({ setSelectedOption }: { setSelectedOption: React.Dispatch<React.SetStateAction<string>> }) => (
     <div className="footer-actions">
-        <button className="footer-button">Cancelar</button>
-        <button className="footer-button">Guardar Borrador</button>
-        <div className="total-container">
-            <span>Total: $0</span>
-            <button className="pay-button">Pagar</button>
+        <div className="footer-left">
+            <button className="footer-button">Cancelar</button>
+            <button className="footer-button">Guardar Borrador</button>
+            <div className="total-container">
+                <span>Total: $0</span>
+                <button className="pay-button">Pagar</button>
+            </div>
+        </div>
+        <div className="footer-right">
+            <button
+                className="sidebar-button"
+                onClick={() => setSelectedOption('destacados')}
+            >
+                <FontAwesomeIcon icon={faStar} />
+            </button>
+            <button
+                className="sidebar-button"
+                onClick={() => setSelectedOption('documentos')}
+            >
+                <FontAwesomeIcon icon={faFileAlt} />
+            </button>
+            <button
+                className="sidebar-button"
+                onClick={() => setSelectedOption('stock')}
+            >
+                <FontAwesomeIcon icon={faBoxes} />
+            </button>
+            <button
+                className="sidebar-button"
+                onClick={() => setSelectedOption('cliente')}
+            >
+                <FontAwesomeIcon icon={faUser} />
+            </button>
         </div>
     </div>
 );
