@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './PuntoVentaNavbar.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -12,6 +12,11 @@ import {
 
 const PuntoVentaNavbar: React.FC = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [currentLocation, setCurrentLocation] = useState('');
+
+    useEffect(() => {
+        setCurrentLocation(window.location.pathname);
+    }, []);
 
     const handleDropdownToggle = () => {
         setDropdownOpen(!dropdownOpen);
@@ -29,7 +34,9 @@ const PuntoVentaNavbar: React.FC = () => {
                         onClick={handleDropdownToggle}
                         aria-expanded={dropdownOpen}
                     >
-                        Ventas
+                        {currentLocation === '/punto-venta' ? 'Ventas (Actual)' : 
+                         currentLocation === '/despacho' ? 'Despacho (Actual)' : 
+                         'Ventas'}
                     </button>
                     <ul
                         className={`dropdown-menu ${dropdownOpen ? 'show' : ''}`}
@@ -42,12 +49,12 @@ const PuntoVentaNavbar: React.FC = () => {
                         </li>
                         <li>
                             <a className="dropdown-item" href="/punto-venta">
-                                Ventas <FontAwesomeIcon icon={faCheckCircle} />
+                                {currentLocation === '/punto-venta' ? 'Ventas (Actual)' : 'Ventas'} <FontAwesomeIcon icon={faCheckCircle} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
-                                Despacho <FontAwesomeIcon icon={faArrowRight} />
+                            <a className="dropdown-item" href="/despacho">
+                                {currentLocation === '/despacho' ? 'Despacho (Actual)' : 'Despacho'} <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
