@@ -4,10 +4,14 @@ import PuntoVentaDashboard from './views/PuntoVenta/Dashboard/PuntoVentaDashboar
 import Despacho from './views/PuntoVenta/Dashboard/Despacho/Despacho';
 import Reimprimir from './views/PuntoVenta/Dashboard/Reimprimir/Reimprimir';
 
+import Login from './views/Login/Login';
+
 function App() {
   return (
     <Router>
       <Routes>
+        <Route path="/login" element={<Login />} />
+
         <Route path="/" element={<InitialPage />} />
         <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
         <Route path="/punto-venta/despacho" element={<Despacho />} />
