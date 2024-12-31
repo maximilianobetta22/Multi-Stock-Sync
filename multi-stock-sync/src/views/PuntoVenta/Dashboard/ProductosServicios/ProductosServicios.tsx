@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faDollarSign, faPlusCircle, faShoppingCart, faThLarge } from '@fortawesome/free-solid-svg-icons';
 import './ProductosServicios.css';
 
-const ProductosServicios: React.FC = () => {
+const ProductosServicios: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
     const productos = [
         { id: 1, nombre: 'Peluche Fumo fumos', cantidad: 3 },
         { id: 2, nombre: 'Producto A', cantidad: 10 },
@@ -17,12 +17,21 @@ const ProductosServicios: React.FC = () => {
         { id: 10, nombre: 'Producto I', cantidad: 8 }
     ];
 
-    const [searchQuery, setSearchQuery] = useState('');
     const [filteredProductos, setFilteredProductos] = useState<any[]>([]);
+
+    useEffect(() => {
+        if (searchQuery) {
+            const filtered = productos.filter((producto) =>
+                producto.nombre.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredProductos(filtered);
+        } else {
+            setFilteredProductos([]);
+        }
+    }, [searchQuery]);
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value.toLowerCase();
-        setSearchQuery(query);
 
         if (query) {
             const filtered = productos.filter((producto) =>

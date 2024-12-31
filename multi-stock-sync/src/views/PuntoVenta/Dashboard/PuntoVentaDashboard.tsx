@@ -11,7 +11,27 @@ import { faSearch, faStar, faFileAlt, faBoxes, faUser } from '@fortawesome/free-
 const PuntoVentaDashboard = () => {
     const [selectedOption, setSelectedOption] = useState('destacados');
     const [clientSearchQuery, setClientSearchQuery] = useState('');
+    const [productSearchQuery, setProductSearchQuery] = useState('');
 
+    /**
+     * Renders the content based on the selected option.
+     *
+     * @returns {JSX.Element} The content to be rendered.
+     *
+     * The following cases are for the search queries:
+     * - 'productos': Renders <ProductosServicios /> with productSearchQuery.
+     * - 'clientes': Renders <Clientes /> with clientSearchQuery.
+     * - 'stock': Renders <ProductosServicios /> with productSearchQuery.
+     * - 'cliente': Renders <Clientes /> with clientSearchQuery.
+     *
+     * The following cases are for the buttons:
+     * - 'destacados': Renders <Destacados />.
+     * - 'borradores': Renders <BorradoresVenta />.
+     * - 'documentos': Renders <BorradoresVenta />.
+     *
+     * If no case matches, it returns a default message prompting the user to select an option.
+     */
+    
     const renderContent = () => {
         switch (selectedOption) {
             case 'destacados':
@@ -19,13 +39,13 @@ const PuntoVentaDashboard = () => {
             case 'borradores':
                 return <BorradoresVenta />;
             case 'productos':
-                return <ProductosServicios />;
+                return <ProductosServicios searchQuery={productSearchQuery} />;
             case 'clientes':
                 return <Clientes searchQuery={clientSearchQuery} />;
             case 'documentos':
-                return <BorradoresVenta />; // Assuming 'documentos' should render 'BorradoresVenta'
+                return <BorradoresVenta />; 
             case 'stock':
-                return <ProductosServicios />; // Assuming 'stock' should render 'ProductosServicios'
+                return <ProductosServicios searchQuery={productSearchQuery} />; // Assuming 'stock' should render 'ProductosServicios'
             case 'cliente':
                 return <Clientes searchQuery={clientSearchQuery} />; // Assuming 'cliente' should render 'Clientes'
             default:
@@ -44,6 +64,10 @@ const PuntoVentaDashboard = () => {
                             type="text"
                             className="search-input"
                             placeholder="Ingresa aquí el producto o servicio"
+                            onChange={(e) => {
+                                setProductSearchQuery(e.target.value);
+                                setSelectedOption('productos');
+                            }}
                         />
                         <button className="search-button">
                             <div className="icon-circle-cyan">
