@@ -34,8 +34,9 @@ const PuntoVentaNavbar: React.FC = () => {
                         onClick={handleDropdownToggle}
                         aria-expanded={dropdownOpen}
                     >
-                        {currentLocation === '/punto-venta' ? 'Ventas (Actual)' : 
-                         currentLocation === '/despacho' ? 'Despacho (Actual)' : 
+                        {currentLocation === '/punto-venta' ? 'Ventas' : 
+                         currentLocation === '/despacho' ? 'Despacho' : 
+                         currentLocation === '/reimprimir' ? 'Reimprimir' :
                          'Ventas'}
                     </button>
                     <ul
@@ -43,8 +44,8 @@ const PuntoVentaNavbar: React.FC = () => {
                         aria-labelledby="dropdownMenuButton"
                     >
                         <li>
-                            <a className="dropdown-item" href="#">
-                                Reimprimir <FontAwesomeIcon icon={faPrint} />
+                            <a className="dropdown-item" href="/reimprimir">
+                                {currentLocation === '/reimprimir' ? 'Reimprimir (Actual)' : 'Reimprimir'} <FontAwesomeIcon icon={faPrint} />
                             </a>
                         </li>
                         <li>
