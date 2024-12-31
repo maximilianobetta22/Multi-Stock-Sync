@@ -44,7 +44,7 @@ const PuntoVentaNavbar: React.FC = () => {
                         aria-labelledby="dropdownMenuButton"
                     >
                         <li>
-                            <a className="dropdown-item" href="/reimprimir">
+                            <a className="dropdown-item" href="/punto-venta/reimprimir">
                                 {currentLocation === '/reimprimir' ? 'Reimprimir (Actual)' : 'Reimprimir'} <FontAwesomeIcon icon={faPrint} />
                             </a>
                         </li>
@@ -54,42 +54,42 @@ const PuntoVentaNavbar: React.FC = () => {
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="/despacho">
+                            <a className="dropdown-item" href="/punto-venta/despacho">
                                 {currentLocation === '/despacho' ? 'Despacho (Actual)' : 'Despacho'} <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
+                            <a className="dropdown-item" href="/punto-venta/devolucion">
                                 Devolución <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
+                            <a className="dropdown-item" href="/punto-venta/abono-cliente">
                                 Abono de cliente <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
+                            <a className="dropdown-item" href="/punto-venta/movimientos-efectivo">
                                 Movimientos de efectivo <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
+                            <a className="dropdown-item" href="/punto-venta/cierre-caja">
                                 Cierre de caja <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
+                            <a className="dropdown-item" href="/punto-venta/recepcion-stock">
                                 Recepción de stock <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
+                            <a className="dropdown-item" href="/punto-venta/maestros">
                                 Maestros <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
-                            <a className="dropdown-item" href="#">
+                            <a className="dropdown-item" href="/punto-venta/reportes">
                                 Reportes <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>

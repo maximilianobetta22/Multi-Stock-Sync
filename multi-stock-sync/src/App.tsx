@@ -10,8 +10,8 @@ function App() {
       <Routes>
         <Route path="/" element={<InitialPage />} />
         <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
-        <Route path="/despacho" element={<Despacho />} />
-        <Route path="/reimprimir" element={<Reimprimir />} />
+        <Route path="/punto-venta/despacho" element={<Despacho />} />
+        <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
       </Routes>
     </Router>
   );
