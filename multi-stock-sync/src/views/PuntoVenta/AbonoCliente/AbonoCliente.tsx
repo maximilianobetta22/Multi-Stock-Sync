@@ -3,6 +3,8 @@ import PuntoVentaNavbar from '../../../components/PuntoVentaNavbar/PuntoVentaNav
 import './AbonoCliente.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
 
 const AbonoCliente: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -10,6 +12,7 @@ const AbonoCliente: React.FC = () => {
     const [monto, setMonto] = useState<number>(0);
     const [metodo, setMetodo] = useState('efectivo');
     const [observacion, setObservacion] = useState('');
+    const [fechaAbono, setFechaAbono] = useState<Date | null>(new Date());
 
     const handleAgregarAbono = () => {
         if (monto > 0) {
@@ -42,7 +45,11 @@ const AbonoCliente: React.FC = () => {
                         </button>
                     </div>
                     <label>Fecha del abono</label>
-                    <input type="date" className="input-date" />
+                    <DatePicker
+                        selected={fechaAbono}
+                        onChange={(date) => setFechaAbono(date)}
+                        className="input-date"
+                    />
                     <label>Moneda</label>
                     <select className="select-moneda">
                         <option value="peso chileno">Peso Chileno</option>
