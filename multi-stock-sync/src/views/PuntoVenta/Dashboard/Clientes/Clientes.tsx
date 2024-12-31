@@ -1,11 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSearch, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import './Clientes.css';
 
-const Clientes: React.FC = () => {
+const Clientes: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
     const [isNewClient, setIsNewClient] = useState(false); // Change to search or form
-    const [searchQuery, setSearchQuery] = useState('');
     const [filteredClientes, setFilteredClientes] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<any>(null); // New state for selected client
 
@@ -14,9 +13,19 @@ const Clientes: React.FC = () => {
         { id: 2, nombre: 'Cliente Ejemplo' },
     ];
 
+    useEffect(() => {
+        if (searchQuery) {
+            const filtered = clientes.filter((cliente) =>
+                cliente.nombre.toLowerCase().includes(searchQuery.toLowerCase())
+            );
+            setFilteredClientes(filtered);
+        } else {
+            setFilteredClientes([]);
+        }
+    }, [searchQuery]);
+
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value.toLowerCase();
-        setSearchQuery(query);
 
         if (query) {
             const filtered = clientes.filter((cliente) =>
