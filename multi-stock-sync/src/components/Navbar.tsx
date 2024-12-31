@@ -41,10 +41,10 @@ const Navbar: React.FC = () => {
                             <a className="nav-link active" aria-current="page" href="#">Documentos</a>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link" href="#">Despacho</a>
+                            <a className="nav-link" href="/punto-venta/despacho">Despacho</a>
                         </li>
                         <li className="nav-item">
-                            <a className="nav-link" href="#">Punto de Venta</a>
+                            <a className="nav-link" href="/punto-venta">Punto de Venta</a>
                         </li>
                         <li className="nav-item">
                             <a className="nav-link" href="#">Stock</a>
