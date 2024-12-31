@@ -1,0 +1,6 @@
+.reimprimir-container {
+    display: flex;
+    height: calc(100vh);
+    overflow: hidden;
+}
+

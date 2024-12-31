@@ -5,11 +5,15 @@ import './Reimprimir.css';
 const Reimprimir: React.FC = () => {
     return (
         <>
-        <PuntoVentaNavbar />
-        <div>
-            <h1>Reimprimir</h1>
-            <p>Este es un componente básico de React.</p>
-        </div>
+            <PuntoVentaNavbar />
+            <div className="reimprimir-container">
+                <div className="main-section">
+                    {/* Main content goes here */}
+                </div>
+                <div className="sidebar">
+                    {/* Sidebar content goes here */}
+                </div>
+            </div>
         </>
     );
 };
