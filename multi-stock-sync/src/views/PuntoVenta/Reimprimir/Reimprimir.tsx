@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import PuntoVentaNavbar from '../../../../components/PuntoVentaNavbar/PuntoVentaNavbar';
+import PuntoVentaNavbar from '../../../components/PuntoVentaNavbar/PuntoVentaNavbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFileAlt } from '@fortawesome/free-solid-svg-icons';
 import './Reimprimir.css';

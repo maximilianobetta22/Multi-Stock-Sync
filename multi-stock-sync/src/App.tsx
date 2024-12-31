@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import InitialPage from './views/InitialPage';
 import PuntoVentaDashboard from './views/PuntoVenta/Dashboard/PuntoVentaDashboard';
-import Despacho from './views/PuntoVenta/Dashboard/Despacho/Despacho';
-import Reimprimir from './views/PuntoVenta/Dashboard/Reimprimir/Reimprimir';
+import Despacho from './views/PuntoVenta/Despacho/Despacho';
+import Reimprimir from './views/PuntoVenta/Reimprimir/Reimprimir';
 
 import Login from './views/Login/Login';
 
