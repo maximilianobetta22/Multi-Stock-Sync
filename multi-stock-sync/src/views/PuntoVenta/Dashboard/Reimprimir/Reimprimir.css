@@ -1,6 +1,99 @@
 .reimprimir-container {
     display: flex;
-    height: calc(100vh);
+    height: calc(100vh - 70px);
     overflow: hidden;
 }
 
+.main-section {
+    padding: 20px;
+}
+
+.sidebar-title {
+    font-size: 18px;
+    font-weight: bold;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.icon {
+    color: #00bfff;
+    font-size: 20px;
+}
+
+.sidebar-filters {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.date-picker-container {
+    position: relative;
+}
+
+.date-picker-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.search-input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.documentos-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.documento-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #ddd;
+}
+
+.documento-info h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #333;
+}
+
+.documento-info p {
+    margin: 5px 0 0;
+    font-size: 14px;
+    color: #777;
+}
+
+.reimprimir-btn {
+    background-color: #00bfff;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.reimprimir-btn:hover {
+    background-color: #007bff;
+}
+
+.no-records {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    margin-top: 20px;
+}
