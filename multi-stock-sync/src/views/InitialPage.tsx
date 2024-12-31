@@ -1,4 +1,4 @@
-import Navbar from '../components/Navbar';
+import Navbar from '../components/Navbar/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDesktop, faFileInvoiceDollar, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import './InitialPage.css';
