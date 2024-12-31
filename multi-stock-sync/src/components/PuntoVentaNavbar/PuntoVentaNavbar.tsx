@@ -34,9 +34,10 @@ const PuntoVentaNavbar: React.FC = () => {
                         onClick={handleDropdownToggle}
                         aria-expanded={dropdownOpen}
                     >
-                        {currentLocation === '/punto-venta' ? 'Ventas' : 
-                         currentLocation === '/despacho' ? 'Despacho' : 
-                         currentLocation === '/reimprimir' ? 'Reimprimir' :
+                        {currentLocation === '/punto-venta/punto-venta' ? 'Ventas' : 
+                         currentLocation === '/punto-venta/despacho' ? 'Despacho' : 
+                         currentLocation === '/punto-venta/reimprimir' ? 'Reimprimir' :
+                         currentLocation === '/punto-venta/abono-cliente' ? 'Abono Cliente' :
                          'Ventas'}
                     </button>
                     <ul
@@ -45,17 +46,17 @@ const PuntoVentaNavbar: React.FC = () => {
                     >
                         <li>
                             <a className="dropdown-item" href="/punto-venta/reimprimir">
-                                {currentLocation === '/reimprimir' ? 'Reimprimir (Actual)' : 'Reimprimir'} <FontAwesomeIcon icon={faPrint} />
+                                {currentLocation === '/punto-venta/reimprimir' ? 'Reimprimir (Actual)' : 'Reimprimir'} <FontAwesomeIcon icon={faPrint} />
                             </a>
                         </li>
                         <li>
                             <a className="dropdown-item" href="/punto-venta">
-                                {currentLocation === '/punto-venta' ? 'Ventas (Actual)' : 'Ventas'} <FontAwesomeIcon icon={faCheckCircle} />
+                                {currentLocation === '/punto-venta/punto-venta' ? 'Ventas (Actual)' : 'Ventas'} <FontAwesomeIcon icon={faCheckCircle} />
                             </a>
                         </li>
                         <li>
                             <a className="dropdown-item" href="/punto-venta/despacho">
-                                {currentLocation === '/despacho' ? 'Despacho (Actual)' : 'Despacho'} <FontAwesomeIcon icon={faArrowRight} />
+                                {currentLocation === '/punto-venta/despacho' ? 'Despacho (Actual)' : 'Despacho'} <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
@@ -65,7 +66,7 @@ const PuntoVentaNavbar: React.FC = () => {
                         </li>
                         <li>
                             <a className="dropdown-item" href="/punto-venta/abono-cliente">
-                                Abono de cliente <FontAwesomeIcon icon={faArrowRight} />
+                            {currentLocation === '/punto-venta/abono-cliente' ? 'Abono Cliente (Actual)' : 'Abono de cliente'} <FontAwesomeIcon icon={faArrowRight} />
                             </a>
                         </li>
                         <li>
