@@ -1,4 +1,4 @@
-import PuntoVentaNavbar from '../../components/PuntoVentaNavbar/PuntoVentaNavbar';
+import PuntoVentaNavbar from '../../../../components/PuntoVentaNavbar/PuntoVentaNavbar';
 import DespachoContent from './Content/DespachoContent';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
