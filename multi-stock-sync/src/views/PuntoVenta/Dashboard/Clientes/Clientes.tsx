@@ -7,6 +7,7 @@ const Clientes: React.FC = () => {
     const [isNewClient, setIsNewClient] = useState(false); // Change to search or form
     const [searchQuery, setSearchQuery] = useState('');
     const [filteredClientes, setFilteredClientes] = useState<any[]>([]);
+    const [selectedClient, setSelectedClient] = useState<any>(null); // New state for selected client
 
     const clientes = [
         { id: 1, nombre: 'Marcos Reyes' },
@@ -27,13 +28,18 @@ const Clientes: React.FC = () => {
         }
     };
 
+    const handleEditClick = (cliente: any) => {
+        setSelectedClient(cliente);
+        setIsNewClient(true);
+    };
+
     return (
         <div className={`clientes-container ${isNewClient ? 'nuevo-cliente-form' : ''}`}>
             {isNewClient ? (
                 // Nuevo cliente form
                 <div className="nuevo-cliente-form">
                     <h2 className="clientes-header">
-                        <FontAwesomeIcon icon={faUser} className="header-icon" /> Nuevo Cliente
+                        <FontAwesomeIcon icon={faUser} className="header-icon" /> {selectedClient ? 'Editar Cliente' : 'Nuevo Cliente'}
                     </h2>
                     <form className="formulario">
                         <label>
@@ -95,7 +101,7 @@ const Clientes: React.FC = () => {
                                 <li key={cliente.id} className="cliente-item">
                                     {cliente.nombre}
                                     <div className="cliente-actions">
-                                        <FontAwesomeIcon icon={faEdit} className="cliente-icon" />
+                                        <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
                                         <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" />
                                     </div>
                                 </li>
