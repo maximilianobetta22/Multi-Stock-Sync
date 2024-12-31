@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSearch, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import './Clientes.css';
 
-const Clientes: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
+const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<React.SetStateAction<string>> }> = ({ searchQuery, setSearchQuery }) => {
     const [isNewClient, setIsNewClient] = useState(false); // Change to search or form
     const [filteredClientes, setFilteredClientes] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<any>(null); // New state for selected client
@@ -26,6 +26,7 @@ const Clientes: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value.toLowerCase();
+        setSearchQuery(query);
 
         if (query) {
             const filtered = clientes.filter((cliente) =>
