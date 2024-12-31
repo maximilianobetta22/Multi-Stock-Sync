@@ -25,6 +25,11 @@ const AbonoCliente: React.FC = () => {
         setAbonos(abonos.filter((_, i) => i !== index));
     };
 
+    const handleGuardar = () => {
+        // Implement save functionality here
+        alert('Datos guardados');
+    };
+
     return (
         <>
             <PuntoVentaNavbar />
@@ -102,6 +107,7 @@ const AbonoCliente: React.FC = () => {
                 <div className="abono-cliente-right">
                     <h2>Información del Cliente</h2>
                     <p>Historial y detalles del cliente</p>
+                    <button className="save-button" onClick={handleGuardar}>Guardar</button>
                     <div className="client-info">
                         <p>Nombre: Cliente Ejemplo</p>
                         <p>Total Abonos: ${abonos.reduce((acc, curr) => acc + curr.monto, 0)}</p>
