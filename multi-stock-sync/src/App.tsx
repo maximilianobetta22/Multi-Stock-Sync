@@ -5,6 +5,8 @@ import Despacho from './views/PuntoVenta/Despacho/Despacho';
 import Reimprimir from './views/PuntoVenta/Reimprimir/Reimprimir';
 import AbonoCliente from './views/PuntoVenta/AbonoCliente/AbonoCliente';
 
+import DocumentosDashboard from './views/Documentos/Dashboard/DocumentosDashboard';
+
 import Login from './views/Login/Login';
 
 function App() {
@@ -18,6 +20,9 @@ function App() {
         <Route path="/punto-venta/despacho" element={<Despacho />} />
         <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
         <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
+
+        <Route path="/documentos" element={<DocumentosDashboard />} />
+
       </Routes>
     </Router>
   );

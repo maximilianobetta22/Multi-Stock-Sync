@@ -38,7 +38,7 @@ const Navbar: React.FC = () => {
                 <div className="collapse navbar-collapse justify-content-center" id="navbarContent">
                     <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                         <li className="nav-item">
-                            <a className="nav-link active" aria-current="page" href="#">Documentos</a>
+                            <a className="nav-link active" aria-current="page" href="/documentos">Documentos</a>
                         </li>
                         <li className="nav-item">
                             <a className="nav-link" href="/punto-venta/despacho">Despacho</a>
