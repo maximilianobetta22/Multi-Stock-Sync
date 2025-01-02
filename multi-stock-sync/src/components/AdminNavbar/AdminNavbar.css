@@ -37,6 +37,35 @@
     text-decoration: underline;
 }
 
+.mini-navbar .dropdown {
+    position: relative;
+}
+
+.mini-navbar .dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #FF5C1A;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+}
+
+.mini-navbar .dropdown-menu.show {
+    display: block;
+}
+
+.mini-navbar .dropdown-item {
+    color: #fff;
+    padding: 0.5rem 1rem;
+    text-decoration: none;
+    display: block;
+}
+
+.mini-navbar .dropdown-item:hover {
+    background-color: #ffe0cc;
+    color: #000;
+}
 
 @media (max-width: 992px) {
     .mini-navbar-nav {

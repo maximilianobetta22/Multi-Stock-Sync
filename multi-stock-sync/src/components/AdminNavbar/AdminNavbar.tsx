@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import './AdminNavbar.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { Link } from 'react-router-dom';
 
 const AdminNavbar: React.FC = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+    const [miniDropdownOpen, setMiniDropdownOpen] = useState(false);
 
     const handleDropdownToggle = (dropdown: 'settings' | 'user') => {
         if (dropdown === 'settings') {
@@ -17,6 +18,10 @@ const AdminNavbar: React.FC = () => {
             setUserDropdownOpen(!userDropdownOpen);
             if (dropdownOpen) setDropdownOpen(false);
         }
+    };
+
+    const handleMiniDropdownToggle = () => {
+        setMiniDropdownOpen(!miniDropdownOpen);
     };
 
     return (
@@ -87,6 +92,16 @@ const AdminNavbar: React.FC = () => {
                         </li>
                         <li className="nav-item">
                             <Link className="nav-link" to="#">Listas de Precio</Link>
+                        </li>
+                        <li className="nav-item dropdown">
+                            <button className="nav-link" onClick={handleMiniDropdownToggle}>
+                                Prueba <FontAwesomeIcon icon={faCaretDown} />
+                            </button>
+                            <div className={`dropdown-menu ${miniDropdownOpen ? 'show' : ''}`}>
+                                <Link className="dropdown-item" to="#">Opción 1</Link>
+                                <Link className="dropdown-item" to="#">Opción 2</Link>
+                                <Link className="dropdown-item" to="#">Opción 3</Link>
+                            </div>
                         </li>
                     </ul>
                 </div>
