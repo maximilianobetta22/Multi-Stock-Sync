@@ -1,0 +1,42 @@
+/* Ensure no margins or paddings in body and html */
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden; /* Prevent any scroll */
+}
+
+/* To ensure the root takes up all the space */
+#root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Main container */
+.main-container {
+    flex: 1; /* Takes up all available space */
+    display: flex;
+    margin: 0; /* No margins */
+    padding: 0; /* No paddings */
+    height: 100%; /* Ensure it takes up all the remaining space */
+}
+
+/* Halves divided */
+.w-50 {
+    flex: 1; /* Takes up exactly half */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Custom gray background */
+.custom-gray {
+    background-color: #d3d3d3;
+}
+
+/* Remove margins from internal titles and paragraphs */
+h1, p {
+    margin: 0;
+    text-align: center;
+}

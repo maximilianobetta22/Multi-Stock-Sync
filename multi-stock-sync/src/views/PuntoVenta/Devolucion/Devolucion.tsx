@@ -6,23 +6,20 @@ const Devolucion: React.FC = () => {
     return (
         <>
             <PuntoVentaNavbar />
-            <div className="d-flex flex-column min-vh-100 main-content-with-navbar">
-                <div className="d-flex flex-grow-1">
-                    
-                    <div className="w-55 bg-light p-3">
+            <div className="d-flex flex-grow-1 main-container">
+                <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
+                    <div>
                         <h1>Contenido Izquierdo</h1>
                         <p>Aquí va el contenido principal del lado izquierdo.</p>
                     </div>
-
-                    
-                    <div className="w-45 custom-gray p-3">
+                </div>
+                <div className="w-50 custom-gray p-3 d-flex align-items-center justify-content-center">
+                    <div>
                         <h1>Contenido Derecho</h1>
                         <p>Aquí va el contenido principal del lado derecho.</p>
                     </div>
                 </div>
-
             </div>
-
         </>
     );
 };

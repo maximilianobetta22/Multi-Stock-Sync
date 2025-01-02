@@ -1,5 +1,7 @@
 .punto-venta-navbar {
     border-bottom: 4px solid #FF7F00;
+    height: 56px; /* Altura fija */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Opcional: sombra para separar visualmente */
 }
 
 .navbar-logo {
@@ -48,7 +50,6 @@
 }
 
 .main-content-with-navbar {
-    padding-top: 2rem;
-    margin-bottom: 30px;
-    /* margin-top: 56px; */ /* Eliminar esta línea */
+    padding: 0;
+    margin: 0; 
 }
