@@ -1,10 +1,6 @@
 import React, { useState } from 'react';
 import './PuntoVentaDashboard.css';
 import PuntoVentaNavbar from '../../../components/PuntoVentaNavbar/PuntoVentaNavbar';
-import Destacados from './Destacados/Destacados';
-import BorradoresVenta from './BorradoresVenta/BorradoresVenta';
-import ProductosServicios from './ProductosServicios/ProductosServicios';
-import Clientes from './Clientes/Clientes';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faStar, faFileAlt, faBoxes, faUser } from '@fortawesome/free-solid-svg-icons';
 
@@ -13,41 +9,44 @@ const PuntoVentaDashboard = () => {
     const [clientSearchQuery, setClientSearchQuery] = useState('');
     const [productSearchQuery, setProductSearchQuery] = useState('');
 
-    /**
-     * Renders the content based on the selected option.
-     *
-     * @returns {JSX.Element} The content to be rendered.
-     *
-     * The following cases are for the search queries:
-     * - 'productos': Renders <ProductosServicios /> with productSearchQuery.
-     * - 'clientes': Renders <Clientes /> with clientSearchQuery.
-     * - 'stock': Renders <ProductosServicios /> with productSearchQuery.
-     * - 'cliente': Renders <Clientes /> with clientSearchQuery.
-     *
-     * The following cases are for the buttons:
-     * - 'destacados': Renders <Destacados />.
-     * - 'borradores': Renders <BorradoresVenta />.
-     * - 'documentos': Renders <BorradoresVenta />.
-     *
-     * If no case matches, it returns a default message prompting the user to select an option.
-     */
-    
-    const renderContent = () => {
+    const renderSearchBar = () => {
+        return (
+            <div className="search-bar">
+                <img src="/assets/img/cod_barras.png" alt="Código de barras" style={{ marginRight: '10px' }} />
+                <input
+                    type="text"
+                    className="search-input"
+                    placeholder="Ingresa aquí el producto o servicio"
+                    onChange={(e) => {
+                        setProductSearchQuery(e.target.value);
+                        setSelectedOption('productos');
+                    }}
+                />
+                <button className="invisible-button">
+                    <div className="icon-circle-cyan">
+                        <FontAwesomeIcon icon={faSearch} />
+                    </div>
+                </button>
+            </div>
+        );
+    };
+
+    const renderResults = () => {
         switch (selectedOption) {
             case 'destacados':
-                return <Destacados />;
+                return <h1>Destacados</h1>;
             case 'borradores':
-                return <BorradoresVenta />;
+                return <h1>Borradores</h1>;
             case 'productos':
-                return <ProductosServicios searchQuery={productSearchQuery} />;
+                return <h1>Resultados de Productos</h1>;
             case 'clientes':
-                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />;
+                return <h1>Resultados de Clientes</h1>;
             case 'documentos':
-                return <BorradoresVenta />; 
+                return <h1>Documentos</h1>;
             case 'stock':
-                return <ProductosServicios searchQuery={productSearchQuery} />; // Assuming 'stock' should render 'ProductosServicios'
+                return <h1>Stock</h1>;
             case 'cliente':
-                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />; // Assuming 'cliente' should render 'Clientes'
+                return <h1>Cliente</h1>;
             default:
                 return <p>Seleccione una opción</p>;
         }
@@ -56,33 +55,26 @@ const PuntoVentaDashboard = () => {
     return (
         <>
             <PuntoVentaNavbar />
-            <div className="punto-venta-container">
-                <div className="main-section">
-                    <div className="search-bar">
-                        <img src="/assets/img/cod_barras.png" alt="Código de barras" style={{ marginRight: '10px' }} />
-                        <input
-                            type="text"
-                            className="search-input"
-                            placeholder="Ingresa aquí el producto o servicio"
-                            onChange={(e) => {
-                                setProductSearchQuery(e.target.value);
-                                setSelectedOption('productos');
-                            }}
-                        />
-                        <button className="invisible-button">
-                            <div className="icon-circle-cyan">
-                                <FontAwesomeIcon icon={faSearch} />
-                            </div>
-                        </button>
+            <div className="d-flex flex-column main-container">
+                
+                <div className="d-flex flex-grow-1">
+                    {/* Left side: Cart and products */}
+                    <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
+                        <div>{renderSearchBar()}</div>
+                    </div>
+                    {/* Right side all imported components */}
+                    <div className="w-50 custom-gray p-3 d-flex align-items-center justify-content-center">
+                        <div>{renderResults()}</div>
                     </div>
                 </div>
-                <div className="sidebar">{renderContent()}</div>
+
+                {/* Footer */}
+                <FooterActions
+                    selectedOption={selectedOption}
+                    setSelectedOption={setSelectedOption}
+                    setClientSearchQuery={setClientSearchQuery}
+                />
             </div>
-            <FooterActions
-                selectedOption={selectedOption}
-                setSelectedOption={setSelectedOption}
-                setClientSearchQuery={setClientSearchQuery}
-            />
         </>
     );
 };
@@ -104,7 +96,7 @@ const FooterActions = ({
 
     return (
         <div className="footer-actions">
-            {/* Left side footer */}
+            {/* Parte izquierda del footer */}
             <div className="footer-left">
                 <div className="footer-top">
                     <div className="client-search">
@@ -134,7 +126,7 @@ const FooterActions = ({
                 </div>
             </div>
 
-            {/* Right side footer */}
+            
             <div className="footer-right">
                 <button
                     className={`sidebar-button ${selectedOption === 'destacados' ? 'active' : ''}`}
