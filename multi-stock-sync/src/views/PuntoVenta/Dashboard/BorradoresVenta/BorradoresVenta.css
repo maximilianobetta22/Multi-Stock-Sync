@@ -43,28 +43,6 @@
     cursor: pointer;
 }
 
-.search-container {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    flex-grow: 1;
-}
-
-.search-input {
-    flex-grow: 1;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 5px 10px;
-    font-size: 14px;
-    color: #555;
-}
-
-.search-icon {
-    color: #00bfff;
-    font-size: 20px;
-    cursor: pointer;
-}
-
 .borradores-list {
     list-style-type: none;
     padding: 0;

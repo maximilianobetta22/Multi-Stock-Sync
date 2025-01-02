@@ -8,9 +8,9 @@ import './BorradoresVenta.css';
 const BorradoresVenta: React.FC = () => {
     const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
     const borradores = [
-        { id: 1, usuario: 'Reimu Hakurei', fecha: '01/01/2024' },
-        { id: 2, usuario: 'Marisa Kirisame', fecha: '15/02/2024' },
-        { id: 3, usuario: 'Sakuya Izayoi', fecha: '28/03/2024' },
+        { id: 1, usuario: 'Usuario 1', fecha: '01/01/2024' },
+        { id: 2, usuario: 'Usuario 2', fecha: '15/02/2024' },
+        { id: 3, usuario: 'Usuario 3', fecha: '28/03/2024' },
     ];
 
     const handleDateChange = (date: Date | null) => {
@@ -25,6 +25,7 @@ const BorradoresVenta: React.FC = () => {
 
             
             <div className="filtrador-container">
+
                 <div>
                     <DatePicker
                         selected={selectedDate}
@@ -33,10 +34,12 @@ const BorradoresVenta: React.FC = () => {
                         className="fecha-input"
                     />
                 </div>
-                <div className="search-container">
+
+                <div>
                     <input type="text" placeholder="Buscar" className="search-input" />
                     <FontAwesomeIcon icon={faSearch} className="search-icon" />
                 </div>
+                
             </div>
 
             <ul className="borradores-list">
