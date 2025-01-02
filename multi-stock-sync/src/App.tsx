@@ -5,12 +5,14 @@ import PuntoVentaDashboard from './views/PuntoVenta/Dashboard/PuntoVentaDashboar
 import Despacho from './views/PuntoVenta/Despacho/Despacho';
 import Reimprimir from './views/PuntoVenta/Reimprimir/Reimprimir';
 import AbonoCliente from './views/PuntoVenta/AbonoCliente/AbonoCliente';
+import MovimientosEfectivo from './views/PuntoVenta/MovimientosEfectivo/MovimientosEfectivo';
 
 import Devolucion from './views/PuntoVenta/Devolucion/Devolucion';
 
 import DocumentosDashboard from './views/Documentos/Dashboard/DocumentosDashboard';
 
 import ProductosServicios from './views/Admin/ProductosServicios/ProductosServicios';
+
 
 import Login from './views/Login/Login';
 
@@ -25,6 +27,7 @@ function App() {
       <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
       <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
       <Route path="/punto-venta/devolucion" element={<Devolucion />} />
+      <Route path="/punto-venta/movimientos-efectivo" element={<MovimientosEfectivo />} />
       <Route path="/documentos" element={<DocumentosDashboard />} />
       <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
     </Routes>
