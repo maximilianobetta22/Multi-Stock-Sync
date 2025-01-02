@@ -4,6 +4,12 @@ import PuntoVentaNavbar from '../../../components/PuntoVentaNavbar/PuntoVentaNav
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faStar, faFileAlt, faBoxes, faUser } from '@fortawesome/free-solid-svg-icons';
 
+import BorradoresVenta from './BorradoresVenta/BorradoresVenta';
+import Clientes from './Clientes/Clientes';
+import Destacados from './Destacados/Destacados';
+import ProductosServicios from './ProductosServicios/ProductosServicios';
+
+
 const PuntoVentaDashboard = () => {
     const [selectedOption, setSelectedOption] = useState('destacados');
     const [clientSearchQuery, setClientSearchQuery] = useState('');
@@ -34,19 +40,19 @@ const PuntoVentaDashboard = () => {
     const renderResults = () => {
         switch (selectedOption) {
             case 'destacados':
-                return <h1>Destacados</h1>;
+                return <Destacados />;
             case 'borradores':
-                return <h1>Borradores</h1>;
+                return <BorradoresVenta />;
             case 'productos':
-                return <h1>Resultados de Productos</h1>;
+                return <ProductosServicios searchQuery={productSearchQuery} />;
             case 'clientes':
-                return <h1>Resultados de Clientes</h1>;
+                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />;
             case 'documentos':
-                return <h1>Documentos</h1>;
+                return <BorradoresVenta />;
             case 'stock':
-                return <h1>Stock</h1>;
+                return <ProductosServicios searchQuery={productSearchQuery} />;
             case 'cliente':
-                return <h1>Cliente</h1>;
+                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />;
             default:
                 return <p>Seleccione una opción</p>;
         }
@@ -96,7 +102,7 @@ const FooterActions = ({
 
     return (
         <div className="footer-actions">
-            {/* Parte izquierda del footer */}
+            
             <div className="footer-left">
                 <div className="footer-top">
                     <div className="client-search">

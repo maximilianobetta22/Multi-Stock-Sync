@@ -26,7 +26,7 @@ const ProductosServicios: React.FC<{ searchQuery: string }> = ({ searchQuery }) 
             );
             setFilteredProductos(filtered);
         } else {
-            setFilteredProductos([]);
+            setFilteredProductos(productos); // Show all products when searchQuery is empty
         }
     }, [searchQuery]);
 
