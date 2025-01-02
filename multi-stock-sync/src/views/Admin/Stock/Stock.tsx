@@ -3,9 +3,21 @@ import './Stock.css';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 
 const Stock: React.FC = () => {
+    const miniNavbarLinks: { name: string; url: string }[] = [];
+    const miniNavbarDropdowns = [
+        {
+            name: 'Opciones',
+            options: [
+                { name: 'Opción 1', url: '#' },
+                { name: 'Opción 2', url: '#' },
+                { name: 'Opción 3', url: '#' }
+            ]
+        }
+    ];
+
     return (
         <>
-            <AdminNavbar />
+            <AdminNavbar links={miniNavbarLinks} dropdowns={miniNavbarDropdowns} />
             <div className="d-flex flex-grow-1 main-container">
                 <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div>

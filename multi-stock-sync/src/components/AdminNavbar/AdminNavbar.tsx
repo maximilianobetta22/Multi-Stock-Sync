@@ -5,10 +5,15 @@ import { faCog, faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { Link } from 'react-router-dom';
 
-const AdminNavbar: React.FC = () => {
+interface MiniNavbarProps {
+    links: { name: string, url: string }[];
+    dropdowns: { name: string, options: { name: string, url: string }[] }[];
+}
+
+const AdminNavbar: React.FC<MiniNavbarProps> = ({ links, dropdowns }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-    const [miniDropdownOpen, setMiniDropdownOpen] = useState(false);
+    const [miniDropdownOpen, setMiniDropdownOpen] = useState<{ [key: number]: boolean }>({});
 
     const handleDropdownToggle = (dropdown: 'settings' | 'user') => {
         if (dropdown === 'settings') {
@@ -20,8 +25,11 @@ const AdminNavbar: React.FC = () => {
         }
     };
 
-    const handleMiniDropdownToggle = () => {
-        setMiniDropdownOpen(!miniDropdownOpen);
+    const handleMiniDropdownToggle = (index: number) => {
+        setMiniDropdownOpen(prevState => ({
+            ...prevState,
+            [index]: !prevState[index]
+        }));
     };
 
     return (
@@ -81,28 +89,23 @@ const AdminNavbar: React.FC = () => {
             <div className="mini-navbar">
                 <div className="container-fluid">
                     <ul className="mini-navbar-nav">
-                        <li className="nav-item">
-                            <Link className="nav-link" to="#">Mis Productos y Servicios</Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" to="#">Marcas</Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" to="#">Config. Masiva</Link>
-                        </li>
-                        <li className="nav-item">
-                            <Link className="nav-link" to="#">Listas de Precio</Link>
-                        </li>
-                        <li className="nav-item dropdown">
-                            <button className="nav-link" onClick={handleMiniDropdownToggle}>
-                                Prueba <FontAwesomeIcon icon={faCaretDown} />
-                            </button>
-                            <div className={`dropdown-menu ${miniDropdownOpen ? 'show' : ''}`}>
-                                <Link className="dropdown-item" to="#">Opción 1</Link>
-                                <Link className="dropdown-item" to="#">Opción 2</Link>
-                                <Link className="dropdown-item" to="#">Opción 3</Link>
-                            </div>
-                        </li>
+                        {links.map((link, index) => (
+                            <li className="nav-item" key={index}>
+                                <Link className="nav-link" to={link.url}>{link.name}</Link>
+                            </li>
+                        ))}
+                        {dropdowns.map((dropdown, index) => (
+                            <li className="nav-item dropdown" key={index}>
+                                <button className="nav-link" onClick={() => handleMiniDropdownToggle(index)}>
+                                    {dropdown.name} <FontAwesomeIcon icon={faCaretDown} />
+                                </button>
+                                <div className={`dropdown-menu ${miniDropdownOpen[index] ? 'show' : ''}`}>
+                                    {dropdown.options.map((option, idx) => (
+                                        <Link className="dropdown-item" to={option.url} key={idx}>{option.name}</Link>
+                                    ))}
+                                </div>
+                            </li>
+                        ))}
                     </ul>
                 </div>
             </div>
