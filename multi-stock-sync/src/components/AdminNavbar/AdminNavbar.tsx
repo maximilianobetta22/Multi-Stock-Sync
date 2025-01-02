@@ -37,7 +37,7 @@ const AdminNavbar: React.FC = () => {
                     >
                         <span className="navbar-toggler-icon"></span>
                     </button>
-                    <div className="collapse navbar-collapse justify-content-center" id="navbarContent">
+                    <div className="collapse navbar-collapse" id="navbarContent">
                         <ul className="navbar-nav me-auto mb-2 mb-lg-0">
                             <li className="nav-item">
                                 <Link className="nav-link active" aria-current="page" to="/documentos">Documentos</Link>
@@ -56,7 +56,6 @@ const AdminNavbar: React.FC = () => {
                             </li>
                         </ul>
                         <div className="d-flex align-items-center">
-                            <button className="btn btn-yellow me-2">¡Ayuda!</button>
                             <div className="settings-dropdown">
                                 <button className="btn btn-secondary" onClick={() => handleDropdownToggle('settings')}>
                                     <FontAwesomeIcon icon={faCog} />
@@ -67,6 +66,7 @@ const AdminNavbar: React.FC = () => {
                                     <Link className="settings-dropdown-item" to="#">Clientes</Link>
                                     <Link className="settings-dropdown-item" to="#">Sucursales</Link>
                                     <Link className="settings-dropdown-item" to="#">Ver Mas</Link>
+                                    <Link className="settings-dropdown-item text-danger" to="/">Volver a inicio</Link>
                                 </div>
                             </div>
                         </div>

@@ -61,7 +61,7 @@ const Navbar: React.FC = () => {
                                 <FontAwesomeIcon icon={faCog} />
                             </button>
                             <div className={`settings-dropdown-menu ${dropdownOpen ? 'show' : ''}`}>
-                                <Link className="settings-dropdown-item" to="#">Productos y Servicios</Link>
+                                <Link className="settings-dropdown-item" to="/admin/productos-servicios">Productos y Servicios</Link>
                                 <Link className="settings-dropdown-item" to="#">Lista de Precios</Link>
                                 <Link className="settings-dropdown-item" to="#">Clientes</Link>
                                 <Link className="settings-dropdown-item" to="#">Sucursales</Link>

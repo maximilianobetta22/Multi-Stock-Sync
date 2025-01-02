@@ -1,4 +1,3 @@
-
 .main-navbar {
     position: fixed;
     top: 0;
@@ -47,5 +46,22 @@
 
     .mini-navbar-nav .nav-item {
         margin-bottom: 0.5rem;
+    }
+
+    .main-navbar .navbar-collapse {
+        justify-content: flex-start;
+    }
+
+    .main-navbar .navbar-nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .main-navbar .navbar-nav .nav-item {
+        margin-bottom: 0.5rem;
+    }
+
+    .main-navbar .navbar-nav .nav-link {
+        padding-left: 1rem;
     }
 }
