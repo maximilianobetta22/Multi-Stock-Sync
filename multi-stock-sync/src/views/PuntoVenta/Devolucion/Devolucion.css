@@ -1,0 +1,11 @@
+.w-55 {
+    flex: 0 0 55%;
+}
+
+.w-45 {
+    flex: 0 0 45%;
+}
+
+.custom-gray {
+    background-color: #e4e4e4;
+}

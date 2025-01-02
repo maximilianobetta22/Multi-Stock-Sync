@@ -6,6 +6,8 @@ import Despacho from './views/PuntoVenta/Despacho/Despacho';
 import Reimprimir from './views/PuntoVenta/Reimprimir/Reimprimir';
 import AbonoCliente from './views/PuntoVenta/AbonoCliente/AbonoCliente';
 
+import Devolucion from './views/PuntoVenta/Devolucion/Devolucion';
+
 import DocumentosDashboard from './views/Documentos/Dashboard/DocumentosDashboard';
 
 import ProductosServicios from './views/Admin/ProductosServicios/ProductosServicios';
@@ -22,6 +24,7 @@ function App() {
       <Route path="/punto-venta/despacho" element={<Despacho />} />
       <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
       <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
+      <Route path="/punto-venta/devolucion" element={<Devolucion />} />
       <Route path="/documentos" element={<DocumentosDashboard />} />
       <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
     </Routes>
