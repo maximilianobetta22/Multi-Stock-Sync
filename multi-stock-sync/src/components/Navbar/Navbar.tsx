@@ -87,7 +87,6 @@ const Navbar: React.FC = () => {
                     <div className="d-flex align-items-center">
                         {isAuthenticated ? (
                             <>
-                                <button className="btn btn-yellow me-2" onClick={handleLogout}>Logout</button>
                                 <div className="settings-dropdown">
                                     <button className="btn btn-secondary" onClick={() => handleDropdownToggle('settings')}>
                                         <FontAwesomeIcon icon={faCog} />
@@ -111,7 +110,7 @@ const Navbar: React.FC = () => {
                                             <Link className="user-dropdown-item" to="#">Cambiar Contraseña</Link>
                                             <Link className="user-dropdown-item" to="#">Mi Cuenta</Link>
                                             <Link className="user-dropdown-item" to="#">Mis Sistemas</Link>
-                                            <Link className="user-dropdown-item text-danger" to="#">Salir</Link>
+                                            <Link className="user-dropdown-item text-danger" onClick={handleLogout} to="#">Salir</Link>
                                         </div>
                                     </div>
                                     <div>
