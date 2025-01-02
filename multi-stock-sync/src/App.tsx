@@ -12,6 +12,8 @@ import Devolucion from './views/PuntoVenta/Devolucion/Devolucion';
 import Documentos from './views/Admin/Documentos/Documentos';
 
 import ProductosServicios from './views/Admin/ProductosServicios/ProductosServicios';
+import Reportes from './views/Admin/Reportes/Reportes';
+import Stock from './views/Admin/Stock/Stock';
 
 
 import Login from './views/Login/Login';
@@ -30,6 +32,8 @@ function App() {
       <Route path="/punto-venta/movimientos-efectivo" element={<MovimientosEfectivo />} />
       <Route path="/admin/documentos" element={<Documentos />} />
       <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
+      <Route path="/admin/reportes" element={<Reportes />} />
+      <Route path="/admin/stock" element={<Stock />} />
     </Routes>
   </Router>
 

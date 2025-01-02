@@ -49,10 +49,10 @@ const AdminNavbar: React.FC = () => {
                                 <Link className="nav-link" to="/punto-venta">Punto de Venta</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="#">Stock</Link>
+                                <Link className="nav-link" to="/admin/stock">Stock</Link>
                             </li>
                             <li className="nav-item">
-                                <Link className="nav-link" to="#">Reportes</Link>
+                                <Link className="nav-link" to="/admin/reportes">Reportes</Link>
                             </li>
                         </ul>
                         <div className="d-flex align-items-center">
