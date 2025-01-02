@@ -7,6 +7,18 @@
     width: 60vh;
 }
 
+@media (max-width: 1024px) {
+    .productos-list {
+        width: 80vh;
+    }
+}
+
+@media (max-width: 768px) {
+    .productos-list {
+        width: 100%;
+    }
+}
+
 .producto-item {
     display: flex;
     justify-content: space-between;
