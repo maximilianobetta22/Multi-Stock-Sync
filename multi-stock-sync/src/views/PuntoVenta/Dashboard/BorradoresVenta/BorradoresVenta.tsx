@@ -25,7 +25,7 @@ const BorradoresVenta: React.FC = () => {
                 <FontAwesomeIcon icon={faCheckCircle} className="header-icon" /> Borradores de Venta
             </h2>
             <div className="filters-container">
-                <div className="search-bar">
+                <div className="borradores-bar">
                     <input
                         type="text"
                         placeholder="Buscar borradores"
@@ -33,7 +33,6 @@ const BorradoresVenta: React.FC = () => {
                         value={searchTerm}
                         onChange={handleSearchChange}
                     />
-                    <FontAwesomeIcon icon={faSearch} className="search-icon" />
                 </div>
             </div>
             <ul className="productos-list">

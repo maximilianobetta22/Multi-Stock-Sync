@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faDollarSign, faPlusCircle, faShoppingCart, faThLarge } from '@fortawesome/free-solid-svg-icons';
+import { faDollarSign, faPlusCircle, faShoppingCart, faThLarge } from '@fortawesome/free-solid-svg-icons';
 import './ProductosServicios.css';
 
 const ProductosServicios: React.FC<{ searchQuery: string }> = ({ searchQuery }) => {
@@ -17,7 +17,7 @@ const ProductosServicios: React.FC<{ searchQuery: string }> = ({ searchQuery }) 
         { id: 10, nombre: 'Producto I', cantidad: 8 }
     ];
 
-    const [filteredProductos, setFilteredProductos] = useState<any[]>([]);
+    const [filteredProductos, setFilteredProductos] = useState<any[]>(productos);
 
     useEffect(() => {
         if (searchQuery) {
@@ -30,40 +30,13 @@ const ProductosServicios: React.FC<{ searchQuery: string }> = ({ searchQuery }) 
         }
     }, [searchQuery]);
 
-    const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const query = event.target.value.toLowerCase();
-
-        if (query) {
-            const filtered = productos.filter((producto) =>
-                producto.nombre.toLowerCase().includes(query)
-            );
-            setFilteredProductos(filtered);
-        } else {
-            setFilteredProductos([]);
-        }
-    };
-
     return (
         <div className="productos-container">
             <h2 className="productos-header">
                 <FontAwesomeIcon icon={faThLarge} className="header-icon" /> Productos/Servicios
             </h2>
-
-            
-            <div className="search-bar">
-                <input
-                    type="text"
-                    placeholder="Ingresa aquí el producto o servicio"
-                    className="search-input"
-                    value={searchQuery}
-                    onChange={handleSearch}
-                />
-                <FontAwesomeIcon icon={faSearch} className="search-icon" />
-            </div>
-
-            
             <ul className="productos-list">
-                {searchQuery && filteredProductos.length > 0 ? (
+                {filteredProductos.length > 0 ? (
                     filteredProductos.map((producto) => (
                         <li key={producto.id} className="producto-item">
                             <span className="producto-nombre">{producto.nombre}</span>
@@ -75,9 +48,9 @@ const ProductosServicios: React.FC<{ searchQuery: string }> = ({ searchQuery }) 
                             </div>
                         </li>
                     ))
-                ) : searchQuery ? (
+                ) : (
                     <li className="no-results">Producto o servicio no se encuentra.</li>
-                ) : null}
+                )}
             </ul>
         </div>
     );

@@ -18,9 +18,13 @@
 .filters-container {
     display: flex;
     align-items: center;
+    justify-content: center; /* Center the search bar */
     margin-bottom: 20px;
 }
 
+.borradores-bar {
+    width: 50%; /* Make the search bar wider */
+}
 
 .search-input {
     border: 1px solid #ccc;
