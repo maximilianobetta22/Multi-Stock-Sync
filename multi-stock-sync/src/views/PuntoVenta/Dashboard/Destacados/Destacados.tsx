@@ -1,21 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faDollarSign, faPlusCircle, faShoppingCart, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faDollarSign, faPlusCircle, faCheckCircle, faStar } from '@fortawesome/free-solid-svg-icons';
 import './Destacados.css';
 
 const Destacados: React.FC = () => {
-    const productos = [
+    const [productos] = useState<string[]>([
         'Ejemplo Producto 1 Variante 1 Lt',
-        'Ejemplo Producto 1 Variante 2 Lt',
         'Ejemplo Producto 2 Variante L',
         'Ejemplo Producto 2 M',
         'Ejemplo Producto 2 Variante S',
         'Ejemplo Producto 3 Variante 1 Lt',
-        'Peluche Fumo fumos'
-    ];
+        'Ejemplo Producto 4 Variante XL',
+        'Ejemplo Producto 5 Variante M',
+        'Ejemplo Producto 6 Variante S',
+        'Ejemplo Producto 7 Variante L',
+        'Ejemplo Producto 8 Variante 1 Lt',
+    ]);
 
     return (
-        <div className="destacados-container">
+        <>
             <h2 className="destacados-header">
                 <FontAwesomeIcon icon={faStar} className="header-icon" /> Destacados y más Vendidos
             </h2>
@@ -26,12 +29,13 @@ const Destacados: React.FC = () => {
                         <div className="producto-actions">
                             <FontAwesomeIcon icon={faDollarSign} className="producto-icon" />
                             <FontAwesomeIcon icon={faPlusCircle} className="producto-icon" />
-                            <FontAwesomeIcon icon={faShoppingCart} className="producto-icon" />
+                            <FontAwesomeIcon icon={faCheckCircle} className="producto-icon" />
                         </div>
                     </li>
                 ))}
+
             </ul>
-        </div>
+        </>
     );
 };
 
