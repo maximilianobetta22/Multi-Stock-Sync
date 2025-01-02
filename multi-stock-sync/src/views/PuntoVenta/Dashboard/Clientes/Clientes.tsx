@@ -2,11 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser, faSearch, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import './Clientes.css';
+import ClientesModal from './Modal/ClientesModal';
 
 const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<React.SetStateAction<string>> }> = ({ searchQuery, setSearchQuery }) => {
     const [isNewClient, setIsNewClient] = useState(false); // Change to search or form
     const [filteredClientes, setFilteredClientes] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<any>(null); // New state for selected client
+    const [showModal, setShowModal] = useState(false);
 
     const clientes = [
         { id: 1, nombre: 'Marcos Reyes' },
@@ -41,6 +43,15 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
     const handleEditClick = (cliente: any) => {
         setSelectedClient(cliente);
         setIsNewClient(true);
+    };
+
+    const handleNewClientClick = () => {
+        setSelectedClient(null);
+        setShowModal(true);
+    };
+
+    const handleCloseModal = () => {
+        setShowModal(false);
     };
 
     return (
@@ -122,12 +133,13 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
                     </ul>
                     <button
                         className="nuevo-cliente-button"
-                        onClick={() => setIsNewClient(true)}
+                        onClick={handleNewClientClick}
                     >
                         NUEVO <FontAwesomeIcon icon={faCheckCircle} />
                     </button>
                 </>
             )}
+            <ClientesModal show={showModal} handleClose={handleCloseModal} selectedClient={selectedClient} />
         </div>
     );
 };
