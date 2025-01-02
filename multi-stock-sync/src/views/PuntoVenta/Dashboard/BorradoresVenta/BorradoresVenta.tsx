@@ -25,7 +25,7 @@ const BorradoresVenta: React.FC = () => {
 
             
             <div className="filtrador-container">
-                <div className="date-picker-container">
+                <div>
                     <DatePicker
                         selected={selectedDate}
                         onChange={handleDateChange}
@@ -39,7 +39,6 @@ const BorradoresVenta: React.FC = () => {
                 </div>
             </div>
 
-            
             <ul className="borradores-list">
                 {borradores.map((borrador) => (
                     <li key={borrador.id} className="borrador-item">
