@@ -106,17 +106,16 @@ const Navbar: React.FC = () => {
                                             {user.nombre.charAt(0)}
                                         </div>
                                         <div className={`user-dropdown-menu ${userDropdownOpen ? 'show' : ''}`}>
-                                            <div className="user-dropdown-item user-info-item">{user.nombre}_{user.id}</div>
-                                            <Link className="user-dropdown-item" to="#">{user.nombre_negocio}</Link>
+                                            <div className="user-dropdown-item user-info-item">{user.nombre}</div>
                                             <Link className="user-dropdown-item" to="#">Cambiar de Empresa</Link>
                                             <Link className="user-dropdown-item" to="#">Cambiar Contraseña</Link>
                                             <Link className="user-dropdown-item" to="#">Mi Cuenta</Link>
                                             <Link className="user-dropdown-item" to="#">Mis Sistemas</Link>
-                                            <Link className="user-dropdown-item" to="#">Salir</Link>
+                                            <Link className="user-dropdown-item text-danger" to="#">Salir</Link>
                                         </div>
                                     </div>
                                     <div>
-                                        <span className="user-name">{user.nombre}</span>
+                                        <span className="user-name">{user.nombre} {user.apellidos}</span>
                                         <br />
                                         <span className="business-name">{user.nombre_negocio}</span>
                                     </div>
