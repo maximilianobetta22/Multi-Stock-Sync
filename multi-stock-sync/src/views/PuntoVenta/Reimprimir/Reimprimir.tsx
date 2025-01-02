@@ -17,58 +17,74 @@ const Reimprimir: React.FC = () => {
     ];
 
     const filteredDocuments = documentos.filter((doc) => {
-        const isMatchingDate =
-            selectedDate && doc.fecha === selectedDate.toLocaleDateString('en-GB'); // use en-GB to get dd/mm/yyyy format
-        const isMatchingSearch = doc.titulo.toLowerCase().includes(searchText.toLowerCase());
+        const isMatchingDate = selectedDate ? doc.fecha === selectedDate.toLocaleDateString('en-GB') : true;
+        const isMatchingSearch =
+            doc.titulo.toLowerCase().includes(searchText.toLowerCase()) ||
+            doc.monto.toLowerCase().includes(searchText.toLowerCase()) ||
+            doc.fecha.toLowerCase().includes(searchText.toLowerCase()) ||
+            doc.usuario.toLowerCase().includes(searchText.toLowerCase());
         return isMatchingDate && isMatchingSearch;
     });
+
+    const clearFilters = () => {
+        setSelectedDate(new Date());
+        setSearchText('');
+    };
 
     return (
         <>
             <PuntoVentaNavbar />
-            <div className="reimprimir-container">
-                <div className="main-section">
-                    {/* Add cart items later */}
-                </div>
-                <div className="sidebar">
-                    <h2 className="sidebar-title">
-                        <FontAwesomeIcon icon={faFileAlt} className="icon" /> Documentos Disponibles
-                    </h2>
-                    <div className="sidebar-filters">
-                        <div className="date-picker-container">
-                            <DatePicker
-                                selected={selectedDate}
-                                onChange={(date) => setSelectedDate(date)}
-                                dateFormat="dd/MM/yyyy"
-                                className="date-picker-input"
-                            />
-                        </div>
-                        <input
-                            type="text"
-                            placeholder="Buscar"
-                            value={searchText}
-                            onChange={(e) => setSearchText(e.target.value)}
-                            className="search-input"
-                        />
+            <div className="d-flex flex-grow-1">
+                <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
+                    <div>
+                        <h1>Contenido Izquierdo</h1>
+                        <p>Aquí va el contenido principal del lado izquierdo.</p>
                     </div>
-                    <div className="documentos-resultados">
-                        {filteredDocuments.length > 0 ? (
-                            filteredDocuments.map((doc) => (
-                                <div key={doc.id} className="documento-item">
-                                    <div className="documento-info">
-                                        <h4>{doc.titulo}</h4>
-                                        <p>
-                                            {doc.monto} / {doc.fecha} / {doc.usuario}
-                                        </p>
+                </div>
+                <div className="w-50 custom-gray p-3 d-flex align-items-center justify-content-center">
+                    <div>
+                        <h2>
+                            <FontAwesomeIcon icon={faFileAlt} className="icon" /> Documentos Disponibles
+                        </h2>
+                        <div>
+                            <div className="date-picker-container">
+                                <DatePicker
+                                    selected={selectedDate}
+                                    onChange={(date) => setSelectedDate(date)}
+                                    dateFormat="dd/MM/yyyy"
+                                    className="date-picker-input"
+                                />
+                            </div>
+                            <input
+                                type="text"
+                                placeholder="Buscar"
+                                value={searchText}
+                                onChange={(e) => setSearchText(e.target.value)}
+                                className="search-input"
+                            />
+                            <button onClick={clearFilters} className="clear-btn btn btn-primary">
+                                Limpiar
+                            </button>
+                        </div>
+                        <div className="documentos-resultados">
+                            {filteredDocuments.length > 0 ? (
+                                filteredDocuments.map((doc) => (
+                                    <div key={doc.id} className="documento-item">
+                                        <div className="documento-info">
+                                            <h4>{doc.titulo}</h4>
+                                            <p>
+                                                {doc.monto} / {doc.fecha} / {doc.usuario}
+                                            </p>
+                                        </div>
+                                        <button className="reimprimir-btn" style={{ marginLeft: '20px' }}>
+                                            <FontAwesomeIcon icon={faFileAlt} />
+                                        </button>
                                     </div>
-                                    <button className="reimprimir-btn" style={{ marginLeft: '20px' }}>
-                                        <FontAwesomeIcon icon={faFileAlt} />
-                                    </button>
-                                </div>
-                            ))
-                        ) : (
-                            <p className="no-records">Sin Registros</p>
-                        )}
+                                ))
+                            ) : (
+                                <p className="no-records">Sin Registros</p>
+                            )}
+                        </div>
                     </div>
                 </div>
             </div>

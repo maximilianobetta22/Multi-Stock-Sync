@@ -1,99 +1,108 @@
-.reimprimir-container {
-    display: flex;
-    height: calc(100vh - 70px);
-    overflow: hidden;
-}
-
-.main-section {
-    padding: 20px;
-}
-
-.sidebar-title {
-    font-size: 18px;
-    font-weight: bold;
-    color: #333;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 20px;
-}
-
 .icon {
-    color: #00bfff;
-    font-size: 20px;
+    color: #007bff;
+
 }
 
-.sidebar-filters {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    margin-bottom: 20px;
-}
 
 .date-picker-container {
-    position: relative;
+    margin-bottom: 15px;
 }
 
 .date-picker-input {
+    width: 100%;
+    max-width: 300px;
     padding: 10px;
+    font-size: 14px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 14px;
-    width: 100%;
 }
 
 .search-input {
+    width: 100%;
+    max-width: 300px;
     padding: 10px;
+    font-size: 14px;
+    margin-bottom: 20px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 14px;
-    width: 100%;
 }
 
-.documentos-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+.clear-btn {
+    margin-left: 10px;
+}
+
+.documentos-resultados {
+    margin-top: 20px;
+    max-height: 400px;
+    overflow-y: auto;
 }
 
 .documento-item {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 10px 0;
+    justify-content: space-between;
+    padding: 10px;
     border-bottom: 1px solid #ddd;
+    background-color: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin-bottom: 10px;
 }
 
 .documento-info h4 {
-    margin: 0;
     font-size: 16px;
     font-weight: bold;
     color: #333;
+    margin: 0;
 }
 
 .documento-info p {
-    margin: 5px 0 0;
     font-size: 14px;
-    color: #777;
+    color: #666;
+    margin: 5px 0 0 0;
 }
 
+/* Botón de reimprimir */
 .reimprimir-btn {
-    background-color: #00bfff;
-    color: white;
+    padding: 8px 12px;
+    font-size: 14px;
+    color: #fff;
+    background-color: #007bff;
     border: none;
-    padding: 10px 15px;
     border-radius: 4px;
     cursor: pointer;
-    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
 }
 
 .reimprimir-btn:hover {
-    background-color: #007bff;
+    background-color: #0056b3;
 }
 
+/* Sin registros */
 .no-records {
-    color: #999;
-    font-style: italic;
+    font-size: 14px;
+    color: #666;
     text-align: center;
     margin-top: 20px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .w-50 {
+        flex: 1 1 100%;
+        padding: 15px;
+    }
+
+    .documento-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .reimprimir-btn {
+        margin-top: 10px;
+        width: 100%;
+    }
 }
