@@ -41,13 +41,13 @@ const PuntoVentaDashboard = () => {
             case 'productos':
                 return <ProductosServicios searchQuery={productSearchQuery} />;
             case 'clientes':
-                return <Clientes searchQuery={clientSearchQuery} />;
+                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />;
             case 'documentos':
                 return <BorradoresVenta />; 
             case 'stock':
                 return <ProductosServicios searchQuery={productSearchQuery} />; // Assuming 'stock' should render 'ProductosServicios'
             case 'cliente':
-                return <Clientes searchQuery={clientSearchQuery} />; // Assuming 'cliente' should render 'Clientes'
+                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />; // Assuming 'cliente' should render 'Clientes'
             default:
                 return <p>Seleccione una opción</p>;
         }
