@@ -1,5 +1,5 @@
 .punto-venta-navbar {
-    border-bottom: 4px solid #FF7F00; 
+    border-bottom: 4px solid #FF7F00;
 }
 
 .navbar-logo {
@@ -45,4 +45,9 @@
     padding: 0;
     cursor: pointer;
     outline: none;
+}
+
+.main-content-with-navbar {
+    padding-top: 2rem;
+    margin-bottom: 30px;
 }
