@@ -1,8 +1,8 @@
 import React from 'react';
 import Navbar from '../../../components/Navbar/Navbar';
-import './DocumentosDashboard.css';
+import './Documentos.css';
 
-const DocumentosDashboard: React.FC = () => {
+const Documentos: React.FC = () => {
     return (
         <>
             <Navbar />
@@ -13,4 +13,4 @@ const DocumentosDashboard: React.FC = () => {
     );
 };
 
-export default DocumentosDashboard;
+export default Documentos;

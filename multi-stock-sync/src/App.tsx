@@ -9,7 +9,7 @@ import MovimientosEfectivo from './views/PuntoVenta/MovimientosEfectivo/Movimien
 
 import Devolucion from './views/PuntoVenta/Devolucion/Devolucion';
 
-import DocumentosDashboard from './views/Documentos/Dashboard/DocumentosDashboard';
+import Documentos from './views/Admin/Documentos/Documentos';
 
 import ProductosServicios from './views/Admin/ProductosServicios/ProductosServicios';
 
@@ -28,7 +28,7 @@ function App() {
       <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
       <Route path="/punto-venta/devolucion" element={<Devolucion />} />
       <Route path="/punto-venta/movimientos-efectivo" element={<MovimientosEfectivo />} />
-      <Route path="/documentos" element={<DocumentosDashboard />} />
+      <Route path="/admin/documentos" element={<Documentos />} />
       <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
     </Routes>
   </Router>
