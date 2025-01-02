@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route } from 'react-router-dom';
+
 import InitialPage from './views/InitialPage';
 import PuntoVentaDashboard from './views/PuntoVenta/Dashboard/PuntoVentaDashboard';
 import Despacho from './views/PuntoVenta/Despacho/Despacho';
@@ -12,19 +13,17 @@ import Login from './views/Login/Login';
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/login" element={<Login />} />
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<InitialPage />} />
+      <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
+      <Route path="/punto-venta/despacho" element={<Despacho />} />
+      <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
+      <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
+      <Route path="/documentos" element={<DocumentosDashboard />} />
+    </Routes>
+  </Router>
 
-        <Route path="/" element={<InitialPage />} />
-        <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
-        <Route path="/punto-venta/despacho" element={<Despacho />} />
-        <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
-        <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
-
-        <Route path="/documentos" element={<DocumentosDashboard />} />
-
-      </Routes>
-    </Router>
   );
 }
 

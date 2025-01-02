@@ -9,6 +9,7 @@ import {
     faTimesCircle,
     faQuestionCircle
 } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 
 const PuntoVentaNavbar: React.FC = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -45,59 +46,59 @@ const PuntoVentaNavbar: React.FC = () => {
                             aria-labelledby="dropdownMenuButton"
                         >
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/reimprimir">
+                                <Link className="dropdown-item" to="/punto-venta/reimprimir">
                                     {currentLocation === '/punto-venta/reimprimir' ? 'Reimprimir (Actual)' : 'Reimprimir'} <FontAwesomeIcon icon={faPrint} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta">
+                                <Link className="dropdown-item" to="/punto-venta">
                                     {currentLocation === '/punto-venta/punto-venta' ? 'Ventas (Actual)' : 'Ventas'} <FontAwesomeIcon icon={faCheckCircle} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/despacho">
+                                <Link className="dropdown-item" to="/punto-venta/despacho">
                                     {currentLocation === '/punto-venta/despacho' ? 'Despacho (Actual)' : 'Despacho'} <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/devolucion">
+                                <Link className="dropdown-item" to="/punto-venta/devolucion">
                                     Devolución <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/abono-cliente">
+                                <Link className="dropdown-item" to="/punto-venta/abono-cliente">
                                 {currentLocation === '/punto-venta/abono-cliente' ? 'Abono Cliente (Actual)' : 'Abono de cliente'} <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/movimientos-efectivo">
+                                <Link className="dropdown-item" to="/punto-venta/movimientos-efectivo">
                                     Movimientos de efectivo <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/cierre-caja">
+                                <Link className="dropdown-item" to="/punto-venta/cierre-caja">
                                     Cierre de caja <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/recepcion-stock">
+                                <Link className="dropdown-item" to="/punto-venta/recepcion-stock">
                                     Recepción de stock <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/maestros">
+                                <Link className="dropdown-item" to="/punto-venta/maestros">
                                     Maestros <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item" href="/punto-venta/reportes">
+                                <Link className="dropdown-item" to="/punto-venta/reportes">
                                     Reportes <FontAwesomeIcon icon={faArrowRight} />
-                                </a>
+                                </Link>
                             </li>
                             <li>
-                                <a className="dropdown-item text-danger" href="/">
+                                <Link className="dropdown-item text-danger" to="/">
                                     Cerrar punto de venta <FontAwesomeIcon icon={faTimesCircle} />
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
