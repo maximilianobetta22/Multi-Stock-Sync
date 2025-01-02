@@ -69,7 +69,7 @@ const PuntoVentaDashboard = () => {
                                 setSelectedOption('productos');
                             }}
                         />
-                        <button className="search-button">
+                        <button className="invisible-button">
                             <div className="icon-circle-cyan">
                                 <FontAwesomeIcon icon={faSearch} />
                             </div>

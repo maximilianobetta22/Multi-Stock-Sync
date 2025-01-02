@@ -38,3 +38,11 @@
     justify-content: space-between;
     align-items: center;
 }
+
+.invisible-button {
+    border: none;
+    background: none;
+    padding: 0;
+    cursor: pointer;
+    outline: none;
+}
