@@ -30,6 +30,13 @@ html, body {
     align-items: center;
 }
 
+.w-100 {
+    flex: 1; /* Takes up all available space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 /* Custom gray background */
 .custom-gray {
     background-color: #ededed;
