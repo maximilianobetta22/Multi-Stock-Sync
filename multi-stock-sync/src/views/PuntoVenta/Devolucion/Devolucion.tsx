@@ -6,7 +6,7 @@ const Devolucion: React.FC = () => {
     return (
         <>
             <PuntoVentaNavbar />
-            <div className="d-flex flex-column min-vh-100">
+            <div className="d-flex flex-column min-vh-100 main-content-with-navbar">
                 <div className="d-flex flex-grow-1">
                     
                     <div className="w-55 bg-light p-3">
@@ -22,6 +22,7 @@ const Devolucion: React.FC = () => {
                 </div>
 
             </div>
+
         </>
     );
 };

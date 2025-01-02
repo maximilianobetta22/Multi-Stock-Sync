@@ -118,9 +118,6 @@ const PuntoVentaNavbar: React.FC = () => {
                     </div>
                 </div>
             </nav>
-            <div className="main-content-with-navbar">
-                {/* Main content goes here */}
-            </div>
         </>
     );
 };

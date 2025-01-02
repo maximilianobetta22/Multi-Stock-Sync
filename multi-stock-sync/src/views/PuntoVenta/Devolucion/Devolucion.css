@@ -1,11 +1,28 @@
 .w-55 {
     flex: 0 0 55%;
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .w-45 {
     flex: 0 0 45%;
+    overflow-y: auto; 
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 .custom-gray {
     background-color: #e4e4e4;
+}
+
+
+.w-55 > * {
+    margin-top: 20px; 
+}
+
+.w-45 > * {
+    margin-top: 20px; 
 }

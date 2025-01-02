@@ -50,4 +50,5 @@
 .main-content-with-navbar {
     padding-top: 2rem;
     margin-bottom: 30px;
+    /* margin-top: 56px; */ /* Eliminar esta línea */
 }
