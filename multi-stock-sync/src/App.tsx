@@ -8,6 +8,8 @@ import AbonoCliente from './views/PuntoVenta/AbonoCliente/AbonoCliente';
 
 import DocumentosDashboard from './views/Documentos/Dashboard/DocumentosDashboard';
 
+import ProductosServicios from './views/Admin/ProductosServicios/ProductosServicios';
+
 import Login from './views/Login/Login';
 
 function App() {
@@ -21,6 +23,7 @@ function App() {
       <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
       <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
       <Route path="/documentos" element={<DocumentosDashboard />} />
+      <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
     </Routes>
   </Router>
 
