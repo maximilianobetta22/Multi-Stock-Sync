@@ -18,7 +18,7 @@ import AdminReportes from './views/Admin/Reportes/Reportes';
 import Stock from './views/Admin/Stock/Stock';
 
 
-import Login from './views/Login/Login';
+import Login from './views/Auth/Login/Login';
 
 function App() {
   return (

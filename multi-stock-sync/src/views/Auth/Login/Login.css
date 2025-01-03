@@ -1,14 +1,5 @@
-body, html {
-    height: 100%;
-    margin: 0;
-}
-
-.login-container {
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #c94414;
+.orange-bg{
+    background-color: #FF5C1A;
 }
 
 .login-box {
