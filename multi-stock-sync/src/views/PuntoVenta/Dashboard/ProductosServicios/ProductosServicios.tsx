@@ -31,14 +31,14 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
     }, [searchQuery]);
 
     return (
-        <div className="productos-container">
-            <ul className="productos-list">
+        <>
+        <ul className="productos-list">
                 {filteredProductos.map((producto) => (
                     <li key={producto.id} className="producto-item">
                         <span>{producto.nombre}</span>
                         <span>${producto.precio.toLocaleString()}</span>
                         <button
-                            className="btn-add-to-cart"
+                            className="btn btn-primary"
                             onClick={() => onAddToCart(producto)}
                         >
                             <FontAwesomeIcon icon={faPlusCircle} /> Agregar
@@ -46,7 +46,7 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
                     </li>
                 ))}
             </ul>
-        </div>
+        </>
     );
 };
 
