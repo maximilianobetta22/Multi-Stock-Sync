@@ -3,9 +3,34 @@ import './Reportes.css';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 
 const Reportes: React.FC = () => {
+
+    const miniNavbarLinks = [
+        { name: 'Link 1', url: '#' },
+        { name: 'Link 2', url: '#' },
+        { name: 'Link 3', url: '#' }
+    ];
+    const miniNavbarDropdowns = [
+        {
+            name: 'Dropdown 1',
+            options: [
+                { name: 'PuntoVenta', url: '#' },
+                { name: 'Opción 2', url: '#' },
+                { name: 'Opción 3', url: '#' },
+                { name: 'Opción 4', url: '#' },
+                
+            ]
+        },
+        {
+            name: 'Dropdown 2',
+            options: [
+                { name: 'Opción 3', url: '#' }
+            ]
+        }
+    ];
+
     return (
         <>
-            <AdminNavbar />
+            <AdminNavbar links={miniNavbarLinks} dropdowns={miniNavbarDropdowns} />
             <div className="d-flex flex-grow-1 main-container">
                 <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div>
