@@ -15,6 +15,13 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
         { id: 2, nombre: 'Producto B', cantidad: 5, precio: 2000 },
         { id: 3, nombre: 'Producto C', cantidad: 7, precio: 1500 },
         { id: 4, nombre: 'Producto D', cantidad: 2, precio: 500 },
+        { id: 5, nombre: 'Producto E', cantidad: 3, precio: 3000 },
+        { id: 6, nombre: 'Producto F', cantidad: 8, precio: 800 },
+        { id: 7, nombre: 'Producto G', cantidad: 1, precio: 700 },
+        { id: 8, nombre: 'Producto H', cantidad: 4, precio: 400 },
+        { id: 9, nombre: 'Producto I', cantidad: 6, precio: 600 },
+        { id: 10, nombre: 'Producto J', cantidad: 9, precio: 900 },
+        { id: 11, nombre: 'Producto K', cantidad: 11, precio: 1100 },
     ];
 
     const [filteredProductos, setFilteredProductos] = useState(productos);
@@ -49,7 +56,10 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
         <h2 className="destacados-header">
             <FontAwesomeIcon icon={faBoxes} className="header-icon" /> Productos/Servicios
         </h2>
-        <ul className="productos-list">
+        {filteredProductos.length === 0 ? (
+            <p>No se encontraron productos.</p>
+        ) : (
+            <ul className="productos-list">
                 {filteredProductos.map((producto) => (
                     <li key={producto.id} className="producto-item">
                         <span>{producto.nombre}</span>
@@ -77,12 +87,13 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
                     </li>
                 ))}
             </ul>
-            <Modal show={showPriceModal} onClose={() => setShowPriceModal(false)} title="Consultar Precio">
-                <p>Precio del producto: ${selectedProduct?.precio.toLocaleString()}</p>
-            </Modal>
-            <Modal show={showStockModal} onClose={() => setShowStockModal(false)} title="Consultar Stock">
-                <p>Stock del producto: {selectedProduct?.cantidad}</p>
-            </Modal>
+        )}
+        <Modal show={showPriceModal} onClose={() => setShowPriceModal(false)} title="Consultar Precio">
+            <p>Precio del producto: ${selectedProduct?.precio.toLocaleString()}</p>
+        </Modal>
+        <Modal show={showStockModal} onClose={() => setShowStockModal(false)} title="Consultar Stock">
+            <p>Stock del producto: {selectedProduct?.cantidad}</p>
+        </Modal>
         </>
     );
 };
