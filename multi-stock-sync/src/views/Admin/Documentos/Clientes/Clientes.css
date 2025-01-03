@@ -43,6 +43,7 @@
     margin: 0;
     height: calc(100% - 80px); /* Adjusted height to fit within the container */
     overflow-y: auto;
+    width: 60vh;
 }
 
 .clientes-list-item {
