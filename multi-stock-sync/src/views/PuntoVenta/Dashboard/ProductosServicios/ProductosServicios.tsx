@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
+import { faBoxes } from '@fortawesome/free-solid-svg-icons';
 import './ProductosServicios.css';
 
 interface ProductosServiciosProps {
@@ -32,6 +33,9 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
 
     return (
         <>
+        <h2 className="destacados-header">
+            <FontAwesomeIcon icon={faBoxes} className="header-icon" /> Productos/Servicios
+        </h2>
         <ul className="productos-list">
                 {filteredProductos.map((producto) => (
                     <li key={producto.id} className="producto-item">
