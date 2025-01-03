@@ -28,7 +28,7 @@ function InitialPage() {
 
             {/* Documentos */}
             <div className="col-md-4">
-              <Link to="/documentos">
+              <Link to="/admin/documentos">
                 <FontAwesomeIcon icon={faFileInvoiceDollar} className="fa-4x text-warning" />
                 <h3 className="mt-3 text-muted">DOCUMENTOS</h3>
               </Link>
