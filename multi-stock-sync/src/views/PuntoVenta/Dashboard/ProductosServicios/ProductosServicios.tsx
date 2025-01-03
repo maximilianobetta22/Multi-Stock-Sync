@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlusCircle } from '@fortawesome/free-solid-svg-icons';
-import { faBoxes } from '@fortawesome/free-solid-svg-icons';
+import { faPlusCircle, faDollarSign, faBoxes } from '@fortawesome/free-solid-svg-icons';
+import Modal from '../../../../components/Modal/Modal';
 import './ProductosServicios.css';
 
 interface ProductosServiciosProps {
@@ -18,6 +18,9 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
     ];
 
     const [filteredProductos, setFilteredProductos] = useState(productos);
+    const [showPriceModal, setShowPriceModal] = useState(false);
+    const [showStockModal, setShowStockModal] = useState(false);
+    const [selectedProduct, setSelectedProduct] = useState<{ id: number; nombre: string; cantidad: number; precio: number } | null>(null);
 
     useEffect(() => {
         if (searchQuery) {
@@ -31,6 +34,16 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
         }
     }, [searchQuery]);
 
+    const handleShowPriceModal = (product: { id: number; nombre: string; cantidad: number; precio: number }) => {
+        setSelectedProduct(product);
+        setShowPriceModal(true);
+    };
+
+    const handleShowStockModal = (product: { id: number; nombre: string; cantidad: number; precio: number }) => {
+        setSelectedProduct(product);
+        setShowStockModal(true);
+    };
+
     return (
         <>
         <h2 className="destacados-header">
@@ -41,15 +54,35 @@ const ProductosServicios: React.FC<ProductosServiciosProps> = ({ searchQuery, on
                     <li key={producto.id} className="producto-item">
                         <span>{producto.nombre}</span>
                         <span>${producto.precio.toLocaleString()}</span>
-                        <button
-                            className="btn btn-primary"
-                            onClick={() => onAddToCart(producto)}
-                        >
-                            <FontAwesomeIcon icon={faPlusCircle} /> Agregar
-                        </button>
+                        <div className="producto-actions">
+                            <button
+                                className="btn btn-info"
+                                onClick={() => handleShowPriceModal(producto)}
+                            >
+                                <FontAwesomeIcon icon={faDollarSign} />
+                            </button>
+                            <button
+                                className="btn btn-primary"
+                                onClick={() => onAddToCart(producto)}
+                            >
+                                <FontAwesomeIcon icon={faPlusCircle} />
+                            </button>
+                            <button
+                                className="btn btn-warning"
+                                onClick={() => handleShowStockModal(producto)}
+                            >
+                                <FontAwesomeIcon icon={faBoxes} />
+                            </button>
+                        </div>
                     </li>
                 ))}
             </ul>
+            <Modal show={showPriceModal} onClose={() => setShowPriceModal(false)} title="Consultar Precio">
+                <p>Precio del producto: ${selectedProduct?.precio.toLocaleString()}</p>
+            </Modal>
+            <Modal show={showStockModal} onClose={() => setShowStockModal(false)} title="Consultar Stock">
+                <p>Stock del producto: {selectedProduct?.cantidad}</p>
+            </Modal>
         </>
     );
 };
