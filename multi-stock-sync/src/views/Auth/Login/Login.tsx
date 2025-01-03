@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import './Login.css';
 
 const Login: React.FC = () => {
@@ -53,7 +54,7 @@ const Login: React.FC = () => {
                                     </div>
                                     {error && <div className="alert alert-danger">{error}</div>}
                                     <button type="submit" className="btn btn-primary w-100">Iniciar Sesión</button>
-                                    <a href="#" className="d-block text-decoration-none text-success">Registrarse</a>
+                                    <Link to="/register" className="d-block text-decoration-none text-success">Registrarse</Link>
                                     <a href="#" className="d-block text-decoration-none text-danger">¿Olvidaste tu contraseña?</a>
                                     <div className="help-box bg-light p-3 border">
                                         ¿Tienes dudas? <br />
@@ -63,7 +64,7 @@ const Login: React.FC = () => {
                             </div>
                         </div>
                 </div>
-                <div className="w-50 orange-bg p-3 d-flex align-items-center justify-content-center">
+                <div className="w-50 bg-orange p-3 d-flex align-items-center justify-content-center">
 
                 </div>
             </div>

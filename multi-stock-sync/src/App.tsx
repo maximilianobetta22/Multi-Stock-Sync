@@ -19,12 +19,14 @@ import Stock from './views/Admin/Stock/Stock';
 
 
 import Login from './views/Auth/Login/Login';
+import Register from './views/Auth/Register/Register';
 
 function App() {
   return (
     <Router>
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/" element={<InitialPage />} />
       <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
       <Route path="/punto-venta/despacho" element={<Despacho />} />
