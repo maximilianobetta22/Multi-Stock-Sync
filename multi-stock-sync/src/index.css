@@ -47,3 +47,18 @@ h1, p {
     margin: 0;
     text-align: center;
 }
+
+/* 70-30 */
+.w-70 {
+    flex: 7; /* Takes up 70% of the space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.w-30 {
+    flex: 3; /* Takes up 30% of the space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
