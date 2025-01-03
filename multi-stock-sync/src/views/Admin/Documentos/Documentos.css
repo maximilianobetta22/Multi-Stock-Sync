@@ -1,0 +1,233 @@
+.documentos-main-container {
+    overflow: auto;
+    padding: 20px;
+}
+
+.documentos-search-container {
+    padding: 10px 0;
+    border-bottom: 1px solid #ccc;
+}
+
+.documentos-search-input {
+    flex-grow: 1;
+    width: 60vh; /* Changed from flex-grow to width */
+    padding: 10px;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+}
+
+.documentos-search-button {
+    padding: 10px 15px;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: #fff;
+    border: 1px solid #007bff;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+}
+
+.documentos-search-button:hover {
+    background-color: #0056b3;
+}
+
+.documentos-glosa-button {
+    font-size: 0.9rem;
+    color: #007bff;
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+}
+
+.documentos-glosa-button:hover {
+    color: #0056b3;
+    text-decoration: none;
+}
+
+/* Tabla */
+.documentos-table-container {
+    flex-grow: 1;
+    width: 100%;
+}
+
+.documentos-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+}
+
+.documentos-table-container th, .documentos-table-container td {
+    border: 1px solid #ddd;
+    text-align: center;
+    padding: 10px;
+    font-size: 0.95rem;
+}
+
+.documentos-table-container th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+
+.documentos-table-container .btn-danger {
+    font-size: 0.8rem;
+    padding: 4px 8px;
+}
+
+/* Footer */
+.documentos-footer-container {
+    padding: 10px 0;
+    border-top: 1px solid #ccc;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.documentos-footer-container .documentos-client-search {
+    display: flex;
+    align-items: center;
+    margin-right: 20px; /* Added margin */
+}
+
+.documentos-footer-container .documentos-client-search-input {
+    padding: 8px;
+    font-size: 0.9rem;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+}
+
+.documentos-footer-container .documentos-client-search-button {
+    padding: 8px 12px;
+    font-size: 0.9rem;
+    background-color: #007bff;
+    color: #fff;
+    border: 1px solid #007bff;
+    border-radius: 0 4px 4px 0;
+    cursor: pointer;
+}
+
+.documentos-footer-container .documentos-client-search-button:hover {
+    background-color: #0056b3;
+}
+
+.documentos-footer-container span {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-right: 20px; /* Added margin */
+}
+
+.documentos-footer-container .documentos-select {
+    padding: 8px;
+    font-size: 0.9rem;
+    border-radius: 4px;
+    margin-right: 20px; /* Added margin */
+}
+
+.documentos-footer-container .documentos-confirm-button {
+    padding: 10px 20px;
+    font-size: 1rem;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+}
+
+.documentos-footer-container .documentos-confirm-button:hover {
+    background-color: #0056b3;
+}
+
+/* ...existing code... */
+
+.custom-gray {
+    background-color: #f1f1f1;
+}
+
+.clientes-buttons-container {
+    display: flex;
+    justify-content: space-between; /* Adjusted to horizontal layout */
+    margin-bottom: 20px;
+}
+
+.clientes-buttons-container .btn {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.clientes-buttons-container .btn-primary {
+    background-color: #007bff;
+    border: none;
+    margin-right: 10px; /* Added margin between buttons */
+}
+
+.clientes-buttons-container .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.clientes-buttons-container .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.clientes-buttons-container .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.clientes-list-container {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h2 {
+    margin-top: 0;
+}
+
+.modal-content input,
+.modal-content textarea {
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.modal-content button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.modal-content button:first-of-type {
+    background-color: #007bff;
+    color: white;
+}
+
+.modal-content button:last-of-type {
+    background-color: #ccc;
+}
