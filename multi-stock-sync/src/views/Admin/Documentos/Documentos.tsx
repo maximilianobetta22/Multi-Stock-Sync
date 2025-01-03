@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 import './Documentos.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faSearch, faTimes, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
 import ClientesList from './Clientes/ClientesList';
 import ProductosServiciosList from './Productos/ProductosServiciosList';
 
@@ -72,28 +72,55 @@ const Documentos: React.FC = () => {
 
     const handleAddProductToCart = (product: Producto) => {
         setCart((prevCart) => {
-            const existingProductIndex = prevCart.findIndex((item) => item.name === product.name);
+            // Make a copy of the cart to avoid mutations
+            const updatedCart = [...prevCart];
+            
+            // Check if the product already exists
+            const existingProductIndex = updatedCart.findIndex((item) => item.name === product.name);
+    
             if (existingProductIndex !== -1) {
-                const updatedCart = [...prevCart];
-                updatedCart[existingProductIndex].quantity += 1; // Incrementar la cantidad en 1
-                return updatedCart;
+                // If the product exists, update only the quantity
+                updatedCart[existingProductIndex] = {
+                    ...updatedCart[existingProductIndex],
+                    quantity: updatedCart[existingProductIndex].quantity + 1,
+                };
             } else {
-                return [...prevCart, { ...product, quantity: 1 }]; // Añadir el producto con cantidad 1
+                // If it doesn't exist, add it with initial quantity 1
+                updatedCart.push({ ...product, quantity: 1 });
             }
-        }); 
+    
+            return updatedCart; // Return the updated cart
+        });
     };
+    
 
     const handleRemoveProductFromCart = (index: number) => {
         setCart((prevCart) => {
-            const updatedCart = [...prevCart];
+            const updatedCart = [...prevCart]; // Create a copy of the cart
+            
             if (updatedCart[index].quantity > 1) {
-                updatedCart[index].quantity -= 1; // Decrementar la cantidad en 1
+                // If the quantity is greater than 1, just reduce it
+                updatedCart[index] = {
+                    ...updatedCart[index],
+                    quantity: updatedCart[index].quantity - 1,
+                };
             } else {
-                updatedCart.splice(index, 1); // Eliminar el producto del carrito
+                // If the quantity is 1, remove the product
+                updatedCart.splice(index, 1);
             }
-            return updatedCart;
+    
+            return updatedCart; // Return the updated cart
         });
     };
+    
+
+    const handleRemoveAllOfProduct = (productName: string) => {
+
+        // Deletes all products of a list
+
+        setCart((prevCart) => prevCart.filter((product) => product.name !== productName));
+    };
+    
 
     const handleAssignClient = (client: string) => {
         setClientName(client);
@@ -159,10 +186,28 @@ const Documentos: React.FC = () => {
                                         <td>0%</td>
                                         <td>${(product.price * product.quantity).toFixed(2)}</td>
                                         <td>
-                                            <button className="btn btn-sm btn-danger" onClick={() => handleRemoveProductFromCart(index)}>
+                                            <button
+                                                className="invisible-button me-2"
+                                                onClick={() => handleAddProductToCart(product)}
+                                            >
+                                                <FontAwesomeIcon icon={faPlus} />
+                                            </button>
+
+                                            <button
+                                                className="invisible-button me-2"
+                                                onClick={() => handleRemoveProductFromCart(index)}
+                                            >
+                                                <FontAwesomeIcon icon={faMinus} />
+                                            </button>
+
+                                            <button
+                                                className="invisible-button"
+                                                onClick={() => handleRemoveAllOfProduct(product.name)}
+                                            >
                                                 <FontAwesomeIcon icon={faTimes} />
                                             </button>
                                         </td>
+
                                     </tr>
                                 ))}
                             </tbody>
