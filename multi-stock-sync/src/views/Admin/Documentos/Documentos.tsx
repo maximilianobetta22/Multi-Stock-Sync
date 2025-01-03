@@ -6,6 +6,68 @@ import { faSearch, faTimes, faPlus, faMinus } from '@fortawesome/free-solid-svg-
 import ClientesList from './Clientes/ClientesList';
 import ProductosServiciosList from './Productos/ProductosServiciosList';
 
+interface Producto {
+    name: string;
+    price: number;
+    quantity: number;
+}
+
+const GlosaModal: React.FC<{ onClose: () => void, onSave: (glosa: Producto) => void }> = ({ onClose, onSave }) => {
+    const [name, setName] = useState('');
+    const [description, setDescription] = useState('');
+    const [price, setPrice] = useState(0);
+
+    const handleSave = () => {
+        onSave({ name, price, quantity: 1 });
+        onClose();
+    };
+
+    const formatCLP = (amount: number) => {
+        return `$${amount.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    };
+
+    return (
+        <div className="modal-overlay">
+            <div className="modal-content p-4">
+                <h2 className="mb-4">Nueva Glosa</h2>
+                <div className="mb-3">
+                    <label htmlFor="glosa-name" className="form-label">Nombre</label>
+                    <input
+                        type="text"
+                        id="glosa-name"
+                        className="form-control"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="glosa-description" className="form-label">Descripción</label>
+                    <textarea
+                        id="glosa-description"
+                        className="form-control"
+                        value={description}
+                        onChange={(e) => setDescription(e.target.value)}
+                    />
+                </div>
+                <div className="mb-3">
+                    <label htmlFor="glosa-price" className="form-label">Precio</label>
+                    <input
+                        type="text"
+                        id="glosa-price"
+                        className="form-control"
+                        value={formatCLP(price)}
+                        onChange={(e) => setPrice(Number(e.target.value.replace(/\D/g, '')))}
+                    />
+                </div>
+                <div className="d-flex justify-content-end">
+                    <button className="btn btn-primary me-2" onClick={handleSave}>Guardar</button>
+                    <button className="btn btn-secondary" onClick={onClose}>Cancelar</button>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 const Documentos: React.FC = () => {
     const miniNavbarLinks = [
         { name: 'Buscar/Enviar', url: '#' },
@@ -53,6 +115,7 @@ const Documentos: React.FC = () => {
     const [activeComponent, setActiveComponent] = useState('clientes');
     const [clientName, setClientName] = useState('');
     const [cart, setCart] = useState<Producto[]>([]);
+    const [isGlosaModalOpen, setIsGlosaModalOpen] = useState(false);
 
     const handleSearchChangeClientes = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQueryClientes(event.target.value);
@@ -146,10 +209,22 @@ const Documentos: React.FC = () => {
         }
     };
 
+    const handleOpenGlosaModal = () => {
+        setIsGlosaModalOpen(true);
+    };
+
+    const handleCloseGlosaModal = () => {
+        setIsGlosaModalOpen(false);
+    };
+
+    const handleSaveGlosa = (glosa: Producto) => {
+        handleAddProductToCart(glosa);
+    };
+
     return (
         <>
-        
-        <AdminNavbar links={miniNavbarLinks} dropdowns={miniNavbarDropdowns} />
+            {isGlosaModalOpen && <GlosaModal onClose={handleCloseGlosaModal} onSave={handleSaveGlosa} />}
+            <AdminNavbar links={miniNavbarLinks} dropdowns={miniNavbarDropdowns} />
             <div className="d-flex flex-grow-1 main-container">
 
                 <div className="w-60 bg-light p-3 documentos-main-container d-flex flex-column">
@@ -167,7 +242,7 @@ const Documentos: React.FC = () => {
                                 <FontAwesomeIcon icon={faSearch} />
                             </button>
                         </div>
-                        <button className="btn documentos-glosa-button ms-3">+ Nueva Glosa</button>
+                        <button className="btn documentos-glosa-button ms-3" onClick={handleOpenGlosaModal}>+ Nueva Glosa</button>
                     </div>
                     <div className="documentos-table-container flex-grow-1">
                         <table>
