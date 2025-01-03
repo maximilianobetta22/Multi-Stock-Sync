@@ -2,7 +2,7 @@ import React from 'react';
 import './Reportes.css';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 
-const Reportes: React.FC = () => {
+const AdminReportes: React.FC = () => {
 
     const miniNavbarLinks = [
         { name: 'Link 1', url: '#' },
@@ -49,4 +49,4 @@ const Reportes: React.FC = () => {
     );
 };
 
-export default Reportes;
+export default AdminReportes;
