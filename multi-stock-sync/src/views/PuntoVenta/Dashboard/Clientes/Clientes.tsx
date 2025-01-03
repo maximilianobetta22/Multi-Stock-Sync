@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faSearch, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons';
 import './Clientes.css';
 import ClientesModal from './Modal/ClientesModal';
 
@@ -55,7 +55,7 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
     };
 
     return (
-        <div className={`clientes-container ${isNewClient ? 'nuevo-cliente-form' : ''}`}>
+        <div className={` ${isNewClient ? 'nuevo-cliente-form' : ''}`}>
             {isNewClient ? (
                 // Nuevo cliente form
                 <div className="nuevo-cliente-form">
@@ -103,19 +103,10 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
             ) : (
                 // Cliente finder
                 <>
-                    <h2 className="clientes-header">
+                    <h2 className="destacados-header">
                         <FontAwesomeIcon icon={faUser} className="header-icon" /> Clientes
                     </h2>
-                    <div className="search-bar">
-                        <input
-                            type="text"
-                            placeholder="Buscar cliente"
-                            className="search-input"
-                            value={searchQuery}
-                            onChange={handleSearch}
-                        />
-                        <FontAwesomeIcon icon={faSearch} className="search-icon" />
-                    </div>
+                    <div className="search-bar"><input type="text" placeholder="Buscar cliente" className="bar-search-input" value={searchQuery} onChange={handleSearch} /></div>
                     <ul className="clientes-list">
                         {searchQuery && filteredClientes.length > 0 ? (
                             filteredClientes.map((cliente) => (
