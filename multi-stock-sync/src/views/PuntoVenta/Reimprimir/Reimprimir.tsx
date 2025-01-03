@@ -35,13 +35,13 @@ const Reimprimir: React.FC = () => {
         <>
             <PuntoVentaNavbar />
             <div className="d-flex flex-grow-1">
-                <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
+                <div className="w-70 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div>
                         <h1>Contenido Izquierdo</h1>
                         <p>Aquí va el contenido principal del lado izquierdo.</p>
                     </div>
                 </div>
-                <div className="w-50 custom-gray p-3 d-flex align-items-center justify-content-center">
+                <div className="w-30 custom-gray p-3 d-flex align-items-center justify-content-center">
                     <div>
                         <h2>
                             <FontAwesomeIcon icon={faFileAlt} className="icon" /> Documentos Disponibles
