@@ -6,11 +6,11 @@ import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { Link } from 'react-router-dom';
 
 interface MiniNavbarProps {
-    links: { name: string, url: string }[];
-    dropdowns: { name: string, options: { name: string, url: string }[] }[];
+    links?: { name: string, url: string }[];
+    dropdowns?: { name: string, options: { name: string, url: string }[] }[];
 }
 
-const AdminNavbar: React.FC<MiniNavbarProps> = ({ links, dropdowns }) => {
+const AdminNavbar: React.FC<MiniNavbarProps> = ({ links = [], dropdowns = [] }) => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [userDropdownOpen, setUserDropdownOpen] = useState(false);
     const [miniDropdownOpen, setMiniDropdownOpen] = useState<{ [key: number]: boolean }>({});
@@ -74,7 +74,7 @@ const AdminNavbar: React.FC<MiniNavbarProps> = ({ links, dropdowns }) => {
                                     <FontAwesomeIcon icon={faCog} />
                                 </button>
                                 <div className={`settings-dropdown-menu ${dropdownOpen ? 'show' : ''}`}>
-                                    <Link className="settings-dropdown-item" to="#">Productos y Servicios</Link>
+                                    <Link className="settings-dropdown-item" to="/admin/productos-servicios">Productos y Servicios</Link>
                                     <Link className="settings-dropdown-item" to="#">Lista de Precios</Link>
                                     <Link className="settings-dropdown-item" to="#">Clientes</Link>
                                     <Link className="settings-dropdown-item" to="#">Sucursales</Link>
