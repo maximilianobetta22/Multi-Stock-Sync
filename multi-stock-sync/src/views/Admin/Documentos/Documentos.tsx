@@ -18,6 +18,10 @@ const GlosaModal: React.FC<{ onClose: () => void, onSave: (glosa: Producto) => v
     const [price, setPrice] = useState(0);
 
     const handleSave = () => {
+        if (name.trim() === '' || description.trim() === '') {
+            alert('Por favor, complete todos los campos correctamente.');
+            return;
+        }
         onSave({ name, price, quantity: 1 });
         onClose();
     };
@@ -38,6 +42,7 @@ const GlosaModal: React.FC<{ onClose: () => void, onSave: (glosa: Producto) => v
                         className="form-control"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
+                        required
                     />
                 </div>
                 <div className="mb-3">
@@ -47,6 +52,7 @@ const GlosaModal: React.FC<{ onClose: () => void, onSave: (glosa: Producto) => v
                         className="form-control"
                         value={description}
                         onChange={(e) => setDescription(e.target.value)}
+                        required
                     />
                 </div>
                 <div className="mb-3">
@@ -57,6 +63,7 @@ const GlosaModal: React.FC<{ onClose: () => void, onSave: (glosa: Producto) => v
                         className="form-control"
                         value={formatCLP(price)}
                         onChange={(e) => setPrice(Number(e.target.value.replace(/\D/g, '')))}
+                        required
                     />
                 </div>
                 <div className="d-flex justify-content-end">
