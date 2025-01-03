@@ -1,11 +1,8 @@
-// PuntoVentaDashboard.tsx
-
 import React, { useState } from 'react';
 import './PuntoVentaDashboard.css';
 import PuntoVentaNavbar from '../../../components/PuntoVentaNavbar/PuntoVentaNavbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faStar, faFileAlt, faBoxes, faUser, faPlus, faMinus, faTrash } from '@fortawesome/free-solid-svg-icons';
-
 import BorradoresVenta from './BorradoresVenta/BorradoresVenta';
 import Clientes from './Clientes/Clientes';
 import Destacados from './Destacados/Destacados';
@@ -62,8 +59,8 @@ const PuntoVentaDashboard = () => {
 
     const renderCartTable = () => {
         return (
-            <div className="cart-container">
-                <table className="cart-table">
+            <div className="documentos-table-container flex-grow-1">
+                <table className="">
                     <thead>
                         <tr>
                             <th>Producto</th>
@@ -82,19 +79,19 @@ const PuntoVentaDashboard = () => {
                                 <td>${(item.precio * item.cantidad).toLocaleString()}</td>
                                 <td>
                                     <button
-                                        className="btn-action"
+                                        className="invisible-button me-2"
                                         onClick={() => handleAddToCart(item)}
                                     >
                                         <FontAwesomeIcon icon={faPlus} />
                                     </button>
                                     <button
-                                        className="btn-action"
+                                        className="invisible-button me-2"
                                         onClick={() => handleRemoveFromCart(item.id)}
                                     >
                                         <FontAwesomeIcon icon={faMinus} />
                                     </button>
                                     <button
-                                        className="btn-action"
+                                        className="invisible-button me-2"
                                         onClick={() => handleRemoveAllFromCart(item.id)}
                                     >
                                         <FontAwesomeIcon icon={faTrash} />
@@ -104,9 +101,6 @@ const PuntoVentaDashboard = () => {
                         ))}
                     </tbody>
                 </table>
-                <div className="cart-total">
-                    <strong>Total: ${calculateTotal().toLocaleString()}</strong>
-                </div>
             </div>
         );
     };
@@ -159,11 +153,11 @@ const PuntoVentaDashboard = () => {
             <PuntoVentaNavbar />
             <div className="d-flex flex-column main-container">
                 <div className="d-flex flex-grow-1">
-                    <div className="w-50 bg-light p-3">
-                        <div>{renderSearchBar()}</div>
+                    <div className="w-60 bg-light p-5 d-flex flex-column">
                         {renderCartTable()}
+                        <div>{renderSearchBar()}</div>
                     </div>
-                    <div className="w-50 custom-gray p-3">
+                    <div className="w-40 custom-gray p-3">
                         <div>{renderResults()}</div>
                     </div>
                 </div>
