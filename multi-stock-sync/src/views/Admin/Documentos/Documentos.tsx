@@ -76,7 +76,7 @@ const Documentos: React.FC = () => {
         <AdminNavbar links={miniNavbarLinks} dropdowns={miniNavbarDropdowns} />
             <div className="d-flex flex-grow-1 main-container">
 
-                <div className="w-70 bg-light p-3 documentos-main-container d-flex flex-column">
+                <div className="w-60 bg-light p-3 documentos-main-container d-flex flex-column">
                     <div className="documentos-search-container mb-4 d-flex justify-content-start align-items-center">
                         <div className="d-flex w-100">
                             <input
@@ -148,7 +148,7 @@ const Documentos: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="w-30 custom-gray p-3 d-flex flex-column justify-content-between">
+                <div className="w-40 custom-gray p-3 d-flex flex-column justify-content-between">
                     <div className="clientes-buttons-container d-flex justify-content-between">
                         <button className={`btn btn-${activeComponent === 'clientes' ? 'primary' : 'secondary'} me-2`} onClick={() => setActiveComponent('clientes')}>Clientes</button>
                         <button className={`btn btn-${activeComponent === 'productos' ? 'primary' : 'secondary'}`} onClick={() => setActiveComponent('productos')}>Productos</button>

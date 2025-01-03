@@ -62,3 +62,18 @@ h1, p {
     justify-content: center;
     align-items: center;
 }
+
+/* 60-40 */
+.w-60 {
+    flex: 6; /* Takes up 60% of the space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.w-40 {
+    flex: 4; /* Takes up 40% of the space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
