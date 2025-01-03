@@ -3,7 +3,7 @@ import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 import './Documentos.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
-import ClientesList from './Clientes/Clientes';
+import ClientesList from './Clientes/ClientesList';
 import ProductosServiciosList from './Productos/ProductosServiciosList';
 
 const Documentos: React.FC = () => {
@@ -51,6 +51,8 @@ const Documentos: React.FC = () => {
     const [searchQueryClientes, setSearchQueryClientes] = useState('');
     const [searchQueryProductos, setSearchQueryProductos] = useState('');
     const [activeComponent, setActiveComponent] = useState('clientes');
+    const [clientName, setClientName] = useState('');
+    const [cart, setCart] = useState<Producto[]>([]);
 
     const handleSearchChangeClientes = (event: React.ChangeEvent<HTMLInputElement>) => {
         setSearchQueryClientes(event.target.value);
@@ -62,11 +64,54 @@ const Documentos: React.FC = () => {
         setActiveComponent('productos');
     };
 
+    interface Producto {
+        name: string;
+        price: number;
+        quantity: number;
+    }
+
+    const handleAddProductToCart = (product: Producto) => {
+        setCart((prevCart) => {
+            const existingProductIndex = prevCart.findIndex((item) => item.name === product.name);
+            if (existingProductIndex !== -1) {
+                const updatedCart = [...prevCart];
+                updatedCart[existingProductIndex].quantity += 1; // Incrementar la cantidad en 1
+                return updatedCart;
+            } else {
+                return [...prevCart, { ...product, quantity: 1 }]; // Añadir el producto con cantidad 1
+            }
+        }); 
+    };
+
+    const handleRemoveProductFromCart = (index: number) => {
+        setCart((prevCart) => {
+            const updatedCart = [...prevCart];
+            if (updatedCart[index].quantity > 1) {
+                updatedCart[index].quantity -= 1; // Decrementar la cantidad en 1
+            } else {
+                updatedCart.splice(index, 1); // Eliminar el producto del carrito
+            }
+            return updatedCart;
+        });
+    };
+
+    const handleAssignClient = (client: string) => {
+        setClientName(client);
+    };
+
+    const handleRemoveClient = () => {
+        setClientName('');
+    };
+
+    const calculateTotal = () => {
+        return cart.reduce((total, product) => total + product.price * product.quantity, 0);
+    };
+
     const renderActiveComponent = () => {
         if (activeComponent === 'clientes') {
-            return <ClientesList searchQuery={searchQueryClientes} handleSearchChange={handleSearchChangeClientes} />;
+            return <ClientesList searchQuery={searchQueryClientes} handleSearchChange={handleSearchChangeClientes} handleAssignClient={handleAssignClient} />;
         } else if (activeComponent === 'productos') {
-            return <ProductosServiciosList searchQuery={searchQueryProductos} handleSearchChange={handleSearchChangeProductos} />;
+            return <ProductosServiciosList searchQuery={searchQueryProductos} handleSearchChange={handleSearchChangeProductos} handleAddProductToCart={handleAddProductToCart} />;
         }
     };
 
@@ -97,7 +142,7 @@ const Documentos: React.FC = () => {
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Cantidad </th>
+                                    <th>Cantidad</th>
                                     <th>Detalle</th>
                                     <th>$ / unidad</th>
                                     <th>% desc.</th>
@@ -106,43 +151,50 @@ const Documentos: React.FC = () => {
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td><strong>2</strong>, Peluche Fumo fumos</td>
-                                    <td>Descripción del producto</td>
-                                    <td>$1.200,00</td>
-                                    <td>0%</td>
-                                    <td>$2.400,00</td>
-                                    <td>
-                                        <button className="btn btn-sm btn-danger">
-                                            <FontAwesomeIcon icon={faTimes} />
-                                        </button>
-                                    </td>
-                                </tr>
+                                {cart.map((product, index) => (
+                                    <tr key={index}>
+                                        <td><strong>{product.quantity}</strong></td>
+                                        <td>{product.name}</td>
+                                        <td>${product.price.toFixed(2)}</td>
+                                        <td>0%</td>
+                                        <td>${(product.price * product.quantity).toFixed(2)}</td>
+                                        <td>
+                                            <button className="btn btn-sm btn-danger" onClick={() => handleRemoveProductFromCart(index)}>
+                                                <FontAwesomeIcon icon={faTimes} />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
                             </tbody>
                         </table>
                     </div>
                     <div className="documentos-footer-container mt-4 d-flex justify-content-between align-items-center">
-                        <div className="documentos-client-search">
-                            <input
-                                type="text"
-                                placeholder="Buscar cliente"
-                                aria-label="Buscar cliente"
-                                className="documentos-client-search-input me-2"
-                                value={searchQueryClientes}
-                                onChange={handleSearchChangeClientes}
-                            />
-                            <button type="button" className="documentos-client-search-button">
-                                <FontAwesomeIcon icon={faSearch} />
-                            </button>
+                        <div className="d-flex flex-column">
+                            <span className="documentos-client-name">{clientName}</span>
+                            {clientName && (
+                                <button className="btn btn-danger btn-sm" onClick={handleRemoveClient}>Quitar Cliente</button>
+                            )}
+                            <div className="documentos-client-search">
+                                <input
+                                    type="text"
+                                    placeholder="Buscar cliente"
+                                    aria-label="Buscar cliente"
+                                    className="documentos-client-search-input me-2"
+                                    value={searchQueryClientes}
+                                    onChange={handleSearchChangeClientes}
+                                />
+                                <button type="button" className="documentos-client-search-button">
+                                    <FontAwesomeIcon icon={faSearch} />
+                                </button>
+                            </div>
                         </div>
-
-                        <span>Nr. Líneas: 5 / Tot. Ítems: 6</span>
+                        <span>Nr. Líneas: {cart.length} / Tot. Ítems: {cart.reduce((total, product) => total + product.quantity, 0)}</span>
                         <div className="d-flex align-items-center">
                             <select className="form-select documentos-select me-3">
                                 <option>Boleta Manual</option>
                                 <option>Factura</option>
                             </select>
-                            <span>Total: $91.510</span>
+                            <span>Total: ${calculateTotal().toFixed(2)}</span>
                         </div>
                         <button className="btn btn-primary documentos-confirm-button">Confirmar</button>
                     </div>

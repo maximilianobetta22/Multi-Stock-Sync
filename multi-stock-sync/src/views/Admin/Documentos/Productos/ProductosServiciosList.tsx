@@ -6,19 +6,20 @@ import './ProductosServiciosList.css';
 interface ProductosServiciosListProps {
     searchQuery: string;
     handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleAddProductToCart: (product: { name: string, price: number, quantity: number }) => void;
 }
 
-const ProductosServiciosList: React.FC<ProductosServiciosListProps> = ({ searchQuery, handleSearchChange }) => {
+const ProductosServiciosList: React.FC<ProductosServiciosListProps> = ({ searchQuery, handleSearchChange, handleAddProductToCart }) => {
     const [productos] = useState([
-        'Producto 1',
-        'Producto 2',
-        'Producto 3',
-        'Producto 4',
-        'Producto 5'
+        { name: 'Producto 1', price: 1200, quantity: 1 },
+        { name: 'Producto 2', price: 1500, quantity: 1 },
+        { name: 'Producto 3', price: 800, quantity: 1 },
+        { name: 'Producto 4', price: 2000, quantity: 1 },
+        { name: 'Producto 5', price: 500, quantity: 1 }
     ]);
 
     const filteredProductos = productos.filter(producto =>
-        producto.toLowerCase().includes(searchQuery.toLowerCase())
+        producto.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
     return (
@@ -39,7 +40,10 @@ const ProductosServiciosList: React.FC<ProductosServiciosListProps> = ({ searchQ
             </div>
             <ul className="productos-list">
                 {filteredProductos.map((producto, index) => (
-                    <li key={index} className="productos-list-item">{producto}</li>
+                    <li key={index} className="productos-list-item">
+                        {producto.name} - ${producto.price.toFixed(2)}
+                        <button className="btn btn-primary ms-2" onClick={() => handleAddProductToCart(producto)}>Agregar</button>
+                    </li>
                 ))}
             </ul>
         </div>

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch } from '@fortawesome/free-solid-svg-icons';
-import './Clientes.css';
+import './ClientesList.css';
 
 interface ClientesListProps {
     searchQuery: string;
     handleSearchChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    handleAssignClient: (client: string) => void;
 }
 
-const ClientesList: React.FC<ClientesListProps> = ({ searchQuery, handleSearchChange }) => {
+const ClientesList: React.FC<ClientesListProps> = ({ searchQuery, handleSearchChange, handleAssignClient }) => {
     const [clientes] = useState([
         'Cliente 1',
         'Cliente 2',
@@ -39,7 +40,10 @@ const ClientesList: React.FC<ClientesListProps> = ({ searchQuery, handleSearchCh
             </div>
             <ul className="clientes-list">
                 {filteredClientes.map((cliente, index) => (
-                    <li key={index} className="clientes-list-item">{cliente}</li>
+                    <li key={index} className="clientes-list-item">
+                        {cliente}
+                        <button className="btn btn-primary ms-2" onClick={() => handleAssignClient(cliente)}>Asignar</button>
+                    </li>
                 ))}
             </ul>
         </div>

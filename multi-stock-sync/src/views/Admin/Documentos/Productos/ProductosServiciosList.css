@@ -42,7 +42,8 @@
     padding: 0;
     margin: 0;
     height: calc(100% - 80px);
-    overflow-y: auto;
+    overflow-y: auto; /* Added for infinite scroll */
+    max-height: 400px; /* Set a max height */
 }
 
 .productos-list-item {
