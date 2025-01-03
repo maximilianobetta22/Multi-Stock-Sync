@@ -20,9 +20,17 @@ const ProductosServicios: React.FC = () => {
         (filter === 'todos' || product.type === filter)
     );
 
+    const miniNavbarLinks = [
+        { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
+        { name: 'Marcas', url: '/admin/marcas' },
+        { name: 'Config. Masiva', url: '/admin/config-masiva' },
+        { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
+    ];
+    
+
     return (
         <>
-        <AdminNavbar />
+        <AdminNavbar links={miniNavbarLinks} />
         <div className="container mt-4">
             <h1 className="mb-3">Productos y Servicios</h1>
             

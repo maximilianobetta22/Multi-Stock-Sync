@@ -240,7 +240,9 @@ const Documentos: React.FC = () => {
                         <div className="d-flex align-items-center">
                             <select className="form-select documentos-select me-3">
                                 <option>Boleta Manual</option>
+                                <option>Cotización</option>
                                 <option>Factura</option>
+                                <option>Nota Venta</option>
                             </select>
                             <span>Total: {formatCLP(calculateTotal())}</span>
                         </div>
