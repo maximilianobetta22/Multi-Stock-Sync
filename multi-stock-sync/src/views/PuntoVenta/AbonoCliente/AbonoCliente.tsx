@@ -42,10 +42,9 @@ const AbonoCliente: React.FC = () => {
         <>
             <PuntoVentaNavbar />
             <div className="d-flex flex-grow-1 main-container">
-                
-                <div className="w-70 bg-light p-4 d-flex flex-column">
-                    {/* Fixed top part */}
-                    <div className="form-section mb-3">
+                <div className="w-70 bg-light p-4 d-flex flex-row" style={{ gap: '20px' }}>
+                    {/* Formulario de abonos */}
+                    <div className="form-section" style={{ flex: '1', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
                         <h2 className="text-center mb-4">Cliente</h2>
                         <div className="d-flex mb-3">
                             <input
@@ -101,9 +100,9 @@ const AbonoCliente: React.FC = () => {
                             <FontAwesomeIcon icon={faPlusCircle} /> Agregar Abono
                         </button>
                     </div>
-                    {/* Bottom part with infinite scroll */}
-                    <div className="abonos-list flex-grow-1 overflow-auto">
-                        <h5>Lista de Abonos</h5>
+                    {/* Tabla de abonos */}
+                    <div className="abonos-list" style={{ flex: '1', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                        <h5 className="text-center">Lista de Abonos</h5>
                         {abonos.length > 0 ? (
                             <table className="table table-striped">
                                 <thead>
@@ -122,7 +121,7 @@ const AbonoCliente: React.FC = () => {
                                             <td>{formatCLP(abono.monto)}</td>
                                             <td>
                                                 <button
-                                                    className="btn btn-sm btn-danger"
+                                                    className="btn btn-sm btn-outline-danger"
                                                     onClick={() => handleEliminarAbono(index)}
                                                 >
                                                     Eliminar
@@ -133,7 +132,9 @@ const AbonoCliente: React.FC = () => {
                                 </tbody>
                             </table>
                         ) : (
-                            <p className="text-muted">No hay abonos registrados</p>
+                            <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+                                <p className="text-muted">No hay abonos registrados</p>
+                            </div>
                         )}
                     </div>
                 </div>
