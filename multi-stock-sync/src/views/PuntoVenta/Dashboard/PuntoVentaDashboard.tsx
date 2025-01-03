@@ -107,12 +107,12 @@ const PuntoVentaDashboard = () => {
 
     const renderSearchBar = () => {
         return (
-            <div className="search-bar">
+            <div className="">
                 <img src="/assets/img/cod_barras.png" alt="Código de barras" style={{ marginRight: '10px' }} />
                 <input
                     type="text"
-                    className="search-input"
-                    placeholder="Ingresa aquí el producto o servicio"
+                    className="bar-search-input mx-3"
+                    placeholder="Ingresa aquí el producto o servicioxd"
                     onChange={(e) => {
                         setProductSearchQuery(e.target.value);
                         setSelectedOption('productos');
@@ -123,6 +123,7 @@ const PuntoVentaDashboard = () => {
                         <FontAwesomeIcon icon={faSearch} />
                     </div>
                 </button>
+                
             </div>
         );
     };

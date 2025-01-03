@@ -5,6 +5,14 @@
     border-radius: 4px;
 }
 
+.bar-search-input{
+    width: 70vh;
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
 .search-button {
     margin-left: 10px;
     padding: 10px;
