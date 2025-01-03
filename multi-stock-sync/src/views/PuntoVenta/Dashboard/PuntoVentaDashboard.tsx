@@ -44,7 +44,7 @@ const PuntoVentaDashboard = () => {
         setCart((prevCart) =>
             prevCart
                 .map((item) =>
-                    item.id === productId && item.cantidad > 1
+                    item.id === productId
                         ? { ...item, cantidad: item.cantidad - 1 }
                         : item
                 )
