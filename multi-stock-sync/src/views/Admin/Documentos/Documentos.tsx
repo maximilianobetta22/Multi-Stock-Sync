@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState } from 'react';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 import './AdminDocumentos.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import ClientesList from './Clientes/Clientes';
 
 const Documentos: React.FC = () => {
     const miniNavbarLinks = [
@@ -45,6 +46,12 @@ const Documentos: React.FC = () => {
             ]
         }
     ];
+
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQuery(event.target.value);
+    };
 
     return (
         <>
@@ -102,6 +109,8 @@ const Documentos: React.FC = () => {
                                 placeholder="Buscar cliente"
                                 aria-label="Buscar cliente"
                                 className="documentos-client-search-input me-2"
+                                value={searchQuery}
+                                onChange={handleSearchChange}
                             />
                             <button type="button" className="documentos-client-search-button">
                                 <FontAwesomeIcon icon={faSearch} />
@@ -119,11 +128,14 @@ const Documentos: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="w-30 custom-gray p-3 d-flex align-items-center justify-content-center">
-                        <div>
-                            <h1>Contenido Derecho</h1>
-                            <p>Aquí va el contenido principal del lado derecho.</p>
-                        </div>
+                <div className="w-30 custom-gray p-3 d-flex flex-column justify-content-between">
+                    <div className="clientes-buttons-container d-flex justify-content-between">
+                        <button className="btn btn-primary me-2">Botón 1</button>
+                        <button className="btn btn-secondary">Botón 2</button>
+                    </div>
+                    <div className="clientes-list-container">
+                        <ClientesList searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
+                    </div>
                 </div>
             </div>
         

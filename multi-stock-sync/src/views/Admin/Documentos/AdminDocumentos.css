@@ -137,3 +137,45 @@
 .documentos-footer-container .documentos-confirm-button:hover {
     background-color: #0056b3;
 }
+
+/* ...existing code... */
+
+.custom-gray {
+    background-color: #f1f1f1;
+}
+
+.clientes-buttons-container {
+    display: flex;
+    justify-content: space-between; /* Adjusted to horizontal layout */
+    margin-bottom: 20px;
+}
+
+.clientes-buttons-container .btn {
+    flex-grow: 1;
+    padding: 10px;
+    font-size: 1rem;
+}
+
+.clientes-buttons-container .btn-primary {
+    background-color: #007bff;
+    border: none;
+    margin-right: 10px; /* Added margin between buttons */
+}
+
+.clientes-buttons-container .btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.clientes-buttons-container .btn-secondary {
+    background-color: #6c757d;
+    border: none;
+}
+
+.clientes-buttons-container .btn-secondary:hover {
+    background-color: #5a6268;
+}
+
+.clientes-list-container {
+    flex-grow: 1;
+    overflow-y: auto;
+}
