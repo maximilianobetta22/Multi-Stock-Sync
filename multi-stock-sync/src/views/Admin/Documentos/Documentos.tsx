@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
-import './AdminDocumentos.css';
+import './Documentos.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 import ClientesList from './Clientes/Clientes';
+import ProductosServiciosList from './Productos/ProductosServiciosList';
 
 const Documentos: React.FC = () => {
     const miniNavbarLinks = [
@@ -47,10 +48,26 @@ const Documentos: React.FC = () => {
         }
     ];
 
-    const [searchQuery, setSearchQuery] = useState('');
+    const [searchQueryClientes, setSearchQueryClientes] = useState('');
+    const [searchQueryProductos, setSearchQueryProductos] = useState('');
+    const [activeComponent, setActiveComponent] = useState('clientes');
 
-    const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setSearchQuery(event.target.value);
+    const handleSearchChangeClientes = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQueryClientes(event.target.value);
+        setActiveComponent('clientes');
+    };
+
+    const handleSearchChangeProductos = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setSearchQueryProductos(event.target.value);
+        setActiveComponent('productos');
+    };
+
+    const renderActiveComponent = () => {
+        if (activeComponent === 'clientes') {
+            return <ClientesList searchQuery={searchQueryClientes} handleSearchChange={handleSearchChangeClientes} />;
+        } else if (activeComponent === 'productos') {
+            return <ProductosServiciosList searchQuery={searchQueryProductos} handleSearchChange={handleSearchChangeProductos} />;
+        }
     };
 
     return (
@@ -64,9 +81,11 @@ const Documentos: React.FC = () => {
                         <div className="d-flex w-100">
                             <input
                                 type="text"
-                                placeholder="Ingresa aquí el producto o servicio"
-                                aria-label="Producto o servicio"
+                                placeholder="Buscar producto"
+                                aria-label="Buscar producto"
                                 className="documentos-search-input me-2"
+                                value={searchQueryProductos}
+                                onChange={handleSearchChangeProductos}
                             />
                             <button type="button" className="documentos-search-button">
                                 <FontAwesomeIcon icon={faSearch} />
@@ -109,13 +128,14 @@ const Documentos: React.FC = () => {
                                 placeholder="Buscar cliente"
                                 aria-label="Buscar cliente"
                                 className="documentos-client-search-input me-2"
-                                value={searchQuery}
-                                onChange={handleSearchChange}
+                                value={searchQueryClientes}
+                                onChange={handleSearchChangeClientes}
                             />
                             <button type="button" className="documentos-client-search-button">
                                 <FontAwesomeIcon icon={faSearch} />
                             </button>
                         </div>
+
                         <span>Nr. Líneas: 5 / Tot. Ítems: 6</span>
                         <div className="d-flex align-items-center">
                             <select className="form-select documentos-select me-3">
@@ -130,11 +150,11 @@ const Documentos: React.FC = () => {
 
                 <div className="w-30 custom-gray p-3 d-flex flex-column justify-content-between">
                     <div className="clientes-buttons-container d-flex justify-content-between">
-                        <button className="btn btn-primary me-2">Botón 1</button>
-                        <button className="btn btn-secondary">Botón 2</button>
+                        <button className={`btn btn-${activeComponent === 'clientes' ? 'primary' : 'secondary'} me-2`} onClick={() => setActiveComponent('clientes')}>Clientes</button>
+                        <button className={`btn btn-${activeComponent === 'productos' ? 'primary' : 'secondary'}`} onClick={() => setActiveComponent('productos')}>Productos</button>
                     </div>
                     <div className="clientes-list-container">
-                        <ClientesList searchQuery={searchQuery} handleSearchChange={handleSearchChange} />
+                        {renderActiveComponent()}
                     </div>
                 </div>
             </div>
