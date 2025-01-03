@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faTrash, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import './BorradoresVenta.css';
 
 const BorradoresVenta: React.FC = () => {
