@@ -215,10 +215,9 @@ const Documentos: React.FC = () => {
                     </div>
                     <div className="documentos-footer-container mt-4 d-flex justify-content-between align-items-center">
                         <div className="d-flex flex-column">
-                            <span className="documentos-client-name">{clientName}</span>
-                            {clientName && (
-                                <button className="btn btn-danger btn-sm" onClick={handleRemoveClient}>Quitar Cliente</button>
-                            )}
+                            <span className="documentos-client-name">{clientName}
+                                {clientName && (<button className="btn btn-danger btn-sm mx-2 mb-1" onClick={handleRemoveClient}>Quitar Cliente</button>)}
+                            </span>
                             <div className="documentos-client-search">
                                 <input
                                     type="text"

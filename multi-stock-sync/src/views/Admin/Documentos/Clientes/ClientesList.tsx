@@ -11,11 +11,11 @@ interface ClientesListProps {
 
 const ClientesList: React.FC<ClientesListProps> = ({ searchQuery, handleSearchChange, handleAssignClient }) => {
     const [clientes] = useState([
-        'Cliente 1',
-        'Cliente 2',
-        'Cliente 3',
-        'Cliente 4',
-        'Cliente 5'
+        'Juan Pérez',
+        'María García',
+        'Carlos López',
+        'Ana Martínez',
+        'Luis Rodríguez'
     ]);
 
     const filteredClientes = clientes.filter(cliente =>
