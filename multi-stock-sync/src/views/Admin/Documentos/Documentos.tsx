@@ -134,6 +134,10 @@ const Documentos: React.FC = () => {
         return cart.reduce((total, product) => total + product.price * product.quantity, 0);
     };
 
+    const formatCLP = (amount: number) => {
+        return `$${amount.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    };
+
     const renderActiveComponent = () => {
         if (activeComponent === 'clientes') {
             return <ClientesList searchQuery={searchQueryClientes} handleSearchChange={handleSearchChangeClientes} handleAssignClient={handleAssignClient} />;
@@ -182,9 +186,9 @@ const Documentos: React.FC = () => {
                                     <tr key={index}>
                                         <td><strong>{product.quantity}</strong></td>
                                         <td>{product.name}</td>
-                                        <td>${product.price.toFixed(2)}</td>
+                                        <td>{formatCLP(product.price)}</td>
                                         <td>0%</td>
-                                        <td>${(product.price * product.quantity).toFixed(2)}</td>
+                                        <td>{formatCLP(product.price * product.quantity)}</td>
                                         <td>
                                             <button
                                                 className="invisible-button me-2"
@@ -238,7 +242,7 @@ const Documentos: React.FC = () => {
                                 <option>Boleta Manual</option>
                                 <option>Factura</option>
                             </select>
-                            <span>Total: ${calculateTotal().toFixed(2)}</span>
+                            <span>Total: {formatCLP(calculateTotal())}</span>
                         </div>
                         <button className="btn btn-primary documentos-confirm-button">Confirmar</button>
                     </div>

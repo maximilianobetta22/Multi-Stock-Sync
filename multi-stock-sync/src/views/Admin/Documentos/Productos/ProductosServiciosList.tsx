@@ -22,6 +22,10 @@ const ProductosServiciosList: React.FC<ProductosServiciosListProps> = ({ searchQ
         producto.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
 
+    const formatCLP = (amount: number) => {
+        return `$${amount.toLocaleString('es-CL', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+    };
+
     return (
         <div className="productos-container">
             <h1>Lista de Productos</h1>
@@ -41,7 +45,7 @@ const ProductosServiciosList: React.FC<ProductosServiciosListProps> = ({ searchQ
             <ul className="productos-list">
                 {filteredProductos.map((producto, index) => (
                     <li key={index} className="productos-list-item">
-                        {producto.name} - ${producto.price.toFixed(2)}
+                        {producto.name} - {formatCLP(producto.price)}
                         <button className="btn btn-primary ms-2" onClick={() => handleAddProductToCart(producto)}>Agregar</button>
                     </li>
                 ))}
