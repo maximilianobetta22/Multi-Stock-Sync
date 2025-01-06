@@ -167,6 +167,7 @@ const CrearProducto: React.FC = () => {
                   className="form-check-input"
                   type="checkbox"
                   id="controlStock"
+                  defaultChecked
                 />
                 <label className="form-check-label" htmlFor="controlStock">
                   Controlar stock
