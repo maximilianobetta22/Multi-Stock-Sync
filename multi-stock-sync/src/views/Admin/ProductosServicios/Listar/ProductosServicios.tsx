@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faStar } from '@fortawesome/free-solid-svg-icons';
-import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
+import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
+import { Link } from 'react-router-dom';
 
 const ProductosServicios: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -42,9 +43,16 @@ const ProductosServicios: React.FC = () => {
                     value={searchTerm} 
                     onChange={(e) => setSearchTerm(e.target.value)} 
                 />
-                <button className="btn btn-primary">
-                    <FontAwesomeIcon icon={faPlus} /> Crear
-                </button>
+                <div className="dropdown">
+                    <button className="btn btn-primary dropdown-toggle" type="button" id="crearDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <FontAwesomeIcon icon={faPlus} /> Crear
+                    </button>
+                    <ul className="dropdown-menu" aria-labelledby="crearDropdown">
+                        <li><Link className="dropdown-item" to="/admin/productos-servicios/crear/producto">Producto</Link></li>
+                        <li><Link className="dropdown-item" to="/admin/productos-servicios/crear/servicio">Servicio</Link></li>
+                        <li><Link className="dropdown-item" to="/admin/productos-servicios/crear/pack-promocion">Pack/Promoción</Link></li>
+                    </ul>
+                </div>
             </div>
 
             <div className="btn-group mb-3" role="group">
