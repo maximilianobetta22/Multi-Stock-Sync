@@ -81,7 +81,7 @@ const PuntoVentaNavbar: React.FC = () => {
                                 </Link>
                             </li>
                             <li>
-                                <Link className="dropdown-item" to="/punto-venta/recepcion-stock">
+                                <Link className="dropdown-item" to="/admin/stock">
                                     Recepción de stock <FontAwesomeIcon icon={faArrowRight} />
                                 </Link>
                             </li>
