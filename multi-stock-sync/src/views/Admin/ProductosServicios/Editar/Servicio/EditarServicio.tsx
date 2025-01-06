@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import AdminNavbar from "../../../../../components/AdminNavbar/AdminNavbar";
 import { Link } from "react-router-dom";
-import "./CrearServicio.css";
+import "./EditarServicio.css";
 
-const CrearServicio: React.FC = () => {
+const EditarServicio: React.FC = () => {
   const miniNavbarLinks = [
     { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
     { name: 'Marcas', url: '/admin/marcas' },
@@ -56,7 +56,7 @@ const CrearServicio: React.FC = () => {
         {/* Columna izquierda */}
         <div className="w-50 p-4 d-flex align-items-start justify-content-center">
           <div className="form-container">
-            <h2 className="mb-4">Nuevo Servicio</h2>
+            <h2 className="mb-4">Editar Servicio</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group mb-3">
                 <label htmlFor="serviceName" className="form-label">
@@ -179,4 +179,4 @@ const CrearServicio: React.FC = () => {
   );
 };
 
-export default CrearServicio;
+export default EditarServicio;
