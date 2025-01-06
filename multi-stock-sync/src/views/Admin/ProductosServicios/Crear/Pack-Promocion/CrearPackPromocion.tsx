@@ -253,7 +253,7 @@ const CrearPackPromocion: React.FC = () => {
                   onChange={handleInputChange}
                 />
                 {newDetail.variant && filteredProducts.length > 0 && (
-                  <ul className="dropdown">
+                  <ul className="servicio_dropdown">
                     {filteredProducts.map((product, index) => (
                       <li
                         key={index}

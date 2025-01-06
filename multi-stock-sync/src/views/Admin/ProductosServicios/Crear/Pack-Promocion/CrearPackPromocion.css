@@ -1,4 +1,4 @@
-.dropdown {
+.servicio_dropdown {
     position: absolute;
     top: 100%;
     left: 0;
@@ -12,12 +12,12 @@
     z-index: 1000;
   }
   
-  .dropdown li {
+  .servicio_dropdown li {
     padding: 8px 12px;
     cursor: pointer;
   }
   
-  .dropdown li:hover {
+  .servicio_dropdown li:hover {
     background-color: #f8f9fa;
   }
   
