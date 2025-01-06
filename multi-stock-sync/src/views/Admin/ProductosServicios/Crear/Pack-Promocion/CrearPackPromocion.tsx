@@ -4,6 +4,14 @@ import AdminNavbar from '../../../../../components/AdminNavbar/AdminNavbar';
 import { Link } from 'react-router-dom';
 
 const CrearPackPromocion: React.FC = () => {
+
+  const miniNavbarLinks = [
+    { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
+    { name: 'Marcas', url: '/admin/marcas' },
+    { name: 'Config. Masiva', url: '/admin/config-masiva' },
+    { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
+];
+
   interface Detail {
     id: number;
     product: string;
@@ -86,7 +94,7 @@ const CrearPackPromocion: React.FC = () => {
 
   return (
     <>
-      <AdminNavbar />
+      <AdminNavbar links={miniNavbarLinks} />
 
       <div className="d-flex flex-grow-1 main-container">
 
