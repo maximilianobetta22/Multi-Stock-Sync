@@ -69,9 +69,37 @@ const RecepcionStock: React.FC = () => {
         alert('Productos guardados exitosamente');
     };
 
+    const miniNavbarLinks = [
+        { name: 'Recepción', url: '#' },
+        { name: 'Consumo', url: '#' },
+        { name: 'Toma de inventario', url: '#' },
+        { name: 'Stock Actual', url: '#' },
+        { name: 'Importar', url: '#' }
+
+    ];
+    const miniNavbarDropdowns = [
+        {
+            name: 'Stock Crítico',
+            options: [
+                { name: 'Configuración', url: '#' },
+                { name: 'Días de Stock', url: '#' },
+                { name: 'Importar', url: '#' }
+            ]
+        },
+        {
+            name: 'Actualizar',
+            options: [
+                { name: 'Costos', url: '#' },
+                { name: 'Recepción', url: '#' },
+                { name: 'Stock', url: '#' },
+                { name: 'Costos (Masivo)', url: '#' }
+            ]
+        }
+    ];
+
     return (
         <>
-            <AdminNavbar />
+            <AdminNavbar links={miniNavbarLinks} dropdowns={miniNavbarDropdowns} />
             <div className="d-flex flex-grow-1 main-container">
                 <div className="w-100 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div className="recepcion-stock-container bg-white p-4 rounded shadow">
@@ -85,7 +113,7 @@ const RecepcionStock: React.FC = () => {
                             >
                                 <option value="Sin documento">Sin documento</option>
                                 <option value="Factura">Factura</option>
-                                <option value="Guia">Guia</option>
+                                <option value="Guía">Guía</option>
                             </select>
                             <input
                                 type="text"
