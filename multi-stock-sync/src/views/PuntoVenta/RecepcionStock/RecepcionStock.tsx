@@ -7,6 +7,8 @@ const RecepcionStock: React.FC = () => {
     const [totalNet, setTotalNet] = useState(0);
     const [search, setSearch] = useState(''); 
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const [documentNumber, setDocumentNumber] = useState('');
+    const [documentType, setDocumentType] = useState('Sin documento');
 
     const availableProducts = [
         { sku: '1735310770200', name: 'Peluche Fumo fumos', price: 1200 },
@@ -74,8 +76,25 @@ const RecepcionStock: React.FC = () => {
                 <div className="w-100 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div className="recepcion-stock-container bg-white p-4 rounded shadow">
                         <h1 className="mb-4">Recepción de Stock</h1>
-
-
+                        <div className="d-flex mb-4">
+                            <select
+                                className="form-control mx-1"
+                                style={{ width: '150px' }}
+                                value={documentType}
+                                onChange={(e) => setDocumentType(e.target.value)}
+                            >
+                                <option value="Sin documento">Sin documento</option>
+                                <option value="Factura">Factura</option>
+                                <option value="Guia">Guia</option>
+                            </select>
+                            <input
+                                type="text"
+                                placeholder="Número de documento"
+                                className="form-control"
+                                value={documentNumber}
+                                onChange={(e) => setDocumentNumber(e.target.value)}
+                            />
+                        </div>
                         <div className="mb-4 position-relative" ref={dropdownRef}>
                             <input
                                 type="text"
