@@ -13,18 +13,23 @@ import RecepcionStock from './views/PuntoVenta/RecepcionStock/RecepcionStock';
 import Reportes from './views/PuntoVenta/Reportes/Reportes';
 
 import Documentos from './views/Admin/Documentos/Documentos';
-import ProductosServicios from './views/Admin/ProductosServicios/ProductosServicios';
+import ProductosServicios from './views/Admin/ProductosServicios/Listar/ProductosServicios';
+import CrearProducto from './views/Admin/ProductosServicios/Crear/Producto/CrearProducto';
+import CrearServicio from './views/Admin/ProductosServicios/Crear/Servicio/CrearServicio';
+import CrearPackPromocion from './views/Admin/ProductosServicios/Crear/Pack-Promocion/CrearPackPromocion';
 import AdminReportes from './views/Admin/Reportes/Reportes';
 import Stock from './views/Admin/Stock/Stock';
 
 
-import Login from './views/Login/Login';
+import Login from './views/Auth/Login/Login';
+import Register from './views/Auth/Register/Register';
 
 function App() {
   return (
     <Router>
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
       <Route path="/" element={<InitialPage />} />
       <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
       <Route path="/punto-venta/despacho" element={<Despacho />} />
@@ -38,6 +43,9 @@ function App() {
       <Route path="/punto-venta/recepcion-stock" element={<RecepcionStock />} />
       <Route path="/admin/documentos" element={<Documentos />} />
       <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
+      <Route path="/admin/productos-servicios/crear/producto" element={<CrearProducto />} />
+      <Route path="/admin/productos-servicios/crear/servicio" element={<CrearServicio />} />
+      <Route path="/admin/productos-servicios/crear/pack-promocion" element={<CrearPackPromocion />} />
       <Route path="/admin/reportes" element={<AdminReportes />} />
       <Route path="/admin/stock" element={<Stock />} />
     </Routes>

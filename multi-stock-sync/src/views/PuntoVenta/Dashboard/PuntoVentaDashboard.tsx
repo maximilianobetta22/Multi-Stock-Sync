@@ -112,7 +112,7 @@ const PuntoVentaDashboard = () => {
                 <input
                     type="text"
                     className="bar-search-input mx-3"
-                    placeholder="Ingresa aquí el producto o servicioxd"
+                    placeholder="Ingresa aquí el producto o servicio"
                     onChange={(e) => {
                         setProductSearchQuery(e.target.value);
                         setSelectedOption('productos');

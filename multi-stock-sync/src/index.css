@@ -77,3 +77,18 @@ h1, p {
     justify-content: center;
     align-items: center;
 }
+
+/* 50-25-25 vertical split */
+.v-50 {
+    flex: 1; /* Takes up 50% of the space */
+    display: flex;
+    flex-direction: column; /* Arrange children vertically */
+}
+
+.v-25 {
+    flex: 1; /* Takes up 25% of the space */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+

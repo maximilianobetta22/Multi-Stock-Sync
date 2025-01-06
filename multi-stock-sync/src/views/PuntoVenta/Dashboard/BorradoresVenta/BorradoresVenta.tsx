@@ -20,10 +20,13 @@ const BorradoresVenta: React.FC = () => {
     );
 
     return (
-        <div className="borradores-venta">
-            <h2 className="borradores-header">
+        
+        <>
+        
+            <h2 className="destacados-header">
                 <FontAwesomeIcon icon={faCheckCircle} className="header-icon" /> Borradores de Venta
             </h2>
+            
             <div className="filters-container">
                 <div className="borradores-bar">
                     <input
@@ -52,7 +55,9 @@ const BorradoresVenta: React.FC = () => {
                     <li className="no-results">No se encontraron borradores</li>
                 )}
             </ul>
-        </div>
+        
+
+        </>
     );
 };
 

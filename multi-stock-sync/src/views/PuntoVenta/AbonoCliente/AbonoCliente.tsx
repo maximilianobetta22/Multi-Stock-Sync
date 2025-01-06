@@ -6,6 +6,10 @@ import { faPlusCircle, faSearch } from '@fortawesome/free-solid-svg-icons';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+const formatCLP = (amount: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
+};
+
 const AbonoCliente: React.FC = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [abonos, setAbonos] = useState<{ metodo: string; monto: number }[]>([]);
@@ -13,6 +17,11 @@ const AbonoCliente: React.FC = () => {
     const [metodo, setMetodo] = useState('efectivo');
     const [observacion, setObservacion] = useState('');
     const [fechaAbono, setFechaAbono] = useState<Date | null>(new Date());
+
+    const handleMontoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const value = e.target.value.replace(/\D/g, '');
+        setMonto(Number(value));
+    };
 
     const handleAgregarAbono = () => {
         if (monto > 0) {
@@ -26,91 +35,117 @@ const AbonoCliente: React.FC = () => {
     };
 
     const handleGuardar = () => {
-        // Implement save functionality here
         alert('Datos guardados');
     };
 
     return (
         <>
             <PuntoVentaNavbar />
-            <div className="abono-cliente-container">
-                {/* Parte Izquierda */}
-                <div className="abono-cliente-left">
-                    <h2>Cliente</h2>
-                    <div className="search-bar">
+            <div className="d-flex flex-grow-1 main-container">
+                <div className="w-70 bg-light p-4 d-flex flex-row" style={{ gap: '20px' }}>
+                    {/* Formulario de abonos */}
+                    <div className="form-section" style={{ flex: '1', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                        <h2 className="text-center mb-4">Cliente</h2>
+                        <div className="d-flex mb-3">
+                            <input
+                                type="text"
+                                placeholder="Buscar cliente"
+                                className="form-control me-2"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                            <button className="btn btn-primary">
+                                <FontAwesomeIcon icon={faSearch} />
+                            </button>
+                        </div>
+                        <label className="form-label">Fecha del abono</label>
+                        <DatePicker
+                            selected={fechaAbono}
+                            onChange={(date) => setFechaAbono(date)}
+                            className="form-control mb-3"
+                        />
+                        <label className="form-label">Moneda</label>
+                        <select className="form-select mb-3">
+                            <option value="peso chileno">Peso Chileno</option>
+                        </select>
+                        <label className="form-label">Observación</label>
+                        <textarea
+                            className="form-control mb-3"
+                            placeholder="Escribe una observación..."
+                            value={observacion}
+                            onChange={(e) => setObservacion(e.target.value)}
+                        ></textarea>
+                        <label className="form-label">Método de Pago</label>
+                        <select
+                            className="form-select mb-3"
+                            value={metodo}
+                            onChange={(e) => setMetodo(e.target.value)}
+                        >
+                            <option value="efectivo">Efectivo</option>
+                            <option value="transferencia">Transferencia</option>
+                            <option value="tarjeta">Tarjeta</option>
+                        </select>
+                        <label className="form-label">Monto Abono</label>
                         <input
                             type="text"
-                            placeholder="Buscar cliente"
-                            className="search-input"
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="form-control mb-3"
+                            placeholder="Ingresa el monto"
+                            value={monto ? formatCLP(monto) : ''}
+                            onChange={handleMontoChange}
                         />
-                        <button className="search-button">
-                            <FontAwesomeIcon icon={faSearch} />
+                        <button
+                            className="btn btn-success mb-4 w-100 agregar-abono-btn"
+                            onClick={handleAgregarAbono}
+                        >
+                            <FontAwesomeIcon icon={faPlusCircle} /> Agregar Abono
                         </button>
                     </div>
-                    <label>Fecha del abono</label>
-                    <DatePicker
-                        selected={fechaAbono}
-                        onChange={(date) => setFechaAbono(date)}
-                        className="input-date"
-                    />
-                    <label>Moneda</label>
-                    <select className="select-moneda">
-                        <option value="peso chileno">Peso Chileno</option>
-                    </select>
-                    <label>Observación</label>
-                    <textarea
-                        className="textarea-observacion"
-                        placeholder="Escribe una observación..."
-                        value={observacion}
-                        onChange={(e) => setObservacion(e.target.value)}
-                    ></textarea>
-                    <label>Método de Pago</label>
-                    <select
-                        className="select-metodo"
-                        value={metodo}
-                        onChange={(e) => setMetodo(e.target.value)}
-                    >
-                        <option value="efectivo">Efectivo</option>
-                        <option value="transferencia">Transferencia</option>
-                        <option value="tarjeta">Tarjeta</option>
-                    </select>
-                    <label>Monto Abono</label>
-                    <input
-                        type="text"
-                        className="input-monto"
-                        placeholder="Ingresa el monto"
-                        value={monto}
-                        onChange={(e) => setMonto(Number(e.target.value))}
-                        pattern="\d*"
-                        maxLength={11}
-                    />
-                    <div className="add-abono">
-                        
-                        <FontAwesomeIcon icon={faPlusCircle} onClick={handleAgregarAbono} />
-                    </div>
-                    <div className="abonos-list">
+                    {/* Tabla de abonos */}
+                    <div className="abonos-list" style={{ flex: '1', border: '1px solid #ddd', borderRadius: '8px', padding: '20px', boxShadow: '0 2px 4px rgba(0,0,0,0.1)' }}>
+                        <h5 className="text-center">Lista de Abonos</h5>
                         {abonos.length > 0 ? (
-                            abonos.map((abono, index) => (
-                                <div key={index} className="abono-item">
-                                    {abono.metodo} (${abono.monto})
-                                    <button onClick={() => handleEliminarAbono(index)}>Eliminar</button>
-                                </div>
-                            ))
+                            <table className="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Método</th>
+                                        <th>Monto</th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {abonos.map((abono, index) => (
+                                        <tr key={index}>
+                                            <td>{index + 1}</td>
+                                            <td>{abono.metodo}</td>
+                                            <td>{formatCLP(abono.monto)}</td>
+                                            <td>
+                                                <button
+                                                    className="btn btn-sm btn-outline-danger"
+                                                    onClick={() => handleEliminarAbono(index)}
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
                         ) : (
-                            <p>No hay abonos registrados</p>
+                            <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+                                <p className="text-muted">No hay abonos registrados</p>
+                            </div>
                         )}
                     </div>
                 </div>
-                {/* Parte Derecha */}
-                <div className="abono-cliente-right">
-                    <h2>Información del Cliente</h2>
-                    <p>Historial y detalles del cliente</p>
-                    <button className="save-button" onClick={handleGuardar}>Guardar</button>
+
+                <div className="w-30 custom-gray p-4 d-flex flex-column">
+                    <h2 className="text-center mb-4">Información del Cliente</h2>
+                    <p className="text-center mb-3">Historial y detalles del cliente</p>
+                    <button className="btn btn-primary mb-4 save-btn" onClick={handleGuardar}>Guardar</button>
                     <div className="client-info">
                         <p>Nombre: Cliente Ejemplo</p>
-                        <p>Total Abonos: ${abonos.reduce((acc, curr) => acc + curr.monto, 0)}</p>
+                        <p>Total Abonos: {formatCLP(abonos.reduce((acc, curr) => acc + curr.monto, 0))}</p>
                     </div>
                 </div>
             </div>
