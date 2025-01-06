@@ -53,6 +53,13 @@ const PuntoVentaDashboard = () => {
         setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
     };
 
+    const handleClearCart = () => {
+        setCart([]);
+        setClientSearchQuery('');
+        setProductSearchQuery('');
+        setSelectedOption('destacados');
+    };
+
     const calculateTotal = () => {
         return cart.reduce((total, item) => total + item.precio * item.cantidad, 0);
     };
@@ -168,6 +175,7 @@ const PuntoVentaDashboard = () => {
                     setSelectedOption={setSelectedOption}
                     setClientSearchQuery={setClientSearchQuery}
                     total={calculateTotal()}
+                    onClearCart={handleClearCart}
                 />
             </div>
         </>
@@ -179,11 +187,13 @@ const FooterActions = ({
     setSelectedOption,
     setClientSearchQuery,
     total,
+    onClearCart,
 }: {
     selectedOption: string;
     setSelectedOption: React.Dispatch<React.SetStateAction<string>>;
     setClientSearchQuery: React.Dispatch<React.SetStateAction<string>>;
     total: number;
+    onClearCart: () => void;
 }) => {
     const handleClientSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value;
@@ -216,7 +226,7 @@ const FooterActions = ({
                     </div>
                 </div>
                 <div className="footer-bottom">
-                    <button className="footer-gray-button">Cancelar</button>
+                    <button className="footer-gray-button" onClick={onClearCart}>Cancelar</button>
                     <button className="footer-gray-button">Guardar Borrador</button>
                     <button className="pay-button">Pagar</button>
                 </div>
