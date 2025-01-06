@@ -20,6 +20,7 @@ const PuntoVentaDashboard = () => {
     const [clientSearchQuery, setClientSearchQuery] = useState('');
     const [productSearchQuery, setProductSearchQuery] = useState('');
     const [cart, setCart] = useState<Producto[]>([]);
+    const [selectedClient, setSelectedClient] = useState<any>(null);
 
     const handleAddToCart = (product: Producto) => {
         setCart((prevCart) => {
@@ -53,8 +54,20 @@ const PuntoVentaDashboard = () => {
         setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
     };
 
+    const handleClearCart = () => {
+        setCart([]);
+        setClientSearchQuery('');
+        setProductSearchQuery('');
+        setSelectedOption('destacados');
+        setSelectedClient(null);
+    };
+
     const calculateTotal = () => {
         return cart.reduce((total, item) => total + item.precio * item.cantidad, 0);
+    };
+
+    const handleSelectClient = (client: any) => {
+        setSelectedClient(client);
     };
 
     const renderCartTable = () => {
@@ -137,13 +150,13 @@ const PuntoVentaDashboard = () => {
             case 'productos':
                 return <ProductosServicios searchQuery={productSearchQuery} onAddToCart={handleAddToCart} />;
             case 'clientes':
-                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />;
+                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} onSelectClient={handleSelectClient} />;
             case 'documentos':
                 return <BorradoresVenta />;
             case 'stock':
                 return <ProductosServicios searchQuery={productSearchQuery} onAddToCart={handleAddToCart} />;
             case 'cliente':
-                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} />;
+                return <Clientes searchQuery={clientSearchQuery} setSearchQuery={setClientSearchQuery} onSelectClient={handleSelectClient} />;
             default:
                 return <p>Seleccione una opción</p>;
         }
@@ -168,6 +181,8 @@ const PuntoVentaDashboard = () => {
                     setSelectedOption={setSelectedOption}
                     setClientSearchQuery={setClientSearchQuery}
                     total={calculateTotal()}
+                    onClearCart={handleClearCart}
+                    selectedClient={selectedClient}
                 />
             </div>
         </>
@@ -179,11 +194,15 @@ const FooterActions = ({
     setSelectedOption,
     setClientSearchQuery,
     total,
+    onClearCart,
+    selectedClient,
 }: {
     selectedOption: string;
     setSelectedOption: React.Dispatch<React.SetStateAction<string>>;
     setClientSearchQuery: React.Dispatch<React.SetStateAction<string>>;
     total: number;
+    onClearCart: () => void;
+    selectedClient: any;
 }) => {
     const handleClientSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value;
@@ -216,13 +235,18 @@ const FooterActions = ({
                     </div>
                 </div>
                 <div className="footer-bottom">
-                    <button className="footer-gray-button">Cancelar</button>
+                    <button className="footer-gray-button" onClick={onClearCart}>Cancelar</button>
                     <button className="footer-gray-button">Guardar Borrador</button>
                     <button className="pay-button">Pagar</button>
                 </div>
             </div>
 
             <div className="footer-right">
+                {selectedClient && (
+                    <div className="selected-client">
+                        <span>Cliente seleccionado: {selectedClient.nombre}</span>
+                    </div>
+                )}
                 <button
                     className={`sidebar-button ${selectedOption === 'destacados' ? 'active' : ''}`}
                     onClick={() => setSelectedOption('destacados')}

@@ -4,7 +4,7 @@ import { faUser, faCheckCircle, faEdit } from '@fortawesome/free-solid-svg-icons
 import './Clientes.css';
 import ClientesModal from './Modal/ClientesModal';
 
-const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<React.SetStateAction<string>> }> = ({ searchQuery, setSearchQuery }) => {
+const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<React.SetStateAction<string>>, onSelectClient: (client: any) => void }> = ({ searchQuery, setSearchQuery, onSelectClient }) => {
     const [isNewClient, setIsNewClient] = useState(false); // Change to search or form
     const [filteredClientes, setFilteredClientes] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<any>(null); // New state for selected client
@@ -52,6 +52,10 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
 
     const handleCloseModal = () => {
         setShowModal(false);
+    };
+
+    const handleSelectClient = (client: any) => {
+        onSelectClient(client);
     };
 
     return (
@@ -114,7 +118,7 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
                                     {cliente.nombre}
                                     <div className="cliente-actions">
                                         <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
-                                        <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" />
+                                        <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" onClick={() => handleSelectClient(cliente)} />
                                     </div>
                                 </li>
                             ))
