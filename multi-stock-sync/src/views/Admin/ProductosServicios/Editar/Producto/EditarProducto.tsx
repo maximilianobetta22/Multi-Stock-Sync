@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import AdminNavbar from "../../../../../components/AdminNavbar/AdminNavbar";
 import { Link } from "react-router-dom";
-import "./CrearProducto.css";
+import "./EditarProducto.css";
 
-const CrearProducto: React.FC = () => {
+const EditarProducto: React.FC = () => {
     const miniNavbarLinks = [
         { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
         { name: 'Marcas', url: '/admin/marcas' },
@@ -54,7 +54,7 @@ const CrearProducto: React.FC = () => {
 
         <div className="w-50 p-4 d-flex align-items-start justify-content-center">
           <div className="form-container">
-            <h2 className="mb-4">Nuevo Producto</h2>
+            <h2 className="mb-4">Editar Producto</h2>
             <form onSubmit={handleSubmit}>
               <div className="form-group mb-3">
                 <label htmlFor="productName" className="form-label">
@@ -221,4 +221,4 @@ const CrearProducto: React.FC = () => {
   );
 };
 
-export default CrearProducto;
+export default EditarProducto;
