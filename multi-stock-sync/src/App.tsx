@@ -18,7 +18,6 @@ import CrearProducto from './views/Admin/ProductosServicios/Crear/Producto/Crear
 import CrearServicio from './views/Admin/ProductosServicios/Crear/Servicio/CrearServicio';
 import CrearPackPromocion from './views/Admin/ProductosServicios/Crear/Pack-Promocion/CrearPackPromocion';
 import AdminReportes from './views/Admin/Reportes/Reportes';
-import Stock from './views/Admin/Stock/Stock';
 
 import EditarPackPromocion from './views/Admin/ProductosServicios/Editar/Pack-Promocion/EditarPackPromocion';
 import EditarProducto from './views/Admin/ProductosServicios/Editar/Producto/EditarProducto';
@@ -43,7 +42,6 @@ function App() {
       <Route path="/punto-venta/cierre-caja" element={<CierreCaja />} />
       <Route path="/punto-venta/reportes" element={<Reportes />} />
       <Route path="/punto-venta/maestros" element={<Maestros />} />
-      <Route path="/punto-venta/recepcion-stock" element={<RecepcionStock />} />
       <Route path="/admin/documentos" element={<Documentos />} />
       <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
       <Route path="/admin/productos-servicios/crear/producto" element={<CrearProducto />} />
@@ -53,7 +51,7 @@ function App() {
       <Route path="/admin/productos-servicios/editar/producto/:id" element={<EditarProducto />} />
       <Route path="/admin/productos-servicios/editar/servicio/:id" element={<EditarServicio />} />
       <Route path="/admin/reportes" element={<AdminReportes />} />
-      <Route path="/admin/stock" element={<Stock />} />
+      <Route path="/admin/stock" element={<RecepcionStock />} />
     </Routes>
   </Router>
 
