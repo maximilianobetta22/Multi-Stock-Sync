@@ -196,31 +196,32 @@ const CrearPackPromocion: React.FC = () => {
           <div className="v-50 p-3 d-flex flex-column">
             <h1>Detalles del Pack/Promoción</h1>
             <div className="details-table-container">
-              <table className="table table-striped">
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>Producto</th>
-                    <th>Cantidad</th>
-                    <th>Acciones</th>
+            <table className="table table-striped">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {details.map((detail, index) => (
+                  <tr key={detail.id}>
+                    <td>{detail.id}</td>
+                    <td>{detail.product}</td>
+                    <td>{detail.quantity}</td>
+                    <td>
+                      <button className="btn btn-sm btn-primary me-2" onClick={() => handleEditClick(index)}>Editar</button>
+                      <button className="btn btn-sm btn-secondary me-2" onClick={() => handleIncrement(index)}>+1</button>
+                      <button className="btn btn-sm btn-secondary" onClick={() => handleDecrement(index)}>-1</button>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  {details.map((detail, index) => (
-                    <tr key={detail.id}>
-                      <td>{detail.id}</td>
-                      <td>{detail.product}</td>
-                      <td>{detail.quantity}</td>
-                      <td>
-                        <button className="btn btn-sm btn-primary me-2" onClick={() => handleEditClick(index)}>Editar</button>
-                        <button className="btn btn-sm btn-secondary me-2" onClick={() => handleIncrement(index)}>+1</button>
-                        <button className="btn btn-sm btn-secondary" onClick={() => handleDecrement(index)}>-1</button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
             <button
               className="btn btn-outline-primary mt-3"
               onClick={() => setShowModal(true)}
