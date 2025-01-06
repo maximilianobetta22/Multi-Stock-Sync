@@ -20,10 +20,5 @@
   .servicio_dropdown li:hover {
     background-color: #f8f9fa;
   }
+
   
-  .details-table-container {
-    max-height: 150px; 
-    overflow-y: auto;
-    border: 1px solid #ddd; 
-    padding: 0;
-}

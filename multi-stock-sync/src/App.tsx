@@ -20,6 +20,9 @@ import CrearPackPromocion from './views/Admin/ProductosServicios/Crear/Pack-Prom
 import AdminReportes from './views/Admin/Reportes/Reportes';
 import Stock from './views/Admin/Stock/Stock';
 
+import EditarPackPromocion from './views/Admin/ProductosServicios/Editar/Pack-Promocion/EditarPackPromocion';
+import EditarProducto from './views/Admin/ProductosServicios/Editar/Producto/EditarProducto';
+import EditarServicio from './views/Admin/ProductosServicios/Editar/Servicio/EditarServicio';
 
 import Login from './views/Auth/Login/Login';
 import Register from './views/Auth/Register/Register';
@@ -46,6 +49,9 @@ function App() {
       <Route path="/admin/productos-servicios/crear/producto" element={<CrearProducto />} />
       <Route path="/admin/productos-servicios/crear/servicio" element={<CrearServicio />} />
       <Route path="/admin/productos-servicios/crear/pack-promocion" element={<CrearPackPromocion />} />
+      <Route path="/admin/productos-servicios/editar/pack-promocion/:id" element={<EditarPackPromocion />} />
+      <Route path="/admin/productos-servicios/editar/producto/:id" element={<EditarProducto />} />
+      <Route path="/admin/productos-servicios/editar/servicio/:id" element={<EditarServicio />} />
       <Route path="/admin/reportes" element={<AdminReportes />} />
       <Route path="/admin/stock" element={<Stock />} />
     </Routes>

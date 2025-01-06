@@ -69,6 +69,7 @@ const ProductosServicios: React.FC = () => {
                         <th>Estado</th>
                         <th>Marca</th>
                         <th>Tipo de Producto</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,6 +83,10 @@ const ProductosServicios: React.FC = () => {
                             </td>
                             <td>{product.brand}</td>
                             <td>{product.type}</td>
+                            <td>
+                                <button className="btn btn-secondary btn-sm me-2">Editar</button>
+                                <button className="btn btn-danger btn-sm">Eliminar</button>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

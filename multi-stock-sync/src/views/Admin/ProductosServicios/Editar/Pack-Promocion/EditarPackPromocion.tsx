@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
-import './CrearPackPromocion.css';
+import './EditarPackPromocion.css';
 import AdminNavbar from '../../../../../components/AdminNavbar/AdminNavbar';
 import { Link } from 'react-router-dom';
 
-const CrearPackPromocion: React.FC = () => {
+const EditarPackPromocion: React.FC = () => {
 
   const miniNavbarLinks = [
     { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
@@ -100,7 +100,7 @@ const CrearPackPromocion: React.FC = () => {
 
         <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
           <div>
-            <h1>Nuevo Pack/Promoción</h1>
+            <h1>Editar Pack/Promoción</h1>
             <form>
               <div className="form-group mb-3">
                 <label htmlFor="packName" className="form-label">
@@ -138,7 +138,7 @@ const CrearPackPromocion: React.FC = () => {
               </Link>
 
               <button type="submit" className="btn btn-primary">
-                Guardar
+                Guardar Cambios
               </button>
 
             </form>
@@ -196,32 +196,31 @@ const CrearPackPromocion: React.FC = () => {
           <div className="v-50 p-3 d-flex flex-column">
             <h1>Detalles del Pack/Promoción</h1>
             <div className="details-table-container">
-            <table className="table table-striped">
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Producto</th>
-                  <th>Cantidad</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {details.map((detail, index) => (
-                  <tr key={detail.id}>
-                    <td>{detail.id}</td>
-                    <td>{detail.product}</td>
-                    <td>{detail.quantity}</td>
-                    <td>
-                      <button className="btn btn-sm btn-primary me-2" onClick={() => handleEditClick(index)}>Editar</button>
-                      <button className="btn btn-sm btn-secondary me-2" onClick={() => handleIncrement(index)}>+1</button>
-                      <button className="btn btn-sm btn-secondary" onClick={() => handleDecrement(index)}>-1</button>
-                    </td>
+              <table className="table table-striped servicio-table details-table-container">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Producto</th>
+                    <th>Cantidad</th>
+                    <th>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
+                </thead>
+                <tbody>
+                  {details.map((detail, index) => (
+                    <tr key={detail.id}>
+                      <td>{detail.id}</td>
+                      <td>{detail.product}</td>
+                      <td>{detail.quantity}</td>
+                      <td>
+                        <button className="btn btn-sm btn-primary me-2" onClick={() => handleEditClick(index)}>Editar</button>
+                        <button className="btn btn-sm btn-secondary me-2" onClick={() => handleIncrement(index)}>+1</button>
+                        <button className="btn btn-sm btn-secondary" onClick={() => handleDecrement(index)}>-1</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
             <button
               className="btn btn-outline-primary mt-3"
               onClick={() => setShowModal(true)}
@@ -307,4 +306,4 @@ const CrearPackPromocion: React.FC = () => {
   );
 };
 
-export default CrearPackPromocion;
+export default EditarPackPromocion;
