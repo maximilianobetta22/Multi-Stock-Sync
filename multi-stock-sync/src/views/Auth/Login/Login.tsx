@@ -64,7 +64,7 @@ const Login: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="w-50 bg-orange p-3 d-flex align-items-center justify-content-center">
+        <div className="box__right">
 
         </div>
       </div>

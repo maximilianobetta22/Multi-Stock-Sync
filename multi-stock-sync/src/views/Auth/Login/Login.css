@@ -23,3 +23,9 @@
 .login-box .help-box {
     margin-top: 1rem;
 }
+
+.box__right{
+    background: linear-gradient(135deg, #cc5a2e, #b3742e);
+    width: 50%;
+    height: 100%;
+}
