@@ -56,7 +56,6 @@ function App() {
       <Route path="/admin/stock" element={<RecepcionStock />} />
       <Route path="/admin/marcas" element={<CrearMarca />} />
       <Route path="/admin/marcas" element={<EditarMarca />} />
-      
     </Routes>
   </Router>
 
