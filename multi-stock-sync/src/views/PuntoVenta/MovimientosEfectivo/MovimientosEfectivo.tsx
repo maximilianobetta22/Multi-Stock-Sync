@@ -84,21 +84,35 @@ const MovimientoForm: React.FC = () => {
                 </select>
             </div>
 
+            
             <div style={{ marginBottom: "1rem" }}>
-                <label>Monto Movimiento:</label>
-                <input
-                    type="number"
-                    name="montoMovimiento"
-                    value={formData.montoMovimiento}
-                    onChange={handleChange}
-                    style={{
-                        width: "100%",
-                        border: "1px solid #ccc",
-                        outline: "none",
-                    }}
-                    min="0"
-                />
-            </div>
+    <label>Monto Movimiento:</label>
+    <input
+        type="number"
+        name="montoMovimiento"
+        value={formData.montoMovimiento || ""}
+        onChange={(e) => {
+            const value = e.target.value;
+            if (value === "" || parseFloat(value) > 0) {
+                handleChange(e);
+            }
+        }}
+        placeholder="$ 0"
+        style={{
+            width: "100%",
+            border: "1px solid #ccc",
+            outline: "none",
+            appearance: "none", 
+            MozAppearance: "textfield", 
+            WebkitAppearance: "none", 
+            paddingLeft: "0.5rem",
+            color: formData.montoMovimiento ? "#000" : "rgba(0, 0, 0, 0.5)",
+        }}
+        min="0"
+    />
+</div>
+
+
 
             <div style={{ marginBottom: "1rem" }}>
                 <label>Observación:</label>
@@ -140,11 +154,12 @@ const FiltrarPorFecha: React.FC = () => {
             style={{
                 border: "1px solid #ccc",
                 padding: "1rem",
-                width: "300px",
+                width: "400px",
                 backgroundColor: "#fff",
+                borderRadius: "4px", // Bordes redondeados para el input
             }}
         >
-            <h3>Movimientos Disponibles</h3>
+            <h3>$ Movimientos Disponibles</h3>
             <div style={{ marginBottom: "1rem" }}>
                 <input
                     type="date"
@@ -154,6 +169,7 @@ const FiltrarPorFecha: React.FC = () => {
                         width: "100%",
                         border: "1px solid #ccc",
                         padding: "0.5rem",
+                        borderRadius: "4px", // Bordes redondeados para el input
                     }}
                 />
             </div>
