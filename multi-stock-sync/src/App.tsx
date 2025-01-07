@@ -25,6 +25,8 @@ import EditarServicio from './views/Admin/ProductosServicios/Editar/Servicio/Edi
 
 import Login from './views/Auth/Login/Login';
 import Register from './views/Auth/Register/Register';
+import CrearMarca from './views/Admin/Marcas/Crear/CrearMarca';
+import EditarMarca from './views/Admin/Marcas/Editar/EditarMarca';
 
 function App() {
   return (
@@ -52,6 +54,8 @@ function App() {
       <Route path="/admin/productos-servicios/editar/servicio/:id" element={<EditarServicio />} />
       <Route path="/admin/reportes" element={<AdminReportes />} />
       <Route path="/admin/stock" element={<RecepcionStock />} />
+      <Route path="/admin/marcas" element={<CrearMarca />} />
+      <Route path="/admin/marcas" element={<EditarMarca />} />
     </Routes>
   </Router>
 
