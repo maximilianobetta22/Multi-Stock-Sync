@@ -19,7 +19,7 @@ input, select, textarea {
   border-radius: 4px;
 }
 
-button {
+.button-orange {
   background-color: #ed762b;
   color: white;
   border: none;
@@ -27,6 +27,6 @@ button {
   cursor: pointer;
 }
 
-button:hover {
+.button-orange:hover {
   background-color: #e24815;
 }

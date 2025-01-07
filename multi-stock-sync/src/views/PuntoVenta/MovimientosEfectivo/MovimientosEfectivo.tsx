@@ -2,11 +2,10 @@ import React from 'react';
 import './MovimientosEfectivo.css';
 import PuntoVentaNavbar from '../../../components/PuntoVentaNavbar/PuntoVentaNavbar';
 
-
 const MovimientoForm: React.FC = () => {
     const [formData, setFormData] = React.useState({
         sucursal: "Casa Matriz",
-        fechaMovimiento: new Date().toISOString().split("T")[0], // Fecha actual
+        fechaMovimiento: new Date().toISOString().split("T")[0],
         tipoMovimiento: "saldo de apertura",
         montoMovimiento: 0,
         observacion: "",
@@ -15,9 +14,8 @@ const MovimientoForm: React.FC = () => {
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
         const { name, value } = e.target;
 
-        
         if (name === "montoMovimiento" && Number(value) < 0) {
-            return; 
+            return;
         }
 
         setFormData({
@@ -32,10 +30,25 @@ const MovimientoForm: React.FC = () => {
     };
 
     return (
-        <form onSubmit={handleSubmit} style={{ width: "600px", margin: "0 auto", border: "none" }}>
+        <form
+            onSubmit={handleSubmit}
+            style={{
+                width: "600px",
+                margin: "0 auto",
+                border: "1px solid #ccc",
+                padding: "1rem",
+            }}
+        >
             <div style={{ marginBottom: "1rem" }}>
                 <label>Sucursal:</label>
-                <p>{formData.sucursal}</p>
+                <p
+                    style={{
+                        border: "1px solid #ccc",
+                        padding: "0.5rem",
+                    }}
+                >
+                    {formData.sucursal}
+                </p>
             </div>
 
             <div style={{ marginBottom: "1rem" }}>
@@ -45,7 +58,11 @@ const MovimientoForm: React.FC = () => {
                     name="fechaMovimiento"
                     value={formData.fechaMovimiento}
                     onChange={handleChange}
-                    style={{ width: "100%", border: "none", outline: "none" }}
+                    style={{
+                        width: "100%",
+                        border: "1px solid #ccc",
+                        outline: "none",
+                    }}
                 />
             </div>
 
@@ -55,7 +72,11 @@ const MovimientoForm: React.FC = () => {
                     name="tipoMovimiento"
                     value={formData.tipoMovimiento}
                     onChange={handleChange}
-                    style={{ width: "100%", border: "none", outline: "none" }}
+                    style={{
+                        width: "100%",
+                        border: "1px solid #ccc",
+                        outline: "none",
+                    }}
                 >
                     <option value="saldo de apertura">Saldo de Apertura</option>
                     <option value="otro movimiento">Otro movimiento</option>
@@ -70,7 +91,11 @@ const MovimientoForm: React.FC = () => {
                     name="montoMovimiento"
                     value={formData.montoMovimiento}
                     onChange={handleChange}
-                    style={{ width: "100%", border: "none", outline: "none" }}
+                    style={{
+                        width: "100%",
+                        border: "1px solid #ccc",
+                        outline: "none",
+                    }}
                     min="0"
                 />
             </div>
@@ -81,14 +106,59 @@ const MovimientoForm: React.FC = () => {
                     name="observacion"
                     value={formData.observacion}
                     onChange={handleChange}
-                    style={{ width: "100%", border: "none", outline: "none" }}
+                    style={{
+                        width: "100%",
+                        border: "1px solid #ccc",
+                        outline: "none",
+                    }}
                 />
             </div>
 
-            <button type="submit" style={{ width: "100%", padding: "0.5rem" }}>
-                Enviar
+            <button className='button-orange'
+                type="submit"
+                style={{
+                    width: "100%",
+                    padding: "0.5rem",
+                    border: "1px solid #ccc",
+                }}
+            >
+                Guardar
             </button>
         </form>
+    );
+};
+
+const FiltrarPorFecha: React.FC = () => {
+    const [fechaFiltro, setFechaFiltro] = React.useState(new Date().toISOString().split("T")[0]);
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setFechaFiltro(e.target.value);
+    };
+
+    return (
+        <div
+            style={{
+                border: "1px solid #ccc",
+                padding: "1rem",
+                width: "300px",
+                backgroundColor: "#fff",
+            }}
+        >
+            <h3>Movimientos Disponibles</h3>
+            <div style={{ marginBottom: "1rem" }}>
+                <input
+                    type="date"
+                    value={fechaFiltro}
+                    onChange={handleChange}
+                    style={{
+                        width: "100%",
+                        border: "1px solid #ccc",
+                        padding: "0.5rem",
+                    }}
+                />
+            </div>
+            <p>Sin Registros</p>
+        </div>
     );
 };
 
@@ -99,15 +169,11 @@ const MovimientosEfectivo: React.FC = () => {
             <div className="d-flex flex-grow-1 main-container">
                 <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div>
-                        <h1></h1>
-                        <MovimientoForm /> {/* Aquí se coloca el formulario */}
+                        <MovimientoForm />
                     </div>
                 </div>
                 <div className="w-50 custom-gray p-3 d-flex align-items-center justify-content-center">
-                    <div>
-                        <h1>Contenido Derecho</h1>
-                        <p>Aquí va el contenido principal del lado derecho.</p>
-                    </div>
+                    <FiltrarPorFecha />
                 </div>
             </div>
         </>
