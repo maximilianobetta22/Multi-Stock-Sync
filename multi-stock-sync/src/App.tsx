@@ -20,37 +20,35 @@ import CrearPackPromocion from './views/Admin/ProductosServicios/Crear/Pack-Prom
 import AdminReportes from './views/Admin/Reportes/Reportes';
 import Stock from './views/Admin/Stock/Stock';
 
-
 import Login from './views/Auth/Login/Login';
 import Register from './views/Auth/Register/Register';
 
 function App() {
   return (
     <Router>
-    <Routes>
-      <Route path="/login" element={<Login />} />
-      <Route path="/register" element={<Register />} />
-      <Route path="/" element={<InitialPage />} />
-      <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
-      <Route path="/punto-venta/despacho" element={<Despacho />} />
-      <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
-      <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
-      <Route path="/punto-venta/devolucion" element={<Devolucion />} />
-      <Route path="/punto-venta/movimientos-efectivo" element={<MovimientosEfectivo />} />
-      <Route path="/punto-venta/cierre-caja" element={<CierreCaja />} />
-      <Route path="/punto-venta/reportes" element={<Reportes />} />
-      <Route path="/punto-venta/maestros" element={<Maestros />} />
-      <Route path="/punto-venta/recepcion-stock" element={<RecepcionStock />} />
-      <Route path="/admin/documentos" element={<Documentos />} />
-      <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
-      <Route path="/admin/productos-servicios/crear/producto" element={<CrearProducto />} />
-      <Route path="/admin/productos-servicios/crear/servicio" element={<CrearServicio />} />
-      <Route path="/admin/productos-servicios/crear/pack-promocion" element={<CrearPackPromocion />} />
-      <Route path="/admin/reportes" element={<AdminReportes />} />
-      <Route path="/admin/stock" element={<Stock />} />
-    </Routes>
-  </Router>
-
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/" element={<InitialPage />} />
+        <Route path="/punto-venta" element={<PuntoVentaDashboard />} />
+        <Route path="/punto-venta/despacho" element={<Despacho />} />
+        <Route path="/punto-venta/reimprimir" element={<Reimprimir />} />
+        <Route path="/punto-venta/abono-cliente" element={<AbonoCliente />} />
+        <Route path="/punto-venta/devolucion" element={<Devolucion />} />
+        <Route path="/punto-venta/movimientos-efectivo" element={<MovimientosEfectivo />} />
+        <Route path="/punto-venta/cierre-caja" element={<CierreCaja />} />
+        <Route path="/punto-venta/reportes" element={<Reportes />} />
+        <Route path="/punto-venta/maestros" element={<Maestros />} />
+        <Route path="/punto-venta/recepcion-stock" element={<RecepcionStock />} />
+        <Route path="/admin/documentos" element={<Documentos />} />
+        <Route path="/admin/productos-servicios" element={<ProductosServicios />} />
+        <Route path="/admin/productos-servicios/crear/producto" element={<CrearProducto />} />
+        <Route path="/admin/productos-servicios/crear/servicio" element={<CrearServicio />} />
+        <Route path="/admin/productos-servicios/crear/pack-promocion" element={<CrearPackPromocion />} />
+        <Route path="/admin/reportes" element={<AdminReportes />} />
+        <Route path="/admin/stock" element={<Stock />} />
+      </Routes>
+    </Router>
   );
 }
 
