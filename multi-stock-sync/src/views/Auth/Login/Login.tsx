@@ -19,6 +19,7 @@ const Login: React.FC = () => {
       navigate('/'); // Redirect to home or dashboard
     } catch (err) {
       setError('Invalid credentials');
+      console.log(err)
     }
   };
 
