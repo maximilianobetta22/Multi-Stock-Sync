@@ -1,24 +1,38 @@
-import React, { useState } from 'react';
+import { useState, FormEvent, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleXmark, faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
+
 import styles from './Register.module.css';
 
 const Register: React.FC = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [nombre, setNombre] = useState('');
-  const [apellidos, setApellidos] = useState('');
-  const [telefono, setTelefono] = useState('');
-  const [nombreNegocio, setNombreNegocio] = useState('');
-  const [passwordConfirmation, setPasswordConfirmation] = useState('');
+  
+  const [nombre, setNombre] = useState<string>('');
+  const [errorNombre, setErrorNombre] = useState<string[]>([]);
+  const [apellidos, setApellidos] = useState<string>('');
+  const [errorApellidos, setErrorApellidos] = useState<string[]>([]);
+  const [telefono, setTelefono] = useState<string>('');
+  const [errorTelefono, setErrorTelefono] = useState<string[]>([]);
+  const [nombreNegocio, setNombreNegocio] = useState<string>('');
+  const [errorNombreNegocio, setErrorNombreNegocio] = useState<string[]>([]);
+  const [email, setEmail] = useState<string>('');
+  const [errorEmail, setErrorEmail] = useState<string[]>([]);
+  const [password, setPassword] = useState<string>('');
+  const [errorPassword, setErrorPassword] = useState<string[]>([]);
+  const [passwordConfirmation, setPasswordConfirmation] = useState<string>('');
+  const [errorPasswordConfirmation, setErrorPasswordConfirmation] = useState<string[]>([]);
+
+  const [error, setError] = useState<string>('');
+  const [showPassword, setShowPassword] = useState<boolean>(false)
+  const [showConfirmarPassword, setConfirmarShowPassword] = useState<boolean>(false)
   const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== passwordConfirmation) {
-      setError('Passwords do not match');
+      setError('Las contraseñas no coinciden');
       return;
     }
     try {
@@ -35,13 +49,45 @@ const Register: React.FC = () => {
       localStorage.setItem('user', JSON.stringify(response.data.user));
       navigate('/'); // Redirect to home or dashboard
     } catch (error) {
-      setError('Registration failed');
+      setError('Formulario incompleto');
       console.log(error)
+      const { response } = error as any;
+      const { 
+        nombre,
+        apellidos, 
+        telefono, 
+        email, 
+        nombre_negocio,
+        password,
+        password_confirmation
+      } = response.data.errors;
+      setErrorNombre(nombre);
+      setErrorApellidos(apellidos);
+      setErrorTelefono(telefono);
+      setErrorEmail(email);
+      setErrorNombreNegocio(nombre_negocio);
+      setErrorPassword(password);
+      setErrorPasswordConfirmation(password_confirmation);
     }
   };
 
+  const handleShowPassword = (id: string) => {
+    if(id === 'passwordConfirmation') {
+      setConfirmarShowPassword(!showConfirmarPassword);
+      document.getElementById(id)?.setAttribute('type', showConfirmarPassword ? 'password' : 'text')
+    } ;
+    if(id === 'password') {
+      setShowPassword(!showPassword);
+      document.getElementById(id)?.setAttribute('type', showPassword ? 'password' : 'text')
+    };
+  };
+
+  useEffect(() => {
+    if(password === passwordConfirmation) setError('')
+  }, [password, passwordConfirmation])
+
   return (
-    <>
+    <> 
       <div className={`${styles.registerContainer}`}>
         <div className={`${styles.registerBox}`}>
           <header className={`${styles.header__registerBox}`}>
@@ -54,66 +100,132 @@ const Register: React.FC = () => {
               <input
                 className={`form-control`}
                 type="text"
-                id="nombre"
-                placeholder="Ejemplo: Marcos"
+                id="Nombre"
+                placeholder="Nombre"
                 value={nombre}
                 onChange={(e) => setNombre(e.target.value)}
               />
+              {errorNombre && nombre.length === 0 &&
+                errorNombre.map((error, index) => (
+                  <div key={index} className={`${styles.error__formContainer}`}>
+                    {error}
+                    <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+                  </div>
+                ))
+              }
             </div>
             <div className={`${styles.item__formContainer}`}>
               <label htmlFor="apellidos" className="form-label">Apellidos</label>
               <input
-              className={`form-control`}
+                className={`form-control`}
                 type="text"
-                id="apellidos"
-                placeholder="Ejemplo: Reyes"
+                id="Apellidos"
+                placeholder="Apellido"
                 value={apellidos}
                 onChange={(e) => setApellidos(e.target.value)}
               />
+              {errorApellidos && apellidos.length === 0 &&
+                errorApellidos.map((error, index) => (
+                  <div key={index} className={`${styles.error__formContainer}`}>
+                    {error}
+                    <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+                  </div>
+                ))
+              }
             </div>
             <div className={`${styles.item__formContainer}`}>
               <label htmlFor="telefono" className="form-label">Teléfono</label>
               <input
-              className={`form-control`}
+                className={`form-control`}
                 type="text"
-                id="telefono"
-                placeholder="Ejemplo: +56950369308"
+                id="Telefono"
+                placeholder="+569 XXXX XXXX"
                 value={telefono}
                 onChange={(e) => setTelefono(e.target.value)}
               />
+              {errorTelefono && telefono.length === 0 &&
+                errorTelefono.map((error, index) => (
+                  <div key={index} className={`${styles.error__formContainer}`}>
+                    {error}
+                    <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+                  </div>
+                ))
+              }
             </div>
             <div className={`${styles.item__formContainer}`}>
               <label htmlFor="nombreNegocio" className="form-label">Nombre del Negocio</label>
               <input
               className={`form-control`}
                 type="text"
-                id="nombreNegocio"
-                placeholder="Ejemplo: Marcos Reyes Negocio"
+                id="Nombre del negocio"
+                placeholder="Negocio"
                 value={nombreNegocio}
                 onChange={(e) => setNombreNegocio(e.target.value)}
               />
+              {errorNombreNegocio && nombreNegocio.length === 0 &&
+                errorNombreNegocio.map((error, index) => (
+                  <div key={index} className={`${styles.error__formContainer}`}>
+                    {error}
+                    <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+                  </div>
+                ))
+              }
             </div>
             <div className={`${styles.item__formContainer}`}>
-              <label htmlFor="username" className="form-label">Nombre de Usuario</label>
+              <label htmlFor="username" className="form-label">Email</label>
               <input
-              className={`form-control`}
-                type="text"
+                className={`form-control`}
+                type="email"
                 id="username"
-                placeholder="Ejemplo: multi@stocksync.io"
+                placeholder="Correo@empresa.cl"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
+              {errorEmail && email.length === 0 &&
+                errorEmail.map((error, index) => (
+                  <div key={index} className={`${styles.error__formContainer}`}>
+                    {error}
+                    <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+                  </div>
+                ))
+              }
             </div>
             <div className={`${styles.item__formContainer}`}>
               <label htmlFor="password" className="form-label">Contraseña</label>
               <input
-              className={`form-control`}
+                className={`form-control`}
                 type="password"
                 id="password"
-                placeholder="Tu contraseña"
+                autoComplete='off'
+                placeholder="Contraseña"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
+                {
+                  (showPassword)
+                  ? (
+                    <FontAwesomeIcon 
+                      onClick={() => handleShowPassword('password')}
+                      className={`${styles.iconInput__formContainer}`} 
+                      icon={faEye}
+                    />
+                  )
+                  :(
+                    <FontAwesomeIcon 
+                      onClick={() => handleShowPassword('password')}
+                      className={`${styles.iconInput__formContainer}`} 
+                      icon={faEyeSlash}
+                    />
+                  )
+                }
+                {errorPassword && email.length === 0 &&
+                  errorPassword.map((error, index) => (
+                    <div key={index} className={`${styles.error__formContainer}`}>
+                      {error}
+                      <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+                    </div>
+                  ))
+                }
             </div>
             <div className={`${styles.item__formContainer}`}>
               <label htmlFor="passwordConfirmation" className="form-label">Confirmar Contraseña</label>
@@ -122,11 +234,42 @@ const Register: React.FC = () => {
                 type="password"
                 id="passwordConfirmation"
                 placeholder="Confirma tu contraseña"
+                autoComplete='off'
                 value={passwordConfirmation}
                 onChange={(e) => setPasswordConfirmation(e.target.value)}
               />
+              {
+                  (showConfirmarPassword)
+                  ? (
+                    <FontAwesomeIcon 
+                      onClick={() => handleShowPassword('passwordConfirmation')}
+                      className={`${styles.iconInput__formContainer}`} 
+                      icon={faEye}
+                    />
+                  )
+                  :(
+                    <FontAwesomeIcon 
+                      onClick={() => handleShowPassword('passwordConfirmation')}
+                      className={`${styles.iconInput__formContainer}`} 
+                      icon={faEyeSlash}
+                    />
+                  )
+                }
+                {errorPasswordConfirmation && email.length === 0 &&
+                  errorPasswordConfirmation.map((error, index) => (
+                    <div key={index} className={`${styles.error__formContainer}`}>
+                      {error}
+                      <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+                    </div>
+                  ))
+                }
             </div>
-            {error && <div className="alert alert-danger">{error}</div>}
+            {error && 
+              <div className={`${styles.error__formContainer}`}>
+                {error}
+                <FontAwesomeIcon className={`${styles.iconError__formContainer}`} icon={faCircleXmark}/>  
+              </div>
+            }
             <button 
               className={`${styles.btn__formContainer}`}
               type="submit">

@@ -1,3 +1,6 @@
+* {
+    box-sizing: border-box;
+}
 /* Ensure no margins or paddings in body and html */
 html, body {
     margin: 0;
