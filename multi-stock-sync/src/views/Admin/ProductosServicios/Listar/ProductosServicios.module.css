@@ -1,0 +1,46 @@
+.container {
+    margin-top: 1rem;
+}
+
+.header {
+    margin-bottom: 1rem;
+}
+
+.searchBar {
+    display: flex;
+    margin-bottom: 1rem;
+}
+
+.searchInput {
+    margin-right: 0.5rem;
+}
+
+.dropdownButton {
+    margin-right: 0.5rem;
+}
+
+.filterButtons {
+    margin-bottom: 1rem;
+}
+
+.tableContainer {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.table {
+    width: 100%;
+}
+
+.table th, .table td {
+    padding: 0.75rem;
+}
+
+.badge {
+    background-color: #28a745;
+}
+
+.icon {
+    margin-right: 0.5rem;
+    color: #ffc107;
+}
