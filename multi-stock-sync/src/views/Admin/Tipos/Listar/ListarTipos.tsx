@@ -58,6 +58,7 @@ const ListarTipos: React.FC = () => {
 
     const confirmDelete = () => {
         if (selectedTipo) {
+            setLoading(true);
             fetch(`${process.env.VITE_API_URL}/tipo-productos/${selectedTipo.id}`, {
                 method: 'DELETE',
             })
@@ -72,6 +73,7 @@ const ListarTipos: React.FC = () => {
                 .finally(() => {
                     setShowModal(false);
                     setSelectedTipo(null);
+                    setLoading(false);
                 });
         }
     };
