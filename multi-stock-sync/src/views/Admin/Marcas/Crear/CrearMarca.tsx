@@ -6,9 +6,10 @@ const CrearMarca: React.FC = () => {
   const miniNavbarLinks = [
     { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
     { name: 'Marcas', url: '/admin/marcas' },
+    { name: 'Tipos de Producto', url: '/admin/tipos' },
     { name: 'Config. Masiva', url: '/admin/config-masiva' },
     { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-  ];
+];
 
   const [showForm, setShowForm] = useState(false); 
   const [isEditing, setIsEditing] = useState(false); 

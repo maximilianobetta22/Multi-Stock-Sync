@@ -81,6 +81,7 @@ const ProductosServicios: React.FC = () => {
     const miniNavbarLinks = [
         { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
         { name: 'Marcas', url: '/admin/marcas' },
+        { name: 'Tipos de Producto', url: '/admin/tipos' },
         { name: 'Config. Masiva', url: '/admin/config-masiva' },
         { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
     ];
