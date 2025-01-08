@@ -123,7 +123,9 @@ const ListarTipos: React.FC = () => {
                                         <td>{formatDate(tipo.created_at)}</td>
                                         <td>{formatDate(tipo.updated_at)}</td>
                                         <td>
-                                            <button className="btn btn-secondary btn-sm me-2" disabled={tipo.id === 1}>Editar</button>
+                                            <Link to={`/admin/tipos/editar/${tipo.id}`}>
+                                                <button className="btn btn-secondary btn-sm me-2" disabled={tipo.id === 1}>Editar</button>
+                                            </Link>
                                             <button className="btn btn-danger btn-sm" disabled={tipo.id === 1} onClick={() => handleDelete(tipo)}>Eliminar</button>
                                         </td>
                                     </tr>
