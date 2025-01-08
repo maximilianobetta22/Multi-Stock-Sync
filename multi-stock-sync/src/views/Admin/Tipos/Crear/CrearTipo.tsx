@@ -8,6 +8,8 @@ const CrearTipo: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
     const [errors, setErrors] = useState<{ producto?: string[] }>({});
+    const [productId, setProductId] = useState<number | null>(null);
+    const [createdAt, setCreatedAt] = useState<string | null>(null);
 
     const miniNavbarLinks = [
         { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
@@ -16,6 +18,18 @@ const CrearTipo: React.FC = () => {
         { name: 'Config. Masiva', url: '/admin/config-masiva' },
         { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
     ];
+
+    const formatDate = (dateString: string) => {
+        const options: Intl.DateTimeFormatOptions = {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: 'numeric',
+            minute: 'numeric',
+            second: 'numeric',
+        };
+        return new Date(dateString).toLocaleDateString('es-ES', options);
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -37,6 +51,8 @@ const CrearTipo: React.FC = () => {
             if (response.ok) {
                 setMessage('Tipo de producto creado exitosamente');
                 setProducto('');
+                setProductId(data.data.id);
+                setCreatedAt(data.data.created_at);
             } else {
                 setErrors(data.errors);
             }
@@ -78,13 +94,18 @@ const CrearTipo: React.FC = () => {
                                 )}
                             </button>
 
-
                             <Link to="/admin/tipos" className="btn btn-secondary ms-2">
                                 Salir
                             </Link>
 
                         </form>
-                        {message && <div className="alert alert-success mt-3">{message}</div>}
+                        {message && (
+                            <div className="alert alert-success mt-3">
+                                {message}
+                                {productId && <div>ID: {productId}</div>}
+                                {createdAt && <div>Fecha de creación: {formatDate(createdAt)}</div>}
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
