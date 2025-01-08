@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import './Navbar.css';
+import styles from './Navbar.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog } from '@fortawesome/free-solid-svg-icons';
-import 'bootstrap/dist/js/bootstrap.bundle.min';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -50,81 +49,61 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className="main-navbar navbar navbar-expand-lg navbar-light bg-light">
-      <div className="container-fluid">
-        <Link className="navbar-brand" to="#">
-          <img src="/path-to-logo.png" alt="Multi-Stock-Sync" className="main-logo" />
-        </Link>
-        <button
-          className="navbar-toggler"
-          type="button"
-          data-bs-toggle="collapse"
-          data-bs-target="#navbarContent"
-          aria-controls="navbarContent"
-          aria-expanded="false"
-          aria-label="Toggle navigation"
-        >
-          <span className="navbar-toggler-icon"></span>
-        </button>
-        <div className="collapse navbar-collapse justify-content-center" id="navbarContent">
-          <ul className="navbar-nav me-auto mb-2 mb-lg-0">
-            <li className="nav-item">
-              <Link className="nav-link active" aria-current="page" to="/admin/documentos">Documentos</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/punto-venta/despacho">Despacho</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/punto-venta">Punto de Venta</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/admin/stock">Stock</Link>
-            </li>
-            <li className="nav-item">
-              <Link className="nav-link" to="/admin/reportes">Reportes</Link>
-            </li>
-          </ul>
-          <div className="d-flex align-items-center">
-            {isAuthenticated ? (
-              <>
-                <div className="settings-dropdown">
-                  <button className="btn btn-secondary" onClick={() => handleDropdownToggle('settings')}>
-                    <FontAwesomeIcon icon={faCog} />
-                  </button>
-                  <div className={`settings-dropdown-menu ${dropdownOpen ? 'show' : ''}`}>
-                    <Link className="settings-dropdown-item" to="/admin/productos-servicios">Productos y Servicios</Link>
-                    <Link className="settings-dropdown-item" to="#">Lista de Precios</Link>
-                    <Link className="settings-dropdown-item" to="#">Clientes</Link>
-                    <Link className="settings-dropdown-item" to="#">Sucursales</Link>
-                    <Link className="settings-dropdown-item" to="#">Ver Mas</Link>
-                  </div>
+    <nav className={styles.mainNavbar}>
+      <Link className="navbar-brand" to="/">
+        <img src="/path-to-logo.png" alt="Multi-Stock-Sync" className={styles.mainLogo} />
+      </Link>
+      <div className={styles.navLinks}>
+        <Link className={`${styles.navLink} nav-link active`} aria-current="page" to="/admin/documentos">Documentos</Link>
+        <Link className={styles.navLink} to="/punto-venta/despacho">Despacho</Link>
+        <Link className={styles.navLink} to="/punto-venta">Punto de Venta</Link>
+        <Link className={styles.navLink} to="/admin/stock">Stock</Link>
+        <Link className={styles.navLink} to="/admin/reportes">Reportes</Link>
+      </div>
+      <div className={styles.userActions}>
+        {isAuthenticated ? (
+          <>
+            <div className={styles.settingsDropdown}>
+              <FontAwesomeIcon 
+                icon={faCog} 
+                className={styles.settingsIcon} 
+                onClick={() => handleDropdownToggle('settings')} 
+              />
+              <div className={`${styles.settingsDropdownMenu} ${dropdownOpen ? styles.settingsDropdownMenuShow : ''}`}>
+                <Link className={styles.settingsDropdownItem} to="/admin/productos-servicios">Productos y Servicios</Link>
+                <Link className={styles.settingsDropdownItem} to="#">Lista de Precios</Link>
+                <Link className={styles.settingsDropdownItem} to="#">Clientes</Link>
+                <Link className={styles.settingsDropdownItem} to="#">Sucursales</Link>
+                <Link className={styles.settingsDropdownItem} to="#">Ver Mas</Link>
+              </div>
+            </div>
+            <div className={styles.userInfo}>
+              <div className={styles.userDropdown}>
+                <div className={styles.userInitialCircle} onClick={() => handleDropdownToggle('user')}>
+                  {user.nombre.charAt(0)}
                 </div>
-                <div className="user-info d-flex align-items-center">
-                  <div className="user-dropdown">
-                    <div className="user-initial-circle" onClick={() => handleDropdownToggle('user')}>
-                      {user.nombre.charAt(0)}
-                    </div>
-                    <div className={`user-dropdown-menu ${userDropdownOpen ? 'show' : ''}`}>
-                      <div className="user-dropdown-item user-info-item">{user.nombre}</div>
-                      <Link className="user-dropdown-item" to="#">Cambiar de Empresa</Link>
-                      <Link className="user-dropdown-item" to="#">Cambiar Contraseña</Link>
-                      <Link className="user-dropdown-item" to="#">Mi Cuenta</Link>
-                      <Link className="user-dropdown-item" to="#">Mis Sistemas</Link>
-                      <Link className="user-dropdown-item text-danger" onClick={handleLogout} to="#">Salir</Link>
-                    </div>
-                  </div>
-                  <div>
-                    <span className="user-name">{user.nombre} {user.apellidos}</span>
-                    <br />
-                    <span className="business-name">{user.nombre_negocio}</span>
-                  </div>
+                <div className={`${styles.userDropdownMenu} ${userDropdownOpen ? styles.userDropdownMenuShow : ''}`}>
+                  <div className={`${styles.userDropdownItem} ${styles.userDropdownItemUserInfoItem}`}>{user.nombre}</div>
+                  <Link className={styles.userDropdownItem} to="#">Cambiar de Empresa</Link>
+                  <Link className={styles.userDropdownItem} to="#">Cambiar Contraseña</Link>
+                  <Link className={styles.userDropdownItem} to="#">Mi Cuenta</Link>
+                  <Link className={styles.userDropdownItem} to="#">Mis Sistemas</Link>
+                  <Link className={`${styles.userDropdownItem} text-danger`} onClick={handleLogout} to="#">Salir</Link>
                 </div>
-              </>
-            ) : (
-              <Link className="btn btn-yellow me-2" to="/login">Login</Link>
-            )}
-          </div>
-        </div>
+              </div>
+              <div>
+                <span className={styles.userName}>{user.nombre} {user.apellidos}</span>
+                <br />
+                <span className={styles.businessName}>{user.nombre_negocio}</span>
+              </div>
+            </div>
+          </>
+        ) : (
+          <>
+            <Link className={styles.btnYellow} to="/login">Iniciar Sesión</Link>
+            <Link className={styles.btnGreen} to="/register">Registrarme</Link>
+          </>
+        )}
       </div>
     </nav>
   );

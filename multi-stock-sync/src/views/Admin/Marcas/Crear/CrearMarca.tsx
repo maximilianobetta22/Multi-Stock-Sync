@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
-import './CrearMarca.css';
+import styles from './CrearMarca.module.css';
 import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 
 const CrearMarca: React.FC = () => {
   const miniNavbarLinks = [
     { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
     { name: 'Marcas', url: '/admin/marcas' },
+    { name: 'Tipos de Producto', url: '/admin/tipos' },
     { name: 'Config. Masiva', url: '/admin/config-masiva' },
     { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-  ];
+];
 
   const [showForm, setShowForm] = useState(false); 
   const [isEditing, setIsEditing] = useState(false); 
@@ -82,29 +83,27 @@ const CrearMarca: React.FC = () => {
       <AdminNavbar links={miniNavbarLinks} dropdowns={[]} />
       <div className="main-container">
         {}
-        <div className="header">
-          <div className="search-filter">
+        <div className={styles.header}>
+          <div className={styles['search-filter']}>
             <input
               type="text"
               placeholder="Buscar por nombre"
               value={searchQuery}
               onChange={handleSearch}
-              className="search-input"
+              className={styles['search-input']}
             />
-            <button className="search-btn">
-              <i className="fas fa-search"></i>
-            </button>
+            
           </div>
-          <button className="btn-add" onClick={() => setShowForm(!showForm)}>
+          <button className={styles['btn-add']} onClick={() => setShowForm(!showForm)}>
             {isEditing ? 'EDITAR MARCA' : 'CREAR MARCA'}
           </button>
         </div>
 
         {}
         {showForm && (
-          <div className="form-container">
+          <div className={styles['form-container']}>
             <h2>{isEditing ? 'Editar Marca de Producto' : 'Nueva Marca de Producto'}</h2>
-            <div className="form-group">
+            <div className={styles["form-group"]}>
               <label>Título de la Marca</label>
               <input
                 type="text"
@@ -116,7 +115,7 @@ const CrearMarca: React.FC = () => {
               />
               <small>{newMarca.name.length} / 45</small>
             </div>
-            <div className="form-group">
+            <div className={styles['form-group']}>
               <label>Nueva Imagen</label>
               <input
                 type="file"
@@ -125,11 +124,11 @@ const CrearMarca: React.FC = () => {
                 onChange={handleFileChange}
               />
             </div>
-            <div className="form-actions">
-              <button className="btn-cancel" onClick={() => setShowForm(false)}>
+            <div className={styles['form-actions']}>
+              <button className={styles['btn-cancel']} onClick={() => setShowForm(false)}>
                 Cancelar
               </button>
-              <button className="btn-save" onClick={handleAddMarca}>
+              <button className={styles['btn-save']} onClick={handleAddMarca}>
                 {isEditing ? 'Actualizar' : 'Guardar'}
               </button>
             </div>
@@ -137,7 +136,7 @@ const CrearMarca: React.FC = () => {
         )}
 
         {}
-        <table className="table">
+        <table className={styles.table}>
           <thead>
             <tr>
               <th>Nombre de la Marca</th>
@@ -151,16 +150,16 @@ const CrearMarca: React.FC = () => {
                 <td>{marca.name}</td>
                 <td>
                   {marca.image ? (
-                    <img src={marca.image} alt={marca.name} className="table-img" />
+                    <img src={marca.image} alt={marca.name} className={styles['table-img']} />
                   ) : (
-                    <div className="table-placeholder">Sin imagen</div>
+                    <div className={styles['table-placeholder']}>Sin imagen</div>
                   )}
                 </td>
                 <td>
-                  <button className="btn-edit" onClick={() => handleEdit(marca.id)}>
+                  <button className={styles['btn-edit']} onClick={() => handleEdit(marca.id)}>
                     ✏️
                   </button>
-                  <button className="btn-delete" onClick={() => handleDelete(marca.id)}>
+                  <button className={styles['btn-delete']} onClick={() => handleDelete(marca.id)}>
                     🗑️
                   </button>
                 </td>
