@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faStar } from '@fortawesome/free-solid-svg-icons';
 import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 import { Link } from 'react-router-dom';
+import styles from './ProductosServicios.module.css';
 
 const ProductosServicios: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
@@ -32,19 +33,19 @@ const ProductosServicios: React.FC = () => {
     return (
         <>
         <AdminNavbar links={miniNavbarLinks} />
-        <div className="container mt-4">
-            <h1 className="mb-3">Productos y Servicios</h1>
+        <div className={`container ${styles.container}`}>
+            <h1 className={styles.header}>Productos y Servicios</h1>
             
-            <div className="d-flex mb-3">
+            <div className={styles.searchBar}>
                 <input 
                     type="text" 
-                    className="form-control me-2" 
+                    className={`form-control ${styles.searchInput}`} 
                     placeholder="Buscar productos..." 
                     value={searchTerm} 
                     onChange={(e) => setSearchTerm(e.target.value)} 
                 />
                 <div className="dropdown">
-                    <button className="btn btn-primary dropdown-toggle" type="button" id="crearDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button className={`btn btn-multistock dropdown-toggle ${styles.dropdownButton}`} type="button" id="crearDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                         <FontAwesomeIcon icon={faPlus} /> Crear
                     </button>
                     <ul className="dropdown-menu" aria-labelledby="crearDropdown">
@@ -55,14 +56,14 @@ const ProductosServicios: React.FC = () => {
                 </div>
             </div>
 
-            <div className="btn-group mb-3" role="group">
-                <button className={`btn btn-${filter === 'todos' ? 'primary' : 'light'}`} onClick={() => setFilter('todos')}>Todos</button>
-                <button className={`btn btn-${filter === 'producto' ? 'primary' : 'light'}`} onClick={() => setFilter('producto')}>Productos</button>
-                <button className={`btn btn-${filter === 'servicio' ? 'primary' : 'light'}`} onClick={() => setFilter('servicio')}>Servicios</button>
-                <button className={`btn btn-${filter === 'pack' ? 'primary' : 'light'}`} onClick={() => setFilter('pack')}>Packs</button>
+            <div className={`btn-group ${styles.filterButtons}`} role="group">
+                <button className={`btn btn-${filter === 'todos' ? 'multistock' : 'light'}`} onClick={() => setFilter('todos')}>Todos</button>
+                <button className={`btn btn-${filter === 'producto' ? 'multistock' : 'light'}`} onClick={() => setFilter('producto')}>Productos</button>
+                <button className={`btn btn-${filter === 'servicio' ? 'multistock' : 'light'}`} onClick={() => setFilter('servicio')}>Servicios</button>
+                <button className={`btn btn-${filter === 'pack' ? 'multistock' : 'light'}`} onClick={() => setFilter('pack')}>Packs</button>
             </div>
 
-            <table className="table">
+            <table className={`table ${styles.table}`}>
                 <thead>
                     <tr>
                         <th>Producto</th>
@@ -76,10 +77,10 @@ const ProductosServicios: React.FC = () => {
                     {filteredProducts.map((product, index) => (
                         <tr key={index}>
                             <td>
-                                <FontAwesomeIcon icon={faStar} className="text-warning me-2" /> {product.name}
+                                <FontAwesomeIcon icon={faStar} className={styles.icon} /> {product.name}
                             </td>
                             <td>
-                                <span className="badge bg-success">{product.status}</span>
+                                <span className={`badge ${styles.badge}`}>{product.status}</span>
                             </td>
                             <td>{product.brand}</td>
                             <td>{product.type}</td>
