@@ -1,15 +1,15 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AdminNavbar from "../../../../../components/AdminNavbar/AdminNavbar";
 import { Link } from "react-router-dom";
 import styles from "./CrearProducto.module.css";
 
 const CrearProducto: React.FC = () => {
-    const miniNavbarLinks = [
-        { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
-        { name: 'Marcas', url: '/admin/marcas' },
-        { name: 'Config. Masiva', url: '/admin/config-masiva' },
-        { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-    ];
+  const miniNavbarLinks = [
+    { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
+    { name: 'Marcas', url: '/admin/marcas' },
+    { name: 'Config. Masiva', url: '/admin/config-masiva' },
+    { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
+  ];
 
   const [formValues, setFormValues] = useState({
     productName: "",
@@ -21,6 +21,33 @@ const CrearProducto: React.FC = () => {
     productName: false,
     productType: false,
   });
+
+  const [brands, setBrands] = useState<{ id: number; nombre: string }[]>([]);
+  const [productTypes, setProductTypes] = useState<{ id: number; producto: string }[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchBrandsAndProductTypes = async () => {
+      try {
+        const [brandsResponse, productTypesResponse] = await Promise.all([
+          fetch(`${import.meta.env.VITE_API_URL}/marcas`),
+          fetch(`${import.meta.env.VITE_API_URL}/tipo-productos`)
+        ]);
+
+        const brandsData = await brandsResponse.json();
+        const productTypesData = await productTypesResponse.json();
+
+        setBrands(brandsData);
+        setProductTypes(productTypesData);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchBrandsAndProductTypes();
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { id, value } = e.target;
@@ -47,11 +74,14 @@ const CrearProducto: React.FC = () => {
     }
   };
 
+  if (loading) {
+    return <div className="loading">Cargando...</div>;
+  }
+
   return (
     <>
       <AdminNavbar links={miniNavbarLinks} />
       <div className="d-flex flex-grow-1 main-container">
-
         <div className="w-50 p-4 d-flex align-items-start justify-content-center">
           <div className={styles.formContainer}>
             <h2 className={styles.mb4}>Nuevo Producto</h2>
@@ -84,8 +114,9 @@ const CrearProducto: React.FC = () => {
                   onChange={handleInputChange}
                 >
                   <option value="">Seleccionar tipo</option>
-                  <option value="tipo1">Tipo 1</option>
-                  <option value="tipo2">Tipo 2</option>
+                  {productTypes.map((type) => (
+                    <option key={type.id} value={type.id}>{type.producto}</option>
+                  ))}
                 </select>
                 {formErrors.productType && (
                   <small className={styles.textDanger}>Este campo es obligatorio.</small>
@@ -96,14 +127,17 @@ const CrearProducto: React.FC = () => {
                 <label htmlFor="brand" className={styles.formLabel}>
                   Marca
                 </label>
-                <input
-                  type="text"
+                <select
                   id="brand"
-                  className={styles.formControl}
-                  placeholder="Nombre de la marca"
+                  className={styles.formSelect}
                   value={formValues.brand}
                   onChange={handleInputChange}
-                />
+                >
+                  <option value="">Seleccionar marca</option>
+                  {brands.map((brand) => (
+                    <option key={brand.id} value={brand.id}>{brand.nombre}</option>
+                  ))}
+                </select>
               </div>
 
               <Link to="/admin/productos-servicios" className={`btn btn-secondary ${styles.btnSecondary}`}>
