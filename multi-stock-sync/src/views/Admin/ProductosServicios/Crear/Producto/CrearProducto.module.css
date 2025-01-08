@@ -1,6 +1,5 @@
 .formContainer {
-    width: 100%;
-    max-width: 500px;
+    width: 100vw;
     padding: 1.5rem;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -77,7 +76,6 @@
     background-color: #0056b3;
   }
   
-  
   .formCheckInput {
     display: flex;
     align-items: center;
@@ -92,4 +90,13 @@
     font-size: 0.9rem;
     color: #495057;
   }
-  
+
+  .errorContainer {
+    max-height: 150px;
+    overflow-y: auto;
+    margin-bottom: 1rem;
+  }
+
+  .formScrollContainer {
+    overflow-y: auto;
+  }

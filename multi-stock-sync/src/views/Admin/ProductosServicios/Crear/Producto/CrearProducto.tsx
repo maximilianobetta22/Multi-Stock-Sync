@@ -131,11 +131,12 @@ const CrearProducto: React.FC = () => {
   return (
     <>
       <AdminNavbar links={miniNavbarLinks} />
-      <div className="d-flex flex-grow-1 main-container">
-        <div className="w-50 p-4 d-flex align-items-start justify-content-center">
+      <div className="d-flex flex-grow-1 main-container" style={{ width: "100vw", height: "100vh" }}>
+        <div className="w-100 p-4 d-flex align-items-start justify-content-center">
           <div className={styles.formContainer}>
             <h2 className={styles.mb4}>Nuevo Producto</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className={styles.formScrollContainer}>
+
               <div className={`${styles.formGroup} mb-3`}>
                 <label htmlFor="productName" className={styles.formLabel}>
                   Nombre del producto*
@@ -280,106 +281,6 @@ const CrearProducto: React.FC = () => {
               <button type="submit" className={`btn btn-primary ${styles.btnPrimary}`} disabled={submitting}>
                 {submitting ? "Guardando..." : "Guardar"}
               </button>
-            </form>
-          </div>
-        </div>
-
-        <div className={`w-50 custom-gray p-3 d-flex align-items-center justify-content-center`}>
-          <div className={styles.formContainer}>
-            <h2 className={styles.mb4}>Atributos Generales</h2>
-            <form>
-              <div className={`${styles.formGroup} mb-3`}>
-                <label htmlFor="variantName" className={styles.formLabel}>
-                  Nombre de variante
-                </label>
-                <input
-                  type="text"
-                  id="variantName"
-                  className={styles.formControl}
-                  placeholder="Lo que marca la diferencia (Ejemplo: Talla L)"
-                />
-              </div>
-
-              <div className={`${styles.formGroup} mb-3`}>
-                <label htmlFor="sku" className={styles.formLabel}>
-                  SKU
-                </label>
-                <input
-                  type="text"
-                  id="sku"
-                  className={styles.formControl}
-                  placeholder="Si no tienes, te crearemos uno"
-                />
-              </div>
-
-              <div className={`${styles.formGroup} mb-3`}>
-                <label htmlFor="barcode" className={styles.formLabel}>
-                  Código de barras
-                </label>
-                <input
-                  type="text"
-                  id="barcode"
-                  className={styles.formControl}
-                  placeholder="Si no tienes, te crearemos uno"
-                />
-              </div>
-
-              <div className={`${styles.formGroup} mb-3`}>
-                <label htmlFor="price" className={styles.formLabel}>
-                  Precio (con impuestos)
-                </label>
-                <input
-                  type="number"
-                  id="price"
-                  className={styles.formControl}
-                  placeholder="Podrás editarlo luego en Lista de Precios"
-                />
-              </div>
-
-              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="controlStock"
-                  defaultChecked
-                />
-                <label className={styles.formCheckLabel} htmlFor="controlStock">
-                  Controlar stock
-                </label>
-              </div>
-
-              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="allowSalesWithoutStock"
-                />
-                <label className={styles.formCheckLabel} htmlFor="allowSalesWithoutStock">
-                  Permitir venta sin stock
-                </label>
-              </div>
-
-              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="controlSeries"
-                />
-                <label className={styles.formCheckLabel} htmlFor="controlSeries">
-                  Controlar series
-                </label>
-              </div>
-
-              <div className={`${styles.formCheckInput} form-check form-switch`}>
-                <input
-                  className="form-check-input"
-                  type="checkbox"
-                  id="allowDecimalSales"
-                />
-                <label className={styles.formCheckLabel} htmlFor="allowDecimalSales">
-                  Permitir venta con decimales
-                </label>
-              </div>
             </form>
           </div>
         </div>
