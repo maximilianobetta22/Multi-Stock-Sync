@@ -15,16 +15,24 @@ const CrearProducto: React.FC = () => {
     productName: "",
     productType: "",
     brand: "",
+    sku: "",
+    controlStock: true,
+    price: "",
+    allowSalesWithoutStock: false,
+    controlSeries: false,
+    allowDecimalSales: false,
   });
 
   const [formErrors, setFormErrors] = useState({
     productName: false,
     productType: false,
+    price: false,
   });
 
   const [brands, setBrands] = useState<{ id: number; nombre: string }[]>([]);
   const [productTypes, setProductTypes] = useState<{ id: number; producto: string }[]>([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchBrandsAndProductTypes = async () => {
@@ -50,27 +58,63 @@ const CrearProducto: React.FC = () => {
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    const { id, value } = e.target;
-    setFormValues({ ...formValues, [id]: value });
+    const { id, value, type } = e.target as HTMLInputElement;
+    const checked = (e.target as HTMLInputElement).checked;
+    setFormValues({ ...formValues, [id]: type === "checkbox" ? checked : value });
     setFormErrors({ ...formErrors, [id]: false }); // Clear the error if the field is modified
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     // Validate obligatory fields
     const errors = {
       productName: formValues.productName.trim() === "",
       productType: formValues.productType.trim() === "",
+      price: formValues.price.trim() === "",
     };
 
     setFormErrors(errors);
 
-    // If not errors, submit the form
+    // If no errors, submit the form
     const hasErrors = Object.values(errors).some((error) => error);
     if (!hasErrors) {
-      console.log("Formulario enviado:", formValues);
-      // Form handling here
+      setSubmitting(true);
+      try {
+        const productData: any = {
+          nombre: formValues.productName,
+          tipo: formValues.productType,
+          marca: formValues.brand,
+          control_stock: formValues.controlStock,
+          precio: formValues.price,
+          permitir_venta_no_stock: formValues.allowSalesWithoutStock,
+          control_series: formValues.controlSeries,
+          permitir_venta_decimales: formValues.allowDecimalSales,
+        };
+
+        if (formValues.sku.trim() !== "") {
+          productData.sku = formValues.sku;
+        }
+
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/productos`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(productData),
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+          console.log("Producto creado correctamente:", result);
+        } else {
+          console.error("Errores al crear el producto:", result.errors);
+        }
+      } catch (error) {
+        console.error("Error al enviar el formulario:", error);
+      } finally {
+        setSubmitting(false);
+      }
     }
   };
 
@@ -146,12 +190,95 @@ const CrearProducto: React.FC = () => {
                 </select>
               </div>
 
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="sku" className={styles.formLabel}>
+                  SKU
+                </label>
+                <input
+                  type="text"
+                  id="sku"
+                  className={styles.formControl}
+                  placeholder="Si no tienes, te crearemos uno"
+                  value={formValues.sku}
+                  onChange={handleInputChange}
+                />
+              </div>
+
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="price" className={styles.formLabel}>
+                  Precio (con impuestos)*
+                </label>
+                <input
+                  type="number"
+                  id="price"
+                  className={`${styles.formControl} ${formErrors.price ? styles.isInvalid : ""}`}
+                  placeholder="Podrás editarlo luego en Lista de Precios"
+                  value={formValues.price}
+                  onChange={handleInputChange}
+                />
+                {formErrors.price && (
+                  <small className={styles.textDanger}>Este campo es obligatorio.</small>
+                )}
+              </div>
+
+              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="controlStock"
+                  checked={formValues.controlStock}
+                  onChange={handleInputChange}
+                />
+                <label className={styles.formCheckLabel} htmlFor="controlStock">
+                  Controlar stock
+                </label>
+              </div>
+
+              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="allowSalesWithoutStock"
+                  checked={formValues.allowSalesWithoutStock}
+                  onChange={handleInputChange}
+                />
+                <label className={styles.formCheckLabel} htmlFor="allowSalesWithoutStock">
+                  Permitir venta sin stock
+                </label>
+              </div>
+
+              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="controlSeries"
+                  checked={formValues.controlSeries}
+                  onChange={handleInputChange}
+                />
+                <label className={styles.formCheckLabel} htmlFor="controlSeries">
+                  Controlar series
+                </label>
+              </div>
+
+              <div className={`${styles.formCheckInput} form-check form-switch`}>
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  id="allowDecimalSales"
+                  checked={formValues.allowDecimalSales}
+                  onChange={handleInputChange}
+                />
+                <label className={styles.formCheckLabel} htmlFor="allowDecimalSales">
+                  Permitir venta con decimales
+                </label>
+              </div>
+
               <Link to="/admin/productos-servicios" className={`btn btn-secondary ${styles.btnSecondary}`}>
                 Cancelar
               </Link>
 
-              <button type="submit" className={`btn btn-primary ${styles.btnPrimary}`}>
-                Guardar
+              <button type="submit" className={`btn btn-primary ${styles.btnPrimary}`} disabled={submitting}>
+                {submitting ? "Guardando..." : "Guardar"}
               </button>
             </form>
           </div>
