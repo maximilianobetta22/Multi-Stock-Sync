@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 import styles from './ListarTipos.module.css';
 import { Link } from 'react-router-dom';
+import ModalWithDecisions from '../../../../components/Modal/ModalWithDecisions/ModalWithDecisions';
 
 const ListarTipos: React.FC = () => {
     interface Tipo {
@@ -15,6 +16,8 @@ const ListarTipos: React.FC = () => {
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [isFiltering, setIsFiltering] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [selectedTipo, setSelectedTipo] = useState<Tipo | null>(null);
 
     useEffect(() => {
         fetch(`${process.env.VITE_API_URL}/tipo-productos`)
@@ -47,6 +50,31 @@ const ListarTipos: React.FC = () => {
               tipo.producto?.toLowerCase().includes(searchTerm.toLowerCase())
           )
         : tipos;
+
+    const handleDelete = (tipo: Tipo) => {
+        setSelectedTipo(tipo);
+        setShowModal(true);
+    };
+
+    const confirmDelete = () => {
+        if (selectedTipo) {
+            fetch(`${process.env.VITE_API_URL}/tipo-productos/${selectedTipo.id}`, {
+                method: 'DELETE',
+            })
+                .then(response => {
+                    if (response.ok) {
+                        setTipos(tipos.filter(tipo => tipo.id !== selectedTipo.id));
+                    } else {
+                        console.error('Failed to delete the product type');
+                    }
+                })
+                .catch(error => console.error('Error deleting data:', error))
+                .finally(() => {
+                    setShowModal(false);
+                    setSelectedTipo(null);
+                });
+        }
+    };
 
     return (
         <>
@@ -94,7 +122,7 @@ const ListarTipos: React.FC = () => {
                                         <td>{formatDate(tipo.updated_at)}</td>
                                         <td>
                                             <button className="btn btn-secondary btn-sm me-2" disabled={tipo.id === 1}>Editar</button>
-                                            <button className="btn btn-danger btn-sm" disabled={tipo.id === 1}>Eliminar</button>
+                                            <button className="btn btn-danger btn-sm" disabled={tipo.id === 1} onClick={() => handleDelete(tipo)}>Eliminar</button>
                                         </td>
                                     </tr>
                                 ))}
@@ -103,6 +131,15 @@ const ListarTipos: React.FC = () => {
                     )}
                 </div>
             </div>
+            {showModal && selectedTipo && (
+                <ModalWithDecisions
+                    title="Confirmar Eliminación"
+                    primaryAction={confirmDelete}
+                    secondaryAction={() => setShowModal(false)}
+                    primaryLabel="Eliminar"
+                    secondaryLabel="Cancelar"
+                />
+            )}
         </>
     );
 };
