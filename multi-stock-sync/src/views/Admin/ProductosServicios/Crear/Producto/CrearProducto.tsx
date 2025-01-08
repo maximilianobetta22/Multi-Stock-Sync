@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import AdminNavbar from "../../../../../components/AdminNavbar/AdminNavbar";
 import { Link } from "react-router-dom";
-import "./CrearProducto.css";
+import styles from "./CrearProducto.module.css";
 
 const CrearProducto: React.FC = () => {
     const miniNavbarLinks = [
@@ -53,33 +53,33 @@ const CrearProducto: React.FC = () => {
       <div className="d-flex flex-grow-1 main-container">
 
         <div className="w-50 p-4 d-flex align-items-start justify-content-center">
-          <div className="form-container">
-            <h2 className="mb-4">Nuevo Producto</h2>
+          <div className={styles.formContainer}>
+            <h2 className={styles.mb4}>Nuevo Producto</h2>
             <form onSubmit={handleSubmit}>
-              <div className="form-group mb-3">
-                <label htmlFor="productName" className="form-label">
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="productName" className={styles.formLabel}>
                   Nombre del producto*
                 </label>
                 <input
                   type="text"
                   id="productName"
-                  className={`form-control ${formErrors.productName ? "is-invalid" : ""}`}
+                  className={`${styles.formControl} ${formErrors.productName ? styles.isInvalid : ""}`}
                   placeholder="Nombre general (Ejemplo: Polera)"
                   value={formValues.productName}
                   onChange={handleInputChange}
                 />
                 {formErrors.productName && (
-                  <small className="text-danger">Este campo es obligatorio.</small>
+                  <small className={styles.textDanger}>Este campo es obligatorio.</small>
                 )}
               </div>
 
-              <div className="form-group mb-3">
-                <label htmlFor="productType" className="form-label">
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="productType" className={styles.formLabel}>
                   Tipo*
                 </label>
                 <select
                   id="productType"
-                  className={`form-select ${formErrors.productType ? "is-invalid" : ""}`}
+                  className={`${styles.formSelect} ${formErrors.productType ? styles.isInvalid : ""}`}
                   value={formValues.productType}
                   onChange={handleInputChange}
                 >
@@ -88,128 +88,128 @@ const CrearProducto: React.FC = () => {
                   <option value="tipo2">Tipo 2</option>
                 </select>
                 {formErrors.productType && (
-                  <small className="text-danger">Este campo es obligatorio.</small>
+                  <small className={styles.textDanger}>Este campo es obligatorio.</small>
                 )}
               </div>
 
-              <div className="form-group mb-3">
-                <label htmlFor="brand" className="form-label">
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="brand" className={styles.formLabel}>
                   Marca
                 </label>
                 <input
                   type="text"
                   id="brand"
-                  className="form-control"
+                  className={styles.formControl}
                   placeholder="Nombre de la marca"
                   value={formValues.brand}
                   onChange={handleInputChange}
                 />
               </div>
 
-              <Link to="/admin/productos-servicios" className="btn btn-secondary me-2">
+              <Link to="/admin/productos-servicios" className={`btn btn-secondary ${styles.btnSecondary}`}>
                 Cancelar
               </Link>
 
-              <button type="submit" className="btn btn-primary">
+              <button type="submit" className={`btn btn-primary ${styles.btnPrimary}`}>
                 Guardar
               </button>
             </form>
           </div>
         </div>
 
-        <div className="w-50 p-4 bg-light d-flex align-items-start justify-content-center">
-          <div className="form-container">
-            <h2 className="mb-4">Atributos Generales</h2>
+        <div className={`w-50 custom-gray p-3 d-flex align-items-center justify-content-center`}>
+          <div className={styles.formContainer}>
+            <h2 className={styles.mb4}>Atributos Generales</h2>
             <form>
-              <div className="form-group mb-3">
-                <label htmlFor="variantName" className="form-label">
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="variantName" className={styles.formLabel}>
                   Nombre de variante
                 </label>
                 <input
                   type="text"
                   id="variantName"
-                  className="form-control"
+                  className={styles.formControl}
                   placeholder="Lo que marca la diferencia (Ejemplo: Talla L)"
                 />
               </div>
 
-              <div className="form-group mb-3">
-                <label htmlFor="sku" className="form-label">
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="sku" className={styles.formLabel}>
                   SKU
                 </label>
                 <input
                   type="text"
                   id="sku"
-                  className="form-control"
+                  className={styles.formControl}
                   placeholder="Si no tienes, te crearemos uno"
                 />
               </div>
 
-              <div className="form-group mb-3">
-                <label htmlFor="barcode" className="form-label">
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="barcode" className={styles.formLabel}>
                   Código de barras
                 </label>
                 <input
                   type="text"
                   id="barcode"
-                  className="form-control"
+                  className={styles.formControl}
                   placeholder="Si no tienes, te crearemos uno"
                 />
               </div>
 
-              <div className="form-group mb-3">
-                <label htmlFor="price" className="form-label">
+              <div className={`${styles.formGroup} mb-3`}>
+                <label htmlFor="price" className={styles.formLabel}>
                   Precio (con impuestos)
                 </label>
                 <input
                   type="number"
                   id="price"
-                  className="form-control"
+                  className={styles.formControl}
                   placeholder="Podrás editarlo luego en Lista de Precios"
                 />
               </div>
 
-              <div className="form-check form-switch mb-3">
+              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
                 <input
                   className="form-check-input"
                   type="checkbox"
                   id="controlStock"
                   defaultChecked
                 />
-                <label className="form-check-label" htmlFor="controlStock">
+                <label className={styles.formCheckLabel} htmlFor="controlStock">
                   Controlar stock
                 </label>
               </div>
 
-              <div className="form-check form-switch mb-3">
+              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
                 <input
                   className="form-check-input"
                   type="checkbox"
                   id="allowSalesWithoutStock"
                 />
-                <label className="form-check-label" htmlFor="allowSalesWithoutStock">
+                <label className={styles.formCheckLabel} htmlFor="allowSalesWithoutStock">
                   Permitir venta sin stock
                 </label>
               </div>
 
-              <div className="form-check form-switch mb-3">
+              <div className={`${styles.formCheckInput} form-check form-switch mb-3`}>
                 <input
                   className="form-check-input"
                   type="checkbox"
                   id="controlSeries"
                 />
-                <label className="form-check-label" htmlFor="controlSeries">
+                <label className={styles.formCheckLabel} htmlFor="controlSeries">
                   Controlar series
                 </label>
               </div>
 
-              <div className="form-check form-switch">
+              <div className={`${styles.formCheckInput} form-check form-switch`}>
                 <input
                   className="form-check-input"
                   type="checkbox"
                   id="allowDecimalSales"
                 />
-                <label className="form-check-label" htmlFor="allowDecimalSales">
+                <label className={styles.formCheckLabel} htmlFor="allowDecimalSales">
                   Permitir venta con decimales
                 </label>
               </div>
