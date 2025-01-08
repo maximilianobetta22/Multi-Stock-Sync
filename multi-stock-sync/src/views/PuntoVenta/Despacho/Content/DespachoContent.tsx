@@ -3,7 +3,20 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSearch, faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import content from "./DespachoContent.module.css";
 
-const DespachoContent: React.FC = () => {
+interface Documento {
+  id: number;
+  tipo: string;
+  numero: string;
+  total: string;
+  fecha: string;
+  autor: string;
+}
+
+interface Props {
+  onAddDocumento: (documento: Documento) => void;
+}
+
+const DespachoContent: React.FC<Props> = ({ onAddDocumento }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const documentos = [
     {
@@ -62,7 +75,10 @@ const DespachoContent: React.FC = () => {
                   {doc.total} / {doc.fecha} / {doc.autor}
                 </p>
               </div>
-              <button className={content.documentoCheck}>
+              <button
+                className={content.documentoCheck}
+                onClick={() => onAddDocumento(doc)}
+              >
                 <FontAwesomeIcon icon={faCheckCircle} />
               </button>
             </li>

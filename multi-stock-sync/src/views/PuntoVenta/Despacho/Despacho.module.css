@@ -1,0 +1,30 @@
+/* Tabla */
+.documentTableContainer {
+  flex-grow: 1;
+  width: 100%;
+}
+
+.documentTableContainer table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  background-color: white;
+}
+
+.documentTableContainer th,
+.documentTableContainer td {
+  border: 1px solid #ddd;
+  text-align: left;
+  padding: 12px 15px;
+  font-size: 0.95rem;
+}
+
+.documentTableContainer th {
+  background-color: #f8f9fa;
+  font-weight: bold;
+}
+
+.documentTableContainer .btn-danger {
+  font-size: 0.8rem;
+  padding: 4px 8px;
+}
