@@ -36,6 +36,11 @@
     background-color: rgb(178, 51, 0) !important;
 }
 
+.navLinkHover:hover {
+    color: #fff !important;
+    background-color: #FF5C1A !important;
+}
+
 .userActions {
     display: flex;
     align-items: center;

@@ -64,19 +64,19 @@ const AdminNavbar: React.FC<MiniNavbarProps> = ({ links = [], dropdowns = [] }) 
           <img src="/path-to-logo.png" alt="Multi-Stock-Sync" className={styles.mainLogo} />
         </Link>
         <div className={styles.navLinks}>
-          <Link className={`${styles.navLink} nav-link active`} to="/admin/documentos">
+          <Link className={`${styles.navLink} ${styles.navLinkHover} nav-link active`} to="/admin/documentos">
             Documentos
           </Link>
-          <Link className={styles.navLink} to="/punto-venta/despacho">
+          <Link className={`${styles.navLink} ${styles.navLinkHover}`} to="/punto-venta/despacho">
             Despacho
           </Link>
-          <Link className={styles.navLink} to="/punto-venta">
+          <Link className={`${styles.navLink} ${styles.navLinkHover}`} to="/punto-venta">
             Punto de Venta
           </Link>
-          <Link className={styles.navLink} to="/admin/stock">
+          <Link className={`${styles.navLink} ${styles.navLinkHover}`} to="/admin/stock">
             Stock
           </Link>
-          <Link className={styles.navLink} to="/admin/reportes">
+          <Link className={`${styles.navLink} ${styles.navLinkHover}`} to="/admin/reportes">
             Reportes
           </Link>
         </div>
