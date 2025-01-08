@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styles from './CrearTipo.module.css';
 import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
+import { Link } from 'react-router-dom';
 
 const CrearTipo: React.FC = () => {
     const [producto, setProducto] = useState('');
@@ -69,13 +70,19 @@ const CrearTipo: React.FC = () => {
                                     </div>
                                 )}
                             </div>
-                            <button type="submit" className="btn btn-primary" disabled={loading}>
+                            <button type="submit" className="btn btn-multistock" disabled={loading}>
                                 {loading ? (
                                     <span className="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                                 ) : (
                                     'Crear'
                                 )}
                             </button>
+
+
+                            <Link to="/admin/tipos" className="btn btn-secondary ms-2">
+                                Salir
+                            </Link>
+
                         </form>
                         {message && <div className="alert alert-success mt-3">{message}</div>}
                     </div>
