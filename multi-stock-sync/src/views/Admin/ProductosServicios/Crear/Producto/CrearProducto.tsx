@@ -27,12 +27,14 @@ const CrearProducto: React.FC = () => {
     productName: false,
     productType: false,
     price: false,
+    brand: false, // Add brand to formErrors
   });
 
   const [brands, setBrands] = useState<{ id: number; nombre: string }[]>([]);
   const [productTypes, setProductTypes] = useState<{ id: number; producto: string }[]>([]);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
 
   useEffect(() => {
     const fetchBrandsAndProductTypes = async () => {
@@ -72,6 +74,7 @@ const CrearProducto: React.FC = () => {
       productName: formValues.productName.trim() === "",
       productType: formValues.productType.trim() === "",
       price: formValues.price.trim() === "",
+      brand: formValues.brand.trim() === "", // Add brand validation
     };
 
     setFormErrors(errors);
@@ -80,6 +83,7 @@ const CrearProducto: React.FC = () => {
     const hasErrors = Object.values(errors).some((error) => error);
     if (!hasErrors) {
       setSubmitting(true);
+      setMessage(null); // Clear previous messages
       try {
         const productData: any = {
           nombre: formValues.productName,
@@ -106,11 +110,14 @@ const CrearProducto: React.FC = () => {
 
         const result = await response.json();
         if (response.ok) {
-          console.log("Producto creado correctamente:", result);
+          setMessage({ type: "success", text: result.message });
         } else {
+          const errorMessages = Object.values(result.errors).flat().join(", ");
+          setMessage({ type: "error", text: errorMessages });
           console.error("Errores al crear el producto:", result.errors);
         }
       } catch (error) {
+        setMessage({ type: "error", text: "Error al enviar el formulario." });
         console.error("Error al enviar el formulario:", error);
       } finally {
         setSubmitting(false);
@@ -133,7 +140,7 @@ const CrearProducto: React.FC = () => {
       <AdminNavbar links={miniNavbarLinks} />
       <div className="d-flex flex-grow-1 main-container" style={{ width: "100vw", height: "100vh" }}>
         <div className="w-100 p-4 d-flex align-items-start justify-content-center">
-          <div className={styles.formContainer}>
+          <div className={styles.formContainer} style={{ height: "70%" }}>
             <h2 className={styles.mb4}>Nuevo Producto</h2>
             <form onSubmit={handleSubmit} className={styles.formScrollContainer}>
 
@@ -176,11 +183,11 @@ const CrearProducto: React.FC = () => {
 
               <div className={`${styles.formGroup} mb-3`}>
                 <label htmlFor="brand" className={styles.formLabel}>
-                  Marca
+                  Marca*
                 </label>
                 <select
                   id="brand"
-                  className={styles.formSelect}
+                  className={`${styles.formSelect} ${formErrors.brand ? styles.isInvalid : ""}`}
                   value={formValues.brand}
                   onChange={handleInputChange}
                 >
@@ -189,6 +196,9 @@ const CrearProducto: React.FC = () => {
                     <option key={brand.id} value={brand.id}>{brand.nombre}</option>
                   ))}
                 </select>
+                {formErrors.brand && (
+                  <small className={styles.textDanger}>Este campo es obligatorio.</small>
+                )}
               </div>
 
               <div className={`${styles.formGroup} mb-3`}>
@@ -284,6 +294,13 @@ const CrearProducto: React.FC = () => {
             </form>
           </div>
         </div>
+      </div>
+       <div className={styles.messageContainer}>
+        {message && (
+          <div className={message.type === "success" ? styles.successMessage : styles.errorMessage}>
+            {message.text}
+          </div>
+        )}
       </div>
     </>
   );
