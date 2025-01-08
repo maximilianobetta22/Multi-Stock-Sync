@@ -1,0 +1,92 @@
+.despachoContent {
+  padding: 20px;
+}
+
+.headerSection {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.despachoHeader {
+  font-size: 18px;
+  font-weight: bold;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.headerIcon {
+  color: #00bfff;
+}
+
+.searchBarDespacho {
+  display: flex;
+  align-items: center;
+}
+
+.searchInputDespacho {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.searchButtonDespacho {
+  margin-left: 10px;
+  padding: 10px;
+  border: none;
+  background-color: #00bfff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.documentosList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.documentoItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.documentoTipo {
+  font-weight: bold;
+  color: #333;
+}
+
+.documentoNumero {
+  color: #555;
+}
+
+.documentoDetalles {
+  font-size: 14px;
+  color: #666;
+}
+
+.documentoCheck {
+  background: none;
+  border: none;
+  color: #00bfff;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.documentoCheck:hover {
+  color: #007bff;
+}
+
+.noDocumento {
+  text-align: center;
+  color: #999;
+  font-size: 16px;
+  margin-top: 20px;
+}
