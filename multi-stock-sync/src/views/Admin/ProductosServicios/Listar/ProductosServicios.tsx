@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faStar } from '@fortawesome/free-solid-svg-icons';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 import { Link } from 'react-router-dom';
 import styles from './ProductosServicios.module.css';
@@ -10,16 +10,30 @@ const ProductosServicios: React.FC = () => {
     const [filter, setFilter] = useState('todos');
 
     const products = [
-        { name: 'Ejemplo Producto 1', status: 'Activo', brand: 'DEMO BSALE', type: 'producto' },
-        { name: 'Ejemplo Producto 2', status: 'Activo', brand: 'DEMO BSALE', type: 'producto' },
-        { name: 'Ejemplo Servicio 1', status: 'Activo', brand: 'DEMO BSALE', type: 'servicio' },
-        { name: 'Pack 5 Fumo Fumos', status: 'Activo', brand: 'DEMO BSALE', type: 'pack' },
-        { name: 'Peluche Fumo Fumos', status: 'Activo', brand: 'Sin Tipo', type: 'producto' },
+        {
+            nombre: 'Peluche FumoFumos edicion limitada',
+            estado: 'Activo',
+            marca: 'Sin Marca',
+            tipo_producto: 'No especificado',
+            sku: 'PEL-7894',
+            precio: '9990.00',
+            permitir_venta_no_stock: 0,
+            control_series: 1,
+            permitir_venta_decimales: 0,
+            created_at: '2025-01-08T16:40:38.000000Z',
+            updated_at: '2025-01-08T16:40:38.000000Z',
+            stock: null
+        },
+        { name: 'Ejemplo Producto 1', status: 'Activo', brand: 'DEMO BSALE', type: 'producto', control_stock: 0 },
+        { name: 'Ejemplo Producto 2', status: 'Activo', brand: 'DEMO BSALE', type: 'producto', control_stock: 0 },
+        { name: 'Ejemplo Servicio 1', status: 'Activo', brand: 'DEMO BSALE', type: 'servicio', control_stock: 0 },
+        { name: 'Pack 5 Fumo Fumos', status: 'Activo', brand: 'DEMO BSALE', type: 'pack', control_stock: 0 },
+        { name: 'Peluche Fumo Fumos', status: 'Activo', brand: 'Sin Tipo', type: 'producto', control_stock: 0 },
     ];
 
     const filteredProducts = products.filter(product => 
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) &&
-        (filter === 'todos' || product.type === filter)
+        product.nombre?.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        (filter === 'todos' || product.tipo_producto === filter)
     );
 
     const miniNavbarLinks = [
@@ -66,27 +80,45 @@ const ProductosServicios: React.FC = () => {
             <table className={`table ${styles.table}`}>
                 <thead>
                     <tr>
-                        <th>Producto</th>
-                        <th>Estado</th>
+                        <th>Nombre</th>
+                        <th>SKU</th>
                         <th>Marca</th>
-                        <th>Tipo de Producto</th>
+                        <th>Tipo</th>
+                        <th>Control Stock</th>
+                        <th>Precio</th>
+                        <th>Permitir Venta Sin Stock</th>
+                        <th>Control Series</th>
+                        <th>Permitir Venta Decimales</th>
+                        <th>Creado En</th>
+                        <th>Actualizado En</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     {filteredProducts.map((product, index) => (
                         <tr key={index}>
+                            <td>{product.nombre}</td>
+                            <td>{product.sku}</td>
+                            <td>{product.marca}</td>
+                            <td>{product.tipo_producto}</td>
                             <td>
-                                <FontAwesomeIcon icon={faStar} className={styles.icon} /> {product.name}
+                                <input type="checkbox" checked={product.control_stock === 1} readOnly />
+                            </td>
+                            <td>{product.precio}</td>
+                            <td>
+                                <input type="checkbox" checked={product.permitir_venta_no_stock === 1} readOnly />
                             </td>
                             <td>
-                                <span className={`badge ${styles.badge}`}>{product.status}</span>
+                                <input type="checkbox" checked={product.control_series === 1} readOnly />
                             </td>
-                            <td>{product.brand}</td>
-                            <td>{product.type}</td>
+                            <td>
+                                <input type="checkbox" checked={product.permitir_venta_decimales === 1} readOnly />
+                            </td>
+                            <td>{product.created_at ? new Date(product.created_at).toLocaleDateString() : 'N/A'}</td>
+                            <td>{product.updated_at ? new Date(product.updated_at).toLocaleDateString() : 'N/A'}</td>
                             <td>
                                 <button className="btn btn-secondary btn-sm me-2">Editar</button>
-                                <button className="btn btn-danger btn-sm">Eliminar</button>
+                                <button className="btn btn-danger btn-sm mt-2">Eliminar</button>
                             </td>
                         </tr>
                     ))}
