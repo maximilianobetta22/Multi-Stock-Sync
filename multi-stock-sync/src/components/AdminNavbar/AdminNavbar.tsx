@@ -56,12 +56,11 @@ const AdminNavbar: React.FC<MiniNavbarProps> = ({ links = [], dropdowns = [] }) 
     });
   };
   
-
   return (
     <>
       {/* Main Navbar */}
       <nav className={styles.mainNavbar}>
-        <Link className="navbar-brand" to="#">
+        <Link className="navbar-brand" to="/">
           <img src="/path-to-logo.png" alt="Multi-Stock-Sync" className={styles.mainLogo} />
         </Link>
         <div className={styles.navLinks}>
