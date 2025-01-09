@@ -20,9 +20,8 @@ const CrearMarca: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [newMarca, setNewMarca] = useState({ nombre: '', imagen: '' });
-  const [marcas, setMarcas] = useState<Marca[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [editId, setEditId] = useState<number | null>(null);
+  const [marcas, setMarcas] = useState<Marca[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +56,7 @@ const CrearMarca: React.FC = () => {
   };
 
   const filteredMarcas = marcas.filter((marca) =>
-    marca.nombre?.toLowerCase().includes(searchQuery.toLowerCase())
+    marca.nombre.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -90,10 +89,8 @@ const CrearMarca: React.FC = () => {
             fetchMarcas();
             setNewMarca({ nombre: '', imagen: '' });
             setShowForm(false);
-            setIsEditing(false);
-            setEditId(null);
+            setLoading(false);
           }
-          setLoading(false);
         })
         .catch(() => {
           setError('Error al agregar la marca');
@@ -108,7 +105,6 @@ const CrearMarca: React.FC = () => {
       setNewMarca({ nombre: marcaToEdit.nombre, imagen: marcaToEdit.imagen });
       setShowForm(true);
       setIsEditing(true);
-      setEditId(id);
     }
   };
 
