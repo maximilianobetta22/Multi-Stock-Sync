@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './RecepcionStock.css';
+import { Link } from 'react-router-dom';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 
 const RecepcionStock: React.FC = () => {
@@ -211,6 +212,12 @@ const RecepcionStock: React.FC = () => {
                         </div>
 
                         <div className="d-flex justify-content-between align-items-center">
+
+                            <Link to="/admin/productos-servicios">
+                                <button className="btn btn-success">
+                                    ¿Crear producto?
+                                </button>
+                            </Link>
                             <h5>Total Neto: {totalNet.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</h5>
                             <button className="btn btn-primary" onClick={handleSave}>
                                 Guardar
