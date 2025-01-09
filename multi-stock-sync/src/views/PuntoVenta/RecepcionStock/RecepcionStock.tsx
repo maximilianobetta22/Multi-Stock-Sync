@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './RecepcionStock.css';
+import { Link } from 'react-router-dom';
 import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 
 const RecepcionStock: React.FC = () => {
@@ -103,6 +104,11 @@ const RecepcionStock: React.FC = () => {
     return (
         <>
             <AdminNavbar />
+            {loading && (
+                <div className="spinner-overlay">
+                    <div className="spinner"></div>
+                </div>
+            )}
             <div className="d-flex flex-grow-1 main-container">
                 <div className="w-100 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div className="recepcion-stock-container bg-white p-4 rounded shadow">
@@ -127,7 +133,6 @@ const RecepcionStock: React.FC = () => {
                             />
                         </div>
 
-                        {loading && <p>Loading products...</p>}
                         {error && <p>{error}</p>}
 
                         <div className="mb-4 position-relative">
@@ -211,6 +216,12 @@ const RecepcionStock: React.FC = () => {
                         </div>
 
                         <div className="d-flex justify-content-between align-items-center">
+
+                            <Link to="/admin/productos-servicios">
+                                <button className="btn btn-success">
+                                    ¿Crear producto?
+                                </button>
+                            </Link>
                             <h5>Total Neto: {totalNet.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</h5>
                             <button className="btn btn-primary" onClick={handleSave}>
                                 Guardar

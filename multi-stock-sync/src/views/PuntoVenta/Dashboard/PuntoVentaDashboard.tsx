@@ -33,7 +33,6 @@ const PuntoVentaDashboard = () => {
                         : item
                 );
             }
-
             return [...prevCart, { ...product, cantidad: 1 }];
         });
     };
@@ -244,7 +243,7 @@ const FooterActions = ({
             <div className="footer-right">
                 {selectedClient && (
                     <div className="selected-client">
-                        <span>Cliente seleccionado: {selectedClient.nombre}</span>
+                        <span>Cliente seleccionado: {selectedClient.nombres} {selectedClient.apellidos}</span>
                     </div>
                 )}
                 <button
