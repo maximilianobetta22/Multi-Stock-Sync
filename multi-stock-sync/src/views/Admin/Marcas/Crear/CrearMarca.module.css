@@ -1,17 +1,3 @@
-/* ==============================
-   Estilos generales
-============================== */
-body {
-  font-family: Arial, sans-serif;
-  line-height: 1.6;
-  margin: 0;
-  padding: 0;
-  background-color: #f4f4f4;
-}
-
-/* ==============================
-   Header: Filtro de búsqueda
-============================== */
 .header {
   display: flex;
   flex-direction: column;
@@ -23,7 +9,7 @@ body {
   display: flex;
   align-items: center;
   gap: 10px;
-  justify-content: flex-start; /* Filtro completamente a la izquierda */
+  justify-content: flex-start;
 }
 
 .search-input {
@@ -55,9 +41,7 @@ body {
   background-color: #ff6600;
 }
 
-/* ==============================
-   Formulario
-============================== */
+
 .form-container {
   background-color: #ffffff;
   padding: 20px;
@@ -127,9 +111,7 @@ body {
   background-color: #ff6600;
 }
 
-/* ==============================
-   Tabla
-============================== */
+
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -172,9 +154,7 @@ body {
   text-align: center;
 }
 
-/* ==============================
-   Botones de acción
-============================== */
+
 .btn-edit,
 .btn-delete {
   background: none;
