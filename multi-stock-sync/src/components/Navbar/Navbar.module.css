@@ -1,0 +1,276 @@
+.mainNavbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: fixed;
+    top: 0;
+    width: 100%;
+    z-index: 1030;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 0.5rem 1rem;
+    background-color: #f8f9fa; 
+}
+
+.mainLogo {
+    height: 40px;
+}
+
+.navLinks {
+    display: flex;
+    justify-content: center;
+    flex-grow: 1;
+}
+
+.navLink {
+    font-size: 1rem;
+    color: #333;
+    transition: background-color 0.3s, color 0.3s;
+    font-weight: bold; /* Make the text bold */
+    margin: 0 0.5rem;
+    padding: 0.25rem 0.5rem; /* Add padding to prevent size change on hover */
+    border-radius: 4px; /* Add border-radius to match hover state */
+}
+
+.navLink:hover {
+    color: #fff !important;
+    background-color: #FF5C1A !important;
+}
+
+.userActions {
+    display: flex;
+    align-items: center;
+}
+
+.settingsDropdown {
+    position: relative;
+    margin-right: 1rem;
+}
+
+.settingsIcon {
+    color: #6c757d;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.settingsIcon:hover {
+    color: #FF5C1A;
+}
+
+.settingsDropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    display: none;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    z-index: 1040;
+}
+
+.settingsDropdownMenuShow {
+    display: block;
+}
+
+.settingsDropdownItem {
+    padding: 0.5rem 1rem;
+    color: #333;
+    text-decoration: none;
+    display: block;
+}
+
+.settingsDropdownItem:hover {
+    background-color: #f8f9fa;
+}
+
+.settingsDropdownButton {
+    background: none;
+    color: #6c757d;
+    border-radius: 4px;
+    padding: 0.25rem 0.5rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.settingsDropdownButton:hover {
+    background-color: #6c757d;
+    color: #fff;
+}
+
+.btnYellow {
+    color: #fff;
+    background-color: #FF5C1A;
+    border-color: #FF5C1A;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-left: 0.5rem; /* Add margin to separate buttons */
+}
+
+.btnYellow:hover {
+    color: #fff;
+    background-color: #e04b17;
+    border-color: #e04b17;
+}
+
+.btnYellowFocus, .btnYellowFocusFocus {
+    color: #fff;
+    background-color: #e04b17;
+    border-color: #e04b17;
+    box-shadow: 0 0 0 0.2rem rgba(255, 92, 26, 0.5);
+}
+
+.btnYellowActive, .btnYellowActiveActive,
+.show > .btnYellowDropdownToggle {
+    color: #fff;
+    background-color: #c94414;
+    border-color: #c94414;
+}
+
+.btnYellowActiveFocus, .btnYellowActiveFocusFocus,
+.show > .btnYellowDropdownToggleFocus {
+    box-shadow: 0 0 0 0.2rem rgba(255, 92, 26, 0.5);
+}
+
+.btnYellowDisabled, .btnYellowDisabledDisabled {
+    color: #fff;
+    background-color: #FF5C1A;
+    border-color: #FF5C1A;
+}
+
+.btnGreen {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    text-decoration: none;
+    margin-left: 0.5rem; /* Add margin to separate buttons */
+}
+
+.btnGreen:hover {
+    color: #fff;
+    background-color: #218838;
+    border-color: #218838;
+}
+
+.btnGreenFocus, .btnGreenFocusFocus {
+    color: #fff;
+    background-color: #218838;
+    border-color: #218838;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+}
+
+.btnGreenActive, .btnGreenActiveActive,
+.show > .btnGreenDropdownToggle {
+    color: #fff;
+    background-color: #1e7e34;
+    border-color: #1e7e34;
+}
+
+.btnGreenActiveFocus, .btnGreenActiveFocusFocus,
+.show > .btnGreenDropdownToggleFocus {
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+}
+
+.btnGreenDisabled, .btnGreenDisabledDisabled {
+    color: #fff;
+    background-color: #28a745;
+    border-color: #28a745;
+}
+
+.userInitialCircle {
+    width: 40px;
+    height: 40px;
+    background-color: #6c757d; /* Background color */
+    color: #fff; /* Text color */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+    margin-right: 0.5rem;
+    cursor: pointer; /* Change cursor to pointer */
+}
+
+.userInfo {
+    display: flex;
+    align-items: center;
+}
+
+.userName {
+    font-weight: bold;
+    color: #333;
+}
+
+.businessName {
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.userDropdown {
+    position: relative;
+}
+
+.userDropdownMenu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    display: none;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    z-index: 1040;
+}
+
+.userDropdownMenuShow {
+    display: block;
+}
+
+.userDropdownItem {
+    padding: 0.5rem 1rem;
+    color: #333;
+    text-decoration: none;
+    display: block;
+}
+
+.userDropdownItem:hover {
+    background-color: #f8f9fa;
+}
+
+.userDropdownItemUserInfoItem {
+    background-color: #e9ecef; /* Darker background for user info */
+}
+
+/* Responsive Navbar */
+
+@media (max-width: 768px) {
+    .mainNavbar {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .navLinks {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .navLink {
+        margin: 0.5rem 0;
+    }
+
+    .userActions {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+    }
+
+    .settingsDropdown {
+        margin-right: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .btnYellow, .btnGreen {
+        margin-bottom: 0.5rem;
+    }
+}
