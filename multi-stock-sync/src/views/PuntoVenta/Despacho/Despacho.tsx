@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import PuntoVentaNavbar from "../../../components/PuntoVentaNavbar/PuntoVentaNavbar";
-import { faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faXmark, faSearch } from "@fortawesome/free-solid-svg-icons";
 import DespachoContent from "./Content/DespachoContent";
 import styles from "./Despacho.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -22,9 +22,10 @@ const Despacho: React.FC = () => {
     setDocumentoSeleccionado(documento);
   };
   const handleRemoveDocumento = () => {
-    setDocumentoSeleccionado(null); // Restablece el documento seleccionado a null
+    setDocumentoSeleccionado(null);
   };
 
+  /**Tabla Documentos */
   const renderTable = () => {
     return (
       <div className={styles.documentTableContainer}>
@@ -64,6 +65,37 @@ const Despacho: React.FC = () => {
             )}
           </tbody>
         </table>
+        <div className={styles.detalleFooter}>
+          <div className={styles.footerFirst}></div>
+          <div>
+            <div className={styles.footerLeft}>{searchBar()}</div>
+            <div className={styles.footerRigth}>{despacho()}</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /**Barra buscadora de clientes */
+  const searchBar = () => {
+    return (
+      <div>
+        <input
+          type="text"
+          className={styles.searchInput}
+          placeholder="Clientes"
+        />
+        <button className={styles.searchButton}>
+          <FontAwesomeIcon icon={faSearch} />
+        </button>
+      </div>
+    );
+  };
+
+  const despacho = () => {
+    return (
+      <div className={styles.despachoContainer}>
+        <p>hello</p>
       </div>
     );
   };

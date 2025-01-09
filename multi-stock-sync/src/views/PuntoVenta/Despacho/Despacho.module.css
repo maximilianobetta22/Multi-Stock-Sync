@@ -2,7 +2,11 @@
 .documentTableContainer {
   flex-grow: 1;
   width: 100%;
-  height: 100%;
+  height: 90%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: column;
 }
 
 .documentTableContainer table {
@@ -37,4 +41,47 @@
   border-radius: 4px;
   padding: 4px 8px;
   font-size: 0.8rem;
+}
+
+.detalleFooter {
+  display: flex;
+  align-items: center;
+  margin-top: auto;
+  padding: 10px 20px;
+}
+
+.footerSecond {
+  height: 30px;
+  width: 100%;
+  text-align: right;
+}
+
+.footerLeft {
+  width: 70%;
+  align-items: center;
+  gap: 10px;
+}
+
+.footerRight {
+  width: auto;
+  text-align: right;
+  font-size: 0.9rem;
+}
+
+.searchButton {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 0px 4px 4px 0px;
+  padding: 12px 8px;
+  font-size: 0.8rem;
+  width: auto;
+}
+
+.searchInput {
+  width: 95%;
+  padding: 9px 8px;
+  border-radius: 4px 0px 0px 4px;
+  border: none;
+  outline: none;
 }
