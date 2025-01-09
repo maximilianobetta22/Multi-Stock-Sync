@@ -10,12 +10,19 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
     const [selectedClient, setSelectedClient] = useState<any>(null); // New state for selected client
     const [showModal, setShowModal] = useState(false);
     const [clientes, setClientes] = useState<any[]>([]); // State for clients fetched from API
+    const [loading, setLoading] = useState(true); // Loading state
 
     useEffect(() => {
         fetch(`${import.meta.env.VITE_API_URL}/clientes`)
             .then(response => response.json())
-            .then(data => setClientes(data.data))
-            .catch(error => console.error('Error fetching clients:', error));
+            .then(data => {
+                setClientes(data.data);
+                setLoading(false); // Set loading to false after data is fetched
+            })
+            .catch(error => {
+                console.error('Error fetching clients:', error);
+                setLoading(false); // Set loading to false even if there's an error
+            });
     }, []);
 
     useEffect(() => {
@@ -147,21 +154,47 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
                         <FontAwesomeIcon icon={faUser} className="header-icon" /> Clientes
                     </h2>
                     <div className="search-bar"><input type="text" placeholder="Buscar cliente" className="bar-search-input" value={searchQuery} onChange={handleSearch} /></div>
-                    <ul className="clientes-list">
-                        {searchQuery && filteredClientes.length > 0 ? (
-                            filteredClientes.map((cliente) => (
-                                <li key={cliente.id} className="cliente-item">
-                                    {cliente.nombres}
-                                    <div className="cliente-actions">
-                                        <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
-                                        <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" onClick={() => handleSelectClient(cliente)} />
-                                    </div>
-                                </li>
-                            ))
-                        ) : searchQuery ? (
-                            <li className="no-results">Cliente no encontrado.</li>
-                        ) : null}
-                    </ul>
+                    {loading ? (
+                        <div className="loading">Cargando...</div>
+                    ) : (
+                        <div className="clientes-table-container">
+                            <table className="clientes-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {searchQuery && filteredClientes.length > 0 ? (
+                                        filteredClientes.map((cliente) => (
+                                            <tr key={cliente.id}>
+                                                <td>{cliente.nombres} {cliente.apellidos}</td>
+                                                <td>
+                                                    <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
+                                                    <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" onClick={() => handleSelectClient(cliente)} />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : searchQuery ? (
+                                        <tr>
+                                            <td colSpan={2} className="no-results">Cliente no encontrado.</td>
+                                        </tr>
+                                    ) : (
+                                        clientes.map((cliente) => (
+                                            <tr key={cliente.id}>
+                                                <td>{cliente.nombres} {cliente.apellidos}</td>
+                                                <td>
+                                                    <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
+                                                    <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" onClick={() => handleSelectClient(cliente)} />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                     <button
                         className="nuevo-cliente-button"
                         onClick={handleNewClientClick}
