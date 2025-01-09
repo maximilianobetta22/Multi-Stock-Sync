@@ -104,6 +104,11 @@ const RecepcionStock: React.FC = () => {
     return (
         <>
             <AdminNavbar />
+            {loading && (
+                <div className="spinner-overlay">
+                    <div className="spinner"></div>
+                </div>
+            )}
             <div className="d-flex flex-grow-1 main-container">
                 <div className="w-100 bg-light p-3 d-flex align-items-center justify-content-center">
                     <div className="recepcion-stock-container bg-white p-4 rounded shadow">
@@ -128,7 +133,6 @@ const RecepcionStock: React.FC = () => {
                             />
                         </div>
 
-                        {loading && <p>Loading products...</p>}
                         {error && <p>{error}</p>}
 
                         <div className="mb-4 position-relative">
