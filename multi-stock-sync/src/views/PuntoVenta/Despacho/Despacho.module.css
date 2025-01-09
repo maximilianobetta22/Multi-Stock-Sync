@@ -29,9 +29,8 @@
   font-weight: bold;
 }
 
-.documentTableContainer .btn-danger {
-  font-size: 0.8rem;
-  padding: 4px 8px;
+.documentTableContainer th:first-child {
+  width: 50%;
 }
 
 .xMarkButton {
@@ -43,23 +42,21 @@
   font-size: 0.8rem;
 }
 
+.xMarkButton:hover {
+  background-color: #c82333;
+}
+
 .detalleFooter {
   display: flex;
   align-items: center;
   margin-top: auto;
-  padding: 10px 20px;
-}
-
-.footerSecond {
-  height: 30px;
+  column-gap: 20px;
   width: 100%;
-  text-align: right;
 }
 
 .footerLeft {
-  width: 70%;
+  width: 80%;
   align-items: center;
-  gap: 10px;
 }
 
 .footerRight {
@@ -69,19 +66,74 @@
 }
 
 .searchButton {
-  background-color: #007bff;
+  background-color: #00bfff;
   color: white;
   border: none;
-  border-radius: 0px 4px 4px 0px;
+  border-radius: 0px 5px 5px 0px;
   padding: 12px 8px;
   font-size: 0.8rem;
   width: auto;
 }
 
+.searchButton:hover {
+  background-color: #0090e6;
+}
+
 .searchInput {
   width: 95%;
   padding: 9px 8px;
-  border-radius: 4px 0px 0px 4px;
+  border-radius: 5px 0px 0px 5px;
   border: none;
   outline: none;
+}
+
+.despachoContainer {
+  width: 100%;
+}
+
+.totalContainer {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  width: auto;
+  height: auto;
+  padding: 10px;
+  gap: 10px;
+}
+
+.totalContainer p {
+  font-size: medium;
+  margin: 0;
+  margin-bottom: 5px;
+}
+
+.buttonContainer {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.buttonContainer button {
+  background-color: #00bfff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.buttonContainer button:hover {
+  background-color: #0090e6;
+}
+
+.buttonContainer span {
+  color: #999;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.buttonContainer span:hover {
+  color: #666;
 }

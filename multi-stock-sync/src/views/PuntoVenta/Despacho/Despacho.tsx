@@ -66,11 +66,8 @@ const Despacho: React.FC = () => {
           </tbody>
         </table>
         <div className={styles.detalleFooter}>
-          <div className={styles.footerFirst}></div>
-          <div>
-            <div className={styles.footerLeft}>{searchBar()}</div>
-            <div className={styles.footerRigth}>{despacho()}</div>
-          </div>
+          <div className={styles.footerLeft}>{searchBar()}</div>
+          <div className={styles.footerRight}>{despacho()}</div>
         </div>
       </div>
     );
@@ -95,7 +92,18 @@ const Despacho: React.FC = () => {
   const despacho = () => {
     return (
       <div className={styles.despachoContainer}>
-        <p>hello</p>
+        <div className={styles.totalContainer}>
+          <h6>Total:</h6>
+          {documentoSeleccionado ? (
+            <p key={documentoSeleccionado.id}>{documentoSeleccionado.total}</p>
+          ) : (
+            <p>0.00</p>
+          )}
+        </div>
+        <div className={styles.buttonContainer}>
+          <button>Despachar</button>
+          <span onClick={handleRemoveDocumento}>cancelar</span>
+        </div>
       </div>
     );
   };
