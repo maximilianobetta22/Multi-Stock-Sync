@@ -1,6 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import styles from './CrearMarca.module.css';
 import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
+
+interface Marca {
+  id: number;
+  nombre: string;
+  imagen: string;
+}
 
 const CrearMarca: React.FC = () => {
   const miniNavbarLinks = [
@@ -9,26 +15,49 @@ const CrearMarca: React.FC = () => {
     { name: 'Tipos de Producto', url: '/admin/tipos' },
     { name: 'Config. Masiva', url: '/admin/config-masiva' },
     { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-];
+  ];
 
-  const [showForm, setShowForm] = useState(false); 
-  const [isEditing, setIsEditing] = useState(false); 
-  const [editId, setEditId] = useState<number | null>(null); 
-  const [newMarca, setNewMarca] = useState({ name: '', image: '' }); 
-  const [marcas, setMarcas] = useState([
-    { id: 1, name: 'Sin marca', image: '' },
-    
-  ]); 
-  const [searchQuery, setSearchQuery] = useState(''); 
+  const [showForm, setShowForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [newMarca, setNewMarca] = useState({ nombre: '', imagen: '' });
+  const [marcas, setMarcas] = useState<Marca[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [editId, setEditId] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  
+  const fetchMarcas = () => {
+    setLoading(true);
+    fetch(`${import.meta.env.VITE_API_URL}/marcas`)
+      .then((response) => response.json())
+      .then((data) => {
+        if (Array.isArray(data)) {
+          setMarcas(data.map((item) => ({
+            id: item.id,
+            nombre: item.nombre || '',
+            imagen: item.imagen || ''
+          })));
+        } else {
+          setError('Error al cargar las marcas');
+        }
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Error al cargar las marcas');
+        setLoading(false);
+      });
+  };
+
+  useEffect(() => {
+    fetchMarcas();
+  }, []);
+
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchQuery(e.target.value);
   };
 
-  
   const filteredMarcas = marcas.filter((marca) =>
-    marca.name.toLowerCase().includes(searchQuery.toLowerCase())
+    marca.nombre?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -39,35 +68,44 @@ const CrearMarca: React.FC = () => {
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setNewMarca({ ...newMarca, image: URL.createObjectURL(file) });
+      setNewMarca({ ...newMarca, imagen: URL.createObjectURL(file) });
     }
   };
 
   const handleAddMarca = () => {
-    if (newMarca.name.trim()) {
-      if (isEditing && editId !== null) {
-        
-        setMarcas(
-          marcas.map((marca) =>
-            marca.id === editId ? { ...marca, ...newMarca } : marca
-          )
-        );
-      } else {
-        
-        setMarcas([...marcas, { id: marcas.length + 1, ...newMarca }]);
-      }
-      
-      setNewMarca({ name: '', image: '' });
-      setShowForm(false);
-      setIsEditing(false);
-      setEditId(null);
+    if (newMarca.nombre.trim()) {
+      setLoading(true);
+      fetch(`${import.meta.env.VITE_API_URL}/marcas`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(newMarca),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.errors) {
+            setError(data.errors.nombre[0]);
+          } else {
+            fetchMarcas();
+            setNewMarca({ nombre: '', imagen: '' });
+            setShowForm(false);
+            setIsEditing(false);
+            setEditId(null);
+          }
+          setLoading(false);
+        })
+        .catch(() => {
+          setError('Error al agregar la marca');
+          setLoading(false);
+        });
     }
   };
 
   const handleEdit = (id: number) => {
     const marcaToEdit = marcas.find((marca) => marca.id === id);
     if (marcaToEdit) {
-      setNewMarca({ name: marcaToEdit.name, image: marcaToEdit.image });
+      setNewMarca({ nombre: marcaToEdit.nombre, imagen: marcaToEdit.imagen });
       setShowForm(true);
       setIsEditing(true);
       setEditId(id);
@@ -75,98 +113,113 @@ const CrearMarca: React.FC = () => {
   };
 
   const handleDelete = (id: number) => {
-    setMarcas(marcas.filter((marca) => marca.id !== id));
+    setLoading(true);
+    fetch(`${import.meta.env.VITE_API_URL}/marcas/${id}`, {
+      method: 'DELETE',
+    })
+      .then(() => {
+        fetchMarcas();
+        setLoading(false);
+      })
+      .catch(() => {
+        setError('Error al eliminar la marca');
+        setLoading(false);
+      });
   };
 
   return (
     <>
       <AdminNavbar links={miniNavbarLinks} dropdowns={[]} />
       <div className="main-container">
-        {}
-        <div className={styles.header}>
-          <div className={styles['search-filter']}>
-            <input
-              type="text"
-              placeholder="Buscar por nombre"
-              value={searchQuery}
-              onChange={handleSearch}
-              className={styles['search-input']}
-            />
-            
-          </div>
-          <button className={styles['btn-add']} onClick={() => setShowForm(!showForm)}>
-            {isEditing ? 'EDITAR MARCA' : 'CREAR MARCA'}
-          </button>
-        </div>
+        {loading && <div className={styles.spinner}></div>}
+        {error && <div className={styles['error-message']}>{error}</div>}
+        {!loading && !error && (
+          <>
+            <div className={styles.header}>
+              <div className={styles['search-filter']}>
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre"
+                  value={searchQuery}
+                  onChange={handleSearch}
+                  className={styles['search-input']}
+                />
+              </div>
+              <button className={styles['btn-add']} onClick={() => setShowForm(!showForm)}>
+                {isEditing ? 'EDITAR MARCA' : 'CREAR MARCA'}
+              </button>
+            </div>
 
-        {}
-        {showForm && (
-          <div className={styles['form-container']}>
-            <h2>{isEditing ? 'Editar Marca de Producto' : 'Nueva Marca de Producto'}</h2>
-            <div className={styles["form-group"]}>
-              <label>Título de la Marca</label>
-              <input
-                type="text"
-                name="name"
-                value={newMarca.name}
-                onChange={handleChange}
-                placeholder="Nombre"
-                maxLength={45}
-              />
-              <small>{newMarca.name.length} / 45</small>
+            {showForm && (
+              <div className={styles['form-container']}>
+                <h2>{isEditing ? 'Editar Marca de Producto' : 'Nueva Marca de Producto'}</h2>
+                <div className={styles['form-group']}>
+                  <label>Título de la Marca</label>
+                  <input
+                    type="text"
+                    name="nombre"
+                    value={newMarca.nombre}
+                    onChange={handleChange}
+                    placeholder="Nombre"
+                    maxLength={45}
+                  />
+                  <small>{newMarca.nombre.length} / 45</small>
+                </div>
+                <div className={styles['form-group']}>
+                  <label>Nueva Imagen</label>
+                  <input
+                    type="file"
+                    name="imagen"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                  />
+                </div>
+                <div className={styles['form-actions']}>
+                  <button className={styles['btn-cancel']} onClick={() => setShowForm(false)}>
+                    Cancelar
+                  </button>
+                  <button className={styles['btn-save']} onClick={handleAddMarca}>
+                    {isEditing ? 'Actualizar' : 'Guardar'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className={styles['table-container']} style={{ height: '100%' }}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th>Nombre de la Marca</th>
+                    <th>Imagen</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMarcas.map((marca) => (
+                    <tr key={marca.id}>
+                      <td>{marca.nombre}</td>
+                      <td>
+                        {marca.imagen ? (
+                          <img src={marca.imagen} alt={marca.nombre} className={styles['table-img']} />
+                        ) : (
+                          <div className={styles['table-placeholder']}>Sin imagen</div>
+                        )}
+                      </td>
+                      <td>
+                        <button className={styles['btn-edit']} onClick={() => handleEdit(marca.id)}>
+                          ✏️
+                        </button>
+                        <button className={styles['btn-delete']} onClick={() => handleDelete(marca.id)}>
+                          🗑️
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-            <div className={styles['form-group']}>
-              <label>Nueva Imagen</label>
-              <input
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={handleFileChange}
-              />
-            </div>
-            <div className={styles['form-actions']}>
-              <button className={styles['btn-cancel']} onClick={() => setShowForm(false)}>
-                Cancelar
-              </button>
-              <button className={styles['btn-save']} onClick={handleAddMarca}>
-                {isEditing ? 'Actualizar' : 'Guardar'}
-              </button>
-            </div>
-          </div>
+          </>
         )}
-
-        {}
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Nombre de la Marca</th>
-              <th>Imagen</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredMarcas.map((marca) => (
-              <tr key={marca.id}>
-                <td>{marca.name}</td>
-                <td>
-                  {marca.image ? (
-                    <img src={marca.image} alt={marca.name} className={styles['table-img']} />
-                  ) : (
-                    <div className={styles['table-placeholder']}>Sin imagen</div>
-                  )}
-                </td>
-                <td>
-                  <button className={styles['btn-edit']} onClick={() => handleEdit(marca.id)}>
-                    ✏️
-                  </button>
-                  <button className={styles['btn-delete']} onClick={() => handleDelete(marca.id)}>
-                    🗑️
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
       </div>
     </>
   );
