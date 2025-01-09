@@ -1,8 +1,6 @@
 .icon {
     color: #007bff;
-
 }
-
 
 .date-picker-container {
     margin-bottom: 15px;
@@ -62,7 +60,7 @@
     margin: 5px 0 0 0;
 }
 
-/* Botón de reimprimir */
+
 .reimprimir-btn {
     padding: 8px 12px;
     font-size: 14px;
@@ -80,13 +78,93 @@
 .reimprimir-btn:hover {
     background-color: #0056b3;
 }
+.reprint-btn {
+    padding: 12px 20px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #FF5C1A; 
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s;
+}
 
-/* Sin registros */
 .no-records {
     font-size: 14px;
     color: #666;
     text-align: center;
     margin-top: 20px;
+}
+
+
+.document-details {
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.document-actions {
+    margin-top: 20px;
+}
+.document-versions {
+    display: flex;
+    justify-content: center; 
+    align-items: center; 
+    margin-bottom: 10px; 
+}
+.version-item {
+    display: flex;
+    align-items: center;
+    justify-content: center; 
+}
+.copies-section {
+    margin-top: 15px;
+}
+
+.copies-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.copies-controls {
+    display: flex;
+    align-items: center;
+}
+
+.copies-controls .control-btn {
+    padding: 5px 10px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin: 0 5px;
+    transition: background-color 0.3s;
+}
+
+.copies-controls .control-btn:hover {
+    background-color: #0056b3;
+}
+
+.copies-input {
+    width: 50px;
+    text-align: center;
+    padding: 5px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin: 0 10px;
+}
+
+.copies-input:focus {
+    outline: none;
+    border-color: #007bff;
 }
 
 /* Responsive */
@@ -104,5 +182,21 @@
     .reimprimir-btn {
         margin-top: 10px;
         width: 100%;
+    }
+
+    .document-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .copies-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .copies-container {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
