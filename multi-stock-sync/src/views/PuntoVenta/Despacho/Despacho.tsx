@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import PuntoVentaNavbar from "../../../components/PuntoVentaNavbar/PuntoVentaNavbar";
 import { faXmark, faSearch } from "@fortawesome/free-solid-svg-icons";
 import DespachoContent from "./Content/DespachoContent";
+import DespachoPdf from "./DespachoPdf/DespachoPdf";
 import styles from "./Despacho.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -17,12 +18,18 @@ interface Documento {
 const Despacho: React.FC = () => {
   const [documentoSeleccionado, setDocumentoSeleccionado] =
     useState<Documento | null>(null);
+  const [showPdf, setShowPdf] = useState(false);
 
   const handleAddDocumento = (documento: Documento) => {
     setDocumentoSeleccionado(documento);
   };
   const handleRemoveDocumento = () => {
     setDocumentoSeleccionado(null);
+    setShowPdf(false);
+  };
+
+  const handleDespachar = () => {
+    setShowPdf(true); // Cambia a la vista PDF
   };
 
   /**Tabla Documentos */
@@ -101,7 +108,7 @@ const Despacho: React.FC = () => {
           )}
         </div>
         <div className={styles.buttonContainer}>
-          <button>Despachar</button>
+          <button onClick={handleDespachar}>Despachar</button>
           <span onClick={handleRemoveDocumento}>cancelar</span>
         </div>
       </div>
@@ -116,7 +123,11 @@ const Despacho: React.FC = () => {
           {renderTable()}
         </div>
         <div className="w-30 custom-gray p-3 d-flex align-items-center justify-content-center">
-          <DespachoContent onAddDocumento={handleAddDocumento} />
+          {showPdf ? (
+            <DespachoPdf />
+          ) : (
+            <DespachoContent onAddDocumento={handleAddDocumento} />
+          )}
         </div>
       </div>
     </>
