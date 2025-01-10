@@ -9,7 +9,7 @@ const RecepcionStock: React.FC = () => {
   const [search, setSearch] = useState('');
   const [documentNumber, setDocumentNumber] = useState('');
   const [documentType, setDocumentType] = useState('Sin documento');
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [addedProducts, setAddedProducts] = useState<{ sku: string; name: string; price: number; quantity: number }[]>([]);
   const [showProductList, setShowProductList] = useState(false);
