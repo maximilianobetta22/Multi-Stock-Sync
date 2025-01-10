@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import styles from './CrearMarca.module.css';
-import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 
 const CrearMarca: React.FC = () => {
-  const miniNavbarLinks = [
-    { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
-    { name: 'Marcas', url: '/admin/marcas' },
-    { name: 'Tipos de Producto', url: '/admin/tipos' },
-    { name: 'Config. Masiva', url: '/admin/config-masiva' },
-    { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-];
 
   const [showForm, setShowForm] = useState(false); 
   const [isEditing, setIsEditing] = useState(false); 
@@ -80,7 +72,6 @@ const CrearMarca: React.FC = () => {
 
   return (
     <>
-      <AdminNavbar links={miniNavbarLinks} dropdowns={[]} />
       <div className="main-container">
         {}
         <div className={styles.header}>
