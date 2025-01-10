@@ -12,6 +12,27 @@ const Devolucion: React.FC = () => {
                         <h1>Contenido Izquierdo</h1>
                         <p>Aquí va el contenido principal del lado izquierdo.</p>
                     </div>
+                    <div id="return">
+                    <input 
+                        type="text" 
+                        placeholder="Código de barra" 
+                        className="custom-input"
+                    />
+                        <span className="icon">
+                        🔍
+                        </span>
+                    </div>
+                    <div id="main_fotter">
+                        <span id="total">
+                            Nr.líneas:<b>0</b>/Tot.ítem: <b>0</b>
+                        </span>
+                        <div>
+                            <label class="sl-impuesto">Neto</label>
+                            <label class="sl-impuesto">Neto</label>
+                            <label class="sl-impuesto">Neto</label>
+                            <label class="sl-impuesto">Neto</label>
+                        </div>
+                    </div>
                 </div>
                 <div className="w-50 custom-gray p-3 d-flex align-items-center justify-content-center">
                     <div>
