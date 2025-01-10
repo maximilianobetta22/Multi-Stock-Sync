@@ -13,48 +13,54 @@ const CrearProducto: React.FC = () => {
     };
 
     const buscarCategorias = async () => {
-        if (!titulo.trim()) return alert("Por favor, ingresa un título.");
-    
+        if (!titulo.trim()) return alert('Por favor, ingresa un título.');
+
         try {
-            const SITE_ID = "MLC";
+            const SITE_ID = 'MLC';
             const url = `https://api.mercadolibre.com/sites/${SITE_ID}/domain_discovery/search?q=${encodeURIComponent(titulo)}`;
+            console.log('Buscando categorías con URL:', url);
             const response = await fetch(url);
             const data = await response.json();
-    
+
             if (data && Array.isArray(data) && data.length > 0) {
                 setCategorias(data.map((item: any) => ({
                     id: item.category_id,
                     name: item.category_name,
                 })));
+                console.log('Categorías encontradas:', data);
             } else {
                 setCategorias([]);
-                alert("No se encontraron categorías relacionadas.");
+                alert('No se encontraron categorías relacionadas.');
             }
         } catch (error) {
-            console.error("Error al buscar categorías:", error);
-            alert("Hubo un error al buscar categorías.");
+            console.error('Error al buscar categorías:', error);
+            alert('Hubo un error al buscar categorías.');
         }
     };
 
     const obtenerAtributosCategoria = async (categoria: string) => {
         try {
-            const url = `https://api.mercadolibre.com/categories/${categoria}`;
+            console.log('Obteniendo atributos para la categoría:', categoria);
+            const url = `https://api.mercadolibre.com/categories/${categoria}/attributes`;
+            console.log('Llamando a la URL de atributos:', url);
             const response = await fetch(url);
             const data = await response.json();
 
-            if (data && data.attributes) {
-                setAtributos(data.attributes);
+            if (data && Array.isArray(data) && data.length > 0) {
+                setAtributos(data.filter((attr: any) => attr.tags?.required));
+                console.log('Atributos obligatorios encontrados:', data);
             } else {
                 setAtributos([]);
-                alert("No se encontraron atributos para esta categoría.");
+                alert('No se encontraron atributos obligatorios para esta categoría.');
             }
         } catch (error) {
-            console.error("Error al obtener atributos:", error);
-            alert("Hubo un error al obtener los atributos.");
+            console.error('Error al obtener atributos de la categoría:', error);
+            alert('Hubo un error al obtener los atributos de la categoría.');
         }
     };
 
     const handleCategoriaSeleccionada = (categoria: string) => {
+        console.log('Categoría seleccionada:', categoria);
         setCategoriaSeleccionada(categoria);
         setProducto({ titulo, categoria });
         obtenerAtributosCategoria(categoria);
@@ -67,11 +73,58 @@ const CrearProducto: React.FC = () => {
         }));
     };
 
+    const crearProducto = async () => {
+        try {
+            const url = `https://api.mercadolibre.com/items`;
+            console.log('Enviando producto a:', url);
+            
+            // Example payload with product data
+            const payload = {
+                title: producto.nombre || "Sin título",
+                category_id: categoriaSeleccionada,
+                price: producto.precio || 0,
+                currency_id: "CLP",
+                available_quantity: producto.cantidad || 1,
+                buying_mode: "buy_it_now",
+                listing_type_id: "gold_special",
+                condition: producto.condition || "new",
+                description: {
+                    plain_text: producto.descripcion || "Sin descripción",
+                },
+                pictures: [
+                    { source: "https://example.com/image1.jpg" }, // Add image pictures
+                ],
+            };
+    
+            const response = await fetch(url, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer YOUR_ACCESS_TOKEN`, // Use your access token
+                },
+                body: JSON.stringify(payload),
+            });
+    
+            const data = await response.json();
+            console.log("Respuesta al crear producto:", data);
+    
+            if (response.ok) {
+                alert("Producto creado exitosamente.");
+            } else {
+                alert("Error al crear el producto: " + data.message);
+            }
+        } catch (error) {
+            console.error("Error al crear el producto:", error);
+            alert("Hubo un error al intentar crear el producto.");
+        }
+    };
+    
+
     return (
         <div className={styles.crearProducto}>
             <h1>Crear Producto</h1>
 
-            {/* Step 1: Input searching */}
+            {/* Search a category using title */}
             <div>
                 <input
                     type="text"
@@ -82,7 +135,7 @@ const CrearProducto: React.FC = () => {
                 <button onClick={buscarCategorias}>Buscar categorías</button>
             </div>
 
-            {/* Step 2: Show posible categories */}
+            {/* Show posible categories */}
             {categorias.length > 0 && (
                 <div>
                     <h2>Categorías sugeridas:</h2>
@@ -98,10 +151,10 @@ const CrearProducto: React.FC = () => {
                 </div>
             )}
 
-            {/* Step 3: Dynamic form  */}
+            {/* Create a dynamic form */}
             {atributos.length > 0 && (
                 <div>
-                    <h2>Atributos para la categoría seleccionada</h2>
+                    <h2>Atributos obligatorios para la categoría seleccionada</h2>
                     <form>
                         {atributos.map((atributo) => (
                             <div key={atributo.id}>
@@ -129,7 +182,10 @@ const CrearProducto: React.FC = () => {
                 </div>
             )}
 
-            {/* Show Product DEV ONLY */}
+            <button onClick={crearProducto}>Crear Producto</button>
+
+
+            {/* Show product */}
             {categoriaSeleccionada && (
                 <div>
                     <h3>Producto generado:</h3>
@@ -139,7 +195,5 @@ const CrearProducto: React.FC = () => {
         </div>
     );
 };
-
-
 
 export default CrearProducto;
