@@ -1,75 +1,113 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './RecepcionStock.css';
+import { Link } from 'react-router-dom';
 
 const RecepcionStock: React.FC = () => {
-  const [products, setProducts] = useState<{ sku: string; name: string; price: number; quantity: number }[]>([]); // Added products
+
+  const [products, setProducts] = useState<{ sku: string; name: string; price: number; quantity: number }[]>([]);
   const [totalNet, setTotalNet] = useState(0);
   const [search, setSearch] = useState('');
-  const dropdownRef = useRef<HTMLDivElement>(null);
   const [documentNumber, setDocumentNumber] = useState('');
   const [documentType, setDocumentType] = useState('Sin documento');
-
-  const availableProducts = [
-    { sku: '1735310770200', name: 'Peluche Fumo fumos', price: 1200 },
-    { sku: '1735310770201', name: 'Camiseta Algodón', price: 500 },
-    { sku: '1735310770202', name: 'Taza de Cerámica', price: 300 },
-    { sku: '1735310770203', name: 'Cuaderno A5', price: 150 },
-    { sku: '1735310770204', name: 'Bolígrafo Azul', price: 50 },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [addedProducts, setAddedProducts] = useState<{ sku: string; name: string; price: number; quantity: number }[]>([]);
+  const [showProductList, setShowProductList] = useState(false);
+  const productListRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setSearch('');
+    const fetchProducts = async () => {
+      setLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/productos`);
+        if (!response.ok) {
+          throw new Error('Error fetching products');
+        }
+        const data = await response.json();
+        const formattedData = data.map((product: any) => ({
+          sku: product.sku,
+          name: product.nombre,
+          price: product.precio,
+          quantity: 1
+        }));
+        setProducts(formattedData);
+      } catch (error) {
+        setError('No se pudieron cargar los productos');
+      } finally {
+        setLoading(false);
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
+    fetchProducts();
   }, []);
 
-  // Add product
   const handleAddProduct = (product: any) => {
-    if (!products.some((p: any) => p.sku === product.sku)) {
-      const newProducts = [...products, { ...product, quantity: 1 }];
-      setProducts(newProducts);
+    if (!addedProducts.some((p: any) => p.sku === product.sku)) {
+      const newProducts = [...addedProducts, { ...product, quantity: 1 }];
+      setAddedProducts(newProducts);
       calculateNetTotal(newProducts);
     }
-    setSearch(''); // Clean search after adding product
+    setShowProductList(false);
   };
 
-
-  // Update table
   const handleQuantityChange = (sku: string, quantity: number) => {
-    const newProducts = products.map((p: any) =>
+    const newProducts = addedProducts.map((p: any) =>
       p.sku === sku ? { ...p, quantity: quantity || 1 } : p
     );
-    setProducts(newProducts);
+    setAddedProducts(newProducts);
     calculateNetTotal(newProducts);
   };
 
-  // Neto value calculation
   const calculateNetTotal = (products: any[]) => {
     const total = products.reduce((sum, product) => sum + product.quantity * product.price, 0);
     setTotalNet(total);
   };
 
-  // Delete from table
   const handleRemoveProduct = (sku: string) => {
-    const newProducts = products.filter((p: any) => p.sku !== sku);
-    setProducts(newProducts);
+    const newProducts = addedProducts.filter((p: any) => p.sku !== sku);
+    setAddedProducts(newProducts);
     calculateNetTotal(newProducts);
   };
 
-  // Save product (update in future)
   const handleSave = () => {
     alert('Productos guardados exitosamente');
   };
 
+  const handleDocumentNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setDocumentNumber(e.target.value);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setShowProductList(true);
+  };
+
+  const handleOutsideClick = (e: MouseEvent) => {
+    if (productListRef.current && !productListRef.current.contains(e.target as Node)) {
+      setShowProductList(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => {
+      document.removeEventListener('mousedown', handleOutsideClick);
+    };
+  }, []);
+
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(search.toLowerCase()) ||
+    product.sku.toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <>
+      {loading && (
+        <div className="spinner-overlay">
+          <div className="spinner"></div>
+        </div>
+      )}
       <div className="d-flex flex-grow-1 main-container">
         <div className="w-100 bg-light p-3 d-flex align-items-center justify-content-center">
           <div className="recepcion-stock-container bg-white p-4 rounded shadow">
@@ -90,36 +128,36 @@ const RecepcionStock: React.FC = () => {
                 placeholder="Número de documento"
                 className="form-control"
                 value={documentNumber}
-                onChange={(e) => setDocumentNumber(e.target.value)}
+                onChange={handleDocumentNumberChange}
               />
             </div>
-            <div className="mb-4 position-relative" ref={dropdownRef}>
+
+            {error && <p>{error}</p>}
+
+            <div className="mb-4 position-relative">
               <input
                 type="text"
-                placeholder="Buscar producto..."
+                placeholder="Buscar producto por nombre..."
                 className="form-control"
                 value={search}
-                onChange={(e) => setSearch(e.target.value)}
+                onChange={handleSearchChange}
               />
-              {search && (
-                <ul className="list-group mt-2 dropdown-overlay">
-                  {availableProducts
-                    .filter((product) =>
-                      product.name.toLowerCase().includes(search.toLowerCase())
-                    )
-                    .map((product) => (
+              {showProductList && (
+                <div className="dropdown-overlay" ref={productListRef}>
+                  <ul className="list-group mt-2" style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                    {filteredProducts.map((product) => (
                       <li
                         key={product.sku}
                         className="list-group-item list-group-item-action"
                         onClick={() => handleAddProduct(product)}
                       >
-                        {product.name} - ${product.price.toLocaleString()}
+                        {product.name} - {product.price.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                       </li>
                     ))}
-                </ul>
+                  </ul>
+                </div>
               )}
             </div>
-
 
             <div className="table-container mb-4">
               <table className="table table-bordered">
@@ -134,8 +172,8 @@ const RecepcionStock: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {products.length > 0 ? (
-                    products.map((product: any) => (
+                  {addedProducts.length > 0 ? (
+                    addedProducts.map((product: any) => (
                       <tr key={product.sku}>
                         <td>{product.sku}</td>
                         <td>{product.name}</td>
@@ -153,8 +191,8 @@ const RecepcionStock: React.FC = () => {
                             }
                           />
                         </td>
-                        <td>${product.price.toLocaleString()}</td>
-                        <td>${(product.quantity * product.price).toLocaleString()}</td>
+                        <td>{product.price.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
+                        <td>{(product.quantity * product.price).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</td>
                         <td>
                           <button
                             className="btn btn-danger btn-sm"
@@ -177,7 +215,13 @@ const RecepcionStock: React.FC = () => {
             </div>
 
             <div className="d-flex justify-content-between align-items-center">
-              <h5>Total Neto: ${totalNet.toLocaleString()}</h5>
+
+              <Link to="/admin/productos-servicios">
+                <button className="btn btn-success">
+                  ¿Crear producto?
+                </button>
+              </Link>
+              <h5>Total Neto: {totalNet.toLocaleString('es-CL', { style: 'currency', currency: 'CLP', minimumFractionDigits: 0, maximumFractionDigits: 0 })}</h5>
               <button className="btn btn-primary" onClick={handleSave}>
                 Guardar
               </button>

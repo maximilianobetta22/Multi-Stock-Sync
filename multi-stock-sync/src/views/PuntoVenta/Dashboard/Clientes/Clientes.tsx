@@ -9,22 +9,32 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
     const [filteredClientes, setFilteredClientes] = useState<any[]>([]);
     const [selectedClient, setSelectedClient] = useState<any>(null); // New state for selected client
     const [showModal, setShowModal] = useState(false);
+    const [clientes, setClientes] = useState<any[]>([]); // State for clients fetched from API
+    const [loading, setLoading] = useState(true); // Loading state
 
-    const clientes = [
-        { id: 1, nombre: 'Marcos Reyes' },
-        { id: 2, nombre: 'Cliente Ejemplo' },
-    ];
+    useEffect(() => {
+        fetch(`${import.meta.env.VITE_API_URL}/clientes`)
+            .then(response => response.json())
+            .then(data => {
+                setClientes(data.data);
+                setLoading(false); // Set loading to false after data is fetched
+            })
+            .catch(error => {
+                console.error('Error fetching clients:', error);
+                setLoading(false); // Set loading to false even if there's an error
+            });
+    }, []);
 
     useEffect(() => {
         if (searchQuery) {
             const filtered = clientes.filter((cliente) =>
-                cliente.nombre.toLowerCase().includes(searchQuery.toLowerCase())
+                cliente.nombres.toLowerCase().includes(searchQuery.toLowerCase())
             );
             setFilteredClientes(filtered);
         } else {
             setFilteredClientes([]);
         }
-    }, [searchQuery]);
+    }, [searchQuery, clientes]);
 
     const handleSearch = (event: React.ChangeEvent<HTMLInputElement>) => {
         const query = event.target.value.toLowerCase();
@@ -32,7 +42,7 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
 
         if (query) {
             const filtered = clientes.filter((cliente) =>
-                cliente.nombre.toLowerCase().includes(query)
+                cliente.nombres.toLowerCase().includes(query)
             );
             setFilteredClientes(filtered);
         } else {
@@ -58,6 +68,39 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
         onSelectClient(client);
     };
 
+    const handleFormSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        const formData = new FormData(event.currentTarget);
+        const newClient = {
+            tipo_cliente_id: formData.get('tipo_cliente_id'),
+            extranjero: formData.get('extranjero') === 'sí' ? 1 : 0,
+            rut: formData.get('rut'),
+            razon_social: formData.get('razon_social'),
+            giro: formData.get('giro'),
+            nombres: formData.get('nombres'),
+            apellidos: formData.get('apellidos'),
+            direccion: formData.get('direccion'),
+            comuna: formData.get('comuna'),
+            ciudad: formData.get('ciudad'),
+            region: formData.get('region')
+        };
+        // Assuming the API supports POST request to create a new client
+        fetch(`${import.meta.env.VITE_API_URL}/clientes`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(newClient)
+        })
+        .then(response => response.json())
+        .then(data => {
+            setClientes([...clientes, data]);
+            setIsNewClient(false);
+            onSelectClient(data);
+        })
+        .catch(error => console.error('Error creating client:', error));
+    };
+
     return (
         <div className={` ${isNewClient ? 'nuevo-cliente-form' : ''}`}>
             {isNewClient ? (
@@ -66,30 +109,30 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
                     <h2 className="clientes-header">
                         <FontAwesomeIcon icon={faUser} className="header-icon" /> {selectedClient ? 'Editar Cliente' : 'Nuevo Cliente'}
                     </h2>
-                    <form className="formulario">
+                    <form className="formulario" onSubmit={handleFormSubmit}>
                         <label>
                             Tipo de Cliente
-                            <select>
-                                <option>empresa</option>
-                                <option>persona</option>
+                            <select name="tipo_cliente_id">
+                                <option value="1">empresa</option>
+                                <option value="2">persona</option>
                             </select>
                         </label>
                         <label>
                             Cliente Extranjero
-                            <select>
-                                <option>no</option>
-                                <option>sí</option>
+                            <select name="extranjero">
+                                <option value="0">no</option>
+                                <option value="1">sí</option>
                             </select>
                         </label>
-                        <label>Rut<input type="text" /></label>
-                        <label>Razón Social<input type="text" /></label>
-                        <label>Giro<input type="text" /></label>
-                        <label>Nombres<input type="text" /></label>
-                        <label>Apellidos<input type="text" /></label>
-                        <label>Dirección<input type="text" /></label>
-                        <label>Comuna<input type="text" /></label>
-                        <label>Ciudad<input type="text" /></label>
-                        <label>Región<input type="text" /></label>
+                        <label>Rut<input type="text" name="rut" /></label>
+                        <label>Razón Social<input type="text" name="razon_social" /></label>
+                        <label>Giro<input type="text" name="giro" /></label>
+                        <label>Nombres<input type="text" name="nombres" /></label>
+                        <label>Apellidos<input type="text" name="apellidos" /></label>
+                        <label>Dirección<input type="text" name="direccion" /></label>
+                        <label>Comuna<input type="text" name="comuna" /></label>
+                        <label>Ciudad<input type="text" name="ciudad" /></label>
+                        <label>Región<input type="text" name="region" /></label>
                         <div className="form-buttons">
                             <button
                                 type="button"
@@ -111,21 +154,47 @@ const Clientes: React.FC<{ searchQuery: string, setSearchQuery: React.Dispatch<R
                         <FontAwesomeIcon icon={faUser} className="header-icon" /> Clientes
                     </h2>
                     <div className="search-bar"><input type="text" placeholder="Buscar cliente" className="bar-search-input" value={searchQuery} onChange={handleSearch} /></div>
-                    <ul className="clientes-list">
-                        {searchQuery && filteredClientes.length > 0 ? (
-                            filteredClientes.map((cliente) => (
-                                <li key={cliente.id} className="cliente-item">
-                                    {cliente.nombre}
-                                    <div className="cliente-actions">
-                                        <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
-                                        <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" onClick={() => handleSelectClient(cliente)} />
-                                    </div>
-                                </li>
-                            ))
-                        ) : searchQuery ? (
-                            <li className="no-results">Cliente no encontrado.</li>
-                        ) : null}
-                    </ul>
+                    {loading ? (
+                        <div className="loading">Cargando...</div>
+                    ) : (
+                        <div className="clientes-table-container">
+                            <table className="clientes-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nombre</th>
+                                        <th>Acciones</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {searchQuery && filteredClientes.length > 0 ? (
+                                        filteredClientes.map((cliente) => (
+                                            <tr key={cliente.id}>
+                                                <td>{cliente.nombres} {cliente.apellidos}</td>
+                                                <td>
+                                                    <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
+                                                    <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" onClick={() => handleSelectClient(cliente)} />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    ) : searchQuery ? (
+                                        <tr>
+                                            <td colSpan={2} className="no-results">Cliente no encontrado.</td>
+                                        </tr>
+                                    ) : (
+                                        clientes.map((cliente) => (
+                                            <tr key={cliente.id}>
+                                                <td>{cliente.nombres} {cliente.apellidos}</td>
+                                                <td>
+                                                    <FontAwesomeIcon icon={faEdit} className="cliente-icon" onClick={() => handleEditClick(cliente)} />
+                                                    <FontAwesomeIcon icon={faCheckCircle} className="cliente-icon" onClick={() => handleSelectClient(cliente)} />
+                                                </td>
+                                            </tr>
+                                        ))
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
                     <button
                         className="nuevo-cliente-button"
                         onClick={handleNewClientClick}

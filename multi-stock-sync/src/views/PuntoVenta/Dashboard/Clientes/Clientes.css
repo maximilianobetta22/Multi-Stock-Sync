@@ -88,6 +88,41 @@
     white-space: normal; /* Remove nowrap */
 }
 
+.loading {
+    text-align: center;
+    font-size: 16px;
+    color: #555;
+    margin-top: 20px;
+}
+
+.clientes-table-container {
+    max-height: 400px; /* Limit the height of the table container */
+    overflow-y: auto; /* Add vertical scroll */
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.clientes-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.clientes-table th, .clientes-table td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+    text-align: left;
+}
+
+.clientes-table th {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.no-results {
+    text-align: center;
+    color: #999;
+    padding: 20px 0;
+}
 
 .formulario label {
     display: block;
