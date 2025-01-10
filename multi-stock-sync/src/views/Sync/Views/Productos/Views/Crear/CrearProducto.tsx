@@ -118,31 +118,30 @@ const CrearProducto: React.FC = () => {
             alert("Hubo un error al intentar crear el producto.");
         }
     };
-    
+
 
     return (
         <div className={styles.crearProducto}>
             <h1>Crear Producto</h1>
 
-            {/* Search a category using title */}
-            <div>
+            <div className="mb-3">
                 <input
                     type="text"
                     value={titulo}
                     onChange={handleTituloChange}
                     placeholder="Ingresa el título del producto"
+                    className="form-control"
                 />
-                <button onClick={buscarCategorias}>Buscar categorías</button>
+                <button onClick={buscarCategorias} className="btn btn-primary mt-2">Buscar categorías</button>
             </div>
 
-            {/* Show posible categories */}
             {categorias.length > 0 && (
                 <div>
                     <h2>Categorías sugeridas:</h2>
                     <ul>
                         {categorias.map((categoria) => (
                             <li key={categoria.id}>
-                                <button onClick={() => handleCategoriaSeleccionada(categoria.id)}>
+                                <button onClick={() => handleCategoriaSeleccionada(categoria.id)} className="btn btn-success">
                                     {categoria.name}
                                 </button>
                             </li>
@@ -151,17 +150,17 @@ const CrearProducto: React.FC = () => {
                 </div>
             )}
 
-            {/* Create a dynamic form */}
             {atributos.length > 0 && (
                 <div>
                     <h2>Atributos obligatorios para la categoría seleccionada</h2>
                     <form>
                         {atributos.map((atributo) => (
-                            <div key={atributo.id}>
+                            <div key={atributo.id} className="mb-3">
                                 <label>{atributo.name}</label>
                                 {atributo.values && atributo.values.length > 0 ? (
                                     <select
                                         onChange={(e) => handleAtributoChange(atributo.id, e.target.value)}
+                                        className="form-select"
                                     >
                                         <option value="">Seleccione una opción</option>
                                         {atributo.values.map((value: any) => (
@@ -174,6 +173,7 @@ const CrearProducto: React.FC = () => {
                                     <input
                                         type="text"
                                         onChange={(e) => handleAtributoChange(atributo.id, e.target.value)}
+                                        className="form-control"
                                     />
                                 )}
                             </div>
@@ -182,10 +182,8 @@ const CrearProducto: React.FC = () => {
                 </div>
             )}
 
-            <button onClick={crearProducto}>Crear Producto</button>
+            <button onClick={crearProducto} className="btn btn-primary">Crear Producto</button>
 
-
-            {/* Show product */}
             {categoriaSeleccionada && (
                 <div>
                     <h3>Producto generado:</h3>
