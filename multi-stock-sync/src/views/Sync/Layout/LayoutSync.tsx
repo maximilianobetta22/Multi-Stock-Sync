@@ -1,5 +1,5 @@
-import Navbar from '../Components/Navbar/Navbar';
-import styles from './LayoutApp.module.css';
+import SideBar from '../Components/SideBar/SideBar';
+import styles from './LayoutSync.module.css';
 
 interface LayoutAppProps {
   children: JSX.Element;
@@ -8,12 +8,12 @@ interface LayoutAppProps {
 function LayoutApp({children}: LayoutAppProps) {
 
   return (
-    <>
-      <Navbar/>
-      <div className={styles.container}>
+    <section className={styles.container}>
+      <SideBar/>
+      <div className={styles.children__container}>
         {children}
       </div>
-    </>
+    </section>
   );
 };
 
