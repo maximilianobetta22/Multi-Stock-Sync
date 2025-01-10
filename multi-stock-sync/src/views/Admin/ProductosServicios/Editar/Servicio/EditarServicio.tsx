@@ -1,15 +1,8 @@
 import React, { useState } from "react";
-import AdminNavbar from "../../../../../components/AdminNavbar/AdminNavbar";
 import { Link } from "react-router-dom";
 import "./EditarServicio.css";
 
 const EditarServicio: React.FC = () => {
-  const miniNavbarLinks = [
-    { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
-    { name: 'Marcas', url: '/admin/marcas' },
-    { name: 'Config. Masiva', url: '/admin/config-masiva' },
-    { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-  ];
 
   const [formValues, setFormValues] = useState({
     serviceName: "",
@@ -50,7 +43,6 @@ const EditarServicio: React.FC = () => {
 
   return (
     <>
-      <AdminNavbar links={miniNavbarLinks} />
       <div className="d-flex flex-grow-1 main-container">
 
         {/* Columna izquierda */}

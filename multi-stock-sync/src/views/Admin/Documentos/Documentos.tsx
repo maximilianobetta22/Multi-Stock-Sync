@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import AdminNavbar from '../../../components/AdminNavbar/AdminNavbar';
 import './Documentos.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSearch, faTimes, faPlus, faMinus } from '@fortawesome/free-solid-svg-icons';
@@ -76,46 +75,6 @@ const GlosaModal: React.FC<{ onClose: () => void, onSave: (glosa: Producto) => v
 };
 
 const Documentos: React.FC = () => {
-  const miniNavbarLinks = [
-    { name: 'Buscar/Enviar', url: '#' },
-    { name: 'Crédito', url: '#' }
-  ];
-  const miniNavbarDropdowns = [
-    {
-      name: 'Nuevo',
-      options: [
-        { name: 'En blanco', url: '#' },
-        { name: 'A partir de existente', url: '#' },
-        { name: 'Importando detalle', url: '#' },
-        { name: 'Importando documentos', url: '#' }
-      ]
-    },
-    {
-      name: 'Devoluciones',
-      options: [
-        { name: 'Producto/Servicio', url: '#' },
-        { name: 'Ajuste de Precio (Nota Crédito, no modifica stock)', url: '#' },
-        { name: 'Ajuste de Precio (Nota Débito, no modifica stock)', url: '#' },
-        { name: 'Ajuste de Texto', url: '#' },
-        { name: 'Anular Devolución', url: '#' },
-        { name: 'Anular Nota Débito, no modifica stock', url: '#' }
-      ]
-    },
-    {
-      name: 'Más opciones',
-      options: [
-        { name: 'Calendario', url: '#' },
-        { name: 'Hito para Nuevo Documento', url: '#' },
-        { name: 'Retiro de Abono', url: '#' },
-        { name: 'Cierre de Mes', url: '#' },
-        { name: 'Cesion', url: '#' },
-        { name: 'Libros', url: '#' },
-        { name: 'Importar Docs. Libros', url: '#' },
-        { name: 'Editar Documento', url: '#' }
-
-      ]
-    }
-  ];
 
   const [searchQueryClientes, setSearchQueryClientes] = useState('');
   const [searchQueryProductos, setSearchQueryProductos] = useState('');
@@ -222,7 +181,6 @@ const Documentos: React.FC = () => {
 
   const handleCloseGlosaModal = () => {
     setIsGlosaModalOpen(false);
-    console.log("hola")
   };
 
   const handleSaveGlosa = (glosa: Producto) => {
@@ -232,7 +190,6 @@ const Documentos: React.FC = () => {
   return (
     <>
       {isGlosaModalOpen && <GlosaModal onClose={handleCloseGlosaModal} onSave={handleSaveGlosa} />}
-      <AdminNavbar links={miniNavbarLinks} dropdowns={miniNavbarDropdowns} />
       <div className="d-flex flex-grow-1 main-container">
 
         <div className="w-60 bg-light p-3 documentos-main-container d-flex flex-column">
