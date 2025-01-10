@@ -1,24 +1,68 @@
-.navbar {
-  background-color: rgb(255, 255, 255);
-  border-bottom: 1px solid #e0e0e0;
+* {
+  padding: 0;
+  margin: 0;
 }
 
-.logo {
+.navbar {
+  background-color: rgb(239, 70, 36);
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  font-weight: bold;
-  font-size: 1.2rem;
-  color: #000;
 }
 
 .logoImage {
   width: 150px;
   height: auto;
   margin-right: 10px;
+  transition: 0.3s ease;
+}
+
+.logoImage:hover {
+  filter: brightness(0);
 }
 
 .iconButton {
-  color: #000;
+  color: white;
   font-size: 1.5rem;
   margin-left: 10px;
+  margin-right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.iconButton:hover {
+  color: black;
+}
+
+.dropdown-item {
+  color: #333;
+  padding: 10px 20px;
+  text-decoration: none;
+  transition: background-color 0.2s ease;
+}
+
+.dropdown-item:hover {
+  background-color: #f0f0f0;
+  color: #000;
+}
+
+.dropdown {
+  position: relative;
+}
+
+
+
+.dropdownItem {
+  color: #333;
+  padding: 10px 20px;
+  text-decoration: none;
+  display: block;
+  transition: background-color 0.2s ease;
+}
+
+.dropdownItem:hover {
+  background-color: #f0f0f0;
+  color: #000;
 }
