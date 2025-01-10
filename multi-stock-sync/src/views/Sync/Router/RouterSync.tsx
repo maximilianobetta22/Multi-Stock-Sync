@@ -1,13 +1,15 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import LayoutSync from "../Layout/LayoutSync";
+import RouterProductos from "../views/Productos/Router/RouterProducto";
 
 function RouterSync() {
   
   return (
     <LayoutSync>
       <Routes>
+        
         <Route path="/perfil" element={<div>Perfil</div>} />
-        <Route path="/productos" element={<div>Productos</div>} />
+        <Route path="/productos/*" element={<RouterProductos/>} />
         <Route path="/conexiones" element={<div>Conexiones</div>} />
         <Route path="/woocommerce" element={<div>WooCommerce</div>} />
 
