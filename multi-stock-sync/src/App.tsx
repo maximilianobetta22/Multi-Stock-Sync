@@ -13,6 +13,7 @@ import Reportes from './views/PuntoVenta/Reportes/Reportes';
 import Login from './views/Auth/Login/Login';
 import Register from './views/Auth/Register/Register';
 import RouterAdmin from './router/RouterAdmin';
+import RouterSync from './views/Sync/Router/RouterSync';
 
 function App() {
   return (
@@ -31,7 +32,9 @@ function App() {
 
       <Route path="/admin/*" element={<RouterAdmin />} />
 
-      <Route path="/*" element={<Navigate to="/admin"/>}/>
+      <Route path="/sync/*" element={<RouterSync/>} />
+
+      <Route path="/*" element={<Navigate to="/sync"/>}/>
     </Routes>
 
   );
