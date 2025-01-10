@@ -1,4 +1,3 @@
-import Navbar from '../components/Navbar/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faDesktop, faFileInvoiceDollar, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import './InitialPage.css';
@@ -7,7 +6,6 @@ import { Link } from 'react-router-dom';
 function InitialPage() {
   return (
     <>
-      <Navbar />
       <div className="custom-background d-flex justify-content-center align-items-center">
         <div className="container text-center">
           <div className="row align-items-center">

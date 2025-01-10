@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import styles from './CrearMarca.module.css';
-import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 
 interface Marca {
   id: number;
@@ -9,13 +8,6 @@ interface Marca {
 }
 
 const CrearMarca: React.FC = () => {
-  const miniNavbarLinks = [
-    { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
-    { name: 'Marcas', url: '/admin/marcas' },
-    { name: 'Tipos de Producto', url: '/admin/tipos' },
-    { name: 'Config. Masiva', url: '/admin/config-masiva' },
-    { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-  ];
 
   const [showForm, setShowForm] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -125,7 +117,6 @@ const CrearMarca: React.FC = () => {
 
   return (
     <>
-      <AdminNavbar links={miniNavbarLinks} dropdowns={[]} />
       <div className="main-container">
         {loading && <div className={styles.spinner}></div>}
         {error && <div className={styles['error-message']}>{error}</div>}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
 import styles from './Navbar.module.css';
-import AdminNavbar from '../AdminNavbar/AdminNavbar';
+import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCog } from '@fortawesome/free-solid-svg-icons';

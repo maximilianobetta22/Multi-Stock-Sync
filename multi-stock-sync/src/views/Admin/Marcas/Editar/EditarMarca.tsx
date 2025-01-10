@@ -1,15 +1,7 @@
 import React, { useState } from 'react';
 import './EditarMarca.css';
-import AdminNavbar from '../../../../components/AdminNavbar/AdminNavbar';
 
 const EditarMarca: React.FC = () => {
-  const miniNavbarLinks = [
-    { name: 'Mis Productos y Servicios', url: '/admin/productos-servicios' },
-    { name: 'Marcas', url: '/admin/marcas' },
-    { name: 'Config. Masiva', url: '/admin/config-masiva' },
-    { name: 'Listas de Precio', url: '/admin/listas-de-precio' }
-  ];
-
   // Estado para el filtro de búsqueda
   const [query, setQuery] = useState('');
 
@@ -23,7 +15,6 @@ const EditarMarca: React.FC = () => {
 
   return (
     <>
-      <AdminNavbar links={miniNavbarLinks} dropdowns={[]} />
       <div className="d-flex flex-grow-1 main-container">
         <div className="w-50 bg-light p-3 d-flex align-items-center justify-content-center">
           <div>
