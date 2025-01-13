@@ -1,21 +1,22 @@
 .loginContainer {
+  flex: 1;
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 100vw; /* Asegura que ocupe todo el ancho */
-  height: 100vh; /* Asegura que ocupe todo el alto */
-  padding: 10px; /* Margen interno para dispositivos pequeños */
-  overflow: hidden; /* Oculta scrollbar */
+  border: none;
+  font-family: Arial, sans-serif;
 }
 
 .formContainer {
-  width: 50%; /* Ancho estándar */
-  max-width: 500px; /* Limita el ancho en pantallas grandes */
-  padding: 20px; /* Espaciado interno */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Añade un efecto de profundidad */
-  background-color: #e6e6e6;
-  border-radius: 10px;
+  width: 30%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
   border: none;
+  border-radius: 10px;
+  background-color: #e6e6e6;
 }
 
 .title {
@@ -52,7 +53,6 @@
   background-color: #f9f9f9;
   outline: none;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  box-sizing: border-box;
 }
 
 .inputField:focus {
@@ -81,7 +81,7 @@
 
 .button {
   margin-top: 20px;
-  width: 100%;
+  width: 50%;
   padding: 10px 15px;
   margin: 0 5px;
   border: none;
@@ -109,16 +109,40 @@
   background-color: #1e7e34;
 }
 
-@media (max-width: 480px) {
-  .formContainer {
-    width: 90%; /* Ajustar en pantallas pequeñas */
-  }
+.loadingOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
 
-  .title {
-    font-size: 1rem; /* Título más pequeño */
-  }
+.loadingSpinner {
+  width: 50px;
+  height: 50px;
+  border: 5px solid rgba(255, 255, 255, 0.3);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
 
-  .subtitle {
-    font-size: 0.8rem;
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
   }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.loadingMessage {
+  color: #fff;
+  margin-top: 10px;
+  font-size: 1.2rem;
+  text-align: center;
 }
