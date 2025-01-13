@@ -1,6 +1,6 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import LayoutSync from "../Layout/LayoutSync";
-import RouterProductos from "../views/Productos/Router/RouterProducto";
+import RouterProductos from "../Views/Productos/Router/RouterProducto";
 
 function RouterSync() {
   
