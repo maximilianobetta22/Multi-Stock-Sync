@@ -6,8 +6,10 @@ const login = () => {
       <div className={styles.formContainer}>
         <div className={styles.formControl}>
           <div>
-            <h3>LoginSync</h3>
-            <p>Ingrese credenciales de MercadoLibre</p>
+            <h3 className={styles.title}>LoginSync</h3>
+            <p className={styles.subtitle}>
+              Ingrese credenciales de MercadoLibre
+            </p>
           </div>
           <div className={styles.inputContainer}>
             <input
@@ -33,6 +35,14 @@ const login = () => {
               Client Secret
             </label>
           </div>
+          <div className="alert alert-danger" role="alert">
+            A simple danger alert with{" "}
+            <a href="#" className="alert-link">
+              an example link
+            </a>
+            . Give it a click if you like.
+          </div>
+
           <div className={styles.buttonGroup}>
             <button className={`${styles.button} ${styles.buttonSave}`}>
               Guardar Credenciales
