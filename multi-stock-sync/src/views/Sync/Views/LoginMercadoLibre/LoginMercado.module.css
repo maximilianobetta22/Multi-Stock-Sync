@@ -1,0 +1,110 @@
+.loginContainer {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+  font-family: Arial, sans-serif;
+}
+
+.formContainer {
+  width: 30%;
+  height: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  border: none;
+  border-radius: 10px;
+  background-color: #e6e6e6;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.subtitle {
+  font-size: 1rem;
+  color: #666;
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.formControl {
+  width: 100%;
+  padding: 50px;
+}
+
+.inputContainer {
+  position: relative;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.inputField {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 1rem;
+  border: none;
+  border-radius: 50px;
+  background-color: #f9f9f9;
+  outline: none;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.inputField:focus {
+  border-color: #222222;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.floatingLabel {
+  position: absolute;
+  top: 60%;
+  left: 16px;
+  font-size: 1rem;
+  color: #999;
+  pointer-events: none;
+  transform: translateY(-50%);
+  transition: 0.2s ease all;
+}
+
+.inputField:focus + .floatingLabel,
+.inputField:not(:placeholder-shown) + .floatingLabel {
+  top: -5px;
+  left: 20px;
+  font-size: 0.9rem;
+  color: #222222;
+}
+
+.button {
+  margin-top: 20px;
+  width: 50%;
+  padding: 10px 15px;
+  margin: 0 5px;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.buttonSave {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.buttonSave:hover {
+  background-color: #0056b3;
+}
+
+.buttonTest {
+  background-color: #28a745;
+  color: #fff;
+}
+
+.buttonTest:hover {
+  background-color: #1e7e34;
+}
