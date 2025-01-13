@@ -1,0 +1,20 @@
+.input-container {
+    position: relative; /* Necesario para posicionar el ícono */
+    display: flex; /* Alinea el input y el ícono en una línea */
+    align-items: center; /* Centra el contenido verticalmente */
+    width: 100%; /* Ajusta el ancho del contenedor */
+}
+
+.custom-input {
+    flex: 1; /* Toma el espacio restante del contenedor */
+    border: none; /* Elimina bordes predeterminados */
+    border-bottom: 2px solid #000; /* Línea inferior */
+    padding: 5px 30px 5px 5px; /* Espaciado interno, dejando espacio para el ícono */
+    outline: none; /* Quita el contorno azul al enfocar */
+    font-size: 16px; /* Ajusta tamaño de texto */
+    transition: border-color 0.3s ease; /* Transición para el enfoque */
+}
+
+.custom-input:focus {
+    border-bottom: 2px solid #007BFF; /* Cambia el color al enfocar */
+}

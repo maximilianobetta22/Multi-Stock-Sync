@@ -1,12 +1,15 @@
 import { Navigate, Route, Routes } from "react-router-dom";
-import { Home } from "../Views/Home/Home";
+import CrearProducto from "../Views/Crear/CrearProducto";
+import HomeProducto from "../Views/Home/HomeProducto";
+import EditarProducto from "../Views/Editar/EditarProducto";
 
 function RouterProductos() {
 
   return (
     <Routes>
-      <Route path="/home" element={<Home/> } />
-      <Route path="/crear" element={<div>Crear</div>} />
+      <Route path="/home" element={ <HomeProducto /> } />
+      <Route path="/crear" element={<CrearProducto />} />
+      <Route path="/editar/:id" element={<EditarProducto />} />
 
       <Route path="/*" element={<Navigate to="/sync/productos/home"/>}/>
     </Routes>
