@@ -5,7 +5,6 @@ import {
   faUser,
   faHouse,
   faWarehouse,
-  faCodeBranch,
   faTruckFast,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -30,12 +29,6 @@ const SideBar = () => {
             <NavLink to="/sync/productos" className={styles.NavLink}>
               <FontAwesomeIcon icon={faTruckFast} />
               Productos
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/sync/conexiones" className={styles.NavLink}>
-              <FontAwesomeIcon icon={faCodeBranch} />
-              Conexiones
             </NavLink>
           </li>
           <li>
