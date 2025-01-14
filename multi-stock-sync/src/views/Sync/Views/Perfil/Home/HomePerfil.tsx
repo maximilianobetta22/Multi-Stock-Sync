@@ -1,50 +1,67 @@
-import React,{useState} from "react";
+import React from "react";
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import styles from "./Perfil.module.css";
 
 
 const HomePerfil: React.FC = () => {
-
-    const [selectedDate, setSelectedDate] = useState<Date | null>(null); // Estado para la fecha seleccionada
-
+    
     return (
-        <div className={styles.main}>
-            <div>
-
-            <div>
-            {/* Calendario desplegable */}
-            <div className="mb-3">
-                <label htmlFor="datePicker" className="form-label">
+    <div className={`${styles.main} container mt-4`}>
+        {/* Encabezado */}
+            <header className="d-flex justify-content-between align-items-center mb-4">
+            <h1 className="fw-bold">Perfil de Conexiones</h1>
+            <button className="btn btn-primary">Agregar Conexión</button>
+            </header>
+        {/* Filtro de Fecha */}
+            <section className="mb-4">
+            <label htmlFor="datePicker" className="form-label">
                 Filtrar por Fecha:
-                </label>
-                <DatePicker
+            </label>
+            <DatePicker
                 id="datePicker"
-                selected={selectedDate}
-                onChange={(date) => setSelectedDate(date)} 
                 className="form-control"
-                placeholderText="Selecciona una fecha"/>
-                <div>
-                    <button>Agregar Conexiones</button>
-                </div>
-            </div>
-            <div className={styles.tabla}>
-                {/*Tabla*/}
-                <table className="table table-dark">
-                    <thead>
-                        <tr>
-                            <th scope="col">ID</th>
-                            <th scope="col">Cliente</th>
-                            <th scope="col">Fecha de Inicio</th>
-                            <th scope="col">Fecha Actualizada</th>
-                        </tr>
-                    </thead>
-                </table>
-            </div>
-            </div>
+                placeholderText="Selecciona una fecha"
+            />
+            </section>
+        {/* Tabla de Conexiones */}
+            <section>
+            <table className="table table-striped table-hover">
+                <thead className="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Fecha de Inicio</th>
+                    <th>Fecha Actualizada</th>
+                    <th>Acciones</th>
+                </tr>
+                </thead>
+                <tbody>
+                {/* Filas de ejemplo */}
+                <tr>
+                    <td>1</td>
+                    <td>Juan Pérez</td>
+                    <td>2025-01-01</td>
+                    <td>2025-01-05</td>
+                    <td>
+                    <button className="btn btn-warning btn-sm me-2">Editar</button>
+                    <button className="btn btn-danger btn-sm">Eliminar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>María Gómez</td>
+                    <td>2025-01-02</td>
+                    <td>2025-01-06</td>
+                    <td>
+                        <button className="btn btn-warning btn-sm me-2">Editar</button>
+                        <button className="btn btn-danger btn-sm">Eliminar</button>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+            </section>
         </div>
-    </div>
     );
 };
-
 export default HomePerfil;
