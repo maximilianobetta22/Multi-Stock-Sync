@@ -6,7 +6,7 @@ import {
   faHouse,
   faWarehouse,
   faCodeBranch,
-  faStore,
+  faTruckFast,
 } from "@fortawesome/free-solid-svg-icons";
 
 const SideBar = () => {
@@ -28,7 +28,7 @@ const SideBar = () => {
           </li>
           <li>
             <NavLink to="/sync/productos" className={styles.NavLink}>
-              <FontAwesomeIcon icon={faWarehouse} />
+              <FontAwesomeIcon icon={faTruckFast} />
               Productos
             </NavLink>
           </li>
@@ -39,9 +39,9 @@ const SideBar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/woocommerce" className={styles.NavLink}>
-              <FontAwesomeIcon icon={faStore} />
-              WooCommerce
+            <NavLink to="/sync/bodegas" className={styles.NavLink}>
+              <FontAwesomeIcon icon={faWarehouse} />
+              Bodegas
             </NavLink>
           </li>
         </ul>
