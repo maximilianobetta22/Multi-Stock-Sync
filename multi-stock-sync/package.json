@@ -12,6 +12,7 @@
   "dependencies": {
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
+    "@reduxjs/toolkit": "^2.5.0",
     "@types/react-router-dom": "^5.3.3",
     "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
@@ -20,6 +21,7 @@
     "react": "^18.3.1",
     "react-datepicker": "^7.5.0",
     "react-dom": "^18.3.1",
+    "react-redux": "^9.2.0",
     "react-router-dom": "^7.1.1"
   },
   "devDependencies": {
