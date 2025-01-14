@@ -20,9 +20,6 @@ const HomeProducto = () => {
 
   return (
     <section className={`${styles.HomeProducto}`}>
-      <div className={`${styles.header__HomeProducto}`}>
-        <h1>Todos los Productos</h1>
-      </div>
       <div className={`${styles.container__HomeProducto}`}>
         <div className={`${styles.search__HomeProducto}`} >
           <input
