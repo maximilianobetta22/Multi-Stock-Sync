@@ -2,3 +2,42 @@
   padding: 0;
   margin: 0;
 }
+
+.HomeProducto{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  gap: 1rem;
+}
+
+.header__HomeProducto{
+  width: 100%;
+}
+
+.container__HomeProducto{
+  height: 100%;
+  width: 100%;
+  padding: 1.5rem;
+  background-color: #F3F3F3;
+  border-radius: 1rem;
+}
+
+.search__HomeProducto{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 0 1rem 0;
+}
+
+.select__HomeProducto{
+  cursor: pointer;
+}
+
+.btn__HomeProducto{
+  width: 70%;
+  justify-content: center;
+}
