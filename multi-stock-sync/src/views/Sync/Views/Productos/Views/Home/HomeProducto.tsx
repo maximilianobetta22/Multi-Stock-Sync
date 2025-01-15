@@ -22,7 +22,6 @@ const HomeProducto = () => {
             placeholder='Filtros'
           />
           <button
-            onClick={() => dispatch(startGetAllProductos())}
             className={`btn btn-primary ${styles.btn__HomeProducto}`}
           >
             Actualizar productos
@@ -54,7 +53,10 @@ const HomeProducto = () => {
             }
           </tbody>
         </table>
-        <button className={styles.btn__add}>
+        <button 
+          onClick={() => dispatch(startGetAllProductos())}
+          className={styles.btn__add}
+        >
           <FontAwesomeIcon className={styles.icon__add} icon={faPlus}/>
         </button>
       </div>

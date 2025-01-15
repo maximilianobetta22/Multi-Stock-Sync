@@ -15,8 +15,8 @@ function RouterSync() {
         <Route path="/home" element={<HomeSync />} />
         <Route path="/productos/*" element={<RouterProductos />} />
         <Route path="/bodegas/*" element={<RouterBodegas />} />
-        <Route path="/woocommerce" element={<div>WooCommerce</div>} />
         <Route path="/loginMercadoLibre" element={<LoginMercado />} />
+
         <Route path="/*" element={<Navigate to="/sync/home" />} />
       </Routes>
     </LayoutSync>
