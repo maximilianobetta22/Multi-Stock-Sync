@@ -26,7 +26,8 @@ const HomePerfil: React.FC = () => {
     const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials`;
     const noImageSrc = "/assets/img/no_image.jpg";
 
-    const truncateToken = (token: string) => {
+    const truncateToken = (token: string | null) => {
+        if (!token) return "";
         return token.length > 10 ? `${token.substring(0, 10)}...` : token;
     };
 
