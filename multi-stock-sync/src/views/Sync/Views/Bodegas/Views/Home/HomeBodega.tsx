@@ -1,7 +1,6 @@
-import React from 'react';
 import styles from "./HomeBodega.module.css";
 
-const HomeBodega: React.FC = () => {
+const HomeBodega = () => {
     return (
         <div className={styles.scrol}>
             <header className={styles.header}>
