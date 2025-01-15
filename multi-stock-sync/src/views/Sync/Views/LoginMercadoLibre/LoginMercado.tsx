@@ -1,9 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import styles from "./LoginMercado.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUserCheck,
-  faUserXmark,
   faLock,
   faLockOpen,
   faAddressCard,
@@ -15,42 +13,11 @@ const LoginMercado = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [expiresAt, setExpiresAt] = useState("");
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
-
-  // Check initial credentials status
-  useEffect(() => {
-    const fetchCredentialsStatus = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/status`
-        );
-        const data = await response.json();
-
-        if (response.ok) {
-          setClientId(data.data.client_id);
-          setExpiresAt(data.data.expires_at);
-          setIsAuthenticated(true);
-          setMessage(data.message);
-        } else {
-          setIsAuthenticated(false);
-        }
-      } catch (err) {
-        console.error("Error fetching credentials status:", err);
-        setMessage("No se pudo obtener el estado de las credenciales.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCredentialsStatus();
-  }, []);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -79,8 +46,7 @@ const LoginMercado = () => {
 
       if (response.ok) {
         setStatus(data.status || "success");
-        setMessage(data.message || "Credenciales validadas correctamente.");
-        setIsAuthenticated(true);
+        setMessage(data.message || "URL generada correctamente. Redirigiendo...");
 
         if (data.redirect_url) {
           window.open(data.redirect_url, "_blank");
@@ -100,123 +66,54 @@ const LoginMercado = () => {
     }
   };
 
-  const handleTestConnection = async () => {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/test-connection`,
-        {
-          method: "GET",
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus(data.status || "success");
-        setMessage(data.message || "Conexión exitosa.");
-      } else {
-        setStatus("error");
-        setMessage(data.message || "Error al probar la conexión.");
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus("error");
-      setMessage("Error: No se pudo probar la conexión.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogout = async () => {
-    setLoading(true);
-    setMessage("");
-
-    try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/logout`,
-        {
-          method: "POST",
-        }
-      );
-
-      const data = await response.json();
-
-      if (response.ok) {
-        setStatus(data.status || "success");
-        setMessage(data.message || "Cierre de sesión exitoso.");
-        setIsAuthenticated(false);
-        setClientId("");
-        setClientSecret("");
-      } else {
-        setStatus("error");
-        setMessage(data.message || "Error al cerrar la sesión.");
-      }
-    } catch (err) {
-      console.error(err);
-      setStatus("error");
-      setMessage("Error: No se pudo cerrar la sesión.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   return (
     <div className={styles.loginContainer}>
       <form onSubmit={handleLogin} className={styles.formContainer}>
         <div className={styles.formControl}>
           <div>
-            <h3 className={styles.title}>LOG-IN</h3>
+            <h3 className={styles.title}>Agregar Conexión</h3>
             <p className={styles.subtitle}>
-              {isAuthenticated
-                ? `Credenciales válidas. Expiran el: ${expiresAt}`
-                : "Ingrese credenciales de MercadoLibre"}
+              Ingrese las credenciales para generar la URL de autenticación.
             </p>
           </div>
 
-          {!isAuthenticated && (
-            <>
-              <div className={styles.inputContainer}>
-                <FontAwesomeIcon
-                  icon={faAddressCard}
-                  className={styles.inputIcon}
-                />
-                <input
-                  id="clientId"
-                  type="text"
-                  onChange={(e) => setClientId(e.target.value)}
-                  className={styles.inputField}
-                  placeholder=" "
-                  value={clientId}
-                  required
-                />
-                <label htmlFor="clientId" className={styles.floatingLabel}>
-                  ID del Cliente
-                </label>
-              </div>
-              <div className={styles.inputContainer}>
-                <FontAwesomeIcon
-                  icon={showPassword ? faLockOpen : faLock}
-                  className={styles.lockIcon}
-                  onClick={togglePasswordVisibility}
-                />
-                <input
-                  id="clientSecret"
-                  type={showPassword ? "text" : "password"}
-                  onChange={(e) => setClientSecret(e.target.value)}
-                  className={styles.inputField}
-                  placeholder=" "
-                  value={clientSecret}
-                  required
-                />
-                <label htmlFor="clientSecret" className={styles.floatingLabel}>
-                  Client Secret
-                </label>
-              </div>
-            </>
-          )}
+          <div className={styles.inputContainer}>
+            <FontAwesomeIcon
+              icon={faAddressCard}
+              className={styles.inputIcon}
+            />
+            <input
+              id="clientId"
+              type="text"
+              onChange={(e) => setClientId(e.target.value)}
+              className={styles.inputField}
+              placeholder=" "
+              value={clientId}
+              required
+            />
+            <label htmlFor="clientId" className={styles.floatingLabel}>
+              ID del Cliente
+            </label>
+          </div>
+          <div className={styles.inputContainer}>
+            <FontAwesomeIcon
+              icon={showPassword ? faLockOpen : faLock}
+              className={styles.lockIcon}
+              onClick={togglePasswordVisibility}
+            />
+            <input
+              id="clientSecret"
+              type={showPassword ? "text" : "password"}
+              onChange={(e) => setClientSecret(e.target.value)}
+              className={styles.inputField}
+              placeholder=" "
+              value={clientSecret}
+              required
+            />
+            <label htmlFor="clientSecret" className={styles.floatingLabel}>
+              Client Secret
+            </label>
+          </div>
 
           {message && (
             <div
@@ -225,44 +122,18 @@ const LoginMercado = () => {
               }`}
               role="alert"
             >
-              {status === "success" ? (
-                <FontAwesomeIcon icon={faUserCheck} />
-              ) : (
-                <FontAwesomeIcon icon={faUserXmark} />
-              )}{" "}
               {message}
             </div>
           )}
 
           <div className={styles.buttonGroup}>
-            {!isAuthenticated ? (
-              <button
-                type="submit"
-                className={`${styles.button} ${styles.buttonSave}`}
-                disabled={loading}
-              >
-                {loading ? "Guardando..." : "Guardar Credenciales"}
-              </button>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={handleTestConnection}
-                  className={`${styles.button} ${styles.buttonTest}`}
-                  disabled={loading}
-                >
-                  {loading ? "Probando..." : "Probar Conexión"}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleLogout}
-                  className={`${styles.button} ${styles.buttonLogout}`}
-                  disabled={loading}
-                >
-                  {loading ? "Cerrando..." : "Cerrar Sesión"}
-                </button>
-              </>
-            )}
+            <button
+              type="submit"
+              className={`${styles.button} ${styles.buttonSave}`}
+              disabled={loading}
+            >
+              {loading ? "Generando URL..." : "Generar URL de Autenticación"}
+            </button>
           </div>
         </div>
       </form>
