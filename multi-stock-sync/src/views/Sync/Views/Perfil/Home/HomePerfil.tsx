@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import { Link } from "react-router-dom";
 import styles from "./Perfil.module.css";
 import axios from "axios";
 
@@ -71,7 +71,7 @@ const HomePerfil: React.FC = () => {
     return (
         <div className={styles.main}>
             <div>
-                <h1>Perfil</h1>
+                <h1>Lista de conexiones a MercadoLibre</h1>
 
                 <div className={styles.tabla}>
                     <table className="table table-light table-hover">
@@ -123,7 +123,7 @@ const HomePerfil: React.FC = () => {
                 </div>
 
                 <div className="text-end mt-3">
-                    <button className="btn btn-primary">Agregar Conexiones</button>
+                    <Link to="/sync/loginmercadolibre" className="btn btn-primary">Agregar Conexiones</Link>
                 </div>
             </div>
         </div>

@@ -17,7 +17,7 @@ header {
 header h1 {
     font-size: 24px;
     font-weight: bold;
-    color: #343a40; /* Tono oscuro para el texto */
+    color: #343a40; 
 }
 
 header button {
@@ -28,10 +28,11 @@ header button {
 }
 
 header button:hover {
-    background-color: #0056b3; /* Azul más intenso */
+    background-color: #0056b3;
     color: white;
 }
-  /* Tabla */
+
+/* Tabla */
 .tabla {
     margin-top: 20px;
     overflow-x: auto;
@@ -90,7 +91,8 @@ td {
     border-color: #007bff;
     color: #fff;
 }
-  /* Botones en la tabla */
+
+/* Botones en la tabla */
 button.btn-warning {
     background-color: #ffc107;
     border: none;
@@ -114,7 +116,7 @@ button.btn-danger:hover {
     background-color: #c82333;
 }
 
-  /* Filtro de Fecha */
+/* Filtro de Fecha */
 label.form-label {
     font-size: 16px;
     font-weight: bold;
