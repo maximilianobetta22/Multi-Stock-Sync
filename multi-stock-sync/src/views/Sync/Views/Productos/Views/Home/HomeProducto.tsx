@@ -1,22 +1,13 @@
 import styles from './HomeProducto.module.css';
 import { useAppSelector, useAppDispatch } from '../../../../../../store/hook';
-import { addProducto } from '../../../../../../store/Productos/productosSlice';
+import { startGetAllProductos } from '../../../../../../store/Productos/thunks';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
 
 const HomeProducto = () => {
 
   const { allProductos } = useAppSelector((state) => state.productos)
   const dispatch = useAppDispatch()
-
-  const producto = {
-    img: 'dsdas',
-    nombre: 'Zapatilla Nike',
-    sku: 'SKU21321',
-    precio: 10000,
-    precioMayor: 200000,
-    cantidad: 123
-  }
-
-  console.log(allProductos)
 
   return (
     <section className={`${styles.HomeProducto}`}>
@@ -31,7 +22,7 @@ const HomeProducto = () => {
             placeholder='Filtros'
           />
           <button
-            onClick={() => dispatch(addProducto(producto))}
+            onClick={() => dispatch(startGetAllProductos())}
             className={`btn btn-primary ${styles.btn__HomeProducto}`}
           >
             Actualizar productos
@@ -50,7 +41,7 @@ const HomeProducto = () => {
           </thead>
           <tbody>
             {
-              allProductos.map((producto) => (
+              allProductos?.map((producto) => (
                 <tr key={producto.sku}>
                   <td>{producto.img}</td>
                   <td>{producto.nombre}</td>
@@ -63,6 +54,9 @@ const HomeProducto = () => {
             }
           </tbody>
         </table>
+        <button className={styles.btn__add}>
+          <FontAwesomeIcon className={styles.icon__add} icon={faPlus}/>
+        </button>
       </div>
     </section>
   );
