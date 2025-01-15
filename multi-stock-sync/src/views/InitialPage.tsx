@@ -3,6 +3,8 @@ import { faDesktop, faFileInvoiceDollar, faArrowRight } from '@fortawesome/free-
 import './InitialPage.css';
 import { Link } from 'react-router-dom';
 
+
+
 function InitialPage() {
   return (
     <>
