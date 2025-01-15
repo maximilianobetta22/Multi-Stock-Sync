@@ -2,7 +2,6 @@ import { NavLink } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faUser,
   faHouse,
   faBoxOpen,
   faWarehouse,
