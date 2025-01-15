@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
-import styles from "./Navbar.module.css";
+import styles from "./NavbarSync.module.css";
 
 const Navbar = () => {
   return (

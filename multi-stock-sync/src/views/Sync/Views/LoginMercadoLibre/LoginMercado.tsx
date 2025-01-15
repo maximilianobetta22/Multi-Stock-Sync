@@ -1,5 +1,13 @@
 import { useState, useEffect } from "react";
 import styles from "./LoginMercado.module.css";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faUserCheck,
+  faUserXmark,
+  faLock,
+  faLockOpen,
+  faAddressCard,
+} from "@fortawesome/free-solid-svg-icons";
 
 const LoginMercado = () => {
   const [clientId, setClientId] = useState("");
@@ -9,13 +17,20 @@ const LoginMercado = () => {
   const [status, setStatus] = useState("");
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [expiresAt, setExpiresAt] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword((prev) => !prev);
+  };
 
   // Check initial credentials status
   useEffect(() => {
     const fetchCredentialsStatus = async () => {
       setLoading(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/status`);
+        const response = await fetch(
+          `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/status`
+        );
         const data = await response.json();
 
         if (response.ok) {
@@ -49,13 +64,16 @@ const LoginMercado = () => {
     };
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/login`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/login`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
 
@@ -69,7 +87,9 @@ const LoginMercado = () => {
         }
       } else {
         setStatus("error");
-        setMessage(data.message || "Error: No se pudieron validar las credenciales.");
+        setMessage(
+          data.message || "Error: No se pudieron validar las credenciales."
+        );
       }
     } catch (err) {
       console.error(err);
@@ -85,9 +105,12 @@ const LoginMercado = () => {
     setMessage("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/test-connection`, {
-        method: "GET",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/test-connection`,
+        {
+          method: "GET",
+        }
+      );
 
       const data = await response.json();
 
@@ -112,9 +135,12 @@ const LoginMercado = () => {
     setMessage("");
 
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/logout`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/logout`,
+        {
+          method: "POST",
+        }
+      );
 
       const data = await response.json();
 
@@ -142,7 +168,7 @@ const LoginMercado = () => {
       <form onSubmit={handleLogin} className={styles.formContainer}>
         <div className={styles.formControl}>
           <div>
-            <h3 className={styles.title}>LoginSync</h3>
+            <h3 className={styles.title}>LOG-IN</h3>
             <p className={styles.subtitle}>
               {isAuthenticated
                 ? `Credenciales válidas. Expiran el: ${expiresAt}`
@@ -153,6 +179,10 @@ const LoginMercado = () => {
           {!isAuthenticated && (
             <>
               <div className={styles.inputContainer}>
+                <FontAwesomeIcon
+                  icon={faAddressCard}
+                  className={styles.inputIcon}
+                />
                 <input
                   id="clientId"
                   type="text"
@@ -167,9 +197,14 @@ const LoginMercado = () => {
                 </label>
               </div>
               <div className={styles.inputContainer}>
+                <FontAwesomeIcon
+                  icon={showPassword ? faLockOpen : faLock}
+                  className={styles.lockIcon}
+                  onClick={togglePasswordVisibility}
+                />
                 <input
                   id="clientSecret"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   onChange={(e) => setClientSecret(e.target.value)}
                   className={styles.inputField}
                   placeholder=" "
@@ -190,6 +225,11 @@ const LoginMercado = () => {
               }`}
               role="alert"
             >
+              {status === "success" ? (
+                <FontAwesomeIcon icon={faUserCheck} />
+              ) : (
+                <FontAwesomeIcon icon={faUserXmark} />
+              )}{" "}
               {message}
             </div>
           )}
