@@ -1,7 +1,6 @@
-import React from 'react';
 import styles from './HomeBodega.module.css';
 
-const HomeBodega: React.FC = () => {
+const HomeBodega = () => {
     return (
         <div className="container mt-4">
             <h1 className="text-center mb-4">Home Bodega</h1>

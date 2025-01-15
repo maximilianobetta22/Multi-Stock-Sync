@@ -34,7 +34,7 @@ const HomeProducto = () => {
             onClick={() => dispatch(addProducto(producto))}
             className={`btn btn-primary ${styles.btn__HomeProducto}`}
           >
-            Agregar Producto
+            Actualizar productos
           </button>
         </div>
         <table className='table'>
