@@ -5,31 +5,40 @@ const HomeBodega = () => {
   const [warehouses, setWarehouses] = useState([]);
   const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const fetchWarehouses = async () => {
       setShowToast(false);
+      setLoading(true);
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/api/warehouses`
+          `${import.meta.env.VITE_API_URL}/warehousesAttachment`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
         );
-        if (!response.ok) {
-          throw new Error(`Error en la solicitud: ${response.status}`);
-        }
-
-        const contentType = response.headers.get("content-type");
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new TypeError("La respuesta no es JSON");
-        }
 
         const data = await response.json();
-        if (data.length === 0) {
+
+        if (response.ok) {
+          setWarehouses(data);
+          if (data.length === 0) {
+            setShowToast(true);
+          }
+        } else {
+          setError(data.message || "Error al obtener los almacenes");
           setShowToast(true);
         }
-        setWarehouses(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : String(err));
+        console.error(err);
+        setError(" Ocurrió un problema inesperado. Inténtalo de nuevo.");
         setShowToast(true);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -45,39 +54,55 @@ const HomeBodega = () => {
     }
   }, [showToast]);
 
+  if (loading) {
+    return (
+      <div
+        className="d-flex justify-content-center align-items-center"
+        style={{ minHeight: "200px" }}
+      >
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Cargando...</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div className="container-fluid">
         <h1 className={styles.h1}>Home Bodega</h1>
         <div className="row row-cols-1 row-cols-md-2 g-4">
           {warehouses.length > 0 ? (
-            <div className="col">
-              <div className={`card ${styles.cardStyle}`}>
-                <div className="row g-0">
-                  <div className="col-sm-4 p-2">
-                    <img
-                      src="/assets/img/mercado_libre.webp"
-                      alt="imgTest"
-                      className="img-fluid rounded-start"
-                    />
-                  </div>
-                  <div className="col-sm-8 p-2">
-                    <div className="card-body">
-                      <h5 className="card-title">Bodega 1</h5>
-                      <p className={`${styles.paragraphStyle}`}>
-                        Ubicación: tu casa
-                      </p>
-                      <p className={`${styles.paragraphStyle}`}>
-                        Actualizado: Data
-                      </p>
-                      <button className={`${styles.goButton} btn mt-2`}>
-                        Ir a Bodega
-                      </button>
+            warehouses.map((warehouse: any) => (
+              <div className="col" key={warehouse.id}>
+                <div className={`card ${styles.cardStyle}`}>
+                  <div className="row g-0">
+                    <div className="col-sm-4 p-2">
+                      <img
+                        src="/assets/img/mercado_libre.webp"
+                        alt="imgTest"
+                        className="img-fluid rounded-start"
+                      />
+                    </div>
+                    <div className="col-sm-8 p-2">
+                      <div className="card-body">
+                        <h5 className="card-title">{warehouse.name}</h5>
+                        <p className={`${styles.paragraphStyle}`}>
+                          Ubicación: {warehouse.location}
+                        </p>
+                        <p className={`${styles.paragraphStyle}`}>
+                          Actualizado:{" "}
+                          {new Date(warehouse.updated_at).toLocaleDateString()}
+                        </p>
+                        <button className={`${styles.goButton} btn mt-2`}>
+                          Ir a Bodega
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
               </div>
-            </div>
+            ))
           ) : (
             <p className="mt-3 text-muted">No hay almacenes disponibles.</p>
           )}
