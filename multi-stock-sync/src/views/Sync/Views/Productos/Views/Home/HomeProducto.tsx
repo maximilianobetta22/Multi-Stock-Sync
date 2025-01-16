@@ -100,36 +100,38 @@ const HomeProducto = () => {
             {!selectedConnection ? (
               <p>Por favor, seleccione una conexión para ver los productos.</p>
             ) : (
-              <table className='table'>
-                <thead>
-                  <tr>
-                    <th>Imágen</th>
-                    <th>ID MLC</th>
-                    <th>Título</th>
-                    <th>Código categoría</th>
-                    <th>Precio CLP</th>
-                    <th>Stock MercadoLibre</th>
-                    <th>Bodega asignada</th>
-                    <th>Stock Bodega</th>
-                    <th>URL MLC</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {allProductos?.map((producto) => (
-                    <tr key={producto.id}>
-                      <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
-                      <td>{producto.id}</td>
-                      <td>{producto.title}</td>
-                      <td>{producto.category_id}</td>
-                      <td>{producto.price}</td>
-                      <td>{producto.available_quantity}</td>
-                      <td>no especificada</td>
-                      <td>no especificado</td>
-                      <td><Link to={producto.permalink} target="_blank" className='btn btn-warning'>Ver producto</Link></td>
+              <div className={styles.table__container}>
+                <table className='table'>
+                  <thead>
+                    <tr>
+                      <th>Imágen</th>
+                      <th>ID MLC</th>
+                      <th>Título</th>
+                      <th>Código categoría</th>
+                      <th>Precio CLP</th>
+                      <th>Stock MercadoLibre</th>
+                      <th>Bodega asignada</th>
+                      <th>Stock Bodega</th>
+                      <th>URL MLC</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {allProductos?.map((producto) => (
+                        <tr key={producto.id}>
+                        <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
+                        <td>{producto.id}</td>
+                        <td>{producto.title}</td>
+                        <td>{producto.category_id}</td>
+                        <td>{producto.price}</td>
+                        <td>{producto.available_quantity}</td>
+                        <td>no especificada</td>
+                        <td>no especificado</td>
+                        <td><Link to={producto.permalink} target="_blank" className='btn btn-warning'>Ver producto</Link></td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             )}
             <Link to="../crear" className={styles.btn__add}>
               <FontAwesomeIcon className={styles.icon__add} icon={faPlus}/>
