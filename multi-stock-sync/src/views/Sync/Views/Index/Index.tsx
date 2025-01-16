@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styles from './Index.module.css';  // Importamos los estilos
 
 const Index = () => {
-  const [data, setData] = useState<any>(null);  // Datos de la API
+  const [setData] = useState<any>(null);  // Datos de la API
   const navigate = useNavigate();  // Hook para redireccionar
 
   useEffect(() => {

@@ -1,13 +1,6 @@
-* {
-    padding: 0;
-    margin: 0;
-}
-
-
-
-
 .container {
     text-align: center;
+    margin-top: 5%;
 }
 
 .header {
@@ -25,28 +18,50 @@
     background-color: #6c6f73;
     color: white;
     border-radius: 5px;
-    padding: 10px 50px;
+    padding: 10px 20px; 
     font-size: 16px;
     display: flex;
     align-items: center;
+    width: 200px; 
+    justify-content: center; 
+}
+
+.buttonWrapper {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    gap: 8px; 
+    transition: z-index 0.2s, transform 0.2s;
+}
+
+.buttonWrapper:hover {
+    transform: scale(1.2);
+}
+
+.products_color {
+    background-color: #4CAF50; /* Green */
+}
+
+.warehouses_color {
+    background-color: #2196F3; /* Blue */
+}
+
+.connections_color {
+    background-color: #FF9800; /* Yellow */
+}
+
+.icon_products_color {
+    color: #4CAF50; /* Green */
+}
+
+.icon_warehouses_color {
+    color: #2196F3; /* Blue */
+}
+
+.icon_connections_color {
+    color: #FF9800; /* Yellow */
 }
 
 .button:hover {
-    background-color: #414447;
-}
-
-.carousel-item {
-    display: flex;
-    justify-content: center;
-}
-
-.card-img-top {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-}
-
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-    background-color: black;
+    opacity: 0.5;
 }

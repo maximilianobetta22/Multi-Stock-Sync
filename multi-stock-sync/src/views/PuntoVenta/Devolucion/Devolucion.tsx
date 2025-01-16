@@ -27,10 +27,10 @@ const Devolucion: React.FC = () => {
                             Nr.líneas:<b>0</b>/Tot.ítem: <b>0</b>
                         </span>
                         <div>
-                            <label class="sl-impuesto">Neto</label>
-                            <label class="sl-impuesto">Neto</label>
-                            <label class="sl-impuesto">Neto</label>
-                            <label class="sl-impuesto">Neto</label>
+                            <label className="sl-impuesto">Neto</label>
+                            <label className="sl-impuesto">Neto</label>
+                            <label className="sl-impuesto">Neto</label>
+                            <label className="sl-impuesto">Neto</label>
                         </div>
                     </div>
                 </div>
