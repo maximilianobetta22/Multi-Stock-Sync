@@ -3,6 +3,7 @@
     background-color: #f8f9fa;
     border-radius: 8px;
     font-family: Arial, sans-serif;
+    height: 100vh;
 }
 
 header {
@@ -32,14 +33,14 @@ header button:hover {
     color: white;
 }
 
-/* Tabla */
+
 .tabla {
     margin-top: 20px;
     overflow-x: auto;
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f2f2f2; /* Alternancia de filas */
+    background-color: #f2f2f2; 
 }
 
 .table-hover tbody tr:hover {
@@ -92,7 +93,7 @@ td {
     color: #fff;
 }
 
-/* Botones en la tabla */
+
 button.btn-warning {
     background-color: #ffc107;
     border: none;
@@ -116,7 +117,7 @@ button.btn-danger:hover {
     background-color: #c82333;
 }
 
-/* Filtro de Fecha */
+
 label.form-label {
     font-size: 16px;
     font-weight: bold;
@@ -135,4 +136,19 @@ label.form-label {
 .form-control:focus {
     border-color: #80bdff;
     box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.noConexiones {
+    text-align: center;
+    margin-top: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.noConexiones p {
+    font-size: 18px;
+    color: #343a40;
+    margin-bottom: 10px;
 }
