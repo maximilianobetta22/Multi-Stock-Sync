@@ -1,5 +1,5 @@
 import React from 'react';
-import styles from './EditarBodega.module.css';
+// import styles from './EditarBodega.module.css';
 
 const EditarBodega: React.FC = () => {
     return (
