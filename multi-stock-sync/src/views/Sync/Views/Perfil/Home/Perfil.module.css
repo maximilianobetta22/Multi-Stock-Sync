@@ -4,6 +4,8 @@
     border-radius: 8px;
     font-family: Arial, sans-serif;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 header {
@@ -18,7 +20,7 @@ header {
 header h1 {
     font-size: 24px;
     font-weight: bold;
-    color: #343a40; 
+    color: #343a40;
 }
 
 header button {
@@ -33,14 +35,19 @@ header button:hover {
     color: white;
 }
 
+.tabla-container {
+    flex-grow: 1; /* Permite que la tabla ocupe el espacio restante */
+    overflow-y: auto; /* Permite desplazamiento vertical si la tabla es muy grande */
+    margin-top: 20px;
+}
 
 .tabla {
-    margin-top: 20px;
-    overflow-x: auto;
+    width: 100%;
+    table-layout: fixed; /* Hace que las columnas se mantengan con un tamaño fijo */
 }
 
 .table-striped tbody tr:nth-of-type(odd) {
-    background-color: #f2f2f2; 
+    background-color: #f2f2f2;
 }
 
 .table-hover tbody tr:hover {
@@ -93,7 +100,6 @@ td {
     color: #fff;
 }
 
-
 button.btn-warning {
     background-color: #ffc107;
     border: none;
@@ -116,7 +122,6 @@ button.btn-danger {
 button.btn-danger:hover {
     background-color: #c82333;
 }
-
 
 label.form-label {
     font-size: 16px;
@@ -152,3 +157,21 @@ label.form-label {
     color: #343a40;
     margin-bottom: 10px;
 }
+
+.btn-container {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+
+th{
+    background-color: #17a2b8!important;
+  }
+
+
+
+
+
+

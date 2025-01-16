@@ -5,7 +5,6 @@ import { Link } from "react-router-dom";
 import styles from "./Perfil.module.css";
 import axios from "axios";
 
-
 interface SyncData {
     id: number;
     client_id: string;
@@ -13,7 +12,7 @@ interface SyncData {
     access_token: string;
     refresh_token: string;
     expires_at: string;
-    nickname: string;   
+    nickname: string;
     email: string;
     profile_image: string | null;
     created_at: string;
@@ -21,36 +20,26 @@ interface SyncData {
 }
 
 const HomePerfil: React.FC = () => {
-    const [conexiones, setConexiones] = useState<SyncData[]>([]); 
-    const [loading, setLoading] = useState(true); // Loading state
+    const [conexiones, setConexiones] = useState<SyncData[]>([]);
+    const [loading, setLoading] = useState(true);
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [toastType, setToastType] = useState<'success' | 'error' | null>(null); // Tipo de toast
     const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials`;
     const noImageSrc = "/assets/img/no_image.jpg";
 
-    const truncateToken = (token: string | null) => {
-        if (!token) return "";
-        return token.length > 10 ? `${token.substring(0, 10)}...` : token;
-    };
-
     const copyToClipboard = (token: string, message: string) => {
-        const textArea = document.createElement("textarea");
-        textArea.value = token;
-        document.body.appendChild(textArea);
-        textArea.select();
-        try {
-            document.execCommand('copy');
+        navigator.clipboard.writeText(token).then(() => {
             setToastMessage(message);
+            setToastType('success'); // Tipo success
             setShowToast(true);
             setTimeout(() => {
                 setShowToast(false);
                 setToastMessage(null);
+                setToastType(null);
             }, 2000);
-        } catch (err) {
-            console.error("Error al copiar el token:", err);
-        }
-        document.body.removeChild(textArea);
+        }).catch(err => console.error("Error al copiar el token:", err));
     };
 
     const openToast = (clientId: string) => {
@@ -70,20 +59,72 @@ const HomePerfil: React.FC = () => {
             const response = await axios.delete(url);
             if (response.data.status === "success") {
                 setConexiones(conexiones.filter(conexion => conexion.client_id !== selectedClientId));
-                alert("Conexión desconectada exitosamente");
+                setToastMessage("Conexión desconectada exitosamente");
+                setToastType('success');
+                setShowToast(true);
+                setTimeout(() => {
+                    setShowToast(false);
+                    setToastMessage(null);
+                    setToastType(null);
+                }, 2000);
                 setLoading(true);
                 window.location.reload();
             } else {
+                setToastMessage("Error al desconectar la conexión");
+                setToastType('error');
+                setShowToast(true);
+                setTimeout(() => {
+                    setShowToast(false);
+                    setToastMessage(null);
+                    setToastType(null);
+                }, 2000);
                 console.error("Error en la respuesta de la API:", response.data);
             }
         } catch (error) {
             console.error("Error al desconectar la conexión:", error);
+            setToastMessage("Error al desconectar la conexión");
+            setToastType('error');
+            setShowToast(true);
+            setTimeout(() => {
+                setShowToast(false);
+                setToastMessage(null);
+                setToastType(null);
+            }, 2000);
         } finally {
             closeToast();
         }
     };
 
-    // Call API data
+    const testConnection = async (clientId: string) => {
+        const url = `${import.meta.env.VITE_API_URL}/mercadolibre/test-connection/${clientId}`;
+        try {
+            const response = await axios.get(url);
+            if (response.data.status === "success") {
+                setToastMessage(`Conexión exitosa: ${response.data.message}`);
+                setToastType('success');
+            } else {
+                setToastMessage(`Error en la conexión: ${response.data.message}`);
+                setToastType('error');
+            }
+            setShowToast(true);
+            setTimeout(() => {
+                setShowToast(false);
+                setToastMessage(null);
+                setToastType(null);
+            }, 2000);
+        } catch (error) {
+            console.error("Error al probar la conexión:", error);
+            setToastMessage("Ocurrió un error al intentar probar la conexión.");
+            setToastType('error');
+            setShowToast(true);
+            setTimeout(() => {
+                setShowToast(false);
+                setToastMessage(null);
+                setToastType(null);
+            }, 2000);
+        }
+    };
+
     useEffect(() => {
         const fetchConexiones = async () => {
             try {
@@ -96,7 +137,7 @@ const HomePerfil: React.FC = () => {
             } catch (error) {
                 console.error("Error al obtener conexiones:", error);
             } finally {
-                setLoading(false); // Disable loading
+                setLoading(false);
             }
         };
 
@@ -124,14 +165,14 @@ const HomePerfil: React.FC = () => {
                             <table className="table table-light table-hover">
                                 <thead>
                                     <tr>
-                                        <th>ID</th>
-                                        <th>Imagen</th>
-                                        <th>Cliente</th>
-                                        <th>Nickname</th>
-                                        <th>Email</th>
-                                        <th>Acceso Token</th>
-                                        <th>Última Actualización</th>
-                                        <th>Acciones</th>
+                                        <th className="text-white">ID</th>
+                                        <th className="text-white">Imagen</th>
+                                        <th className="text-white">Cliente</th>
+                                        <th className="text-white">Nickname</th>
+                                        <th className="text-white">Email</th>
+                                        <th className="text-white" style={{ display: 'none' }}>Acceso Token</th>
+                                        <th className="text-white">Última Actualización</th>
+                                        <th className="text-white">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -139,29 +180,58 @@ const HomePerfil: React.FC = () => {
                                         <tr key={conexion.id}>
                                             <td>{conexion.id}</td>
                                             <td style={{ textAlign: "center" }}>
-                                                <img 
-                                                    src={conexion.profile_image || noImageSrc} 
-                                                    alt="Profile" 
-                                                    width="50" 
-                                                    height="50" 
-                                                    style={{ objectFit: "cover" }} 
+                                                <img
+                                                    src={conexion.profile_image || noImageSrc}
+                                                    alt="Profile"
+                                                    width="50"
+                                                    height="50"
+                                                    style={{ objectFit: "cover" }}
                                                 />
                                             </td>
                                             <td>{conexion.client_id}</td>
                                             <td>{conexion.nickname}</td>
                                             <td>{conexion.email}</td>
-                                            <td>
-                                                {truncateToken(conexion.access_token)}
-                                                <button 
-                                                    className="btn btn-secondary btn-sm ms-2" 
-                                                    onClick={() => copyToClipboard(conexion.access_token, "Token copiado al portapapeles!")}
-                                                >
-                                                    Copiar
-                                                </button>
-                                            </td>
+                                            <td style={{ display: 'none' }}>{conexion.access_token}</td>
                                             <td>{new Date(conexion.updated_at).toLocaleString()}</td>
                                             <td>
-                                                <button className="btn btn-danger btn-sm" onClick={() => openToast(conexion.client_id)}>Desconectar</button>
+                                                <div className="dropdown" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+                                                    <button
+                                                        className="btn"
+                                                        style={{ border: "none", background: "transparent" }}
+                                                        type="button"
+                                                        id={`dropdown-${conexion.id}`}
+                                                        data-bs-toggle="dropdown"
+                                                        aria-expanded="false"
+                                                    >
+                                                        ...
+                                                    </button>
+                                                    <ul className="dropdown-menu" aria-labelledby={`dropdown-${conexion.id}`}>
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item"
+                                                                onClick={() => copyToClipboard(conexion.access_token, "Token copiado al portapapeles!")}
+                                                            >
+                                                                Copiar
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item text-success"
+                                                                onClick={() => testConnection(conexion.client_id)}
+                                                            >
+                                                                Probar Conexión
+                                                            </button>
+                                                        </li>
+                                                        <li>
+                                                            <button
+                                                                className="dropdown-item text-danger"
+                                                                onClick={() => openToast(conexion.client_id)}
+                                                            >
+                                                                Desconectar
+                                                            </button>
+                                                        </li>
+                                                    </ul>
+                                                </div>
                                             </td>
                                         </tr>
                                     ))}
@@ -175,23 +245,26 @@ const HomePerfil: React.FC = () => {
                     </div>
                 )}
             </div>
+            
+
             {showToast && (
-                <div className="toast show position-fixed bottom-0 end-0 m-3" role="alert" aria-live="assertive" aria-atomic="true">
-                    <div className="toast-header">
-                        <strong className="me-auto">MultiStock-Sync</strong>
-                        <button type="button" className="btn-close" onClick={closeToast}></button>
+                    <div className={`toast show position-fixed bottom-0 end-0 m-3 ${toastType === 'success' ? 'bg-success' : 'bg-danger'}`} role="alert" aria-live="assertive" aria-atomic="true">
+                        <div className={`toast-header ${toastType === 'success' ? 'bg-success' : 'bg-danger'}`}>
+                            <strong className="me-auto" style={{ color: 'white' }}>MultiStock-Sync</strong>
+                            <button type="button" className="btn-close" onClick={closeToast}></button>
+                        </div>
+                        <div className="toast-body" style={{ backgroundColor: 'white', color: 'black' }}>
+                            {toastMessage || "¿Está seguro que desea desconectar esta conexión?"}
+                            {!toastMessage && (
+                                <div className="mt-2 pt-2 border-top">
+                                    <button className="btn btn-danger btn-sm me-2" onClick={disconnectConexion}>Sí, desconectar</button>
+                                    <button className="btn btn-secondary btn-sm" onClick={closeToast}>Cancelar</button>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                    <div className="toast-body">
-                        {toastMessage || "¿Está seguro que desea desconectar esta conexión?"}
-                        {!toastMessage && (
-                            <div className="mt-2 pt-2 border-top">
-                                <button className="btn btn-danger btn-sm me-2" onClick={disconnectConexion}>Sí, desconectar</button>
-                                <button className="btn btn-secondary btn-sm" onClick={closeToast}>Cancelar</button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            )}
+                )}          
+       
         </div>
     );
 };
