@@ -132,4 +132,20 @@ h1, p {
     opacity: 0.65;
 }
 
+/* Rules for tables */
 
+th, td {
+    padding: 12px 15px;
+    text-align: left;
+    border: 1px solid #dee2e6;
+}
+
+td {
+    font-size: 14px;
+    color: #495057;
+}
+
+.table_header{
+    background-color: #17a2b8!important;
+    color: white!important;
+}

@@ -165,14 +165,13 @@ const HomePerfil: React.FC = () => {
                             <table className="table table-light table-hover">
                                 <thead>
                                     <tr>
-                                        <th className="text-white">ID</th>
-                                        <th className="text-white">Imagen</th>
-                                        <th className="text-white">Cliente</th>
-                                        <th className="text-white">Nickname</th>
-                                        <th className="text-white">Email</th>
-                                        <th className="text-white" style={{ display: 'none' }}>Acceso Token</th>
-                                        <th className="text-white">Última Actualización</th>
-                                        <th className="text-white">Acciones</th>
+                                        <th className="table_header">ID</th>
+                                        <th className="table_header">Imagen</th>
+                                        <th className="table_header">Cliente</th>
+                                        <th className="table_header">Nickname</th>
+                                        <th className="table_header">Email</th>
+                                        <th className="table_header">Última Actualización</th>
+                                        <th className="table_header">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -191,7 +190,6 @@ const HomePerfil: React.FC = () => {
                                             <td>{conexion.client_id}</td>
                                             <td>{conexion.nickname}</td>
                                             <td>{conexion.email}</td>
-                                            <td style={{ display: 'none' }}>{conexion.access_token}</td>
                                             <td>{new Date(conexion.updated_at).toLocaleString()}</td>
                                             <td>
                                                 <div className="dropdown" style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
