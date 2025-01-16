@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 interface Connection {
@@ -20,6 +21,7 @@ interface Connection {
 
 interface Product {
   id: string;
+  thumbnail: string;
   site_id: string;
   title: string;
   seller_id: number;
@@ -27,8 +29,8 @@ interface Product {
   user_product_id: string;
   price: number;
   base_price: number;
-  initial_quantity: number;
   available_quantity: number;
+  permalink: string;
 }
 
 const HomeProducto = () => {
@@ -73,12 +75,15 @@ const HomeProducto = () => {
       {!loadingConnections && !loading && ( // Conditionally render section
         <section className={`${styles.HomeProducto}`}>
           <div className={`${styles.container__HomeProducto}`}>
+            <h1>Lista de productos</h1>
             <div className={`${styles.search__HomeProducto}`}>
+              
               <select
                 className={`form-select ${styles.select__HomeProducto}`}
                 value={selectedConnection}
                 onChange={handleConnectionChange}
               >
+                
                 <option value="">Selecciona una conexión</option>
                 {connections.map((connection) => (
                   <option key={connection.client_id} value={connection.client_id}>
@@ -90,48 +95,45 @@ const HomeProducto = () => {
                 className={`form-control ${styles.input__HomeProducto}`}
                 placeholder='Buscar producto'
               />
-              <input
-                className={`form-select ${styles.select__HomeProducto}`}
-                placeholder='Filtros'
-              />
-              <button
-                className={`btn btn-primary ${styles.btn__HomeProducto}`}
-              >
-                Actualizar productos
-              </button>
+              <strong>Última actualización: ??:??:??</strong>
             </div>
-            <table className='table'>
-              <thead>
-                <tr>
-                  <th>ID MLC</th>
-                  <th>Título</th>
-                  <th>Código vendedor</th>
-                  <th>Código categoría</th>
-                  <th>Precio CLP</th>
-                  <th>Cantidad inicial</th>
-                  <th>Cantidad disponible</th>
-                </tr>
-              </thead>
-              <tbody>
-                {allProductos?.map((producto) => (
-                  <tr key={producto.id}>
-                    <td>{producto.id}</td>
-                    <td>{producto.title}</td>
-                    <td>{producto.seller_id}</td>
-                    <td>{producto.category_id}</td>
-                    <td>{producto.price}</td>
-                    <td>{producto.initial_quantity}</td>
-                    <td>{producto.available_quantity}</td>
+            {!selectedConnection ? (
+              <p>Por favor, seleccione una conexión para ver los productos.</p>
+            ) : (
+              <table className='table'>
+                <thead>
+                  <tr>
+                    <th>Imágen</th>
+                    <th>ID MLC</th>
+                    <th>Título</th>
+                    <th>Código categoría</th>
+                    <th>Precio CLP</th>
+                    <th>Stock MercadoLibre</th>
+                    <th>Bodega asignada</th>
+                    <th>Stock Bodega</th>
+                    <th>URL MLC</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <button 
-              onClick={() => setAllProductos([])}
-              className={styles.btn__add}
-            >
+                </thead>
+                <tbody>
+                  {allProductos?.map((producto) => (
+                    <tr key={producto.id}>
+                      <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
+                      <td>{producto.id}</td>
+                      <td>{producto.title}</td>
+                      <td>{producto.category_id}</td>
+                      <td>{producto.price}</td>
+                      <td>{producto.available_quantity}</td>
+                      <td>no especificada</td>
+                      <td>no especificado</td>
+                      <td><Link to={producto.permalink} target="_blank" className='btn btn-warning'>Ver producto</Link></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+            <Link to="../crear" className={styles.btn__add}>
               <FontAwesomeIcon className={styles.icon__add} icon={faPlus}/>
-            </button>
+            </Link> 
           </div>
         </section>
       )}
