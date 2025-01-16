@@ -89,3 +89,23 @@
   width: 100%;
   table-layout: fixed;
 }
+
+.btn__add {
+  position: absolute;
+  background-color: #EF4624;
+  color: #FFFFFF;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  right: 3rem;
+  bottom: 3rem;
+  border: none;
+  border-radius: 20rem;
+  cursor: pointer;
+}
+
+.icon__add{
+  height: 2rem;
+  width: 2rem;
+}

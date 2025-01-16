@@ -1,6 +1,9 @@
 import { useState, useEffect } from "react";
 import styles from "./HomeBodega.module.css";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { Link } from "react-router-dom";
 
 interface Company {
   id: number;
@@ -107,6 +110,7 @@ const HomeBodega = () => {
     <div>
       <div className="container-fluid">
         <h1 className="mt-2">Lista de bodegas</h1>
+        <p>En este apartado puedes ver la lista de todas las bodegas registradas en el sistema, puedes filtrarlas por compañías u ordenarlas!</p>
 
         <div className={styles.menu}>
           <div className={styles.filter}>
@@ -128,6 +132,9 @@ const HomeBodega = () => {
               <option value="desc">Descendente</option>
             </select>
           </div>
+          <Link to="../crear" target="_blank" className={styles.btn__add}>
+            <FontAwesomeIcon className={styles.icon__add} icon={faPlus}/>
+          </Link>
         </div>
 
         <div className={styles.tableContainer}>
