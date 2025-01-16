@@ -125,7 +125,10 @@ const HomeBodega = () => {
               onClick={() => setShowToast(false)}
             ></button>
           </div>
-          <div className="toast-body">
+          <div
+            className="toast-body"
+            style={{ background: "white", color: "black" }}
+          >
             {error ? `Error: ${error}` : "No hay almacenes disponibles"}
           </div>
         </div>
