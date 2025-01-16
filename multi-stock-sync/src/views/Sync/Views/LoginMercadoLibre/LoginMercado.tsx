@@ -1,6 +1,7 @@
 import { useState } from "react";
 import styles from "./LoginMercado.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Link } from "react-router-dom";
 import {
   faLock,
   faLockOpen,
@@ -126,14 +127,15 @@ const LoginMercado = () => {
             </div>
           )}
 
-          <div className={styles.buttonGroup}>
+            <div className={`mt-5 d-flex flex-column flex-md-row`}>  
             <button
               type="submit"
-              className={`${styles.button} ${styles.buttonSave}`}
+              className={`btn btn-primary mx-3 mb-2 mb-md-0`}
               disabled={loading}
             >
               {loading ? "Generando URL..." : "Generar URL de Autenticación"}
             </button>
+            <Link to="/sync/perfil/home" className="btn btn-secondary mx-3 mb-2 mb-md-0" >Volver a conexiones</Link>
           </div>
         </div>
       </form>
