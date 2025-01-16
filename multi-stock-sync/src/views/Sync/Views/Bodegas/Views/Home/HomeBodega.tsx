@@ -132,7 +132,7 @@ const HomeBodega = () => {
               <option value="desc">Descendente</option>
             </select>
           </div>
-          <Link to="../crear" target="_blank" className={styles.btn__add}>
+          <Link to="../crear" className={styles.btn__add}>
             <FontAwesomeIcon className={styles.icon__add} icon={faPlus}/>
           </Link>
         </div>

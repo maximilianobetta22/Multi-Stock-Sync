@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import { Link } from 'react-router-dom';
 import axios from 'axios';
 
 interface Company {
@@ -100,7 +101,8 @@ const CrearBodega: React.FC = () => {
                         ))}
                     </select>
                 </div>
-                <button type="submit" className="btn btn-primary">Crear</button>
+                <button type="submit" className="btn btn-primary mx-2">Crear bodega</button>
+                <Link to="../home" className="btn btn-danger">Volver</Link>
             </form>
             {toastMessage && (
                 <div className={`toast show position-fixed bottom-0 end-0 m-3 bg-${toastType}`} role="alert" aria-live="assertive" aria-atomic="true">
