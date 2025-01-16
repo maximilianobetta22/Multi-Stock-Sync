@@ -108,7 +108,6 @@ const HomeProducto = () => {
                   <th>Código vendedor</th>
                   <th>Código categoría</th>
                   <th>Precio CLP</th>
-                  <th>Precio base CLP</th>
                   <th>Cantidad inicial</th>
                   <th>Cantidad disponible</th>
                 </tr>
@@ -121,7 +120,6 @@ const HomeProducto = () => {
                     <td>{producto.seller_id}</td>
                     <td>{producto.category_id}</td>
                     <td>{producto.price}</td>
-                    <td>{producto.base_price}</td>
                     <td>{producto.initial_quantity}</td>
                     <td>{producto.available_quantity}</td>
                   </tr>
