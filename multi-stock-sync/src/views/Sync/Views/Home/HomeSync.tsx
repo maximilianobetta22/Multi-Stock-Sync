@@ -10,12 +10,12 @@ const HomeSync: React.FC = () => {
         <div className={styles.container}>
             <div className={styles.header}>
                 <br />
-                <h1>Bienvenido a Multi Stock Sync</h1>
+                <h1>Multi Stock Sync</h1>
+                <h4>Panel de sincronización</h4>
                 <br />
-                <p>Seleccione una opción para comenzar:</p>
+                <h4>Seleccione una opción para comenzar:</h4>
             </div>
-            <br />
-            
+            <br />      
             <div className={`${styles.buttonsContainer} mt-4`}>
                 <div className={styles.buttonWrapper}>
                     <FontAwesomeIcon icon={faBoxOpen} size="5x" className={`${styles.icon} ${styles.icon_products_color}`} />
