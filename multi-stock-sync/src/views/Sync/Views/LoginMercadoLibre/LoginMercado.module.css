@@ -8,7 +8,6 @@
 }
 
 .formContainer {
-  width: 30%;
   height: auto;
   display: flex;
   justify-content: center;
@@ -17,7 +16,7 @@
   border: none;
   border-radius: 10px;
   background-color: #e6e6e6;
-  margin-top: -10%;
+  margin-top: 10px;
   box-shadow: 0 10px 10px 0 #666;
 }
 
@@ -166,4 +165,60 @@
   margin-top: 10px;
   font-size: 1.2rem;
   text-align: center;
+}
+
+@media (max-width: 768px) {
+  .formContainer {
+    width: 90%;
+    margin-top: 20px;
+    padding: 20px;
+  }
+
+  .formControl {
+    padding: 20px;
+  }
+
+  .inputField {
+    padding: 10px 30px 10px 12px;
+  }
+
+  .inputIcon,
+  .lockIcon {
+    right: 10px;
+  }
+
+  .floatingLabel {
+    left: 12px;
+  }
+
+  .button {
+    width: 100%;
+    margin-top: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 1.5rem;
+  }
+
+  .subtitle {
+    font-size: 0.875rem;
+  }
+
+  .inputField {
+    font-size: 0.875rem;
+  }
+
+  .floatingLabel {
+    font-size: 0.75rem;
+  }
+
+  .button {
+    font-size: 0.875rem;
+  }
+
+  .loadingMessage {
+    font-size: 1rem;
+  }
 }
