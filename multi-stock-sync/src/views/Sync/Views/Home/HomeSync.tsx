@@ -1,9 +1,15 @@
 import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from './HomeSync.module.css';
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+    faBoxOpen,
+    faWarehouse,
+    faPlug,
+  } from "@fortawesome/free-solid-svg-icons";
+import { NavLink } from "react-router-dom";
 const HomeSync: React.FC = () => {
-
+/*
     const images = [
         'https://cloud.astronautmarkus.dev/index.php/apps/files_sharing/publicpreview/eCp8adJj7JEqCKf?file=/&fileId=1577&x=1920&y=1080&a=true&etag=07b5f2b0b34032b59ddd3ec4b60f6a1d',
         'https://cloud.astronautmarkus.dev/index.php/apps/files_sharing/publicpreview/eCp8adJj7JEqCKf?file=/&fileId=1577&x=1920&y=1080&a=true&etag=07b5f2b0b34032b59ddd3ec4b60f6a1d',
@@ -17,7 +23,7 @@ const HomeSync: React.FC = () => {
         'https://cloud.astronautmarkus.dev/index.php/apps/files_sharing/publicpreview/eCp8adJj7JEqCKf?file=/&fileId=1577&x=1920&y=1080&a=true&etag=07b5f2b0b34032b59ddd3ec4b60f6a1d',
     ];
 
-    // Función para agrupar las imágenes de 5 en 5
+  
     const chunkImages = (arr: string[], size: number) => {
         const result: string[][] = [];
         for (let i = 0; i < arr.length; i += size) {
@@ -26,8 +32,8 @@ const HomeSync: React.FC = () => {
         return result;
     };
 
-    const groupedImages = chunkImages(images, 5); // Agrupe las imágenes en bloques de 5
-
+    const groupedImages = chunkImages(images, 5); 
+*/
     return (
         <div className={styles.container}>
             <div className={styles.header}>
@@ -38,26 +44,43 @@ const HomeSync: React.FC = () => {
             </div>
             <br />
 
-            {/* Botones debajo del título */}
+
+            <div className={styles.buttonsContainer}>
+                <div className={styles.buttonWrapper}>
+                    <FontAwesomeIcon icon={faBoxOpen} size="5x" className={`${styles.icon} ${styles.iconProductos}`} />
+                    <NavLink to={"/sync/productos"} className={`${styles.button} ${styles.productos}`}>Producto</NavLink>
+                </div>
+                <div className={styles.buttonWrapper}>
+                    <FontAwesomeIcon icon={faWarehouse} size="5x" className={`${styles.icon} ${styles.iconBodega}`} />
+                    <NavLink to={"/sync/bodegas"} className={`${styles.button} ${styles.bodega}`}>Bodega</NavLink>
+                </div>
+                <div className={styles.buttonWrapper}>
+                    <FontAwesomeIcon icon={faPlug} size="5x" className={`${styles.icon} ${styles.iconConexiones}`} />
+                    
+                    <NavLink to={"/sync/perfil"} className={`${styles.button} ${styles.conexiones}`}>Conexiones a ML</NavLink>
+                </div>
+            </div>
+            {/* Botones debajo del título 
             <div className={styles.buttonsContainer}>
                 <button className={styles.button}>
-                    <i className="bi bi-search"></i> boton Prueba
+                    <span>Productos</span><FontAwesomeIcon icon={faBoxOpen} />
+                    <i className="bi bi-search"></i> Productos 
                 </button>
                 <button className={styles.button}>
-                    <i className="bi bi-heart"></i> boton Prueba
+                    <FontAwesomeIcon icon={faWarehouse} />
+                    <i className="bi bi-heart"></i> Bodega
                 </button>
                 <button className={styles.button}>
-                    <i className="bi bi-cart"></i> boton Prueba
+                    <FontAwesomeIcon icon={faPlug} />
+                    <i className="bi bi-cart"></i> Conexiones a Mercado Libre
                 </button>
-                <button className={styles.button}>
-                    <i className="bi bi-trash"></i> boton Prueba
-                </button>
-            </div>
+                
+            </div>*/}
 
             <br />
             <br />
-
-            {/* Primer Carrusel de Imágenes */}
+            
+            {/* Primer Carrusel de Imágenes 
             <div id="carouselExampleIndicators1" className="carousel slide" data-bs-ride="carousel">
                 <div className="carousel-inner">
                     {groupedImages.map((group, index) => (
@@ -97,17 +120,17 @@ const HomeSync: React.FC = () => {
                 </a>
             </div>
 
-            <br />
+            <br /> */}
             
 
-            {/* Título para el segundo Carrusel */}
+            {/* Título para el segundo Carrusel 
             <div className={styles.header}>
                 <h4>Descubre Más Productos</h4>
             </div>
 
-            <br />
+            <br /> */}
 
-            {/* Segundo Carrusel de Imágenes */}
+            {/* Segundo Carrusel de Imágenes 
             <div id="carouselExampleIndicators2" className="carousel slide" data-bs-ride="carousel">
                 <div className="carousel-inner">
                     {groupedImages.map((group, index) => (
@@ -145,8 +168,8 @@ const HomeSync: React.FC = () => {
                     <span className="carousel-control-next-icon" aria-hidden="true"></span>
                     <span className="visually-hidden">Next</span>
                 </a>
-            </div>
-        </div>
+            </div>  */}
+        </div> 
     );
 };
 

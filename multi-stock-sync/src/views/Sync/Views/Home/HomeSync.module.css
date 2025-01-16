@@ -2,12 +2,9 @@
     padding: 0;
     margin: 0;
 }
-
-
-
-
 .container {
     text-align: center;
+    margin-top: 5%;
 }
 
 .header {
@@ -25,14 +22,36 @@
     background-color: #6c6f73;
     color: white;
     border-radius: 5px;
-    padding: 10px 50px;
+    padding: 10px 20px; 
     font-size: 16px;
     display: flex;
     align-items: center;
+    width: 200px; 
+    justify-content: center; 
+}
+
+.buttonWrapper {
+    display: flex;
+    flex-direction: column; 
+    align-items: center;
+    gap: 8px; 
+}
+
+.productos {
+    background-color: #4CAF50; /* Verde */
+}
+
+.bodega {
+    background-color: #2196F3; /* Azul */
+}
+
+.conexiones {
+    background-color: #FF9800; /* Naranja */
 }
 
 .button:hover {
-    background-color: #414447;
+    /*background-color: #414447;*/
+    opacity: 0.5;
 }
 
 .carousel-item {
@@ -49,4 +68,15 @@
 .carousel-control-prev-icon,
 .carousel-control-next-icon {
     background-color: black;
+}
+.iconProductos {
+    color: #4CAF50; /* Verde */
+}
+
+.iconBodega {
+    color: #2196F3; /* Azul */
+}
+
+.iconConexiones {
+    color: #FF9800; /* Naranja */
 }
