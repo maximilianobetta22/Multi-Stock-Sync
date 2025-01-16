@@ -13,7 +13,7 @@ const HomeBodega = () => {
       setLoading(true);
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/warehousesAttachment`,
+          `${import.meta.env.VITE_API_URL}/warehouses`,
           {
             method: "GET",
             headers: {
@@ -110,9 +110,9 @@ const HomeBodega = () => {
         {/*Toast */}
         <div
           id="liveToast"
-          className={`toast position-fixed bottom-0 mb-2 ms-2 end-0 p-1 ${
-            showToast ? " show" : " hide"
-          }`}
+          className={`toast position-fixed bottom-0 mb-2 ms-2 end-0 ${
+            error ? "text-bg-danger" : "test-bg-success"
+          } text-bg-danger ${showToast ? " show" : " hide"}`}
           role="alert"
           aria-live="assertive"
           aria-atomic="true"
