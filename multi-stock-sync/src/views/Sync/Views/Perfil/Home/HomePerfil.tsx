@@ -30,16 +30,40 @@ const HomePerfil: React.FC = () => {
     const noImageSrc = "/assets/img/no_image.jpg";
 
     const copyToClipboard = (token: string, message: string) => {
-        navigator.clipboard.writeText(token).then(() => {
-            setToastMessage(message);
-            setToastType('success'); // Tipo success
-            setShowToast(true);
-            setTimeout(() => {
-                setShowToast(false);
-                setToastMessage(null);
-                setToastType(null);
-            }, 2000);
-        }).catch(err => console.error("Error al copiar el token:", err));
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(token).then(() => {
+                setToastMessage(message);
+                setToastType('success');
+                setShowToast(true);
+                setTimeout(() => {
+                    setShowToast(false);
+                    setToastMessage(null);
+                    setToastType(null);
+                }, 2000);
+            }).catch(err => console.error("Error al copiar el token:", err));
+        } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = token;
+            textArea.style.position = "fixed";
+            textArea.style.opacity = "0";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            try {
+                document.execCommand('copy');
+                setToastMessage(message);
+                setToastType('success');
+                setShowToast(true);
+                setTimeout(() => {
+                    setShowToast(false);
+                    setToastMessage(null);
+                    setToastType(null);
+                }, 2000);
+            } catch (err) {
+                console.error("Error al copiar el token:", err);
+            }
+            document.body.removeChild(textArea);
+        }
     };
 
     const openToast = (clientId: string) => {
