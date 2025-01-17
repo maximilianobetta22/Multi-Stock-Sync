@@ -5,6 +5,7 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 
 interface Connection {
   client_id: string;
@@ -39,6 +40,8 @@ const HomeProducto = () => {
   const [loading, setLoading] = useState(false);
   const [allProductos, setAllProductos] = useState<Product[]>([]);
   const [loadingConnections, setLoadingConnections] = useState(true); // New state for loading connections
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -47,6 +50,8 @@ const HomeProducto = () => {
         setConnections(response.data.data);
       } catch (error) {
         console.error('Error fetching connections:', error);
+        setToastMessage((error as any).response?.data?.message || 'Error fetching connections');
+        setToastType('danger');
       } finally {
         setLoadingConnections(false); // Set loadingConnections to false after fetching
       }
@@ -64,6 +69,8 @@ const HomeProducto = () => {
       setAllProductos(response.data.data);
     } catch (error) {
       console.error('Error fetching products:', error);
+      setToastMessage((error as any).response?.data?.message || 'Error fetching products');
+      setToastType('danger');
     } finally {
       setLoading(false);
     }
@@ -72,6 +79,13 @@ const HomeProducto = () => {
   return (
     <>
       {(loadingConnections || loading) && <LoadingDinamico variant="container" />} {/* Show loading spinner */}
+      {toastMessage && (
+        <ToastComponent
+          message={toastMessage}
+          type={toastType}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
       {!loadingConnections && !loading && ( // Conditionally render section
         <section className={`${styles.HomeProducto}`}>
           <div className={`${styles.container__HomeProducto}`}>
