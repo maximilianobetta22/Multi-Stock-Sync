@@ -4,6 +4,7 @@ import { LoadingDinamico } from "../../../../../components/LoadingDinamico/Loadi
 import { Link } from "react-router-dom";
 import styles from "./Perfil.module.css";
 import axios from "axios";
+import ToastComponent from "../../../Components/ToastComponent/ToastComponent";
 
 interface SyncData {
     id: number;
@@ -124,7 +125,7 @@ const HomePerfil: React.FC = () => {
         try {
             const response = await axios.get(url);
             if (response.data.status === "success") {
-                setToastMessage(`Conexión exitosa: ${response.data.message}`);
+                setToastMessage(`${response.data.message}`);
                 setToastType('success');
             } else {
                 setToastMessage(`Error en la conexión: ${response.data.message}`);
@@ -271,23 +272,14 @@ const HomePerfil: React.FC = () => {
             
 
             {showToast && (
-                    <div className={`toast show position-fixed bottom-0 end-0 m-3 ${toastType === 'success' ? 'bg-success' : 'bg-danger'}`} role="alert" aria-live="assertive" aria-atomic="true">
-                        <div className={`toast-header ${toastType === 'success' ? 'bg-success' : 'bg-danger'}`}>
-                            <strong className="me-auto" style={{ color: 'white' }}>MultiStock-Sync</strong>
-                            <button type="button" className="btn-close" onClick={closeToast}></button>
-                        </div>
-                        <div className="toast-body" style={{ backgroundColor: 'white', color: 'black' }}>
-                            {toastMessage || "¿Está seguro que desea desconectar esta conexión?"}
-                            {!toastMessage && (
-                                <div className="mt-2 pt-2 border-top">
-                                    <button className="btn btn-danger btn-sm me-2" onClick={disconnectConexion}>Sí, desconectar</button>
-                                    <button className="btn btn-secondary btn-sm" onClick={closeToast}>Cancelar</button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                )}          
-       
+                <ToastComponent
+                    message={toastMessage || "¿Está seguro que desea desconectar esta conexión?"}
+                    type={toastType === 'success' ? 'success' : 'danger'}
+                    onClose={closeToast}
+                    onConfirm={!toastMessage ? disconnectConexion : undefined}
+                    onCancel={!toastMessage ? closeToast : undefined}
+                />
+            )}
         </div>
     );
 };
