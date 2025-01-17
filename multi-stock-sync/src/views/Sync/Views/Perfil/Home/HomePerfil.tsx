@@ -179,7 +179,7 @@ const HomePerfil: React.FC = () => {
 
                 {conexiones.length === 0 ? (
                     <div className={styles.noConexiones}>
-                        <img src="/assets/img/icons/link_lost.svg" alt="No Connections" />
+                        <img src="/assets/img/icons/link_notfound.svg" alt="No Connections" />
                         <strong className="mb-5">No se han encontrado conexiones guardadas en el sistema, por favor, cree una nueva conexión.</strong>
                         <Link to="/sync/loginmercadolibre" className="btn btn-primary">Agregar Conexiones</Link>
                         <Link to="/" className="btn btn-secondary ms-2 mt-3">Volver al Inicio</Link>
