@@ -25,7 +25,7 @@ const HomePerfil: React.FC = () => {
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
     const [showToast, setShowToast] = useState(false);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
-    const [toastType, setToastType] = useState<'success' | 'error' | null>(null); // Tipo de toast
+    const [toastType, setToastType] = useState<'success' | 'error' | null>(null);
     const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials`;
     const noImageSrc = "/assets/img/no_image.jpg";
 
@@ -178,7 +178,8 @@ const HomePerfil: React.FC = () => {
                 <h1>Lista de conexiones a MercadoLibre</h1>
 
                 {conexiones.length === 0 ? (
-                    <div className={`${styles.noConexiones}`}>
+                    <div className={styles.noConexiones}>
+                        <img src="/assets/img/icons/link_lost.svg" alt="No Connections" />
                         <strong className="mb-5">No se han encontrado conexiones guardadas en el sistema, por favor, cree una nueva conexión.</strong>
                         <Link to="/sync/loginmercadolibre" className="btn btn-primary">Agregar Conexiones</Link>
                         <Link to="/" className="btn btn-secondary ms-2 mt-3">Volver al Inicio</Link>
