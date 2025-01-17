@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import { Link } from 'react-router-dom';
+import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import axios from 'axios';
 
 interface Company {
@@ -105,15 +106,11 @@ const CrearBodega: React.FC = () => {
                 <Link to="../home" className="btn btn-danger">Volver</Link>
             </form>
             {toastMessage && (
-                <div className={`toast show position-fixed bottom-0 end-0 m-3 bg-${toastType}`} role="alert" aria-live="assertive" aria-atomic="true">
-                    <div className={`toast-header bg-${toastType}`}>
-                        <strong className="me-auto" style={{ color: 'white' }}>MultiStock-Sync</strong>
-                        <button type="button" className="btn-close" onClick={closeToast}></button>
-                    </div>
-                    <div className="toast-body" style={{ backgroundColor: 'white', color: 'black' }}>
-                        {toastMessage}
-                    </div>
-                </div>
+                <ToastComponent 
+                    message={toastMessage} 
+                    type={toastType} 
+                    onClose={closeToast} 
+                />
             )}
         </div>
     );
