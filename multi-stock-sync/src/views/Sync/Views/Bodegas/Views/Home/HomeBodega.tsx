@@ -4,6 +4,7 @@ import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/Lo
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus } from '@fortawesome/free-solid-svg-icons';
 import { Link } from "react-router-dom";
+import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
 
 interface Company {
   id: number;
@@ -157,10 +158,8 @@ const HomeBodega = () => {
                     <td>{warehouse.company.name}</td>
                     <td>{new Date(warehouse.updated_at).toLocaleDateString()}</td>
                     <td>
-                      <button className={`${styles.goButton} btn mx-1`}>
-                        Ir a Bodega
-                      </button>
-                      <Link to={`../editar/${warehouse.id}`} className={`${styles.goButton} btn`}>Editar bodega</Link>
+                    <Link to={`../DetalleBodega/${warehouse.id}`} className={`${styles.goButton} btn mx-1`}>Ir a Bodega</Link>
+                    <Link to={`../editar/${warehouse.id}`} className={`${styles.goButton} btn`}>Editar bodega</Link>
                     </td>
                   </tr>
                 ))
@@ -172,31 +171,13 @@ const HomeBodega = () => {
             </tbody>
           </table>
         </div>
-        {/*Toast */}
-        <div
-          id="liveToast"
-          className={`toast position-fixed bottom-0 mb-2 ms-2 end-0 ${
-            error ? "text-bg-danger" : "test-bg-success"
-          } text-bg-danger ${showToast ? " show" : " hide"}`}
-          role="alert"
-          aria-live="assertive"
-          aria-atomic="true"
-        >
-          <div className="toast-header">
-            <strong className="me-auto">MultiStockSync</strong>
-            <button
-              type="button"
-              className="btn-close"
-              onClick={() => setShowToast(false)}
-            ></button>
-          </div>
-          <div
-            className="toast-body"
-            style={{ background: "white", color: "black" }}
-          >
-            {error ? `Error: ${error}` : "No hay almacenes disponibles"}
-          </div>
-        </div>
+        {showToast && (
+          <ToastComponent
+            message={error ? `Error: ${error}` : "No hay almacenes disponibles"}
+            type={error ? "danger" : "success"}
+            onClose={() => setShowToast(false)}
+          />
+        )}
       </div>
     </div>
   );

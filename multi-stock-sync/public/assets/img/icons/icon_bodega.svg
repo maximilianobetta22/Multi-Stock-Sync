@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 279.7 276.5">
+  <defs>
+    <style>
+      .cls-1, .cls-2 {
+        fill: none;
+        stroke: #000;
+        stroke-linejoin: round;
+        stroke-width: 14px;
+      }
+
+      .cls-2 {
+        stroke-linecap: round;
+      }
+    </style>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.7.3, SVG Export Plug-In . SVG Version: 1.2.0 Build 164)  -->
+  <g>
+    <g id="Capa_1">
+      <g>
+        <g>
+          <path class="cls-2" d="M68,132.3s-25.6-12.9-26.2,15.9"/>
+          <path class="cls-2" d="M67.2,131.9s24.7,8.6,23.5,36.1"/>
+        </g>
+        <g>
+          <path class="cls-2" d="M64.6,209.7s23.9,10.5,25-15.8"/>
+          <path class="cls-2" d="M65.4,210s-24.9-7.2-24.3-34.7"/>
+        </g>
+        <g>
+          <path class="cls-2" d="M107.8,188.5s2-13.2-16.7-20.1"/>
+          <path class="cls-2" d="M107.8,188.1s.5,14-18,7.6"/>
+        </g>
+        <g>
+          <path class="cls-2" d="M24.9,154.8s-1.5,13.6,16.3,20.3"/>
+          <path class="cls-2" d="M24.8,155.3s-1-14.8,17-7.5"/>
+        </g>
+        <path class="cls-2" d="M42,147.5s-4.9,24.1,24.4,36.4"/>
+        <path class="cls-2" d="M89.5,193.6s5-23-23.2-35.4"/>
+      </g>
+    </g>
+    <g id="Capa_3">
+      <polyline class="cls-1" points="212.4 83.2 242.7 67.8 126.3 7 99.8 21 7.8 69.6 7.3 69.8 7.8 70.1 125 127.7 166.5 106.6"/>
+      <polyline class="cls-1" points="242.8 142.1 242.8 213.8 125 269.5 125 127.2"/>
+      <polyline class="cls-2" points="7 69.7 7 214.3 124.8 269.5 124.8 128.5"/>
+      <polygon class="cls-1" points="242.8 67.9 272.7 126.7 155.8 186.7 125 127.2 242.8 67.9"/>
+    </g>
+  </g>
+</svg>

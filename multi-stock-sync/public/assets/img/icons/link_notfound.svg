@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 380.6 164.9">
+  <defs>
+    <style>
+      .cls-1 {
+        stroke-dasharray: 10.1 20.3;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-4, .cls-5 {
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+
+      .cls-1, .cls-2, .cls-3, .cls-5 {
+        fill: none;
+      }
+
+      .cls-1, .cls-2, .cls-4, .cls-5 {
+        stroke-width: 10px;
+      }
+
+      .cls-3 {
+        stroke-width: 8px;
+      }
+
+      .cls-4 {
+        fill: #ff3b3b;
+      }
+
+      .cls-5 {
+        stroke-dasharray: 8 19.9;
+      }
+    </style>
+  </defs>
+  <!-- Generator: Adobe Illustrator 28.7.3, SVG Export Plug-In . SVG Version: 1.2.0 Build 164)  -->
+  <g>
+    <g id="Capa_3">
+      <line class="cls-2" x1="66.6" y1="81.8" x2="73.6" y2="82.1"/>
+      <path class="cls-2" d="M89.1,82.1h16.3c13.8.2,25.9,8,32.2,19.4h-40.5c-.5,0-1.1.1-1.6.2-4.7.4-9,2.5-12.2,5.7-3.5,3.5-5.7,8.4-5.7,13.8,0,10,7.7,18.3,17.4,19.3.7,0,1.4.1,2.2.1h40.4c-6.3,11.4-18.6,19.2-32.6,19.2l-63.2-.4c-20.3-.1-36.8-16.9-36.7-37.2v-3.6c.2-20.3,16.9-36.8,37.2-36.7h9.6"/>
+      <path class="cls-2" d="M95,140.4l-51.5-.3c-10.1,0-18.3-8.4-18.3-18.5v-2c0-10.1,8.4-18.3,18.5-18.3l51.8.3c-4.7.4-9,2.5-12.2,5.7-3.5,3.5-5.7,8.4-5.7,13.8,0,10,7.7,18.3,17.4,19.3Z"/>
+      <line class="cls-2" x1="149.8" y1="140.4" x2="137.6" y2="140.4"/>
+      <line class="cls-2" x1="177.6" y1="140.4" x2="163.6" y2="140.4"/>
+      <path class="cls-2" d="M137.6,101.4h59.5c10.7-.2,19.5,8.6,19.5,19.3,0,5.4-2.2,10.2-5.7,13.8-3.5,3.5-8.4,5.7-13.8,5.8h-5"/>
+      <rect class="cls-5" x="269.1" y="53" width="77" height="136" rx="36.9" ry="36.9" transform="translate(182.7 427) rotate(-89.3)"/>
+      <path class="cls-1" d="M334,142.8l-54.2-.7c-11.8-.2-21.3-9.9-21.1-21.7v-.2c.2-11.8,9.9-21.3,21.7-21.1l54.2.7c11.8.2,21.3,9.9,21.1,21.7v.2c-.2,11.8-9.9,21.3-21.7,21.1Z"/>
+      <circle class="cls-4" cx="309.1" cy="37" r="27.5"/>
+      <line class="cls-3" x1="298.9" y1="26.1" x2="319.3" y2="47.9"/>
+      <line class="cls-3" x1="298.2" y1="47.2" x2="320" y2="26.8"/>
+    </g>
+  </g>
+</svg>
