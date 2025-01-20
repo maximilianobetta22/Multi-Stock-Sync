@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
-
+//Esto es el loading dinamico
 //import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; 
 //import {  faArrowDown } from '@fortawesome/free-solid-svg-icons';
 
