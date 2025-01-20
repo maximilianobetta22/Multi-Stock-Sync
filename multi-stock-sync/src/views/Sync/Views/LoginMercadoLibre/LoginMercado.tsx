@@ -2,11 +2,8 @@ import { useState } from "react";
 import styles from "./LoginMercado.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
-import {
-  faLock,
-  faLockOpen,
-  faAddressCard,
-} from "@fortawesome/free-solid-svg-icons";
+import { faLock, faLockOpen, faAddressCard } from "@fortawesome/free-solid-svg-icons";
+import { Modal, Button } from "react-bootstrap"; // Import Bootstrap components
 
 const LoginMercado = () => {
   const [clientId, setClientId] = useState("");
@@ -15,10 +12,14 @@ const LoginMercado = () => {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
+
+  const handleClose = () => setShowModal(false);
+  const handleShow = () => setShowModal(true);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -137,8 +138,32 @@ const LoginMercado = () => {
             </button>
             <Link to="/sync/perfil/home" className="btn btn-secondary mx-3 mb-2 mb-md-0" >Volver a conexiones</Link>
           </div>
+
+          <Button variant="info" onClick={handleShow} className="mt-3">
+            ¿Qué es esto?
+          </Button>
         </div>
       </form>
+
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Instrucciones</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Para obtener las credenciales de MercadoLibre, sigue estos pasos:</p>
+          <ol>
+            <li>Ve a la página de desarrolladores de MercadoLibre.</li>
+            <li>Inicia sesión con tu cuenta.</li>
+            <li>Crea una nueva aplicación y obtén el Client ID y Client Secret.</li>
+            <li>Ingresa las credenciales en los campos correspondientes.</li>
+          </ol>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {loading && (
         <div className={styles.loadingOverlay}>
