@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import { faLock, faLockOpen, faAddressCard } from "@fortawesome/free-solid-svg-icons";
 import { Modal, Button } from "react-bootstrap"; // Import Bootstrap components
+import ToastComponent from "../../Components/ToastComponent/ToastComponent"; // Import ToastComponent
 
 const LoginMercado = () => {
   const [clientId, setClientId] = useState("");
@@ -120,14 +121,12 @@ const LoginMercado = () => {
             <p onClick={handleShow} className={`${styles.helpLink} mt-3`}>¿Qué es esto? </p>
 
           {message && (
-            <div
-              className={`alert ${
-                status === "success" ? "alert-success" : "alert-danger"
-              }`}
-              role="alert"
-            >
-              {message}
-            </div>
+            <ToastComponent
+              message={message}
+              type={status === "success" ? "success" : "danger"}
+              onClose={() => setMessage("")}
+              timeout={5000}
+            />
           )}
 
             <div className={`mt-5 d-flex flex-column flex-md-row`}>  
