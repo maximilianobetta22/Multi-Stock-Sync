@@ -222,3 +222,17 @@
     font-size: 1rem;
   }
 }
+
+.helpLink{
+  color: #007bff;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modalImage {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 10px auto;
+}
+

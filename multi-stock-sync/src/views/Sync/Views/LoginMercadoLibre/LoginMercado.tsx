@@ -2,11 +2,9 @@ import { useState } from "react";
 import styles from "./LoginMercado.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
-import {
-  faLock,
-  faLockOpen,
-  faAddressCard,
-} from "@fortawesome/free-solid-svg-icons";
+import { faLock, faLockOpen, faAddressCard } from "@fortawesome/free-solid-svg-icons";
+import { Modal, Button } from "react-bootstrap"; // Import Bootstrap components
+import ToastComponent from "../../Components/ToastComponent/ToastComponent"; // Import ToastComponent
 
 const LoginMercado = () => {
   const [clientId, setClientId] = useState("");
@@ -15,10 +13,14 @@ const LoginMercado = () => {
   const [message, setMessage] = useState("");
   const [status, setStatus] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
 
   const togglePasswordVisibility = () => {
     setShowPassword((prev) => !prev);
   };
+
+  const handleClose = () => setShowModal(false);
+  const handleShow = () => setShowModal(true);
 
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -116,15 +118,15 @@ const LoginMercado = () => {
             </label>
           </div>
 
+            <p onClick={handleShow} className={`${styles.helpLink} mt-3`}>¿Qué es esto? </p>
+
           {message && (
-            <div
-              className={`alert ${
-                status === "success" ? "alert-success" : "alert-danger"
-              }`}
-              role="alert"
-            >
-              {message}
-            </div>
+            <ToastComponent
+              message={message}
+              type={status === "success" ? "success" : "danger"}
+              onClose={() => setMessage("")}
+              timeout={5000}
+            />
           )}
 
             <div className={`mt-5 d-flex flex-column flex-md-row`}>  
@@ -133,12 +135,34 @@ const LoginMercado = () => {
               className={`btn btn-primary mx-3 mb-2 mb-md-0`}
               disabled={loading}
             >
-              {loading ? "Generando URL..." : "Generar URL de Autenticación"}
+              {loading ? "Generando URL..." : "Conectarse a MercadoLibre"}
             </button>
             <Link to="/sync/perfil/home" className="btn btn-secondary mx-3 mb-2 mb-md-0" >Volver a conexiones</Link>
           </div>
+
         </div>
       </form>
+
+      <Modal show={showModal} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Instrucciones</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <p>Para obtener las credenciales de MercadoLibre, sigue estos pasos:</p>
+          <ol>
+            <li>Visita la <a href="https://developers.mercadolibre.cl/devcenter/" target="_blank">página de desarrolladores de MercadoLibre</a> e inicia sesión.</li>
+            <li>Crea una nueva aplicación para obtener el Client ID y Client Secret.</li>
+            <img src="/assets/img/form_login/form_image1.png" className={styles.modalImage} alt="Instrucciones 1" />
+            <li>Copia el Client ID y Client Secret en el formulario principal y presiona "Conectarse a MercadoLibre".</li>
+            <img src="/assets/img/form_login/form_image2.png" className={styles.modalImage} alt="Instrucciones 2" />
+          </ol>
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cerrar
+          </Button>
+        </Modal.Footer>
+      </Modal>
 
       {loading && (
         <div className={styles.loadingOverlay}>

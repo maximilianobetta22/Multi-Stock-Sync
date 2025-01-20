@@ -9,10 +9,10 @@
     
   } 
 .tableContainer2 {
-    width: 95%;
+    width: 100%;
     overflow-x: scroll;
     overflow-y: auto;
-    padding-left:5%;
+    /*padding-left:5%;*/
     
   }
 .table thead,
@@ -26,6 +26,7 @@
   .table {
     width: 100%;
     border-collapse: collapse;
+    border: 3px solid #ccc;
   }
   
   .table th,
@@ -36,6 +37,12 @@
   }
   
   .table tbody {
+    display: block;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+
+  .table tbody2 {
     display: block;
     max-height: 400px;
     overflow-y: auto;

@@ -63,6 +63,12 @@ const HomeProducto = () => {
   const handleConnectionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const clientId = event.target.value;
     setSelectedConnection(clientId);
+
+    if (clientId === '') {
+      setAllProductos([]);
+      return;
+    }
+
     setLoading(true);
     try {
       const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`);
