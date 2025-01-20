@@ -2,6 +2,8 @@ import styles from './DetalleBodega.module.css';
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from 'react-router-dom';
+import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
+//Esto es el loading dinamico
 //import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'; 
 //import {  faArrowDown } from '@fortawesome/free-solid-svg-icons';
 
@@ -15,6 +17,7 @@ interface Product {
   price_clp: number;
   stock_mercado_libre: number;
   warehouse_stock: number;
+  bodega_asignada:string;
   image_url: string;
   mercadolibre_url: string;
 }
@@ -49,6 +52,8 @@ const DetalleBodega = () => {
   const [products, setProducts] = useState<Product[]>([]); // Estado para productos estáticos
   const [error, setError] = useState<string | null>(null);
   const [showWarehouseDetails] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  
   // OBTENER LOS DATOS DE LA API
   useEffect(() => {
     const fetchWarehouse = async () => {
@@ -60,6 +65,7 @@ const DetalleBodega = () => {
 
         if (response.ok) {
           setWarehouse(data.data);
+          
         } else {
           setError(data.message || "Error al obtener los datos de la bodega");
         }
@@ -68,7 +74,7 @@ const DetalleBodega = () => {
         console.error(err);
       }
     };
-
+    
     // DATOS ESTATICOS DE PRUEBA
     const staticProducts: Product[] = [
       {
@@ -77,6 +83,7 @@ const DetalleBodega = () => {
         category_code: "MLC1010101", 
         price_clp: 15000, 
         stock_mercado_libre: 20, 
+        bodega_asignada: "BODEGA 1",
         warehouse_stock: 50, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg",
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#", 
@@ -87,92 +94,110 @@ const DetalleBodega = () => {
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 1", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
       {
         id: 103, 
-        title: "Producto B", 
+        title: "Producto C", 
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 2", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
       {
         id: 104, 
-        title: "Producto B", 
+        title: "Producto D", 
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 2", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
       {
         id: 105, 
-        title: "Producto B", 
+        title: "Producto E", 
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 2", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
       {
-        id: 1090, 
-        title: "Producto B", 
+        id: 106, 
+        title: "Producto F", 
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 3", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
       {
-        id: 123, 
-        title: "Producto B", 
+        id: 107, 
+        title: "Producto G", 
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 3", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
       {
-        id: 1231212, 
-        title: "Producto B", 
+        id: 108, 
+        title: "PRUEBA", 
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 3", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
       {
-        id: 999, 
-        title: "Producto B", 
+        id: 109, 
+        title: "prueba2", 
         category_code: "MLC1010101", 
         price_clp: 25000, 
         stock_mercado_libre: 15, 
+        bodega_asignada: "BODEGA 3", 
         warehouse_stock: 40, 
         image_url: "https://www.sportcom.cl/wp-content/uploads/2019/04/M.20.50-1.jpg", 
         mercadolibre_url: "https://www.sportcom.cl/tienda/recreacion/paletas-de-playa-2-pelotas/#",
       },
+
+      
     ];
 
     setProducts(staticProducts); //ESTO ES PORQUE SON ESTATICOS, ELIMINAR LINEA CUANDO SE LLAMEN DE API
     fetchWarehouse();
   }, [id]);
-
+  /*FILTRO EXPERIMENTAL DE PRODUCTOS */
+  const filteredProducts = products.filter((product) => {
+    return (
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.id.toString().includes(searchTerm) ||
+      product.category_code.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.bodega_asignada.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+  });
   if (error) {
     return <p>Error: {error}</p>;
   }
 
   if (!warehouse) {
-    return <p>Cargando información...</p>;
+    return <LoadingDinamico variant="container" />
   }
 
   return (
@@ -213,6 +238,7 @@ const DetalleBodega = () => {
       <div className={`${styles.header} ${styles.tableContainer2}`}>
         {/*Tabla "inspirada" por la tabla en HomeProducto.tsx */}
         <h1 className="mt-2 mb-2">Productos en la Bodega</h1>
+        
         {products.length === 0 ? (
           <p>No hay productos registrados en esta bodega.</p>
         ) : (
@@ -221,7 +247,17 @@ const DetalleBodega = () => {
           className={styles.table} 
             
           >
-            
+          <input
+                  type="text"
+                  placeholder="Buscar por ID, Título, Código de Categoría o Bodega Asignada"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  style={{
+                    marginBottom: "10px",
+                    padding: "5px",
+                    width: "100%",
+                    maxWidth: "500px",
+                  }}/>  
             
             <thead>
               <tr>
@@ -236,8 +272,8 @@ const DetalleBodega = () => {
                 <th className="table_header">URL MercadoLibre</th>
               </tr>
             </thead>
-            <tbody>
-              {products.map((product) => (
+            <tbody className="tbody2">
+              {filteredProducts.map((product) => (
                 <tr key={product.id}>
                   <td>
                     <img
@@ -251,7 +287,7 @@ const DetalleBodega = () => {
                   <td>{product.category_code}</td>
                   <td>{product.price_clp.toLocaleString("es-CL")}</td>
                   <td>{product.stock_mercado_libre}</td>
-                  <td>no especificada</td>
+                  <td>{product.bodega_asignada}</td>
                   <td>{product.warehouse_stock}</td>
                   
                   <td><Link to={product.mercadolibre_url} target="_blank" className='btn btn-warning'>Ver producto</Link></td>
