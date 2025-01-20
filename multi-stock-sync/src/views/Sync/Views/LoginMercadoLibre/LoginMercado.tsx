@@ -117,6 +117,8 @@ const LoginMercado = () => {
             </label>
           </div>
 
+            <p onClick={handleShow} className={`${styles.helpLink} mt-3`}>¿Qué es esto? </p>
+
           {message && (
             <div
               className={`alert ${
@@ -134,14 +136,11 @@ const LoginMercado = () => {
               className={`btn btn-primary mx-3 mb-2 mb-md-0`}
               disabled={loading}
             >
-              {loading ? "Generando URL..." : "Generar URL de Autenticación"}
+              {loading ? "Generando URL..." : "Conectarse a MercadoLibre"}
             </button>
             <Link to="/sync/perfil/home" className="btn btn-secondary mx-3 mb-2 mb-md-0" >Volver a conexiones</Link>
           </div>
 
-          <Button variant="info" onClick={handleShow} className="mt-3">
-            ¿Qué es esto?
-          </Button>
         </div>
       </form>
 
@@ -152,10 +151,11 @@ const LoginMercado = () => {
         <Modal.Body>
           <p>Para obtener las credenciales de MercadoLibre, sigue estos pasos:</p>
           <ol>
-            <li>Ve a la página de desarrolladores de MercadoLibre.</li>
-            <li>Inicia sesión con tu cuenta.</li>
-            <li>Crea una nueva aplicación y obtén el Client ID y Client Secret.</li>
-            <li>Ingresa las credenciales en los campos correspondientes.</li>
+            <li>Visita la <a href="https://developers.mercadolibre.cl/devcenter/" target="_blank">página de desarrolladores de MercadoLibre</a> e inicia sesión.</li>
+            <li>Crea una nueva aplicación para obtener el Client ID y Client Secret.</li>
+            <img src="/assets/img/form_login/form_image1.png" className={styles.modalImage} alt="Instrucciones 1" />
+            <li>Copia el Client ID y Client Secret en el formulario principal y presiona "Conectarse a MercadoLibre".</li>
+            <img src="/assets/img/form_login/form_image2.png" className={styles.modalImage} alt="Instrucciones 2" />
           </ol>
         </Modal.Body>
         <Modal.Footer>
