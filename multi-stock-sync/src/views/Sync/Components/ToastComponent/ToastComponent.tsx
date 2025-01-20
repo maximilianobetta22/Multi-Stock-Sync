@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 interface ToastComponentProps {
     message: string;
@@ -6,23 +6,31 @@ interface ToastComponentProps {
     onClose: () => void;
     onConfirm?: () => void;
     onCancel?: () => void;
+    timeout?: number; // Optional timeout prop
 }
 
-const ToastComponent: React.FC<ToastComponentProps> = ({ message, type, onClose, onConfirm, onCancel }) => {
+const ToastComponent: React.FC<ToastComponentProps> = ({ message, type, onClose, onConfirm, onCancel, timeout }) => {
+    useEffect(() => {
+        if (timeout) {
+            const timer = setTimeout(onClose, timeout);
+            return () => clearTimeout(timer);
+        }
+    }, [timeout, onClose]);
+
     return (
         <div className={`toast show position-fixed bottom-0 end-0 m-3 bg-${type}`} role="alert" aria-live="assertive" aria-atomic="true" style={{ zIndex: 1050 }}>
             <div className={`toast-header bg-${type}`}>
-            <strong className="me-auto" style={{ color: 'white' }}>MultiStock-Sync</strong>
-            <button type="button" className="btn-close" onClick={onClose}></button>
+                <strong className="me-auto" style={{ color: 'white' }}>MultiStock-Sync</strong>
+                <button type="button" className="btn-close" onClick={onClose}></button>
             </div>
             <div className="toast-body" style={{ backgroundColor: 'white', color: 'black' }}>
-            {message}
-            {onConfirm && onCancel && (
-                <div className="mt-2">
-                    <button type="button" className="btn btn-secondary me-2" onClick={onConfirm}>Sí</button>
-                    <button type="button" className="btn btn-secondary" onClick={onCancel}>No</button>
-                </div>
-            )}
+                {message}
+                {onConfirm && onCancel && (
+                    <div className="mt-2">
+                        <button type="button" className="btn btn-secondary me-2" onClick={onConfirm}>Sí</button>
+                        <button type="button" className="btn btn-secondary" onClick={onCancel}>No</button>
+                    </div>
+                )}
             </div>
         </div>
     );
