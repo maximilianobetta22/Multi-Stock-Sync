@@ -1,55 +1,75 @@
 import React from 'react';
+import { Modal, Button, Form } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheckCircle } from '@fortawesome/free-solid-svg-icons';
-import './ClientesModal.css';
 
 const ClientesModal: React.FC<{ show: boolean, handleClose: () => void, selectedClient: any }> = ({ show, handleClose, selectedClient }) => {
     return (
-        <div className={`modal fade ${show ? 'show' : ''}`} style={{ display: show ? 'block' : 'none', justifyContent: 'center', alignItems: 'center' }}>
-            <div className="modal-dialog">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h5 className="modal-title">{selectedClient ? 'Editar Cliente' : 'Nuevo Cliente'}</h5>
-                        <button type="button" className="close" onClick={handleClose} style={{ position: 'absolute', right: '10px', top: '10px' }}>
-                            <span>&times;</span>
-                        </button>
-                    </div>
-                    <div className="modal-body">
-                        <form className="formulario">
-                            <label>
-                                Tipo de Cliente
-                                <select>
-                                    <option>empresa</option>
-                                    <option>persona</option>
-                                </select>
-                            </label>
-                            <label>
-                                Cliente Extranjero
-                                <select>
-                                    <option>no</option>
-                                    <option>sí</option>
-                                </select>
-                            </label>
-                            <label>Rut<input type="text" /></label>
-                            <label>Razón Social<input type="text" /></label>
-                            <label>Giro<input type="text" /></label>
-                            <label>Nombres<input type="text" /></label>
-                            <label>Apellidos<input type="text" /></label>
-                            <label>Dirección<input type="text" /></label>
-                            <label>Comuna<input type="text" /></label>
-                            <label>Ciudad<input type="text" /></label>
-                            <label>Región<input type="text" /></label>
-                        </form>
-                    </div>
-                    <div className="modal-footer">
-                        <button type="button" className="btn btn-secondary" onClick={handleClose}>Cancelar</button>
-                        <button type="submit" className="btn btn-primary">
-                            Guardar <FontAwesomeIcon icon={faCheckCircle} />
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <Modal show={show} onHide={handleClose} centered>
+            <Modal.Header closeButton>
+                <Modal.Title>{selectedClient ? 'Editar Cliente' : 'Nuevo Cliente'}</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <Form>
+                    <Form.Group controlId="formTipoCliente">
+                        <Form.Label>Tipo de Cliente</Form.Label>
+                        <Form.Control as="select">
+                            <option>empresa</option>
+                            <option>persona</option>
+                        </Form.Control>
+                    </Form.Group>
+                    <Form.Group controlId="formClienteExtranjero">
+                        <Form.Label>Cliente Extranjero</Form.Label>
+                        <Form.Control as="select">
+                            <option>no</option>
+                            <option>sí</option>
+                        </Form.Control>
+                    </Form.Group>
+                    <Form.Group controlId="formRut">
+                        <Form.Label>Rut</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formRazonSocial">
+                        <Form.Label>Razón Social</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formGiro">
+                        <Form.Label>Giro</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formNombres">
+                        <Form.Label>Nombres</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formApellidos">
+                        <Form.Label>Apellidos</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formDireccion">
+                        <Form.Label>Dirección</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formComuna">
+                        <Form.Label>Comuna</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formCiudad">
+                        <Form.Label>Ciudad</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                    <Form.Group controlId="formRegion">
+                        <Form.Label>Región</Form.Label>
+                        <Form.Control type="text" />
+                    </Form.Group>
+                </Form>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>Cancelar</Button>
+                <Button variant="primary" type="submit">
+                    Guardar <FontAwesomeIcon icon={faCheckCircle} />
+                </Button>
+            </Modal.Footer>
+        </Modal>
     );
 };
 
