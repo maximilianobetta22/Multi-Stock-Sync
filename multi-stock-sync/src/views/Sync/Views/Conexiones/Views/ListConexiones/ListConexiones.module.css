@@ -1,7 +1,7 @@
 .main {
     padding: 20px;
     background-color: #f8f9fa;
-    border-radius: 15px;
+    
     font-family: Arial, sans-serif;
     height: 100vh;
     display: flex;
@@ -23,15 +23,12 @@
     margin-bottom: 20px;
 }
 
-/**/
 
-  .tablaWrapper {
-    border-radius: 15px;
+ .tablaWrapper {
+    border: solid 3px #ccc;
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
     flex-grow: 1; 
-  }
-  
+}
 
-  

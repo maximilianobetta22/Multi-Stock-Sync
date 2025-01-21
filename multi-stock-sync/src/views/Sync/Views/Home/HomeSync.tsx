@@ -2,7 +2,7 @@ import React from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from './HomeSync.module.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faBoxOpen,faWarehouse,faPlug,} from "@fortawesome/free-solid-svg-icons";
+import {faBoxOpen,faWarehouse,faPlug, faBriefcase} from "@fortawesome/free-solid-svg-icons";
 import { NavLink } from "react-router-dom";
 
 const HomeSync: React.FC = () => {    
@@ -27,7 +27,11 @@ const HomeSync: React.FC = () => {
                 </div>
                 <div className={styles.buttonWrapper}>
                     <FontAwesomeIcon icon={faPlug} size="5x" className={`${styles.icon} ${styles.icon_connections_color}`} />
-                    <NavLink to={"/sync/perfil"} className={`${styles.button} ${styles.connections_color}`}>Conexiones a ML</NavLink>
+                    <NavLink to={"/sync/conexiones"} className={`${styles.button} ${styles.connections_color}`}>Conexiones a ML</NavLink>
+                </div>
+                <div className={styles.buttonWrapper}>
+                    <FontAwesomeIcon icon={faBriefcase} size="5x" className={`${styles.icon} ${styles.icon_companies_color}`} />
+                    <NavLink to={"/sync/companias"} className={`${styles.button} ${styles.companies_color}`}>Compañías</NavLink>
                 </div>
             </div>
         </div> 

@@ -1,0 +1,66 @@
+.main {
+    background-color: #f8f9fa; 
+    border-radius: 8px;
+    padding: 30px;
+    max-width: 500px; 
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); 
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto; 
+    text-align: center;
+}
+
+.header {
+    margin-bottom: 60px;
+}
+
+.tableContainer2 {
+    width: 95%;
+    overflow-x: scroll;
+    overflow-y: auto;
+    padding-left:5%;
+    
+}
+.table thead,
+.table tbody tr {
+    display: table;
+    width: 100%;
+    table-layout: fixed;
+}
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.table tbody {
+    display: block;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.form-group {
+    width: 100%;
+}
+
+.form-control {
+    border-radius: 4px;
+    padding: 10px;
+    font-size: 16px;
+}
+
+.buttonContainer {
+    display: flex;
+    gap: 16px;
+    justify-content: center; 
+    margin-top: 16px; 
+}
