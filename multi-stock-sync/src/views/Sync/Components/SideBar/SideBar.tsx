@@ -6,6 +6,7 @@ import {
   faBoxOpen,
   faWarehouse,
   faPlug,
+  faBriefcase,
 } from "@fortawesome/free-solid-svg-icons";
 
 const SideBar = () => {
@@ -35,6 +36,12 @@ const SideBar = () => {
             <NavLink to="/sync/perfil" className={styles.NavLink}>
               <FontAwesomeIcon icon={faPlug} />
               Conexiones a ML
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/sync/companias" className={styles.NavLink}>
+              <FontAwesomeIcon icon={faBriefcase} />
+              Compañías
             </NavLink>
           </li>
         </ul>

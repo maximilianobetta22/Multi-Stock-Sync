@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
-import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
 import { Link } from "react-router-dom";
-import styles from "./Perfil.module.css";
+import styles from "./ListConexiones.module.css";
 import axios from "axios";
-import ToastComponent from "../../../Components/ToastComponent/ToastComponent";
+import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
 interface SyncData {
     id: number;
@@ -20,7 +22,7 @@ interface SyncData {
     updated_at: string;
 }
 
-const HomePerfil: React.FC = () => {
+const ListConexiones: React.FC = () => {
     const [conexiones, setConexiones] = useState<SyncData[]>([]);
     const [loading, setLoading] = useState(true);
     const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
@@ -182,8 +184,8 @@ const HomePerfil: React.FC = () => {
                     <div className={styles.noConexiones}>
                         <img src="/assets/img/icons/link_notfound.svg" alt="No Connections" />
                         <strong className="mb-5">No se han encontrado conexiones guardadas en el sistema, por favor, cree una nueva conexión.</strong>
-                        <Link to="/sync/loginmercadolibre" className="btn btn-primary">Agregar Conexiones</Link>
-                        <Link to="/" className="btn btn-secondary ms-2 mt-3">Volver al Inicio</Link>
+                        <Link to="/sync/conexiones/login" className="btn btn-primary">Agregar Conexiones</Link>
+                        <Link to="/sync/home" className="btn btn-secondary ms-2 mt-3">Volver al Inicio</Link>
                     </div>
                 ) : (
                     <div>
@@ -228,7 +230,7 @@ const HomePerfil: React.FC = () => {
                                                 data-bs-toggle="dropdown"
                                                 aria-expanded="false"
                                                 >
-                                                ...
+                                                <FontAwesomeIcon icon={faEllipsisV} />
                                                 </button>
                                                 <ul className="dropdown-menu" aria-labelledby={`dropdown-${conexion.id}`}>
                                                 <li>
@@ -265,8 +267,8 @@ const HomePerfil: React.FC = () => {
                                 </div>
 
                                 <div className="text-end mt-5" style={{ marginTop: "auto" }}>
-                                    <Link to="/sync/loginmercadolibre" className="btn btn-primary">Agregar Conexiones</Link>
-                                    <Link to="/" className="btn btn-secondary ms-2">Volver al Inicio</Link>
+                                    <Link to="/sync/conexiones/login" className="btn btn-primary">Agregar Conexiones</Link>
+                                    <Link to="/sync/home" className="btn btn-secondary ms-2">Volver al Inicio</Link>
                                 </div>
                         </div>
                     </div>
@@ -287,4 +289,4 @@ const HomePerfil: React.FC = () => {
     );
 };
 
-export default HomePerfil;
+export default ListConexiones;

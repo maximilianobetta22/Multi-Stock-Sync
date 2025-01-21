@@ -15,16 +15,6 @@
   color: #666;
 }
 
-.goButton {
-  background-color: #ffa500;
-  color: white;
-}
-
-.goButton:hover {
-  background-color: #cc8400;
-  color: white;
-}
-
 .menu {
   display: flex;
   flex-wrap: wrap;

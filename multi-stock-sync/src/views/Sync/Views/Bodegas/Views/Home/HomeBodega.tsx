@@ -158,8 +158,8 @@ const HomeBodega = () => {
                     <td>{warehouse.company.name}</td>
                     <td>{new Date(warehouse.updated_at).toLocaleDateString()}</td>
                     <td>
-                    <Link to={`../DetalleBodega/${warehouse.id}`} className={`${styles.goButton} btn mx-1`}>Ir a Bodega</Link>
-                    <Link to={`../editar/${warehouse.id}`} className={`${styles.goButton} btn`}>Editar bodega</Link>
+                    <Link to={`../DetalleBodega/${warehouse.id}`} className={"btn btn-primary mx-1"}>Ir a Bodega</Link>
+                    <Link to={`../editar/${warehouse.id}`} className={"btn btn-warning"}>Editar bodega</Link>
                     </td>
                   </tr>
                 ))
