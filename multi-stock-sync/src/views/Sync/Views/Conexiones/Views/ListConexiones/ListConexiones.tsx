@@ -5,6 +5,8 @@ import { Link } from "react-router-dom";
 import styles from "./ListConexiones.module.css";
 import axios from "axios";
 import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
 interface SyncData {
     id: number;
@@ -228,7 +230,7 @@ const ListConexiones: React.FC = () => {
                                                 data-bs-toggle="dropdown"
                                                 aria-expanded="false"
                                                 >
-                                                ...
+                                                <FontAwesomeIcon icon={faEllipsisV} />
                                                 </button>
                                                 <ul className="dropdown-menu" aria-labelledby={`dropdown-${conexion.id}`}>
                                                 <li>
