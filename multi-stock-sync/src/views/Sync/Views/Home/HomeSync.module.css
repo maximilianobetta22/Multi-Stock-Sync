@@ -50,6 +50,14 @@
     background-color: #FF9800; /* Yellow */
 }
 
+.companies_color{
+    background-color: #FF5722; /* Orange */
+}
+
+.icon_companies_color{
+    color: #FF5722; /* Orange */
+}
+
 .icon_products_color {
     color: #4CAF50; /* Green */
 }
