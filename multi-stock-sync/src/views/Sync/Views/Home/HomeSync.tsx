@@ -27,7 +27,7 @@ const HomeSync: React.FC = () => {
                 </div>
                 <div className={styles.buttonWrapper}>
                     <FontAwesomeIcon icon={faPlug} size="5x" className={`${styles.icon} ${styles.icon_connections_color}`} />
-                    <NavLink to={"/sync/perfil"} className={`${styles.button} ${styles.connections_color}`}>Conexiones a ML</NavLink>
+                    <NavLink to={"/sync/conexiones"} className={`${styles.button} ${styles.connections_color}`}>Conexiones a ML</NavLink>
                 </div>
                 <div className={styles.buttonWrapper}>
                     <FontAwesomeIcon icon={faBriefcase} size="5x" className={`${styles.icon} ${styles.icon_companies_color}`} />

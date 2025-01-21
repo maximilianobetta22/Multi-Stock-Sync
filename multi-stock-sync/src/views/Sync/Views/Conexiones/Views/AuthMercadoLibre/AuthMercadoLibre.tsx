@@ -1,12 +1,12 @@
 import { useState } from "react";
-import styles from "./LoginMercado.module.css";
+import styles from "./AuthMercadoLibre.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import { faLock, faLockOpen, faAddressCard } from "@fortawesome/free-solid-svg-icons";
 import { Modal, Button } from "react-bootstrap"; // Import Bootstrap components
-import ToastComponent from "../../Components/ToastComponent/ToastComponent"; // Import ToastComponent
+import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
 
-const LoginMercado = () => {
+const AuthMercadoLibre = () => {
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
   const [loading, setLoading] = useState(false);
@@ -137,7 +137,7 @@ const LoginMercado = () => {
             >
               {loading ? "Generando URL..." : "Conectarse a MercadoLibre"}
             </button>
-            <Link to="/sync/perfil/home" className="btn btn-secondary mx-3 mb-2 mb-md-0" >Volver a conexiones</Link>
+            <Link to="/sync/conexiones/home" className="btn btn-secondary mx-3 mb-2 mb-md-0" >Volver a conexiones</Link>
           </div>
 
         </div>
@@ -174,4 +174,4 @@ const LoginMercado = () => {
   );
 };
 
-export default LoginMercado;
+export default AuthMercadoLibre;
