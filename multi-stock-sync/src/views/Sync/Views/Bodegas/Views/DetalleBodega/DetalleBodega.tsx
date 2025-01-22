@@ -154,10 +154,10 @@ const DetalleBodega = () => {
           <table className={styles.table}>
             <thead>
               <tr>
+                <th className="table_header">ID Base de Datos</th>
                 <th className="table_header">Imágen</th>
-                <th className="table_header">ID MLC</th>
                 <th className="table_header">Título</th>
-                <th className="table_header">Código Categoría</th>
+                <th className="table_header">ID MLC</th>
                 <th className="table_header">Precio CLP</th>
                 <th className="table_header">Stock MercadoLibre</th>
                 <th className="table_header">Bodega Asignada</th>
@@ -170,7 +170,8 @@ const DetalleBodega = () => {
               {filteredProducts.length > 0 ? (
                 filteredProducts.map((product) => (
                   <tr key={product.id}>
-                    <td>
+                    <td>{product.id}</td>
+                    <td style={{ textAlign: "center" }}>
                       <img
                         src={product.thumbnail}
                         alt={product.title}
@@ -178,15 +179,14 @@ const DetalleBodega = () => {
                         onError={(e) => (e.currentTarget.src = placeholderImage)}
                       />
                     </td>
-                    <td>{product.id}</td>
                     <td>{product.title}</td>
                     <td>{product.id_mlc}</td>
                     <td>{new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Number(product.price_clp))}</td>
                     <td>{product.warehouse_stock}</td>
                     <td>{product.warehouse_id}</td>
                     <td>{product.warehouse_stock}</td>
-                    <td>{new Date(product.created_at).toLocaleDateString("es-CL")}</td>
-                    <td>{new Date(product.updated_at).toLocaleDateString("es-CL")}</td>
+                    <td>{new Date(product.created_at).toLocaleString("es-CL")}</td>
+                    <td>{new Date(product.created_at).toLocaleString("es-CL")}</td>
                   </tr>
                 ))
               ) : (
