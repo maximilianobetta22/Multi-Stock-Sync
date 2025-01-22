@@ -27,6 +27,18 @@
   align-items: center;
   gap: 1rem;
   margin: 0 0 1rem 0;
+  width: 100%; /* Ensure the search bar takes full width */
+}
+
+.searchForm__HomeProducto {
+  display: flex;
+  flex-direction: row;
+  gap: 0.5rem;
+  flex-grow: 1; /* Allow the search form to grow */
+}
+
+.input__HomeProducto {
+  flex-grow: 1; /* Allow the input to grow */
 }
 
 .select__HomeProducto {
@@ -40,20 +52,30 @@
 }
 
 .table__container {
-  max-height: 60vh;
+  max-height: 50vh; /* Reduce the table height */
   overflow-y: auto;
   width: 100%;
+  position: relative;
 }
 
 .table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed; /* Add this line to prevent table deformation */
+}
+
+.table thead {
+  position: sticky;
+  top: 0;
+  background-color: #f2f2f2; /* Ensure the header has a background */
+  z-index: 1;
 }
 
 .table th, .table td {
   padding: 0.75rem;
   text-align: left;
   border-bottom: 1px solid #ddd;
+  word-wrap: break-word; /* Add this line to handle long text */
 }
 
 .table th {
@@ -101,4 +123,18 @@
 
 .dropdown-item:hover {
   background-color: #f1f1f1;
+}
+
+.img__center img {
+  max-width: 100px; /* Set a max width for images */
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+.pagination__container {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 1rem;
+  width: 100%;
 }
