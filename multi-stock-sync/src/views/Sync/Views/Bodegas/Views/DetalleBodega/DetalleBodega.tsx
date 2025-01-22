@@ -2,6 +2,7 @@ import styles from './DetalleBodega.module.css';
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
+import { Link } from 'react-router-dom';
 
 interface Product {
   id: number;
@@ -195,7 +196,13 @@ const DetalleBodega = () => {
               )}
             </tbody>
           </table>
+          
         </div>
+
+        <div style={{ textAlign: "right" }}>
+          <Link to="/sync/bodegas/home" className="btn btn-secondary mt-3 mb-4">Volver a bodegas</Link>
+        </div>
+        
       </div>
     </div>
   );
