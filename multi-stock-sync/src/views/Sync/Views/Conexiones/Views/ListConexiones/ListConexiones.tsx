@@ -93,13 +93,13 @@ const ListConexiones: React.FC = () => {
             const response = await axios.delete(url);
             if (response.data.status === "success") {
                 setConexiones(conexiones.filter(conexion => conexion.client_id !== clientId));
-                MySwal.fire({
+                await MySwal.fire({
                     title: 'Éxito',
                     text: response.data.message,
                     icon: 'success'
                 });
             } else {
-                MySwal.fire({
+                await MySwal.fire({
                     title: 'Error',
                     text: response.data.error,
                     icon: 'error'
@@ -107,7 +107,7 @@ const ListConexiones: React.FC = () => {
             }
         } catch (error) {
             console.error("Error al desconectar la conexión:", error);
-            MySwal.fire({
+            await MySwal.fire({
                 title: 'Error',
                 text: 'Error al desconectar la conexión',
                 icon: 'error'
