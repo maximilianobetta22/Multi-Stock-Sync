@@ -217,6 +217,10 @@ const HomeProducto = () => {
     setCurrentProduct(null);
   };
 
+  const formatPriceCLP = (price: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price);
+  };
+
   const renderModalContent = () => {
     switch (modalContent) {
       case 'stock':
@@ -331,7 +335,7 @@ const HomeProducto = () => {
                           <td>{producto.id}</td>
                           <td>{producto.title}</td>
                           <td>{producto.category_id}</td>
-                          <td>{producto.price}</td>
+                          <td>{formatPriceCLP(producto.price)}</td>
                           <td>
                             {producto.available_quantity}
                             {isEditing[producto.id] && (
