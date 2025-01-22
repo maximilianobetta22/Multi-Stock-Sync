@@ -1,12 +1,10 @@
 .main {
     padding: 20px;
     background-color: #f8f9fa;
-    
     font-family: Arial, sans-serif;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    height: 80vh;
 }
 
 .noConexiones {
@@ -29,6 +27,5 @@
     overflow: hidden;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
-    flex-grow: 1; 
 }
 
