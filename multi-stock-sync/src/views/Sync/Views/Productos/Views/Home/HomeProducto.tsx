@@ -1,7 +1,6 @@
 import styles from './HomeProducto.module.css';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { Modal, Button, Form } from 'react-bootstrap';
@@ -34,6 +33,17 @@ interface Product {
   status: string;
 }
 
+const statusDictionary: { [key: string]: string } = {
+  active: 'Activo',
+  paused: 'Pausado',
+  closed: 'Cerrado',
+  under_review: 'En revisión',
+  inactive: 'Inactivo',
+  payment_required: 'Pago requerido',
+  not_yet_active: 'Aún no activo',
+  deleted: 'Eliminado',
+};
+
 const HomeProducto = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState('');
@@ -49,7 +59,7 @@ const HomeProducto = () => {
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [modalContent, setModalContent] = useState<'main' | 'stock' | 'pause'>('main');
   const [searchQuery, setSearchQuery] = useState('');
-  const [limit, setLimit] = useState(20);
+  const [limit] = useState(20);
   const [offset, setOffset] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
 
@@ -221,6 +231,10 @@ const HomeProducto = () => {
     return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price);
   };
 
+  const translateStatus = (status: string) => {
+    return statusDictionary[status] || status;
+  };
+
   const renderModalContent = () => {
     switch (modalContent) {
       case 'stock':
@@ -370,7 +384,7 @@ const HomeProducto = () => {
                             </td>
                             <td>no especificada</td>
                             <td>no especificado</td>
-                            <td>{producto.status}</td>
+                            <td>{translateStatus(producto.status)}</td>
                             <td>
                               <button className="btn btn-primary" onClick={() => openModal(producto)}>
                                 Acciones
