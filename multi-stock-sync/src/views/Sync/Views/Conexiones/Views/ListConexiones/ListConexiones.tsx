@@ -122,8 +122,8 @@ const ListConexiones: React.FC = () => {
     const testConnection = async (clientId: string) => {
         const url = `${import.meta.env.VITE_API_URL}/mercadolibre/test-connection/${clientId}`;
         MySwal.fire({
-            title: 'Probar Conexión',
-            text: 'Probando la conexión...',
+            title: 'Refrescar Conexión',
+            text: 'Refrescando la conexión...',
             icon: 'info',
             showConfirmButton: false,
             allowOutsideClick: false
@@ -237,15 +237,15 @@ const ListConexiones: React.FC = () => {
                                                                     className="dropdown-item"
                                                                     onClick={() => copyToClipboard(conexion.access_token, "Token copiado al portapapeles!")}
                                                                 >
-                                                                    Copiar
+                                                                    Copiar Tóken Secreto
                                                                 </button>
                                                             </li>
                                                             <li>
                                                                 <button
-                                                                    className="dropdown-item text-success"
+                                                                    className="dropdown-item"
                                                                     onClick={() => testConnection(conexion.client_id)}
                                                                 >
-                                                                    Probar Conexión
+                                                                    Refrescar Conexión
                                                                 </button>
                                                             </li>
                                                             <li>
@@ -253,7 +253,7 @@ const ListConexiones: React.FC = () => {
                                                                     className="dropdown-item text-danger"
                                                                     onClick={() => confirmDisconnect(conexion.client_id, conexion.id)} 
                                                                 >
-                                                                    Desconectar
+                                                                    Eliminar Conexión
                                                                 </button>
                                                             </li>
                                                         </ul>
