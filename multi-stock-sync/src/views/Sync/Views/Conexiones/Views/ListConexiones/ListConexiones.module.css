@@ -1,12 +1,10 @@
 .main {
     padding: 20px;
     background-color: #f8f9fa;
-    
     font-family: Arial, sans-serif;
     height: 100vh;
     display: flex;
     flex-direction: column;
-    height: 80vh;
 }
 
 .noConexiones {
