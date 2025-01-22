@@ -1,52 +1,119 @@
 .header {
-    text-align: left;
-  }
-  .tableContainer {
-    width: 95%;
-    overflow-x: scroll;
-    overflow-y: auto;
-    padding-left:5%;
-    
-  } 
+  text-align: left;
+}
+.tableContainer {
+  width: 100%;
+  overflow-x: auto;
+  border: 3px solid #ccc;
+} 
 .tableContainer2 {
-    width: 100%;
-    overflow-x: scroll;
-    overflow-y: auto;
-    /*padding-left:5%;*/
-    
-  }
+  width: 100%;
+  overflow-x: scroll;
+  overflow-y: auto;
+  /*padding-left:5%;*/
+  
+}
 .table thead,
 .table tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
+display: table;
+width: 100%;
+table-layout: fixed;
 }
 
-  
-  .table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 3px solid #ccc;
-  }
-  
-  .table th,
-  .table td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
-  }
-  
-  .table tbody {
-    display: block;
-    max-height: 400px;
-    overflow-y: auto;
-  }
 
-  .table tbody2 {
-    display: block;
-    max-height: 400px;
-    overflow-y: auto;
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  padding: 0.5rem; 
+  text-align: left;
+  border-bottom: 1px solid #ddd;
+  font-size: 0.875rem; 
+}
+
+.table tbody {
+  display: block;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.table tbody2 {
+  display: block;
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.cardStyle {
+  width: 100%;
+  height: auto;
+  margin-bottom: 1rem;
+}
+
+.bodega_img {
+  width: 150px;
+  height: auto;
+}
+
+.paragraphStyle {
+  margin-left: 0;
+  text-align: left;
+  color: #666;
+}
+
+.menu {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.filter {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 1rem;
+}
+
+.filter label {
+  margin-bottom: 0.5rem;
+}
+
+.filter select,
+.filter input {
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .cardStyle {
+    width: 48%;
   }
+}
 
+@media (min-width: 992px) {
+  .cardStyle {
+    width: 32%;
+  }
+}
 
+.btn__add {
+  position: absolute;
+  background-color: #EF4624;
+  color: #FFFFFF;
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  right: 3rem;
+  bottom: 3rem;
+  border: none;
+  border-radius: 20rem;
+  cursor: pointer;
+}
 
+.icon__add{
+  height: 2rem;
+  width: 2rem;
+}

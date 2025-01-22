@@ -6,6 +6,7 @@ import RouterProductos from "../Views/Productos/Router/RouterProducto";
 import RouterBodegas from "../Views/Bodegas/Router/RouterBodega";
 import RouterCompania from "../Views/Compania/Router/RouterCompania";
 import RouterConexiones from "../Views/Conexiones/Router/RouterConexiones";
+import RouterReportes from "../Views/Reportes/Router/RouterReportes";
 
 import HomeSync from "../Views/Home/HomeSync";
 
@@ -18,6 +19,7 @@ function RouterSync() {
         <Route path="/productos/*" element={<RouterProductos />} />
         <Route path="/bodegas/*" element={<RouterBodegas />} />
         <Route path="/companias/*" element={<RouterCompania />} />
+        <Route path="/reportes/*" element={<RouterReportes />} />
 
         <Route path="/*" element={<Navigate to="/sync/home" />} />
       </Routes>
