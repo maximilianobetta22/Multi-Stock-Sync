@@ -312,71 +312,77 @@ const HomeProducto = () => {
               <p>Por favor, seleccione una conexión para ver los productos.</p>
             ) : (
               <>
-                <div className={styles.table__container}>
-                  <table className={`table ${styles.table}`}>
+                <div className={styles.tableContainer}>
+                  <table className={styles.table}>
                     <thead>
                       <tr>
-                        <th>Imágen</th>
-                        <th>ID MLC</th>
-                        <th>Título</th>
-                        <th>Código categoría</th>
-                        <th>Precio CLP</th>
-                        <th>Stock MercadoLibre</th>
-                        <th>Bodega asignada</th>
-                        <th>Stock Bodega</th>
-                        <th>Status</th>
-                        <th>Acciones</th>
+                        <th className='table_header'>Imágen</th>
+                        <th className='table_header'>ID MLC</th>
+                        <th className='table_header'>Título</th>
+                        <th className='table_header'>Código categoría</th>
+                        <th className='table_header'>Precio CLP</th>
+                        <th className='table_header'>Stock MercadoLibre</th>
+                        <th className='table_header'>Bodega asignada</th>
+                        <th className='table_header'>Stock Bodega</th>
+                        <th className='table_header'>Status</th>
+                        <th className='table_header'>Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {allProductos?.map((producto) => (
-                        <tr key={producto.id}>
-                          <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
-                          <td>{producto.id}</td>
-                          <td>{producto.title}</td>
-                          <td>{producto.category_id}</td>
-                          <td>{formatPriceCLP(producto.price)}</td>
-                          <td>
-                            {producto.available_quantity}
-                            {isEditing[producto.id] && (
-                              <>
-                                <input
-                                  type="number"
-                                  value={stockEdit[producto.id] || producto.available_quantity}
-                                  onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
-                                  min="0"
-                                  className={`${styles.customInput}`}
-                                />
-                                <button
-                                  className="btn btn-success"
-                                  onClick={async () => {
-                                    setAllProductos((prevProductos) =>
-                                      prevProductos.map((p) =>
-                                        p.id === producto.id
-                                          ? { ...p, available_quantity: stockEdit[producto.id] }
-                                          : p
-                                      )
-                                    );
-                                    await updateStock(producto.id, stockEdit[producto.id]);
-                                    fetchProducts(selectedConnection, searchQuery, limit, offset);
-                                    setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
-                                  }}
-                                >
-                                  Guardar
-                                </button>
-                              </>
-                            )}
-                          </td>
-                          <td>no especificada</td>
-                          <td>no especificado</td>
-                          <td>{producto.status}</td>
-                          <td>
-                            <button className="btn btn-primary" onClick={() => openModal(producto)}>
-                              Acciones
-                            </button>
-                          </td>
+                      {allProductos.length > 0 ? (
+                        allProductos.map((producto) => (
+                          <tr key={producto.id}>
+                            <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
+                            <td>{producto.id}</td>
+                            <td>{producto.title}</td>
+                            <td>{producto.category_id}</td>
+                            <td>{formatPriceCLP(producto.price)}</td>
+                            <td>
+                              {producto.available_quantity}
+                              {isEditing[producto.id] && (
+                                <>
+                                  <input
+                                    type="number"
+                                    value={stockEdit[producto.id] || producto.available_quantity}
+                                    onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
+                                    min="0"
+                                    className={`${styles.customInput}`}
+                                  />
+                                  <button
+                                    className="btn btn-success"
+                                    onClick={async () => {
+                                      setAllProductos((prevProductos) =>
+                                        prevProductos.map((p) =>
+                                          p.id === producto.id
+                                            ? { ...p, available_quantity: stockEdit[producto.id] }
+                                            : p
+                                        )
+                                      );
+                                      await updateStock(producto.id, stockEdit[producto.id]);
+                                      fetchProducts(selectedConnection, searchQuery, limit, offset);
+                                      setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
+                                    }}
+                                  >
+                                    Guardar
+                                  </button>
+                                </>
+                              )}
+                            </td>
+                            <td>no especificada</td>
+                            <td>no especificado</td>
+                            <td>{producto.status}</td>
+                            <td>
+                              <button className="btn btn-primary" onClick={() => openModal(producto)}>
+                                Acciones
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={10} className="text-muted">No hay productos disponibles.</td>
                         </tr>
-                      ))}
+                      )}
                     </tbody>
                   </table>
                 </div>
