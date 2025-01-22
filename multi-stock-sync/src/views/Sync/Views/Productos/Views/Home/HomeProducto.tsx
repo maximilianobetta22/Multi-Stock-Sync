@@ -1,7 +1,6 @@
 import styles from './HomeProducto.module.css';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import axios from 'axios';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { Modal, Button, Form } from 'react-bootstrap';
@@ -34,6 +33,17 @@ interface Product {
   status: string;
 }
 
+const statusDictionary: { [key: string]: string } = {
+  active: 'Activo',
+  paused: 'Pausado',
+  closed: 'Cerrado',
+  under_review: 'En revisión',
+  inactive: 'Inactivo',
+  payment_required: 'Pago requerido',
+  not_yet_active: 'Aún no activo',
+  deleted: 'Eliminado',
+};
+
 const HomeProducto = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState('');
@@ -48,6 +58,10 @@ const HomeProducto = () => {
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [modalContent, setModalContent] = useState<'main' | 'stock' | 'pause'>('main');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [limit] = useState(20);
+  const [offset, setOffset] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -75,10 +89,20 @@ const HomeProducto = () => {
       return;
     }
 
+    fetchProducts(clientId);
+  };
+
+  const fetchProducts = async (clientId: string, query: string = '', limit: number = 20, offset: number = 0) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`);
+      const url = query
+        ? `${process.env.VITE_API_URL}/mercadolibre/products/search/${clientId}`
+        : `${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`;
+      const response = await axios.get(url, {
+        params: query ? { q: query, limit, offset } : { limit, offset }
+      });
       setAllProductos(response.data.data);
+      setTotalProducts(response.data.pagination.total);
     } catch (error) {
       console.error('Error fetching products:', error);
       setToastMessage((error as any).response?.data?.message || 'Error fetching products');
@@ -86,6 +110,17 @@ const HomeProducto = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleSearch = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setOffset(0);
+    fetchProducts(selectedConnection, searchQuery, limit, 0);
+  };
+
+  const handlePageChange = (newOffset: number) => {
+    setOffset(newOffset);
+    fetchProducts(selectedConnection, searchQuery, limit, newOffset);
   };
 
   const handleStockChange = (productId: string, newStock: number) => {
@@ -192,6 +227,14 @@ const HomeProducto = () => {
     setCurrentProduct(null);
   };
 
+  const formatPriceCLP = (price: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price);
+  };
+
+  const translateStatus = (status: string) => {
+    return statusDictionary[status] || status;
+  };
+
   const renderModalContent = () => {
     switch (modalContent) {
       case 'stock':
@@ -214,8 +257,7 @@ const HomeProducto = () => {
             </Form>
             <Button variant="primary" className="mt-2" onClick={async () => {
               await updateStock(currentProduct!.id, stockEdit[currentProduct!.id]);
-              const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${selectedConnection}`);
-              setAllProductos(response.data.data);
+              fetchProducts(selectedConnection, searchQuery, limit, offset);
               closeModal();
             }}>
               Guardar
@@ -228,8 +270,7 @@ const HomeProducto = () => {
             <p>¿Está seguro de que desea {currentProduct?.status === 'paused' ? 'reanudar' : 'pausar'} la publicación de este producto?</p>
             <Button variant="danger" className="mt-2" onClick={async () => {
               await updateStatus(currentProduct!.id, currentProduct!.status === 'paused' ? 'active' : 'paused');
-              const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${selectedConnection}`);
-              setAllProductos(response.data.data);
+              fetchProducts(selectedConnection, searchQuery, limit, offset);
               closeModal();
             }}>
               {currentProduct?.status === 'paused' ? 'Reanudar Publicacion' : 'Pausar Publicacion'}
@@ -271,81 +312,111 @@ const HomeProducto = () => {
                   </option>
                 ))}
               </select>
-              <input className={`form-control ${styles.input__HomeProducto}`} placeholder="Buscar producto" />
-              <strong>Última actualización: ??:??:??</strong>
+              <form onSubmit={handleSearch} className={`${styles.searchForm__HomeProducto}`}>
+                <input
+                  className={`form-control ${styles.input__HomeProducto}`}
+                  placeholder="Buscar producto"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <button type="submit" className="btn btn-primary">Buscar</button>
+              </form>
             </div>
             {!selectedConnection ? (
               <p>Por favor, seleccione una conexión para ver los productos.</p>
             ) : (
-              <div className={styles.table__container}>
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>Imágen</th>
-                      <th>ID MLC</th>
-                      <th>Título</th>
-                      <th>Código categoría</th>
-                      <th>Precio CLP</th>
-                      <th>Stock MercadoLibre</th>
-                      <th>Bodega asignada</th>
-                      <th>Stock Bodega</th>
-                      <th>Status</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {allProductos?.map((producto) => (
-                      <tr key={producto.id}>
-                        <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
-                        <td>{producto.id}</td>
-                        <td>{producto.title}</td>
-                        <td>{producto.category_id}</td>
-                        <td>{producto.price}</td>
-                        <td>
-                          {producto.available_quantity}
-                          {isEditing[producto.id] && (
-                            <>
-                              <input
-                                type="number"
-                                value={stockEdit[producto.id] || producto.available_quantity}
-                                onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
-                                min="0"
-                                className={`${styles.customInput}`}
-                              />
-                              <button
-                                className="btn btn-success"
-                                onClick={async () => {
-                                  setAllProductos((prevProductos) =>
-                                    prevProductos.map((p) =>
-                                      p.id === producto.id
-                                        ? { ...p, available_quantity: stockEdit[producto.id] }
-                                        : p
-                                    )
-                                  );
-                                  await updateStock(producto.id, stockEdit[producto.id]);
-                                  const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${selectedConnection}`);
-                                  setAllProductos(response.data.data);
-                                  setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
-                                }}
-                              >
-                                Guardar
-                              </button>
-                            </>
-                          )}
-                        </td>
-                        <td>no especificada</td>
-                        <td>no especificado</td>
-                        <td>{producto.status}</td>
-                        <td>
-                          <button className="btn btn-primary" onClick={() => openModal(producto)}>
-                            Acciones
-                          </button>
-                        </td>
+              <>
+                <div className={styles.tableContainer}>
+                  <table className={styles.table}>
+                    <thead>
+                      <tr>
+                        <th className='table_header'>Imágen</th>
+                        <th className='table_header'>ID MLC</th>
+                        <th className='table_header'>Título</th>
+                        <th className='table_header'>Código categoría</th>
+                        <th className='table_header'>Precio CLP</th>
+                        <th className='table_header'>Stock MercadoLibre</th>
+                        <th className='table_header'>Bodega asignada</th>
+                        <th className='table_header'>Stock Bodega</th>
+                        <th className='table_header'>Status</th>
+                        <th className='table_header'>Acciones</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody>
+                      {allProductos.length > 0 ? (
+                        allProductos.map((producto) => (
+                          <tr key={producto.id}>
+                            <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
+                            <td>{producto.id}</td>
+                            <td>{producto.title}</td>
+                            <td>{producto.category_id}</td>
+                            <td>{formatPriceCLP(producto.price)}</td>
+                            <td>
+                              {producto.available_quantity}
+                              {isEditing[producto.id] && (
+                                <>
+                                  <input
+                                    type="number"
+                                    value={stockEdit[producto.id] || producto.available_quantity}
+                                    onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
+                                    min="0"
+                                    className={`${styles.customInput}`}
+                                  />
+                                  <button
+                                    className="btn btn-success"
+                                    onClick={async () => {
+                                      setAllProductos((prevProductos) =>
+                                        prevProductos.map((p) =>
+                                          p.id === producto.id
+                                            ? { ...p, available_quantity: stockEdit[producto.id] }
+                                            : p
+                                        )
+                                      );
+                                      await updateStock(producto.id, stockEdit[producto.id]);
+                                      fetchProducts(selectedConnection, searchQuery, limit, offset);
+                                      setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
+                                    }}
+                                  >
+                                    Guardar
+                                  </button>
+                                </>
+                              )}
+                            </td>
+                            <td>no especificada</td>
+                            <td>no especificado</td>
+                            <td>{translateStatus(producto.status)}</td>
+                            <td>
+                              <button className="btn btn-primary" onClick={() => openModal(producto)}>
+                                Acciones
+                              </button>
+                            </td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={10} className="text-muted">No hay productos disponibles.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <div className={styles.pagination__container}>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => handlePageChange(offset - limit)}
+                    disabled={offset === 0}
+                  >
+                    Anterior
+                  </button>
+                  <button
+                    className="btn btn-secondary"
+                    onClick={() => handlePageChange(offset + limit)}
+                    disabled={offset + limit >= totalProducts}
+                  >
+                    Siguiente
+                  </button>
+                </div>
+              </>
             )}
           </div>
         </section>
