@@ -44,6 +44,7 @@ const HomeReportes = () => {
         <section className={`${styles.HomeReportes}`}>
           <div className={`${styles.container__HomeReportes}`}>
             <h1>Reporte de Ventas</h1>
+            <br></br>
             <div className={styles.table__container}>
               <table className="table">
                 <thead>
@@ -70,9 +71,14 @@ const HomeReportes = () => {
             </div>
           </div>
         </section>
+
       )}
     </>
   );
+
+ 
+
+
 };
 
 export default HomeReportes;
