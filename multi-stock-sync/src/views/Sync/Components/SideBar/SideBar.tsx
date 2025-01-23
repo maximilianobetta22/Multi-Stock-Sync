@@ -7,6 +7,7 @@ import {
   faWarehouse,
   faPlug,
   faBriefcase,
+  faFileExcel,
 } from "@fortawesome/free-solid-svg-icons";
 
 const SideBar = () => {
@@ -33,7 +34,7 @@ const SideBar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/perfil" className={styles.NavLink}>
+            <NavLink to="/sync/conexiones" className={styles.NavLink}>
               <FontAwesomeIcon icon={faPlug} />
               Conexiones a ML
             </NavLink>
@@ -42,6 +43,12 @@ const SideBar = () => {
             <NavLink to="/sync/companias" className={styles.NavLink}>
               <FontAwesomeIcon icon={faBriefcase} />
               Compañías
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/sync/reportes" className={styles.NavLink}>
+              <FontAwesomeIcon icon={faFileExcel} />
+              Reportes
             </NavLink>
           </li>
         </ul>
