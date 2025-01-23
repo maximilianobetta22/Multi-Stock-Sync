@@ -67,6 +67,8 @@ const HomeReportes = () => {
                   ))}
                 </tbody>
               </table>
+              
+              
             </div>
           </div>
         </section>
