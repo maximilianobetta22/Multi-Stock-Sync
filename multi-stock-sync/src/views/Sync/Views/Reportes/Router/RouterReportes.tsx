@@ -14,7 +14,7 @@ function RouterReportes() {
             <Route path="home" element={<HomeReportes/>} />
             <Route path="filtrar-datos" element={<FiltrarDatos />} />
             <Route path="exportar-datos" element={<ExportarDatos />} />
-            <Route path="Ingreso-semana" element={< IngresosSemana/>} />
+            <Route path="ingreso-semana" element={< IngresosSemana/>} />
         </Routes>
     );
 };

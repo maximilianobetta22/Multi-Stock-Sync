@@ -41,43 +41,41 @@ const HomeReportes = () => {
       {loading && <LoadingDinamico variant="container" />}
       {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
       {!loading && (
-        <section className={`${styles.HomeReportes}`}>
-          <div className={`${styles.container__HomeReportes}`}>
-            <h1>Reporte de Ventas</h1>
-            <br></br>
-            <div className={styles.table__container}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Producto(s) Vendido(s)</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unitario ($)</th>
-                    <th>Total de la Venta ($)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventas.map((venta, index) => (
-                    <tr key={index}>
-                      <td>{venta.fecha}</td>
-                      <td>{venta.producto}</td>
-                      <td>{venta.cantidad}</td>
-                      <td>{venta.precioUnitario.toFixed(2)}</td>
-                      <td>{venta.total.toFixed(2)}</td>
+        <div className="container">
+            <section className={`${styles.HomeReportes}`}>
+            <div className={`${styles.container__HomeReportes}`}>
+              <h1>Reporte de Ventas</h1>
+              <br></br>
+              <div className={styles.table__container}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Producto(s) Vendido(s)</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unitario ($)</th>
+                      <th>Total de la Venta ($)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {ventas.map((venta, index) => (
+                      <tr key={index}>
+                        <td>{venta.fecha}</td>
+                        <td>{venta.producto}</td>
+                        <td>{venta.cantidad}</td>
+                        <td>{venta.precioUnitario.toFixed(2)}</td>
+                        <td>{venta.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </section>
-
+          </section>
+        </div>
       )}
     </>
   );
-
- 
-
 
 };
 
