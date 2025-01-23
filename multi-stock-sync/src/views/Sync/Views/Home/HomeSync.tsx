@@ -2,7 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import styles from "./HomeSync.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFileExcel } from "@fortawesome/free-solid-svg-icons";
+import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
 const HomeSync: React.FC = () => {
@@ -38,7 +38,7 @@ const HomeSync: React.FC = () => {
         { 
             title: "Reportes", 
             description: "Gestiona y exporta datos de tus productos.", 
-            icon: faFileExcel, 
+            icon: faFolderOpen, 
             link: "/sync/reportes", 
             color: "bg-info"
         }
