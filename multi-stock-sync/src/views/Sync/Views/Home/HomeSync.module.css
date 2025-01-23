@@ -1,82 +1,22 @@
 .container {
+    margin-top: 3rem;
+}
+
+.card {
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.card-body {
     text-align: center;
-    margin-top: 5%;
 }
 
-.header {
-    text-align: center;
-    margin-bottom: 10px;
-}
-
-.buttonsContainer {
+.row {
     display: flex;
-    justify-content: space-evenly;
-    margin-bottom: 30px;
-}
-
-.button {
-    background-color: #6c6f73;
-    color: white;
-    border-radius: 5px;
-    padding: 10px 20px; 
-    font-size: 16px;
-    display: flex;
-    align-items: center;
-    width: 200px; 
-    justify-content: center; 
-}
-
-.buttonWrapper {
-    display: flex;
-    flex-direction: column; 
-    align-items: center;
-    gap: 8px; 
-    transition: z-index 0.2s, transform 0.2s;
-}
-
-.buttonWrapper:hover {
-    transform: scale(1.2);
-}
-
-.products_color {
-    background-color: #4CAF50; /* Green */
-}
-
-.warehouses_color {
-    background-color: #2196F3; /* Blue */
-}
-
-.connections_color {
-    background-color: #FF9800; /* Yellow */
-}
-
-.companies_color{
-    background-color: #FF5722; /* Orange */
-}
-
-.reportes_color {
-    background-color: #f306d3; /* purple */
-}
-
-.icon_companies_color{
-    color: #FF5722; /* Orange */
-}
-
-.icon_products_color {
-    color: #4CAF50; /* Green */
-}
-
-.icon_warehouses_color {
-    color: #2196F3; /* Blue */
-}
-
-.icon_connections_color {
-    color: #FF9800; /* Yellow */
-}
-.icon_reportes_color {
-    color: #f306d3; /* purple */
-}
-
-.button:hover {
-    opacity: 0.5;
+    justify-content: center;
 }
