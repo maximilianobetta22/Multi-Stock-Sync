@@ -1,0 +1,93 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+
+/*CONTENIDO IZQUIERDO*/
+.view__container{
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  font-size: 62.5%;
+  margin: 1rem;
+  height: 100%;
+  max-height: 100%;
+  gap: 1rem;
+}
+
+.container__left{
+  flex-basis: 70%;
+  background-color: #F7F7F7;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0.5rem;
+  box-shadow: 0.1rem 0.3rem 0.5rem rgb(0, 0, 0, 0.5);
+}
+
+.left__header{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1rem;
+  justify-content: start;
+  padding: 0.5rem;
+  flex-basis: 10%;
+}
+
+.header__dropdown{
+  font-size: 1rem;
+  padding: 0.4rem 0.8rem;
+  border: none;
+  background-color: transparent;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.header__dropdown:hover{
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.dropdown__item{
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.dropdown__item:hover{
+  cursor: pointer;
+}
+
+.header__btnDate{
+  font-size: 1rem;
+  padding-left: 1rem;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.header__btnDate:hover{
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.header__btnBuscar{
+  border-radius: 0.2rem;
+  padding: 0.2rem 1.5rem;
+}
+
+.left__graphic{
+  display: flex;
+  gap: 1rem;
+  padding: 0.5rem;
+  flex-basis: 40%;
+}
+
+.left__data{
+  padding: 0.5rem;
+  flex-basis: 50%;
+}
+
+/*CONTENIDO DERECHO*/
+.container__right{
+  flex-basis: 30%;
+  height: 100%;
+  width: 100%;
+}

@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import FiltrarDatos from "../Views/FiltrarDatos/FiltrarDatos";
 import ExportarDatos from "../Views/ExportarDatos/ExportarDatos";
 import HomeReportes from "../Views/Home/HomeReportes";
+import { IngresosCategoriaProducto } from "../Views/IngresosCategoriaProducto/IngresosCategoriaProducto";
 
 
 function RouterReportes() {
@@ -13,6 +14,7 @@ function RouterReportes() {
             <Route path="home" element={<HomeReportes/>} />
             <Route path="filtrar-datos" element={<FiltrarDatos />} />
             <Route path="exportar-datos" element={<ExportarDatos />} />
+            <Route path='ingresos-categoria-producto' element={<IngresosCategoriaProducto/>} />
         </Routes>
     );
 };
