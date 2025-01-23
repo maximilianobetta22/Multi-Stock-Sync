@@ -18,12 +18,11 @@ const HomeReportes = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
 
- 
   useEffect(() => {
     const fetchVentas = async () => {
       try {
-        const response = await axios.get(`${process.env.VITE_API_URL}/ventas`); 
-        setVentas(response.data.data); 
+        const response = await axios.get<Venta[]>(`${process.env.VITE_API_URL}/ventas`);
+        setVentas(response.data); // Asegúrate de que `response.data` tiene el formato correcto
       } catch (error) {
         console.error('Error al obtener las ventas:', error);
         setToastMessage((error as any).response?.data?.message || 'Error al obtener las ventas');
@@ -39,37 +38,46 @@ const HomeReportes = () => {
   return (
     <>
       {loading && <LoadingDinamico variant="container" />}
-      {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
+      {toastMessage && (
+        <ToastComponent 
+          message={toastMessage} 
+          type={toastType} 
+          onClose={() => setToastMessage(null)} 
+        />
+      )}
       {!loading && (
-        <section className={`${styles.HomeReportes}`}>
-          <div className={`${styles.container__HomeReportes}`}>
-            <h1>Reporte de Ventas</h1>
-            <div className={styles.table__container}>
-              <table className="table">
-                <thead>
-                  <tr>
-                    <th>Fecha</th>
-                    <th>Producto(s) Vendido(s)</th>
-                    <th>Cantidad</th>
-                    <th>Precio Unitario ($)</th>
-                    <th>Total de la Venta ($)</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ventas.map((venta, index) => (
-                    <tr key={index}>
-                      <td>{venta.fecha}</td>
-                      <td>{venta.producto}</td>
-                      <td>{venta.cantidad}</td>
-                      <td>{venta.precioUnitario.toFixed(2)}</td>
-                      <td>{venta.total.toFixed(2)}</td>
+        <div className="container">
+          <section className={styles.HomeReportes}>
+            <div className={styles.container__HomeReportes}>
+              <h1>Reporte de Ventas</h1>
+              <br />
+              <div className={styles.table__container}>
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Fecha</th>
+                      <th>Producto(s) Vendido(s)</th>
+                      <th>Cantidad</th>
+                      <th>Precio Unitario ($)</th>
+                      <th>Total de la Venta ($)</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {ventas.map((venta, index) => (
+                      <tr key={index}>
+                        <td>{venta.fecha}</td>
+                        <td>{venta.producto}</td>
+                        <td>{venta.cantidad}</td>
+                        <td>{venta.precioUnitario.toFixed(2)}</td>
+                        <td>{venta.total.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+        </div>
       )}
     </>
   );
