@@ -54,6 +54,10 @@
     background-color: #FF5722; /* Orange */
 }
 
+.reportes_color {
+    background-color: #f306d3; /* purple */
+}
+
 .icon_companies_color{
     color: #FF5722; /* Orange */
 }
@@ -68,6 +72,9 @@
 
 .icon_connections_color {
     color: #FF9800; /* Yellow */
+}
+.icon_reportes_color {
+    color: #f306d3; /* purple */
 }
 
 .button:hover {

@@ -4,6 +4,7 @@ import styles from './HomeSync.module.css';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {faBoxOpen,faWarehouse,faPlug, faBriefcase} from "@fortawesome/free-solid-svg-icons";
 import { NavLink } from "react-router-dom";
+import { faFileExcel } from '@fortawesome/free-solid-svg-icons/faFileExcel';
 
 const HomeSync: React.FC = () => {    
     return (
@@ -32,6 +33,10 @@ const HomeSync: React.FC = () => {
                 <div className={styles.buttonWrapper}>
                     <FontAwesomeIcon icon={faBriefcase} size="5x" className={`${styles.icon} ${styles.icon_companies_color}`} />
                     <NavLink to={"/sync/companias"} className={`${styles.button} ${styles.companies_color}`}>Compañías</NavLink>
+                </div>
+                <div className={styles.buttonWrapper}>
+                    <FontAwesomeIcon icon={faFileExcel} size="5x" className={`${styles.icon} ${styles.icon_reportes_color}`} />
+                    <NavLink to={"/sync/Reportes"} className={`${styles.button} ${styles.reportes_color}`}>Reportes</NavLink>
                 </div>
             </div>
         </div> 
