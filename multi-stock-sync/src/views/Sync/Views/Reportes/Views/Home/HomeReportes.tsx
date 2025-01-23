@@ -18,12 +18,11 @@ const HomeReportes = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
 
- 
   useEffect(() => {
     const fetchVentas = async () => {
       try {
-        const response = await axios.get(`${process.env.VITE_API_URL}/ventas`); 
-        setVentas(response.data.data); 
+        const response = await axios.get<Venta[]>(`${process.env.VITE_API_URL}/ventas`);
+        setVentas(response.data); // Asegúrate de que `response.data` tiene el formato correcto
       } catch (error) {
         console.error('Error al obtener las ventas:', error);
         setToastMessage((error as any).response?.data?.message || 'Error al obtener las ventas');
@@ -39,13 +38,19 @@ const HomeReportes = () => {
   return (
     <>
       {loading && <LoadingDinamico variant="container" />}
-      {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
+      {toastMessage && (
+        <ToastComponent 
+          message={toastMessage} 
+          type={toastType} 
+          onClose={() => setToastMessage(null)} 
+        />
+      )}
       {!loading && (
         <div className="container">
-            <section className={`${styles.HomeReportes}`}>
-            <div className={`${styles.container__HomeReportes}`}>
+          <section className={styles.HomeReportes}>
+            <div className={styles.container__HomeReportes}>
               <h1>Reporte de Ventas</h1>
-              <br></br>
+              <br />
               <div className={styles.table__container}>
                 <table className="table">
                   <thead>
@@ -76,7 +81,6 @@ const HomeReportes = () => {
       )}
     </>
   );
-
 };
 
 export default HomeReportes;
