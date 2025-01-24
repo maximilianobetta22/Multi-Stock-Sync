@@ -6,20 +6,25 @@ import ToastComponent from '../../../../Components/ToastComponent/ToastComponent
 
 interface Connection {
   client_id: string;
-  client_secret: string;
-  access_token: string;
-  refresh_token: string;
-  expires_at: string;
   nickname: string;
-  email: string;
-  profile_image: string;
-  created_at: string;
-  updated_at: string;
+}
+
+interface StoreSummary {
+  total_sales: number;
+  top_selling_products: { title: string; quantity: number; total_amount: number }[];
+  order_statuses: { paid: number; pending: number; canceled: number };
+  daily_sales: number;
+  weekly_sales: number;
+  monthly_sales: number;
+  annual_sales: number;
+  top_payment_methods: { account_money: number; debit_card: number; credit_card: number };
 }
 
 const HomeReportes: React.FC = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
-  const [loadingConnections, setLoadingConnections] = useState(true);
+  const [selectedConnection, setSelectedConnection] = useState<string>('');
+  const [storeSummary, setStoreSummary] = useState<StoreSummary | null>(null);
+  const [loading, setLoading] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
 
@@ -33,23 +38,49 @@ const HomeReportes: React.FC = () => {
         setToastMessage((error as any).response?.data?.message || 'Error fetching connections');
         setToastType('danger');
       } finally {
-        setLoadingConnections(false);
+        setLoading(false);
       }
     };
 
     fetchConnections();
   }, []);
 
+  const fetchStoreSummary = async (clientId: string) => {
+    setLoading(true);
+    try {
+      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/summary/${clientId}`);
+      setStoreSummary(response.data.data);
+      setToastMessage('Store summary loaded successfully');
+      setToastType('success');
+    } catch (error) {
+      console.error('Error fetching store summary:', error);
+      setToastMessage((error as any).response?.data?.message || 'Error fetching store summary');
+      setToastType('danger');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConnectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const clientId = event.target.value;
+    setSelectedConnection(clientId);
+    if (clientId) fetchStoreSummary(clientId);
+  };
+
   return (
-    <>
-      {loadingConnections && <LoadingDinamico variant="container" />}
-      <div className={styles.content}>
-        {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
-        {!loadingConnections && (
-          <>
-            <h1>Home Reportes</h1>
-            <p>Selecciona una conexión</p>
-            <select className="form-control">
+    <div className={`${styles.container} container`}> {/* Agregado container de Bootstrap */}
+      {loading && <LoadingDinamico variant="container" />}
+      {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
+      {!loading && (
+        <>
+          <h1 className="text-center my-4">Estadísticas Generales</h1>
+          <p className="text-center">Selecciona una conexión para ver el resumen de la tienda</p>
+          <div className="mb-4 d-flex justify-content-center">
+            <select
+              className="form-control w-50"
+              value={selectedConnection}
+              onChange={handleConnectionChange}
+            >
               <option value="">Selecciona una conexión</option>
               {connections.map((connection) => (
                 <option key={connection.client_id} value={connection.client_id}>
@@ -57,10 +88,32 @@ const HomeReportes: React.FC = () => {
                 </option>
               ))}
             </select>
-          </>
-        )}
-      </div>
-    </>
+          </div>
+          {storeSummary && (
+            <div className="card shadow-sm p-4 mb-4">
+              <h2 className="text-primary">Resumen de la Tienda</h2>
+              <p><strong>Ventas Totales:</strong> ${storeSummary.total_sales.toLocaleString()}</p>
+              <p><strong>Ventas Mensuales:</strong> ${storeSummary.monthly_sales.toLocaleString()}</p>
+              <p><strong>Ventas Anuales:</strong> ${storeSummary.annual_sales.toLocaleString()}</p>
+              <h4 className="mt-4">Productos Más Vendidos</h4>
+              <ul className="list-group">
+                {storeSummary.top_selling_products.map((product, index) => (
+                  <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                    <span>{index + 1}. {product.title} - {product.quantity} vendidos</span> <span>${product.total_amount.toLocaleString()}</span>
+                  </li>
+                ))}
+              </ul>
+              <h4 className="mt-4">Métodos de Pago Preferidos</h4>
+              <ul>
+                <li>Dinero en cuenta: {storeSummary.top_payment_methods.account_money}</li>
+                <li>Tarjeta de débito: {storeSummary.top_payment_methods.debit_card}</li>
+                <li>Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
+              </ul>
+            </div>
+          )}
+        </>
+      )}
+    </div>
   );
 };
 
