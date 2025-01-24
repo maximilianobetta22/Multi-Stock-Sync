@@ -1,12 +1,24 @@
-import { useEffect, useState } from 'react';
-import { Chart, registerables } from 'chart.js';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import styles from './VentasPorMes.module.css';
-import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import React, { useState, useEffect } from 'react';
+import { Bar } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+} from 'chart.js';
 import axios from 'axios';
-import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 
-Chart.register(...registerables);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface Venta {
     fecha: string;
@@ -16,17 +28,39 @@ interface Venta {
     total: number;
 }
 
-const VentasPorMes = () => {
+const VentasPorMes: React.FC = () => {
     const [ventas, setVentas] = useState<Venta[]>([]);
     const [loading, setLoading] = useState(true);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
+    const [yearSeleccionado, setYearSeleccionado] = useState<number>(2025);
 
     useEffect(() => {
         const fetchVentas = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/ventas`);
-                setVentas(response.data.data);
+                const clientId = import.meta.env.VITE_CLIENT_ID; // Access client ID from environment variables
+                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${clientId}`;
+                console.log('Fetching data from:', apiUrl); // Log the full URL
+                const response = await axios.get(apiUrl);
+                const ventasData = response.data.data;
+                const ventasArray: Venta[] = [];
+    
+                for (const [, value] of Object.entries(ventasData)) {
+                    const { orders } = value as any;
+                    orders.forEach((order: any) => {
+                        order.sold_products.forEach((product: any) => {
+                            ventasArray.push({
+                                fecha: product.order_date,
+                                producto: product.title,
+                                cantidad: product.quantity,
+                                precioUnitario: product.price,
+                                total: product.price * product.quantity,
+                            });
+                        });
+                    });
+                }
+    
+                setVentas(ventasArray);
             } catch (error) {
                 console.error('Error al obtener las ventas:', error);
                 setToastMessage((error as any).response?.data?.message || 'Error al obtener las ventas');
@@ -35,119 +69,62 @@ const VentasPorMes = () => {
                 setLoading(false);
             }
         };
-
+    
         fetchVentas();
     }, []);
 
-    useEffect(() => {
-        if (!loading && ventas.length > 0) {
-            const ctx = document.getElementById('ventasPorMesChartMain') as HTMLCanvasElement;
-            const ventasPorMes = ventas.reduce((acc, venta) => {
-                const mes = new Date(venta.fecha).toLocaleString('default', { month: 'long' });
-                acc[mes] = (acc[mes] || 0) + venta.total;
-                return acc;
-            }, {} as Record<string, number>);
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(ventasPorMes),
-                    datasets: [
-                        {
-                            label: 'Ventas por Mes ($)',
-                            data: Object.values(ventasPorMes),
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                        },
-                    ],
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                        },
-                    },
-                },
-            });
+    const ventasPorMes = ventas.reduce((acc, venta) => {
+        const year = new Date(venta.fecha).getFullYear();
+        const mes = new Date(venta.fecha).getMonth();
+        if (year === yearSeleccionado) {
+            acc[mes] = (acc[mes] || 0) + venta.total;
         }
-    }, [loading, ventas]);
+        return acc;
+    }, {} as Record<number, number>);
+
+    const data = {
+        labels: Object.keys(ventasPorMes).map(mes => `Mes ${+mes + 1}`),
+        datasets: [
+            {
+                label: 'Ventas por Mes',
+                data: Object.values(ventasPorMes),
+                backgroundColor: 'rgba(75, 192, 192, 0.6)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }
+        ]
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top' as const
+            },
+            title: {
+                display: true,
+                text: `Ventas del Año ${yearSeleccionado}`
+            }
+        }
+    };
 
     return (
-        <>
-            {loading && <LoadingDinamico variant="container" />}
-            {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
-            {!loading && (
-                <section className={`${styles.VentasPorMes} d-flex justify-content-center`}>
-                    <div className="w-75 rounded p-3" style={{ backgroundColor: '#f8f9fa' }}>
-                        <h1 className="text-center">Ventas por Mes</h1>
-                        <canvas id="ventasPorMesChartMain"></canvas>
-                    </div>
-                </section>
-            )}
-        </>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
+            <h2>Ventas por Mes</h2>
+            <div style={{ marginBottom: '1rem' }}>
+                <select value={yearSeleccionado} onChange={(e) => setYearSeleccionado(Number(e.target.value))}>
+                    <option value={2025}>2025</option>
+                    <option value={2024}>2024</option>
+                    <option value={2023}>2023</option>
+                    {/* Add more years as needed */}
+                </select>
+            </div>
+            <div style={{ width: '600px', height: '400px' }}>
+                <Bar data={data} options={options} />
+            </div>
+        </div>
     );
 };
 
-export { VentasPorMes };
-import { Modal, Button } from 'react-bootstrap';
-
-interface ChartModalProps {
-    show: boolean;
-    handleClose: () => void;
-    ventas: Venta[];
-}
-
-const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
-    useEffect(() => {
-        if (show && ventas.length > 0) {
-            const ctx = document.getElementById('ventasPorMesChartModal') as HTMLCanvasElement;
-            const ventasPorMes = ventas.reduce((acc, venta) => {
-                const mes = new Date(venta.fecha).toLocaleString('default', { month: 'long' });
-                acc[mes] = (acc[mes] || 0) + venta.total;
-                return acc;
-            }, {} as Record<string, number>);
-
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(ventasPorMes),
-                    datasets: [
-                        {
-                            label: 'Ventas por Mes ($)',
-                            data: Object.values(ventasPorMes),
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                        },
-                    ],
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                        },
-                    },
-                },
-            });
-        }
-    }, [show, ventas]);
-
-    return (
-        <Modal show={show} onHide={handleClose} size="lg" centered>
-            <Modal.Header closeButton>
-                <Modal.Title>Ventas por Mes</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
-                <canvas id="ventasPorMesChartModal"></canvas>
-            </Modal.Body>
-            <Modal.Footer>
-                <Button variant="secondary" onClick={handleClose}>
-                    Close
-                </Button>
-            </Modal.Footer>
-        </Modal>
-    );
-};
-
-export default ChartModal;
+export default VentasPorMes;
