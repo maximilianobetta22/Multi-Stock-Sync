@@ -6,6 +6,8 @@ import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/Lo
 import axios from 'axios';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 
+import { useParams } from 'react-router-dom';
+
 Chart.register(...registerables);
 
 interface Venta {
@@ -132,6 +134,9 @@ const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
             });
         }
     }, [show, ventas]);
+
+    const { client_id } = useParams<{ client_id: string }>();
+    
 
     return (
         <Modal show={show} onHide={handleClose} size="lg" centered>
