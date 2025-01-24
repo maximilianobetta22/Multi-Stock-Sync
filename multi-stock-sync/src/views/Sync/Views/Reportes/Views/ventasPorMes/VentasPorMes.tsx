@@ -9,6 +9,8 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { CoreChartOptions, ElementChartOptions, PluginChartOptions, DatasetChartOptions, ScaleChartOptions, BarControllerChartOptions, _DeepPartialObject } from 'chart.js';
 import axios from 'axios';
 
 ChartJS.register(
@@ -17,7 +19,8 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  ChartDataLabels
 );
 
 interface Venta {
@@ -86,7 +89,6 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
         return acc;
     }, 0);
 
-    
     // Proceed to render the chart if there are sales
     const data = {
         labels: [`Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('default', { month: 'long' })} ${yearSeleccionado}`],
@@ -101,7 +103,7 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
         ]
     };
 
-    const options: any = {
+    const options: _DeepPartialObject<CoreChartOptions<'bar'> & ElementChartOptions<'bar'> & PluginChartOptions<'bar'> & DatasetChartOptions<'bar'> & ScaleChartOptions<'bar'> & BarControllerChartOptions> = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -121,8 +123,8 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
             },
             datalabels: {
                 display: true,
-                align: 'end' as const,
-                anchor: 'end',
+                align: 'center' as 'center', // Center the label horizontally
+                anchor: 'center', // Center the label vertically
                 formatter: (value: number) => {
                     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(value);
                 }
