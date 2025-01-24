@@ -32,8 +32,10 @@
   },
   "devDependencies": {
     "@eslint/js": "9.18.0",
-    "@types/node": "22.10.10",
-    "@types/react": "19.0.8",
+    "@types/chart.js": "^2.9.41",
+    "@types/node": "22.10.7",
+    "@types/react": "19.0.7",
+    "@types/react-chartjs-2": "^2.0.2",
     "@types/react-dom": "19.0.3",
     "@types/react-fontawesome": "1.6.8",
     "@vitejs/plugin-react": "4.3.4",
