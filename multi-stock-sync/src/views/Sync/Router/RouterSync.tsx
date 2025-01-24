@@ -8,6 +8,8 @@ import RouterCompania from "../Views/Compania/Router/RouterCompania";
 import RouterConexiones from "../Views/Conexiones/Router/RouterConexiones";
 import RouterReportes from "../Views/Reportes/Router/RouterReportes";
 
+import Info from "../Views/Info/Info";
+
 import HomeSync from "../Views/Home/HomeSync";
 
 function RouterSync() {
@@ -20,6 +22,7 @@ function RouterSync() {
         <Route path="/bodegas/*" element={<RouterBodegas />} />
         <Route path="/companias/*" element={<RouterCompania />} />
         <Route path="/reportes/*" element={<RouterReportes />} />
+        <Route path="/info" element={<Info />} />
 
         <Route path="/*" element={<Navigate to="/sync/home" />} />
       </Routes>

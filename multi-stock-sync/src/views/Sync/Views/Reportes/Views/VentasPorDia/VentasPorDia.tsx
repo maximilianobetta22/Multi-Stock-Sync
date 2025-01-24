@@ -12,6 +12,8 @@ import {
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 
+import { useParams } from 'react-router-dom';
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -85,6 +87,9 @@ const VentasPorDia: React.FC = () => {
     localDate.setHours(1, 0, 0, 0);  
     return localDate;
   };
+
+  const { client_id } = useParams<{ client_id: string }>();
+  
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
