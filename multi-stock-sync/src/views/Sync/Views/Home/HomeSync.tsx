@@ -1,45 +1,72 @@
-import React from 'react';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import styles from './HomeSync.module.css';
+import React from "react";
+import "bootstrap/dist/css/bootstrap.min.css";
+import styles from "./HomeSync.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {faBoxOpen,faWarehouse,faPlug, faBriefcase} from "@fortawesome/free-solid-svg-icons";
-import { NavLink } from "react-router-dom";
-import { faFileExcel } from '@fortawesome/free-solid-svg-icons/faFileExcel';
+import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { Link } from "react-router-dom";
 
-const HomeSync: React.FC = () => {    
+const HomeSync: React.FC = () => {
+    const cards = [
+        { 
+            title: "Productos", 
+            description: "Gestiona todos los productos por negocio de Mercado Libre.", 
+            icon: faBoxOpen, 
+            link: "/sync/productos", 
+            color: "bg-primary"
+        },
+        { 
+            title: "Bodegas", 
+            description: "Gestiona el inventario de tus productos.", 
+            icon: faWarehouse, 
+            link: "/sync/bodegas", 
+            color: "bg-success"
+        },
+        { 
+            title: "Conexiones a ML", 
+            description: "Conecta nuevas cuentas de empresas a Mercado Libre.", 
+            icon: faPlug, 
+            link: "/sync/conexiones", 
+            color: "bg-warning"
+        },
+        { 
+            title: "Compañías", 
+            description: "Gestiona las compañías asignadas a tus bodegas.", 
+            icon: faBriefcase, 
+            link: "/sync/companias", 
+            color: "bg-danger"
+        },
+        { 
+            title: "Reportes", 
+            description: "Gestiona y exporta datos de tus productos.", 
+            icon: faFolderOpen, 
+            link: "/sync/reportes", 
+            color: "bg-info"
+        }
+    ];
+
     return (
-        <div className={styles.container}>
-            <div className={styles.header}>
-                <br />
-                <h1>Multi Stock Sync</h1>
-                <h4>Panel de sincronización</h4>
-                <br />
-                <h4>Seleccione una opción para comenzar:</h4>
+        <div className={`container ${styles.container}`}>
+            <header className="mb-4 text-center">
+                <h1>Panel de sincronización</h1>
+                <h4 className="text-muted">Seleccione una opción:</h4>
+            </header>
+            <div className={`row g-3 ${styles.row}`}>
+                {cards.map((card, index) => (
+                    <div key={index} className="col-md-6 col-lg-4">
+                        <Link to={card.link} className="text-decoration-none">
+                            <div className={`card text-white ${card.color} h-100`}>
+                                <div className="card-body d-flex flex-column align-items-center justify-content-center">
+                                    <FontAwesomeIcon icon={card.icon} size="3x" />
+                                    <h5 className="card-title mt-3">{card.title}</h5>
+                                    <p className="card-text">{card.description}</p>
+                                </div>
+                            </div>
+                        </Link>
+                    </div>
+                ))}
             </div>
-            <br />      
-            <div className={`${styles.buttonsContainer} mt-4`}>
-                <div className={styles.buttonWrapper}>
-                    <FontAwesomeIcon icon={faBoxOpen} size="5x" className={`${styles.icon} ${styles.icon_products_color}`} />
-                    <NavLink to={"/sync/productos"} className={`${styles.button} ${styles.products_color}`}>Productos</NavLink>
-                </div>
-                <div className={styles.buttonWrapper}>
-                    <FontAwesomeIcon icon={faWarehouse} size="5x" className={`${styles.icon} ${styles.icon_warehouses_color}`} />
-                    <NavLink to={"/sync/bodegas"} className={`${styles.button} ${styles.warehouses_color}`}>Bodegas</NavLink>
-                </div>
-                <div className={styles.buttonWrapper}>
-                    <FontAwesomeIcon icon={faPlug} size="5x" className={`${styles.icon} ${styles.icon_connections_color}`} />
-                    <NavLink to={"/sync/conexiones"} className={`${styles.button} ${styles.connections_color}`}>Conexiones a ML</NavLink>
-                </div>
-                <div className={styles.buttonWrapper}>
-                    <FontAwesomeIcon icon={faBriefcase} size="5x" className={`${styles.icon} ${styles.icon_companies_color}`} />
-                    <NavLink to={"/sync/companias"} className={`${styles.button} ${styles.companies_color}`}>Compañías</NavLink>
-                </div>
-                <div className={styles.buttonWrapper}>
-                    <FontAwesomeIcon icon={faFileExcel} size="5x" className={`${styles.icon} ${styles.icon_reportes_color}`} />
-                    <NavLink to={"/sync/Reportes"} className={`${styles.button} ${styles.reportes_color}`}>Reportes</NavLink>
-                </div>
-            </div>
-        </div> 
+        </div>
     );
 };
+
 export default HomeSync;
