@@ -21,6 +21,8 @@ function RouterReportes() {
             <Route path="ventas-dia" element={<VentasPorDia />} />
             <Route path="metodos-pago" element={<MetodosPago />} />
             <Route path="devoluciones-reembolsos" element={<DevolucionesReembolso />} />
+            <Route path="total-ventas/{client_id}"/>
+
         </Routes>
     );
 };
