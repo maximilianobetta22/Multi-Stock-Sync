@@ -5,6 +5,8 @@ import ExportarDatos from "../Views/ExportarDatos/ExportarDatos";
 import HomeReportes from "../Views/Home/HomeReportes";
 import VentasPorDia from "../Views/VentasPorDia/VentasPorDia";
 import IngresosSemana from "../Views/IngresosSemana/IngresosSemana";
+import MetodosPago from "../Views/MetodosPago/MetodosPago";
+import DevolucionesReembolso from "../Views/Home/DevolucionesReembolsos/DevolucionesReembolsos";
 
 
 function RouterReportes() {
@@ -17,7 +19,10 @@ function RouterReportes() {
             <Route path="exportar-datos" element={<ExportarDatos />} />
             <Route path="ingreso-semana" element={< IngresosSemana/>} />
             <Route path="ventas-dia" element={<VentasPorDia />} />
+            <Route path="metodos-pago" element={<MetodosPago />} />
+            <Route path="devoluciones-reembolsos" element={<DevolucionesReembolso />} />
             <Route path="total-ventas/{client_id}"/>
+
         </Routes>
     );
 };
