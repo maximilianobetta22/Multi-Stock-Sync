@@ -9,11 +9,13 @@ import {
   Legend,
 } from 'chart.js';
 import styles from './DevolucionesReembolsos.module.css';
+import { useParams } from 'react-router-dom';
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const DevolucionesReembolso: React.FC = () => {
+  const { client_id } = useParams<{ client_id: string }>();
   const [returnData, setReturnData] = useState<{ [key: string]: number }>({});
   const [productList, setProductList] = useState<
     { id: number; category: string; name: string; reason: string }[]
