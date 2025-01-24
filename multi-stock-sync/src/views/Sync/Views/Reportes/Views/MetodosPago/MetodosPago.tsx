@@ -92,7 +92,8 @@ const MetodosPago: React.FC = () => {
         <LoadingDinamico variant="container" />
       ) : (
         <div className={`container ${styles.container}`}>
-          <h1 className={`text-center mb-4`}>Métodos de Pago</h1>
+            <h1 className={`text-center mb-4`}>Métodos de Pago más utilizados</h1>
+            <h5 className="text-center text-muted mb-5">Distribución de los métodos de pago utilizados por el cliente</h5>
           <Card className="shadow-lg">
             <Card.Body>
               <div className="row">
