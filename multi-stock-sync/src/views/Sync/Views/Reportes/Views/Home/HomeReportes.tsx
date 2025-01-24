@@ -79,7 +79,13 @@ const HomeReportes = () => {
   return (
     <>
       {loading && <LoadingDinamico variant="container" />}
-      {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
+      {toastMessage && (
+        <ToastComponent 
+          message={toastMessage} 
+          type={toastType} 
+          onClose={() => setToastMessage(null)} 
+        />
+      )}
       {!loading && (
         <section className={`${styles.HomeReportes}`}>
           <div className={`${styles.container__HomeReportes}`}>
