@@ -8,10 +8,14 @@ import {
 } from 'chart.js';
 import styles from './MetodosPago.module.css';
 
+import { useParams } from 'react-router-dom';
+
 // Registro de los componentes necesarios para el gráfico de torta
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const MetodosPago: React.FC = () => {
+  const { client_id } = useParams<{ client_id: string }>();
+
   const [paymentData, setPaymentData] = useState({
     account_money: 0,
     debit_card: 0,
