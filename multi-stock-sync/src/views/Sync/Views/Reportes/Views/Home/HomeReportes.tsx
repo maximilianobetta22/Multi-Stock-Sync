@@ -107,6 +107,7 @@ const HomeReportes: React.FC = () => {
                     <span>{index + 1}. {product.title} - {product.quantity} vendidos</span> <span>${product.total_amount.toLocaleString()}</span>
                   </li>
                 ))}
+                <Link to="/sync/" className='btn btn-primary mt-3'>Ver lista completa</Link>
               </ul>
               <h4 className="mt-4">Métodos de Pago Preferidos</h4>
               <ul>
@@ -115,6 +116,22 @@ const HomeReportes: React.FC = () => {
                 <li>Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
               </ul>
             </div>
+          )}
+          {selectedConnection && (
+            <>
+              <h3 className="mt-4">Reportes Disponibles</h3>
+              <div className="list-group mb-5">
+                <button className="list-group-item list-group-item-action">Ventas totales por mes</button>
+                <button className="list-group-item list-group-item-action">Ventas totales por día</button>
+                <button className="list-group-item list-group-item-action">Ingresos por categoría de producto</button>
+                <button className="list-group-item list-group-item-action">Productos más vendidos</button>
+                <button className="list-group-item list-group-item-action">Ingresos totales por semana</button>
+                <button className="list-group-item list-group-item-action">Estados de órdenes (pagadas, pendientes, canceladas)</button>
+                <button className="list-group-item list-group-item-action">Métodos de pago más utilizados</button>
+                <button className="list-group-item list-group-item-action">Opiniones de clientes por producto</button>
+                <button className="list-group-item list-group-item-action">Devoluciones o reembolsos por categoría</button>
+              </div>
+            </>
           )}
           <Link to="/sync/home" className='btn btn-primary mb-5'>Volver a inicio</Link>
         </>
