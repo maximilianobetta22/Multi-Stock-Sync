@@ -27,7 +27,8 @@ const VentasPorMes = () => {
     useEffect(() => {
         const fetchVentas = async () => {
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/ventas`);
+                const { client_id } = useParams<{ client_id: string }>();
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`);
                 setVentas(response.data.data);
             } catch (error) {
                 console.error('Error al obtener las ventas:', error);
@@ -135,7 +136,7 @@ const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
         }
     }, [show, ventas]);
 
-    const { client_id } = useParams<{ client_id: string }>();
+    
     
 
     return (
@@ -155,4 +156,4 @@ const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
     );
 };
 
-export default ChartModal;
+export default VentasPorMes;
