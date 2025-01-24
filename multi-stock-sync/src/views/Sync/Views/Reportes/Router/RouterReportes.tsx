@@ -20,17 +20,17 @@ function RouterReportes() {
         <Routes>
            <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
             <Route path="home" element={<HomeReportes/>} />
-            <Route path="filtrar-datos" element={<FiltrarDatos />} />
-            <Route path="exportar-datos" element={<ExportarDatos />} />
-            <Route path="ingreso-semana" element={< IngresosSemana/>} />
-            <Route path="ventas-dia" element={<VentasPorDia />} />
-            <Route path="ventas-mes" element={<VentasPorMes />} />
-            <Route path="metodos-pago" element={<MetodosPago />} />
-            <Route path="devoluciones-reembolsos" element={<DevolucionesReembolso />} />
-            <Route path="productos-mas-vendidos" element={<ProductosMasVendidos />} />
-            <Route path="opiniones-clientes" element={<OpinionesClientes />} />
-            <Route path="ingresos-categoria-producto" element={<IngresosCategoriaProducto />} />
-            <Route path="estados-ordenes" element={<EstadosOrdenes />} />
+            <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
+            <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
+            <Route path="ingreso-semana/:client_id" element={< IngresosSemana/>} />
+            <Route path="ventas-dia/:client_id" element={<VentasPorDia />} />
+            <Route path="ventas-mes/:client_id" element={<VentasPorMes />} />
+            <Route path="metodos-pago/:client_id" element={<MetodosPago />} />
+            <Route path="devoluciones-reembolsos/:client_id" element={<DevolucionesReembolso />} />
+            <Route path="productos-mas-vendidos/:client_id" element={<ProductosMasVendidos />} />
+            <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
+            <Route path="ingresos-categoria-producto/:client_id" element={<IngresosCategoriaProducto />} />
+            <Route path="estados-ordenes/:client_id" element={<EstadosOrdenes />} />
 
         </Routes>
     );
