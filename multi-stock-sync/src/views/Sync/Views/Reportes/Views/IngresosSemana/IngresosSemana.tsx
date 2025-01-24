@@ -1,31 +1,19 @@
 import React, { useState, useEffect } from "react";
-import styles from './IngresosSemana.module.css';
 import { Bar } from "react-chartjs-2";
-
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartOptions,
-} from "chart.js";
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartDataLabels
-);
+import { ChartOptions } from "chart.js";
+import styles from './IngresosSemana.module.css';
 
 const IngresosSemana: React.FC = () => {
-  const [data, setData] = useState<any>({
+  const [connections, setConnections] = useState<{ id: string; name: string }[]>([]);
+  const [connection, setConnection] = useState<string>('default_connection');
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [year, setYear] = useState<string>('');
+  const [month, setMonth] = useState<string>('');
+  const [weeks, setWeeks] = useState<{ start_date: string; end_date: string }[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<string>('');
+  const [totalSales, setTotalSales] = useState<number | null>(null);
+  const [chartData, setChartData] = useState<any>({
     labels: [],
     datasets: [
       {
@@ -37,15 +25,6 @@ const IngresosSemana: React.FC = () => {
       },
     ],
   });
-
-  const [connections, setConnections] = useState<{ id: string; name: string }[]>([]);
-  const [connection, setConnection] = useState<string>('default_connection');
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [year, setYear] = useState<string>('');
-  const [month, setMonth] = useState<string>('');
-  const [weeks, setWeeks] = useState<{ start_date: string; end_date: string }[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<string>('');
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -84,7 +63,6 @@ const IngresosSemana: React.FC = () => {
     fetchWeeks();
   }, [year, month]);
 
-
   const handleYearChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     setYear(event.target.value);
   };
@@ -117,43 +95,6 @@ const IngresosSemana: React.FC = () => {
     }
   };
 
-  const options: ChartOptions<'bar'> = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      title: {
-        display: true,
-        text: "Ingresos por Semana",
-      },
-      datalabels: {
-        color: 'black',
-        font: {
-          weight: 'bold',
-        },
-        anchor: 'end',
-        align: 'top',
-        formatter: (value: number) => Math.round(value),
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: "Ingresos",
-        },
-      },
-      x: {
-        title: {
-          display: true,
-          text: "Semanas",
-        },
-      },
-    },
-  };
-
   const fetchIncomes = async (start: string, end: string, clientId: string) => {
     setLoading(true);
     try {
@@ -164,9 +105,9 @@ const IngresosSemana: React.FC = () => {
         throw new Error("Error al obtener los ingresos de la API");
       }
       const result = await response.json();
-
-      setData({
-        labels: [`${result.data.week_start_date} a ${result.data.week_end_date}`], 
+      setTotalSales(result.data.total_sales);
+      setChartData({
+        labels: [`${result.data.week_start_date} a ${result.data.week_end_date}`],
         datasets: [
           {
             label: "Ingresos Totales",
@@ -192,6 +133,34 @@ const IngresosSemana: React.FC = () => {
 
   const getMonths = () => {
     return Array.from({ length: 12 }, (_, i) => i + 1);
+  };
+
+  const chartOptions: ChartOptions<'bar'> = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: "top",
+      },
+      title: {
+        display: true,
+        text: "Ingresos por Semana",
+      },
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: "Ingresos",
+        },
+      },
+      x: {
+        title: {
+          display: true,
+          text: "Semanas",
+        },
+      },
+    },
   };
 
   return (
@@ -267,7 +236,13 @@ const IngresosSemana: React.FC = () => {
         </button>
       </form>
 
-      <Bar data={data} options={options} />
+      {totalSales !== null && (
+        <div className={styles.result}>
+          <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+        </div>
+      )}
+
+      <Bar data={chartData} options={chartOptions} />
     </div>
   );
 };
