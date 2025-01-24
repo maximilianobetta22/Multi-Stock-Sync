@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -11,7 +11,7 @@ import {
 } from 'chart.js';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-
+import axios from 'axios';
 import { useParams } from 'react-router-dom';
 
 ChartJS.register(
@@ -23,24 +23,49 @@ ChartJS.register(
   Legend
 );
 
-const VentasPorDia: React.FC = () => {
-  // Datos estáticos con fechas
-  const datosVentas = [
-    { nombre: 'Producto A', cantidad: 24, fecha: '2025-01-02' },
-    { nombre: 'Producto A', cantidad: 10, fecha: '2025-01-03' },
-    { nombre: 'Producto B', cantidad: 30, fecha: '2025-01-02' },
-    { nombre: 'Producto B', cantidad: 20, fecha: '2025-01-03' },
-    { nombre: 'Producto C', cantidad: 70, fecha: '2025-01-02' },
-    { nombre: 'Producto C', cantidad: 15, fecha: '2025-01-03' },
-    { nombre: 'Producto D', cantidad: 40, fecha: '2025-01-02' },
-    { nombre: 'Producto D', cantidad: 25, fecha: '2025-01-03' }
-  ];
+interface Producto {
+  nombre: string;
+  cantidad: number;
+  fecha: string;
+  title: string;
+  quantity: number;
+  order_date: string;
+}
 
-  // Estado para la fecha seleccionada
+interface Order {
+  sold_products: Producto[];
+}
+
+const VentasPorDia: React.FC = () => {
+  const { client_id } = useParams<{ client_id: string }>();
   const [fechaSeleccionada, setFechaSeleccionada] = useState<string>('2025-01-23');
+  const [datosVentas, setDatosVentas] = useState<Producto[]>([]);
+
+  useEffect(() => {
+    const fetchVentas = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/daily-sales/${client_id}`);
+        const ventas = response.data.data;
+        const ventasFormateadas = Object.keys(ventas).flatMap((key) =>
+          ventas[key].orders ? ventas[key].orders.flatMap((order: Order) =>
+            order.sold_products.map((product: Producto) => ({
+              nombre: product.title,
+              cantidad: product.quantity,
+              fecha: product.order_date.split('T')[0]
+            }))
+          ) : []
+        );
+        setDatosVentas(ventasFormateadas);
+      } catch (error) {
+        console.error('Error fetching sales data:', error);
+      }
+    };
+
+    fetchVentas();
+  }, [client_id]);
 
   // Filtrar datos
-  const datosFiltrados = datosVentas.filter((venta) => venta.fecha === fechaSeleccionada);
+  const datosFiltrados = datosVentas.filter((venta: Producto) => venta.fecha === fechaSeleccionada);
 
   // Colores para los productos
   const colores = [
@@ -54,13 +79,13 @@ const VentasPorDia: React.FC = () => {
 
   // CONF datos del grafico
   const data = {
-    labels: datosFiltrados.map((producto) => producto.nombre),
+    labels: datosFiltrados.map((producto: Producto) => producto.nombre),
     datasets: [
       {
         label: 'Cantidad Vendida',
-        data: datosFiltrados.map((producto) => producto.cantidad),
-        backgroundColor: datosFiltrados.map((_, index) => colores[index % colores.length]),
-        borderColor: datosFiltrados.map((_, index) => colores[index % colores.length].replace('0.6', '1')),
+        data: datosFiltrados.map((producto: Producto) => producto.cantidad),
+        backgroundColor: datosFiltrados.map((_: Producto, index: number) => colores[index % colores.length]),
+        borderColor: datosFiltrados.map((_: Producto, index: number) => colores[index % colores.length].replace('0.6', '1')),
         borderWidth: 1
       }
     ]
@@ -87,9 +112,6 @@ const VentasPorDia: React.FC = () => {
     localDate.setHours(1, 0, 0, 0);  
     return localDate;
   };
-
-  const { client_id } = useParams<{ client_id: string }>();
-  
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
