@@ -29,6 +29,9 @@ const HomeReportes: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
 
+  const currentMonth = new Date().toLocaleString('default', { month: 'long' });
+  const currentYear = new Date().getFullYear();
+
   useEffect(() => {
     const fetchConnections = async () => {
       try {
@@ -95,8 +98,8 @@ const HomeReportes: React.FC = () => {
             <div className="card shadow-sm p-4 mb-4">
               <h2 className="text-primary">Resumen de la Tienda</h2>
               <p><strong>Ventas Totales:</strong> ${storeSummary.total_sales.toLocaleString()}</p>
-              <p><strong>Ventas Mensuales:</strong> ${storeSummary.monthly_sales.toLocaleString()}</p>
-              <p><strong>Ventas Anuales:</strong> ${storeSummary.annual_sales.toLocaleString()}</p>
+              <p><strong>Ventas Mensuales ({currentMonth}):</strong> ${storeSummary.monthly_sales.toLocaleString()}</p>
+              <p><strong>Ventas Anuales ({currentYear}):</strong> ${storeSummary.annual_sales.toLocaleString()}</p>
               <h4 className="mt-4">Productos Más Vendidos</h4>
               <ul className="list-group">
                 {storeSummary.top_selling_products.map((product, index) => (
