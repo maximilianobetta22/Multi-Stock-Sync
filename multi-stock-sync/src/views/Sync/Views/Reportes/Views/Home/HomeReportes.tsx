@@ -3,6 +3,7 @@ import styles from './HomeReportes.module.css';
 import axios from 'axios';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
+import { Link } from 'react-router-dom';
 
 interface Connection {
   client_id: string;
@@ -34,8 +35,8 @@ const HomeReportes: React.FC = () => {
         const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`);
         setConnections(response.data.data);
       } catch (error) {
-        console.error('Error fetching connections:', error);
-        setToastMessage((error as any).response?.data?.message || 'Error fetching connections');
+        console.error('Error al obtener las conexiones:', error);
+        setToastMessage((error as any).response?.data?.message || 'Error al obtener las conexiones');
         setToastType('danger');
       } finally {
         setLoading(false);
@@ -50,11 +51,11 @@ const HomeReportes: React.FC = () => {
     try {
       const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/summary/${clientId}`);
       setStoreSummary(response.data.data);
-      setToastMessage('Store summary loaded successfully');
+      setToastMessage('Resumen de la tienda cargado con éxito');
       setToastType('success');
     } catch (error) {
-      console.error('Error fetching store summary:', error);
-      setToastMessage((error as any).response?.data?.message || 'Error fetching store summary');
+      console.error('Error al obtener el resumen de la tienda:', error);
+      setToastMessage((error as any).response?.data?.message || 'Error al obtener el resumen de la tienda');
       setToastType('danger');
     } finally {
       setLoading(false);
@@ -68,13 +69,14 @@ const HomeReportes: React.FC = () => {
   };
 
   return (
-    <div className={`${styles.container} container`}> {/* Agregado container de Bootstrap */}
-      {loading && <LoadingDinamico variant="container" />}
+    <>
+    {loading && <LoadingDinamico variant="container" />}
+    <div className={`${styles.container} container`}>
       {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
       {!loading && (
         <>
           <h1 className="text-center my-4">Estadísticas Generales</h1>
-          <p className="text-center">Selecciona una conexión para ver el resumen de la tienda</p>
+          <p className="text-center mt-2 mb-2">Selecciona una conexión para ver el resumen de la tienda</p>
           <div className="mb-4 d-flex justify-content-center">
             <select
               className="form-control w-50"
@@ -111,9 +113,11 @@ const HomeReportes: React.FC = () => {
               </ul>
             </div>
           )}
+          <Link to="/sync/home" className='btn btn-primary mb-5'>Volver a inicio</Link>
         </>
       )}
     </div>
+    </>
   );
 };
 
