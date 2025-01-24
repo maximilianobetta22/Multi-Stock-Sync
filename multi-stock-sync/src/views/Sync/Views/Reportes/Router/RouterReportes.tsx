@@ -7,6 +7,10 @@ import VentasPorDia from "../Views/VentasPorDia/VentasPorDia";
 import IngresosSemana from "../Views/IngresosSemana/IngresosSemana";
 import MetodosPago from "../Views/MetodosPago/MetodosPago";
 import DevolucionesReembolso from "../Views/DevolucionesReembolsos/DevolucionesReembolsos";
+import ProductosMasVendidos from "../Views/ProductosMasVendidos/ProductosMasVendidos";
+import OpinionesClientes from "../Views/OpinionesClientes/OpinionesClients";
+import IngresosCategoriaProducto from "../Views/IngresosCategoriaProducto/IngresosCategoriaProducto";
+import EstadosOrdenes from "../Views/EstadosOrdenes/EstadosOrdenes";
 
 
 function RouterReportes() {
@@ -21,7 +25,10 @@ function RouterReportes() {
             <Route path="ventas-dia" element={<VentasPorDia />} />
             <Route path="metodos-pago" element={<MetodosPago />} />
             <Route path="devoluciones-reembolsos" element={<DevolucionesReembolso />} />
-            <Route path="total-ventas/{client_id}"/>
+            <Route path="productos-mas-vendidos" element={<ProductosMasVendidos />} />
+            <Route path="opiniones-clientes" element={<OpinionesClientes />} />
+            <Route path="ingresos-categoria-producto" element={<IngresosCategoriaProducto />} />
+            <Route path="estados-ordenes" element={<EstadosOrdenes />} />
 
         </Routes>
     );
