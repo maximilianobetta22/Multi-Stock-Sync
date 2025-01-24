@@ -28,23 +28,29 @@ interface Venta {
     total: number;
 }
 
-const VentasPorMes: React.FC = () => {
+interface VentasPorMesProps {
+    clientId: string;
+}
+
+const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
     const [ventas, setVentas] = useState<Venta[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [toastMessage, setToastMessage] = useState<string | null>(null);
-    const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
-    const [yearSeleccionado, setYearSeleccionado] = useState<number>(2025);
+    const [, setLoading] = useState(true);
+    const [, setToastMessage] = useState<string | null>(null);
+    const [, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
+    const [yearSeleccionado, setYearSeleccionado] = useState<number>(2024);
+    const [monthSeleccionado, setMonthSeleccionado] = useState<number>(10);
 
     useEffect(() => {
         const fetchVentas = async () => {
             try {
-                const clientId = import.meta.env.VITE_CLIENT_ID; // Access client ID from environment variables
-                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${clientId}`;
+                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${clientId}?month=${monthSeleccionado}&year=${yearSeleccionado}`;
                 console.log('Fetching data from:', apiUrl); // Log the full URL
                 const response = await axios.get(apiUrl);
+                console.log('API Response:', response.data); // Log the API response
                 const ventasData = response.data.data;
+                console.log('Ventas Data:', ventasData); // Log the ventas data
                 const ventasArray: Venta[] = [];
-    
+
                 for (const [, value] of Object.entries(ventasData)) {
                     const { orders } = value as any;
                     orders.forEach((order: any) => {
@@ -59,8 +65,9 @@ const VentasPorMes: React.FC = () => {
                         });
                     });
                 }
-    
+
                 setVentas(ventasArray);
+                console.log('Processed Ventas Array:', ventasArray); // Log the processed ventas array
             } catch (error) {
                 console.error('Error al obtener las ventas:', error);
                 setToastMessage((error as any).response?.data?.message || 'Error al obtener las ventas');
@@ -69,25 +76,27 @@ const VentasPorMes: React.FC = () => {
                 setLoading(false);
             }
         };
-    
-        fetchVentas();
-    }, []);
 
-    const ventasPorMes = ventas.reduce((acc, venta) => {
+        fetchVentas();
+    }, [clientId, yearSeleccionado, monthSeleccionado]); // Add monthSeleccionado to the dependency array
+
+    const totalVentasMes = ventas.reduce((acc, venta) => {
         const year = new Date(venta.fecha).getFullYear();
-        const mes = new Date(venta.fecha).getMonth();
-        if (year === yearSeleccionado) {
-            acc[mes] = (acc[mes] || 0) + venta.total;
+        const mes = new Date(venta.fecha).getMonth() + 1;
+        if (year === yearSeleccionado && mes === monthSeleccionado) {
+            acc += venta.total;
         }
         return acc;
-    }, {} as Record<number, number>);
+    }, 0);
+
+    console.log(`Total Ventas for ${yearSeleccionado} and month ${monthSeleccionado}:`, totalVentasMes); // Log the total ventas
 
     const data = {
-        labels: Object.keys(ventasPorMes).map(mes => `Mes ${+mes + 1}`),
+        labels: [`Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('default', { month: 'long' })} ${yearSeleccionado}`],
         datasets: [
             {
-                label: 'Ventas por Mes',
-                data: Object.values(ventasPorMes),
+                label: `Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('default', { month: 'long' })} ${yearSeleccionado}`,
+                data: [totalVentasMes],
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgba(75, 192, 192, 1)',
                 borderWidth: 1
@@ -104,7 +113,7 @@ const VentasPorMes: React.FC = () => {
             },
             title: {
                 display: true,
-                text: `Ventas del Año ${yearSeleccionado}`
+                text: `Ventas del Año ${yearSeleccionado} y Mes ${monthSeleccionado}`
             }
         }
     };
@@ -118,6 +127,20 @@ const VentasPorMes: React.FC = () => {
                     <option value={2024}>2024</option>
                     <option value={2023}>2023</option>
                     {/* Add more years as needed */}
+                </select>
+                <select value={monthSeleccionado} onChange={(e) => setMonthSeleccionado(Number(e.target.value))}>
+                    <option value={1}>Enero</option>
+                    <option value={2}>Febrero</option>
+                    <option value={3}>Marzo</option>
+                    <option value={4}>Abril</option>
+                    <option value={5}>Mayo</option>
+                    <option value={6}>Junio</option>
+                    <option value={7}>Julio</option>
+                    <option value={8}>Agosto</option>
+                    <option value={9}>Septiembre</option>
+                    <option value={10}>Octubre</option>
+                    <option value={11}>Noviembre</option>
+                    <option value={12}>Diciembre</option>
                 </select>
             </div>
             <div style={{ width: '600px', height: '400px' }}>
