@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Pie } from 'react-chartjs-2'; // Cambiar a Pie
+import { Pie } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
-  ArcElement, // Añadir ArcElement para gráficos de torta
+  ArcElement,
   Tooltip,
   Legend,
 } from 'chart.js';
@@ -10,7 +10,7 @@ import styles from './MetodosPago.module.css';
 
 import { useParams } from 'react-router-dom';
 
-// Registro de los componentes necesarios para el gráfico de torta
+
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const MetodosPago: React.FC = () => {
@@ -25,13 +25,10 @@ const MetodosPago: React.FC = () => {
   useEffect(() => {
     const fetchPaymentData = async () => {
       try {
-        const response = await fetch(
-          'https://linen-anteater-319357.hostingersite.com/api/mercadolibre/top-payment-methods/2999003706392728'
-        );
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/top-payment-methods/${client_id}`);
         const result = await response.json();
 
         if (result.status === 'success') {
-          //API
           setPaymentData(result.data);
         } else {
           console.error('Error en la respuesta de la API:', result.message);
@@ -77,7 +74,7 @@ const MetodosPago: React.FC = () => {
       </p>
       <div className={styles.chartContainer}>
         <h3 className={styles.chartTitle}>Distribución de Métodos de Pago</h3>
-        <Pie data={chartData} /> {/* Usar Pie en lugar de Bar */}
+        <Pie data={chartData} />
       </div>
     </div>
   );
