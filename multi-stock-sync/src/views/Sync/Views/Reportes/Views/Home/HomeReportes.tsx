@@ -133,15 +133,15 @@ const HomeReportes: React.FC = () => {
             <>
               <h3 className="mt-4">Reportes Disponibles</h3>
               <div className="list-group mb-5">
-                <button className="list-group-item list-group-item-action">Ventas totales por mes</button>
-                <button className="list-group-item list-group-item-action">Ventas totales por día</button>
-                <button className="list-group-item list-group-item-action">Ingresos por categoría de producto</button>
-                <button className="list-group-item list-group-item-action">Productos más vendidos</button>
-                <button className="list-group-item list-group-item-action">Ingresos totales por semana</button>
-                <button className="list-group-item list-group-item-action">Estados de órdenes (pagadas, pendientes, canceladas)</button>
-                <button className="list-group-item list-group-item-action">Métodos de pago más utilizados</button>
-                <button className="list-group-item list-group-item-action">Opiniones de clientes por producto</button>
-                <button className="list-group-item list-group-item-action">Devoluciones o reembolsos por categoría</button>
+                <Link to="/sync/reportes/ventas-mes" className="list-group-item list-group-item-action">Ventas totales por mes</Link>
+                <Link to="/sync/reportes/ventas-dia" className="list-group-item list-group-item-action">Ventas totales por día</Link>
+                <Link to="/sync/reportes/ingresos-categoria-producto" className="list-group-item list-group-item-action">Ingresos por categoría de producto</Link>
+                <Link to="/sync/reportes/productos-mas-vendidos" className="list-group-item list-group-item-action">Productos más vendidos</Link>
+                <Link to="/sync/reportes/ingreso-semana" className="list-group-item list-group-item-action">Ingresos totales por semana</Link>
+                <Link to="/sync/reportes/estados-ordenes" className="list-group-item list-group-item-action">Estados de órdenes (pagadas, pendientes, canceladas)</Link>
+                <Link to="/sync/reportes/metodos-pago" className="list-group-item list-group-item-action">Métodos de pago más utilizados</Link>
+                <Link to="/sync/reportes/opiniones-clientes" className="list-group-item list-group-item-action">Opiniones de clientes por producto</Link>
+                <Link to="/sync/reportes/devoluciones-reembolsos" className="list-group-item list-group-item-action">Devoluciones o reembolsos por categoría</Link>
               </div>
             </>
           )}
