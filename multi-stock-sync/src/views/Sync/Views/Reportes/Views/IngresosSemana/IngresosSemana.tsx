@@ -1,6 +1,4 @@
-import React, { useState, useEffect } from "react";
-import { Bar } from "react-chartjs-2";
-import { ChartOptions } from "chart.js";
+import React, { useState, useEffect } from "react"; 
 import styles from './IngresosSemana.module.css';
 
 const IngresosSemana: React.FC = () => {
@@ -13,18 +11,6 @@ const IngresosSemana: React.FC = () => {
   const [weeks, setWeeks] = useState<{ start_date: string; end_date: string }[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<string>('');
   const [totalSales, setTotalSales] = useState<number | null>(null);
-  const [chartData, setChartData] = useState<any>({
-    labels: [],
-    datasets: [
-      {
-        label: "Ingresos Totales",
-        data: [],
-        backgroundColor: "rgb(13, 3, 77)",
-        borderColor: "rgb(0, 0, 0)",
-        borderWidth: 3,
-      },
-    ],
-  });
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -106,18 +92,6 @@ const IngresosSemana: React.FC = () => {
       }
       const result = await response.json();
       setTotalSales(result.data.total_sales);
-      setChartData({
-        labels: [`${result.data.week_start_date} a ${result.data.week_end_date}`],
-        datasets: [
-          {
-            label: "Ingresos Totales",
-            data: [result.data.total_sales],
-            backgroundColor: "rgb(18, 255, 1)",
-            borderColor: "rgb(0, 0, 0)",
-            borderWidth: 3,
-          },
-        ],
-      });
     } catch (error) {
       console.error("Error:", error);
       setError("Hubo un problema al obtener los ingresos. Inténtalo nuevamente.");
@@ -133,34 +107,6 @@ const IngresosSemana: React.FC = () => {
 
   const getMonths = () => {
     return Array.from({ length: 12 }, (_, i) => i + 1);
-  };
-
-  const chartOptions: ChartOptions<'bar'> = {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: "top",
-      },
-      title: {
-        display: true,
-        text: "Ingresos por Semana",
-      },
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: "Ingresos",
-        },
-      },
-      x: {
-        title: {
-          display: true,
-          text: "Semanas",
-        },
-      },
-    },
   };
 
   return (
@@ -238,11 +184,9 @@ const IngresosSemana: React.FC = () => {
 
       {totalSales !== null && (
         <div className={styles.result}>
-          <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+          <h2>Presupuesto semanal: ${totalSales.toLocaleString()}</h2>
         </div>
       )}
-
-      <Bar data={chartData} options={chartOptions} />
     </div>
   );
 };
