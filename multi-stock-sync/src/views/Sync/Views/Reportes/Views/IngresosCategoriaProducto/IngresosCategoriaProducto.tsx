@@ -1,6 +1,9 @@
 import React from 'react';
+import { useParams } from 'react-router-dom';
 
 const IngresosCategoriaProducto: React.FC = () => {
+    const { client_id } = useParams<{ client_id: string }>();
+
     return (
         <div>
             <h1>Ingresos por Categoría de Producto</h1>

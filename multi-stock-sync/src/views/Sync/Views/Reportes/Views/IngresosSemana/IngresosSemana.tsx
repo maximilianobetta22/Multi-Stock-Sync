@@ -2,8 +2,11 @@ import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
 import styles from './IngresosSemana.module.css';
+import { useParams } from "react-router-dom";
 
 const IngresosSemana: React.FC = () => {
+  const { client_id } = useParams<{ client_id: string }>();
+
   const [connections, setConnections] = useState<{ id: string; name: string }[]>([]);
   const [connection, setConnection] = useState<string>('default_connection');
   const [loading, setLoading] = useState<boolean>(false);
