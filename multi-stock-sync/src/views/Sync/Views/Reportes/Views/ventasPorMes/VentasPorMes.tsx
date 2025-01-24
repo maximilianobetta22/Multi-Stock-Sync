@@ -34,24 +34,22 @@ interface VentasPorMesProps {
 
 const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
     const [ventas, setVentas] = useState<Venta[]>([]);
-    const [, setLoading] = useState(true);
-    const [, setToastMessage] = useState<string | null>(null);
-    const [, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
-    const [yearSeleccionado, setYearSeleccionado] = useState<number>(2024);
-    const [monthSeleccionado, setMonthSeleccionado] = useState<number>(10);
+    const [loading, setLoading] = useState(true);
+    const [toastMessage, setToastMessage] = useState<string | null>(null);
+    const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
+    const [yearSeleccionado, setYearSeleccionado] = useState<number>(2025);
+    const [monthSeleccionado, setMonthSeleccionado] = useState<number>(1);
 
     useEffect(() => {
         const fetchVentas = async () => {
             try {
-                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${clientId}?month=${monthSeleccionado}&year=${yearSeleccionado}`;
-                console.log('Fetching data from:', apiUrl); // Log the full URL
+                const formattedMonth = String(monthSeleccionado).padStart(2, '0'); // Format the month as a two-digit string
+                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${clientId}?month=${formattedMonth}&year=${yearSeleccionado}`;
                 const response = await axios.get(apiUrl);
-                console.log('API Response:', response.data); // Log the API response
                 const ventasData = response.data.data;
-                console.log('Ventas Data:', ventasData); // Log the ventas data
                 const ventasArray: Venta[] = [];
 
-                for (const [, value] of Object.entries(ventasData)) {
+                for (const value of Object.values(ventasData)) {
                     const { orders } = value as any;
                     orders.forEach((order: any) => {
                         order.sold_products.forEach((product: any) => {
@@ -67,7 +65,6 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
                 }
 
                 setVentas(ventasArray);
-                console.log('Processed Ventas Array:', ventasArray); // Log the processed ventas array
             } catch (error) {
                 console.error('Error al obtener las ventas:', error);
                 setToastMessage((error as any).response?.data?.message || 'Error al obtener las ventas');
@@ -89,8 +86,8 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
         return acc;
     }, 0);
 
-    console.log(`Total Ventas for ${yearSeleccionado} and month ${monthSeleccionado}:`, totalVentasMes); // Log the total ventas
-
+    
+    // Proceed to render the chart if there are sales
     const data = {
         labels: [`Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('default', { month: 'long' })} ${yearSeleccionado}`],
         datasets: [
@@ -104,7 +101,7 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
         ]
     };
 
-    const options = {
+    const options: any = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -114,6 +111,21 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
             title: {
                 display: true,
                 text: `Ventas del Año ${yearSeleccionado} y Mes ${monthSeleccionado}`
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context: any) {
+                        return `${context.dataset.label}: ${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(context.raw)}`;
+                    }
+                }
+            },
+            datalabels: {
+                display: true,
+                align: 'end' as const,
+                anchor: 'end',
+                formatter: (value: number) => {
+                    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(value);
+                }
             }
         }
     };
