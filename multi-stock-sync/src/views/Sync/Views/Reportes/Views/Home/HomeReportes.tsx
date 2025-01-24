@@ -102,18 +102,30 @@ const HomeReportes: React.FC = () => {
               <p><strong>Ventas Anuales ({currentYear}):</strong> ${storeSummary.annual_sales.toLocaleString()}</p>
               <h4 className="mt-4">Productos Más Vendidos</h4>
               <ul className="list-group">
-                {storeSummary.top_selling_products.map((product, index) => (
-                  <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
-                    <span>{index + 1}. {product.title} - {product.quantity} vendidos</span> <span>${product.total_amount.toLocaleString()}</span>
-                  </li>
-                ))}
-                <Link to="/sync/" className='btn btn-primary mt-3'>Ver lista completa</Link>
+                {storeSummary.top_selling_products.length > 0 ? (
+                  storeSummary.top_selling_products.map((product, index) => (
+                    <li key={index} className="list-group-item d-flex justify-content-between align-items-center">
+                      <span>{index + 1}. {product.title} - {product.quantity} vendidos</span> <span>${product.total_amount.toLocaleString()}</span>
+                    </li>
+                  ))
+                ) : (
+                  <li className="list-group-item">No hay productos más vendidos</li>
+                )}
+                {storeSummary.top_selling_products.length > 0 && (
+                  <Link to="/sync/" className='btn btn-primary mt-3'>Ver lista completa</Link>
+                )}
               </ul>
               <h4 className="mt-4">Métodos de Pago Preferidos</h4>
               <ul>
-                <li>Dinero en cuenta: {storeSummary.top_payment_methods.account_money}</li>
-                <li>Tarjeta de débito: {storeSummary.top_payment_methods.debit_card}</li>
-                <li>Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
+                {storeSummary.top_payment_methods.account_money || storeSummary.top_payment_methods.debit_card || storeSummary.top_payment_methods.credit_card ? (
+                  <>
+                    <li>Dinero en cuenta: {storeSummary.top_payment_methods.account_money}</li>
+                    <li>Tarjeta de débito: {storeSummary.top_payment_methods.debit_card}</li>
+                    <li>Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
+                  </>
+                ) : (
+                  <li>No se encontraron datos registrados</li>
+                )}
               </ul>
             </div>
           )}
