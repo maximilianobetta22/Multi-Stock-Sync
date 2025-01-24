@@ -6,7 +6,7 @@ import HomeReportes from "../Views/Home/HomeReportes";
 import VentasPorDia from "../Views/VentasPorDia/VentasPorDia";
 import IngresosSemana from "../Views/IngresosSemana/IngresosSemana";
 import MetodosPago from "../Views/MetodosPago/MetodosPago";
-import DevolucionesReembolso from "../Views/Home/DevolucionesReembolsos/DevolucionesReembolsos";
+import DevolucionesReembolso from "../Views/DevolucionesReembolsos/DevolucionesReembolsos";
 
 
 function RouterReportes() {
