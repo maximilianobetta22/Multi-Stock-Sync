@@ -19,56 +19,60 @@ ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const MetodosPago: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
   const [userData, setUserData] = useState<{ nickname: string; creation_date: string } | null>(null);
-
+  const [year, setYear] = useState<string>('alloftimes');
   const [paymentData, setPaymentData] = useState({
     account_money: 0,
     debit_card: 0,
     credit_card: 0,
   });
 
+  const fetchPaymentData = async (selectedYear: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/top-payment-methods/${client_id}?year=${selectedYear}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setPaymentData(result.data);
+      } else {
+        console.error('Error en la respuesta de la API:', result.message);
+      }
+    } catch (error) {
+      console.error('Error al obtener los datos de la API:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setUserData({
+          nickname: result.data.nickname,
+          creation_date: result.data.creation_date,
+        });
+      } else {
+        console.error('Error en la respuesta de la API:', result.message);
+      }
+    } catch (error) {
+      console.error('Error al obtener los datos del usuario:', error);
+    }
+  };
+
   useEffect(() => {
-    const fetchPaymentData = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/top-payment-methods/${client_id}`);
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          setPaymentData(result.data);
-        } else {
-          console.error('Error en la respuesta de la API:', result.message);
-        }
-      } catch (error) {
-        console.error('Error al obtener los datos de la API:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    const fetchUserData = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          setUserData({
-            nickname: result.data.nickname,
-            creation_date: result.data.creation_date,
-          });
-        } else {
-          console.error('Error en la respuesta de la API:', result.message);
-        }
-      } catch (error) {
-        console.error('Error al obtener los datos del usuario:', error);
-      }
-    };
-
-    fetchPaymentData();
     fetchUserData();
   }, [client_id]);
+
+  const handleGenerateChart = () => {
+    setLoading(true);
+    fetchPaymentData(year);
+  };
 
   const total =
     paymentData.account_money + paymentData.debit_card + paymentData.credit_card;
@@ -168,14 +172,27 @@ const MetodosPago: React.FC = () => {
     setShowModal(true);
   };
 
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2000 + 1 }, (_, i) => (currentYear - i).toString());
+
   return (
     <>
-      {loading ? (
-        <LoadingDinamico variant="container" />
-      ) : (
-        <div className={`container ${styles.container}`}>
-            <h1 className={`text-center mb-4`}>Métodos de Pago más utilizados</h1>
-            <h5 className="text-center text-muted mb-5">Distribución de los métodos de pago utilizados por el cliente</h5>
+      <div className={`container ${styles.container}`}>
+        <h1 className={`text-center mb-4`}>Métodos de Pago más utilizados</h1>
+        <h5 className="text-center text-muted mb-5">Distribución de los métodos de pago utilizados por el cliente</h5>
+        <div className="mb-4">
+          <label htmlFor="yearSelect" className="form-label">Seleccione el Año:</label>
+          <select id="yearSelect" className="form-select" value={year} onChange={(e) => setYear(e.target.value)}>
+            <option value="alloftimes">Desde el origen de los tiempos</option>
+            {years.map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          <button className="btn btn-primary mt-3" onClick={handleGenerateChart}>Generar Gráfico</button>
+        </div>
+        {loading ? (
+          <LoadingDinamico variant="container" />
+        ) : (
           <Card className="shadow-lg">
             <Card.Body>
               <div className="row">
@@ -250,8 +267,8 @@ const MetodosPago: React.FC = () => {
               </div>
             </Card.Body>
           </Card>
-        </div>
-      )}
+        )}
+      </div>
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Reporte de Métodos de Pago</Modal.Title>
