@@ -3,12 +3,11 @@ import { Bar } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
 import styles from './IngresosSemana.module.css';
 import { useParams } from "react-router-dom";
+import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
 
 const IngresosSemana: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
 
-  const [connections, setConnections] = useState<{ id: string; name: string }[]>([]);
-  const [connection, setConnection] = useState<string>('default_connection');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [year, setYear] = useState<string>('');
@@ -30,28 +29,9 @@ const IngresosSemana: React.FC = () => {
   });
 
   useEffect(() => {
-    const fetchConnections = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials`);
-        if (!response.ok) throw new Error("Error al obtener las conexiones");
-        const result = await response.json();
-        const formattedConnections = result.data.map((conn: any) => ({
-          id: conn.client_id,
-          name: conn.nickname,
-        }));
-        setConnections(formattedConnections);
-      } catch (error) {
-        console.error("Error al cargar las conexiones:", error);
-        setError("Hubo un problema al cargar las conexiones disponibles.");
-      }
-    };
-
-    fetchConnections();
-  }, []);
-
-  useEffect(() => {
     const fetchWeeks = async () => {
       if (!year || !month) return;
+      setLoading(true);
       try {
         const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/weeks-of-month?year=${year}&month=${month}`);
         if (!response.ok) throw new Error("Error al obtener las semanas");
@@ -60,6 +40,8 @@ const IngresosSemana: React.FC = () => {
       } catch (error) {
         console.error("Error al cargar las semanas:", error);
         setError("Hubo un problema al cargar las semanas disponibles.");
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -78,24 +60,19 @@ const IngresosSemana: React.FC = () => {
     setSelectedWeek(event.target.value);
   };
 
-  const handleConnectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setConnection(event.target.value);
-  };
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!selectedWeek) {
       setError("Por favor, selecciona una semana antes de consultar.");
       return;
     }
+    if (!client_id) {
+      setError("Client ID no está definido.");
+      return;
+    }
     const [initDate, endDate] = selectedWeek.split(' a ');
     setError(null);
-    const selectedConnection = connections.find(conn => conn.id === connection);
-    if (selectedConnection) {
-      fetchIncomes(initDate, endDate, selectedConnection.id);
-    } else {
-      setError("Conexión no válida seleccionada.");
-    }
+    fetchIncomes(initDate, endDate, client_id);
   };
 
   const fetchIncomes = async (start: string, end: string, clientId: string) => {
@@ -167,86 +144,81 @@ const IngresosSemana: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Ingresos por Rango de Fechas</h1>
+    <>
+      {loading && <LoadingDinamico variant="container" />}
+      {!loading && (
+        <div className={styles.container}>
+          <h1 className={styles.title}>Ingresos por Rango de Fechas</h1>
 
-      {error && <p className={styles.error}>{error}</p>}
+          {error && <p className={styles.error}>{error}</p>}
 
-      <form onSubmit={handleSubmit} className={styles.form}>
-        <label htmlFor="connection">Conexión:</label>
-        <select id="connection" value={connection} onChange={handleConnectionChange}>
-          {connections.length > 0 ? (
-            connections.map((conn) => (
-              <option key={conn.id} value={conn.id}>
-                {conn.name}
-              </option>
-            ))
-          ) : (
-            <option value="default_connection">Conexión Predeterminada</option>
+          <form onSubmit={handleSubmit} className={styles.form}>
+            <label htmlFor="year">Año:</label>
+            <select
+              id="year"
+              className={styles.header__btnSelect}
+              value={year}
+              onChange={handleYearChange}
+            >
+              <option value="">Selecciona un año</option>
+              {getYears().map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+            <br />
+            <label htmlFor="month">Mes:</label>
+            <select
+              id="month"
+              className={styles.header__btnSelect}
+              value={month}
+              onChange={handleMonthChange}
+            >
+              <option value="">Selecciona un mes</option>
+              {getMonths().map((month) => (
+                <option key={month} value={month}>
+                  {month}
+                </option>
+              ))}
+            </select>
+            <br />
+            {loading ? (
+              <p>Cargando semanas...</p>
+            ) : (
+              <>
+                <label htmlFor="week">Semana:</label>
+                <select
+                  id="week"
+                  className={styles.header__btnSelect}
+                  value={selectedWeek}
+                  onChange={handleWeekChange}
+                >
+                  <option value="">Selecciona una semana</option>
+                  {weeks.length > 0 && weeks.map((week, index) => (
+                    <option key={index} value={`${week.start_date} a ${week.end_date}`}>
+                      {`${week.start_date} a ${week.end_date}`}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+            <br />
+            <button type="submit" className={styles.button} disabled={loading}>
+              {loading ? "Cargando..." : "Consultar"}
+            </button>
+          </form>
+
+          {totalSales !== null && (
+            <div className={styles.result}>
+              <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+            </div>
           )}
-        </select>
-        <br />
-        <label htmlFor="year">Año:</label>
-        <select
-          id="year"
-          className={styles.header__btnSelect}
-          value={year}
-          onChange={handleYearChange}
-        >
-          <option value="">Selecciona un año</option>
-          {getYears().map((year) => (
-            <option key={year} value={year}>
-              {year}
-            </option>
-          ))}
-        </select>
-        <br />
-        <label htmlFor="month">Mes:</label>
-        <select
-          id="month"
-          className={styles.header__btnSelect}
-          value={month}
-          onChange={handleMonthChange}
-        >
-          <option value="">Selecciona un mes</option>
-          {getMonths().map((month) => (
-            <option key={month} value={month}>
-              {month}
-            </option>
-          ))}
-        </select>
-        <br />
-        <label htmlFor="week">Semana:</label>
-        <select
-          id="week"
-          className={styles.header__btnSelect}
-          value={selectedWeek}
-          onChange={handleWeekChange}
-        >
-          {weeks.length > 0 ? (
-            weeks.map((week, index) => (
-              <option key={index} value={`${week.start_date} a ${week.end_date}`}>
-                {`${week.start_date} a ${week.end_date}`}
-              </option>
-            ))
-          ) : (
-            <option value="">Selecciona un año y mes primero</option>
-          )}
-        </select>
-        <br />
-        <button type="submit" className={styles.button} disabled={loading}>
-          {loading ? "Cargando..." : "Consultar"}
-        </button>
-      </form>
 
-      {totalSales !== null && (
-        <div className={styles.result}>
-          <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+          <Bar data={chartData} options={chartOptions} />
         </div>
       )}
-
-      <Bar data={chartData} options={chartOptions} />
-    </div>
+    </>
   );
 };
 
