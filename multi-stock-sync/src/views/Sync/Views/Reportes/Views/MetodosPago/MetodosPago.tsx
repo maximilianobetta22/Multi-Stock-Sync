@@ -138,11 +138,6 @@ const MetodosPago: React.FC = () => {
       doc.text(`Año Seleccionado: ${displayYear}`, 20, 85);
     }
 
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(16);
-    doc.setTextColor(34, 139, 34); // Green for total
-    doc.text(`Total de Transacciones: ${total}`, 20, 35);
-
     autoTable(doc, {
       startY: 90,
       headStyles: {
@@ -165,6 +160,11 @@ const MetodosPago: React.FC = () => {
         ["Tarjeta de Crédito", paymentData.credit_card, `${calculatePercentage(paymentData.credit_card)}%`],
       ],
     });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(34, 139, 34); // Green for total
+    doc.text(`Total de Transacciones: ${total}`, 20, (doc as any).autoTable.previous.finalY + 10);
 
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(10);
