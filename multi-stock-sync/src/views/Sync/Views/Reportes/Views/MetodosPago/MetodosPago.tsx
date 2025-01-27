@@ -108,19 +108,19 @@ const MetodosPago: React.FC = () => {
                     <li className="list-group-item d-flex justify-content-between align-items-center">
                       Dinero en Cuenta
                       <span className="badge bg-primary rounded-pill">
-                        {calculatePercentage(paymentData.account_money)}%
+                        {calculatePercentage(paymentData.account_money)}% ({paymentData.account_money})
                       </span>
                     </li>
                     <li className="list-group-item d-flex justify-content-between align-items-center">
                       Tarjeta de Débito
                       <span className="badge bg-warning rounded-pill">
-                        {calculatePercentage(paymentData.debit_card)}%
+                        {calculatePercentage(paymentData.debit_card)}% ({paymentData.debit_card})
                       </span>
                     </li>
                     <li className="list-group-item d-flex justify-content-between align-items-center">
                       Tarjeta de Crédito
                       <span className="badge bg-success rounded-pill">
-                        {calculatePercentage(paymentData.credit_card)}%
+                        {calculatePercentage(paymentData.credit_card)}% ({paymentData.credit_card})
                       </span>
                     </li>
                   </ul>
