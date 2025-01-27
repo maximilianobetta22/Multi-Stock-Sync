@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import { FaStar } from 'react-icons/fa';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 import styles from './OpinionesClients.module.css';
-
 
 interface Opinion {
   id: number;
@@ -36,7 +36,7 @@ const OpinionesClientes: React.FC = () => {
     // API
     const fetchOpiniones = async () => {
       try {
-        const response = await axios.get(`/api/opiniones/${client_id}`);
+        const response = await axios.get(`${client_id}`);
         if (Array.isArray(response.data)) {
           setOpiniones(response.data);
         } else {
@@ -69,10 +69,10 @@ const OpinionesClientes: React.FC = () => {
       console.error('Error al agregar opinión:', error);
     }
   };
-
+  //???
   const handleEliminarOpinion = async (id: number) => {
     try {
-      await axios.delete(`/api/opiniones/${id}`);
+      await axios.delete(`${id}`);
       setOpiniones((prevOpiniones) =>
         prevOpiniones.filter((opinion) => opinion.id !== id)
       );
@@ -85,7 +85,7 @@ const OpinionesClientes: React.FC = () => {
     <div className={styles.container}>
       <h1 className={styles.title}>Opiniones de Clientes</h1>
 
-    
+      
       <div className="mb-12 space-y-8">
         <h2 className={styles.sectionTitle}>Lista de Opiniones</h2>
         {opiniones.length > 0 ? (
@@ -96,8 +96,9 @@ const OpinionesClientes: React.FC = () => {
                 <p className={styles.comment}>{opinion.comentario}</p>
                 <div className={styles.stars}>
                   {[...Array(5)].map((_, index) => (
-                    <FaStar
+                    <FontAwesomeIcon
                       key={index}
+                      icon={faStar}
                       color={index < opinion.estrellas ? 'gold' : 'gray'}
                       className="text-xl"
                     />
@@ -140,8 +141,9 @@ const OpinionesClientes: React.FC = () => {
           />
           <div className="flex items-center mb-4">
             {[...Array(5)].map((_, index) => (
-              <FaStar
+              <FontAwesomeIcon
                 key={index}
+                icon={faStar}
                 color={index < nuevaOpinion.estrellas ? 'gold' : 'gray'}
                 onClick={() => handleCalificar(index)}
                 className="cursor-pointer text-2xl"
