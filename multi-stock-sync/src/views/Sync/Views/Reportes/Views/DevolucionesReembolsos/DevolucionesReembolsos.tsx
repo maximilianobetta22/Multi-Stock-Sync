@@ -1,129 +1,105 @@
 import React, { useState, useEffect } from 'react';
-import { Bar } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Tooltip,
-  Legend,
-} from 'chart.js';
-import styles from './DevolucionesReembolsos.module.css';
-import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import './DevolucionesReembolsos.module.css';
 
+interface Order {
+  id: number;
+  date_created: string;
+  total_amount: number;
+  status: string;
+  title: string;
+  quantity: number;
+  price: number;
+}
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+interface Category {
+  category_id: string;
+  total_refunds: number;
+  orders: Order[];
+}
 
-const DevolucionesReembolso: React.FC = () => {
-  const { client_id } = useParams<{ client_id: string }>();
-  const [returnData, setReturnData] = useState<{ [key: string]: number }>({});
-  const [productList, setProductList] = useState<
-    { id: number; category: string; name: string; reason: string }[]
-  >([]);
+const DevolucionesReembolsos = () => {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [error, setError] = useState<string>('');
 
   
-  useEffect(() => {
-    const fetchReturnData = async () => {
-      try {
-        const response = await fetch(
-          ''//API
-        );
-        const result = await response.json();
+  const clientId = '12345';  
 
-        if (result.status === 'success') {
-          setReturnData(result.data);
+  useEffect(() => {
+    const fetchDevoluciones = async () => {
+      try {
+        const url = `${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${clientId}`;
+        const response = await axios.get(url);
+
+        
+        if (response.data.status === 'success') {
+          const fetchedCategories = Object.entries(response.data.data).map(
+            ([key, value]: [string, any]) => ({
+              category_id: key,
+              total_refunds: value.total_refunds,
+              orders: value.orders,
+            })
+          );
+          setCategories(fetchedCategories);
         } else {
-          console.error('Error en la respuesta de la API:', result.message);
+          throw new Error('Error en la respuesta de la API');
         }
       } catch (error) {
-        console.error('Error al obtener los datos de devoluciones:', error);
+        console.error(error);
+        setError('Hubo un problema al obtener los datos de la API.');
       }
     };
 
-    fetchReturnData();
-  }, []);
-
-  
-  useEffect(() => {
-    const fetchProductList = async () => {
-      try {
-        const response = await fetch(
-          ''//API
-        );
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          setProductList(result.data);
-        } else {
-          console.error('Error en la respuesta de la API:', result.message);
-        }
-      } catch (error) {
-        console.error('Error al obtener la lista de productos:', error);
-      }
-    };
-
-    fetchProductList();
-  }, []);
-
-  const chartData = {
-    labels: Object.keys(returnData),
-    datasets: [
-      {
-        label: 'Devoluciones por Categoría',
-        data: Object.values(returnData),
-        backgroundColor: [
-          'rgba(75, 192, 192, 0.6)',
-          'rgba(255, 159, 64, 0.6)',
-          'rgba(153, 102, 255, 0.6)',
-          'rgba(255, 99, 132, 0.6)',
-        ],
-        borderColor: [
-          'rgba(75, 192, 192, 1)',
-          'rgba(255, 159, 64, 1)',
-          'rgba(153, 102, 255, 1)',
-          'rgba(255, 99, 132, 1)',
-        ],
-        borderWidth: 1,
-      },
-    ],
-  };
+    fetchDevoluciones();
+  }, [clientId]);
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Devoluciones por Categoría</h1>
-      <div className={styles.content}>
-        
-        <div className={styles.left}>
-          <h3 className={styles.chartTitle}>Gráfico de Devoluciones</h3>
-          <Bar data={chartData} />
-        </div>
-        
-        <div className={styles.right}>
-          <h3 className={styles.tableTitle}>Productos Devueltos o Reembolsados</h3>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Categoría</th>
-                <th>Producto</th>
-                <th>Razón</th>
-              </tr>
-            </thead>
-            <tbody>
-              {productList.map((product) => (
-                <tr key={product.id}>
-                  <td>{product.id}</td>
-                  <td>{product.category}</td>
-                  <td>{product.name}</td>
-                  <td>{product.reason}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
+    <div className="devoluciones-container">
+      <h1>Devoluciones por Categoría</h1>
+
+      {error && <p className="error">{error}</p>}
+
+      <table className="devoluciones-table">
+        <thead>
+          <tr>
+            <th>Categoría</th>
+            <th>Total Devoluciones</th>
+            <th>Órdenes</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categories.map((category) => (
+            <tr key={category.category_id}>
+              <td>{category.category_id}</td>
+              <td>{category.total_refunds}</td>
+              <td>
+                <table className="orders-table">
+                  <thead>
+                    <tr>
+                      <th>ID de Orden</th>
+                      <th>Fecha de Creación</th>
+                      <th>Total Monto</th>
+                      <th>Estado</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {category.orders.map((order) => (
+                      <tr key={order.id}>
+                        <td>{order.id}</td>
+                        <td>{new Date(order.date_created).toLocaleString()}</td>
+                        <td>{order.total_amount}</td>
+                        <td>{order.status}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 };
 
-export default DevolucionesReembolso;
+export default DevolucionesReembolsos;

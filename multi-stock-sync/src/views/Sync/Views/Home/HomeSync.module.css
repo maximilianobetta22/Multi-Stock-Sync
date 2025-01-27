@@ -2,20 +2,6 @@
     margin-top: 3rem;
 }
 
-.card {
-    border: none;
-    transition: transform 0.2s, box-shadow 0.2s;
-}
-
-.card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.15);
-}
-
-.card-body {
-    text-align: center;
-}
-
 .row {
     display: flex;
     justify-content: center;
