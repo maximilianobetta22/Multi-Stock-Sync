@@ -1,6 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './DevolucionesReembolsos.module.css';
+
+import { useParams } from 'react-router-dom';
 
 interface Order {
   id: number;
@@ -23,12 +25,12 @@ const DevolucionesReembolsos = () => {
   const [error, setError] = useState<string>('');
 
   
-  const clientId = '12345';  
+  const { client_id } = useParams<{ client_id: string }>();  
 
   useEffect(() => {
     const fetchDevoluciones = async () => {
       try {
-        const url = `${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${clientId}`;
+        const url = `${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`;
         const response = await axios.get(url);
 
         
@@ -51,7 +53,7 @@ const DevolucionesReembolsos = () => {
     };
 
     fetchDevoluciones();
-  }, [clientId]);
+  }, [client_id]);
 
   return (
     <div className="devoluciones-container">
