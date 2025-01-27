@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
-import styles from './IngresosSemana.module.css';
 import { useParams } from "react-router-dom";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
 
@@ -193,75 +192,81 @@ const IngresosSemana: React.FC = () => {
     <>
       {loading && <LoadingDinamico variant="container" />}
       {!loading && (
-        <div className={styles.container}>
-          <h1 className={styles.title}>Ingresos por Rango de Fechas</h1>
+        <div className="container">
+          <h1 className="text-center my-4">Ingresos por Rango de Fechas</h1>
 
-          {error && <p className={styles.error}>{error}</p>}
+          {error && <p className="text-danger">{error}</p>}
 
-          <form onSubmit={handleSubmit} className={styles.form}>
-            <label htmlFor="year">Año:</label>
-            <select
-              id="year"
-              className={styles.header__btnSelect}
-              value={year}
-              onChange={handleYearChange}
-            >
-              <option value="">Selecciona un año</option>
-              {getYears().map((year) => (
-                <option key={year} value={year}>
-                  {year}
-                </option>
-              ))}
-            </select>
-            <br />
-            <label htmlFor="month">Mes:</label>
-            <select
-              id="month"
-              className={styles.header__btnSelect}
-              value={month}
-              onChange={handleMonthChange}
-            >
-              <option value="">Selecciona un mes</option>
-              {getMonths().map((month) => (
-                <option key={month} value={month}>
-                  {month}
-                </option>
-              ))}
-            </select>
-            <br />
-            {loading ? (
-              <p>Cargando semanas...</p>
-            ) : (
-              <>
-                <label htmlFor="week">Semana:</label>
-                <select
-                  id="week"
-                  className={styles.header__btnSelect}
-                  value={selectedWeek}
-                  onChange={handleWeekChange}
-                >
-                  <option value="">Selecciona una semana</option>
-                  {weeks.length > 0 && weeks.map((week, index) => (
-                    <option key={index} value={`${week.start_date} a ${week.end_date}`}>
-                      {`${week.start_date} a ${week.end_date}`}
-                    </option>
-                  ))}
-                </select>
-              </>
-            )}
-            <br />
-            <button type="submit" className={styles.button} disabled={loading}>
-              {loading ? "Cargando..." : "Consultar"}
-            </button>
-          </form>
+          <div className="row">
+            <div className="col-md-4">
+              <form onSubmit={handleSubmit} className="mb-4">
+                <div className="mb-3">
+                  <label htmlFor="year" className="form-label">Año:</label>
+                  <select
+                    id="year"
+                    className="form-select"
+                    value={year}
+                    onChange={handleYearChange}
+                  >
+                    <option value="">Selecciona un año</option>
+                    {getYears().map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="mb-3">
+                  <label htmlFor="month" className="form-label">Mes:</label>
+                  <select
+                    id="month"
+                    className="form-select"
+                    value={month}
+                    onChange={handleMonthChange}
+                  >
+                    <option value="">Selecciona un mes</option>
+                    {getMonths().map((month) => (
+                      <option key={month} value={month}>
+                        {month}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                {loading ? (
+                  <p>Cargando semanas...</p>
+                ) : (
+                  <div className="mb-3">
+                    <label htmlFor="week" className="form-label">Semana:</label>
+                    <select
+                      id="week"
+                      className="form-select"
+                      value={selectedWeek}
+                      onChange={handleWeekChange}
+                    >
+                      <option value="">Selecciona una semana</option>
+                      {weeks.length > 0 && weeks.map((week, index) => (
+                        <option key={index} value={`${week.start_date} a ${week.end_date}`}>
+                          {`${week.start_date} a ${week.end_date}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? "Cargando..." : "Consultar"}
+                </button>
+              </form>
 
-          {totalSales !== null && (
-            <div className={styles.result}>
-              <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+              {totalSales !== null && (
+                <div className="alert alert-info">
+                  <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+                </div>
+              )}
             </div>
-          )}
-
-          <Bar data={chartData} options={chartOptions} />
+            <div className="col-md-8">
+              <Bar data={chartData} options={chartOptions} />
+            </div>
+          </div>
         </div>
       )}
     </>
