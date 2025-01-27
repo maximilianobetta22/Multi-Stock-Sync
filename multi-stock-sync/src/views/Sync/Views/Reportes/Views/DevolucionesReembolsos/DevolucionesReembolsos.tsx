@@ -26,6 +26,10 @@ const DevolucionesReembolsos = () => {
 
   const { client_id } = useParams<{ client_id: string }>();
 
+  const formatCLP = (amount: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
+  };
+
   useEffect(() => {
     const fetchDevoluciones = async () => {
       try {
@@ -77,7 +81,7 @@ const DevolucionesReembolsos = () => {
           {categories.map((category) => (
             <tr key={category.category_id}>
               <td>{category.category_id}</td>
-              <td>{category.total_refunds}</td>
+              <td>{formatCLP(category.total_refunds)}</td>
               <td>
                 <table className="table table-bordered">
                   <thead>
@@ -93,7 +97,7 @@ const DevolucionesReembolsos = () => {
                       <tr key={order.id}>
                         <td>{order.id}</td>
                         <td>{new Date(order.date_created).toLocaleString()}</td>
-                        <td>{order.total_amount}</td>
+                        <td>{formatCLP(order.total_amount)}</td>
                         <td>{order.status}</td>
                       </tr>
                     ))}
