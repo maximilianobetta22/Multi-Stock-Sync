@@ -7,17 +7,22 @@ import {
   Legend,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { Card, ProgressBar } from 'react-bootstrap';
+import { Card, ProgressBar, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useParams } from 'react-router-dom';
 import styles from './MetodosPago.module.css';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const MetodosPago: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
+  const [userData, setUserData] = useState<{ nickname: string; creation_date: string } | null>(null);
 
   const [paymentData, setPaymentData] = useState({
     account_money: 0,
@@ -43,7 +48,26 @@ const MetodosPago: React.FC = () => {
       }
     };
 
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+        const result = await response.json();
+
+        if (result.status === 'success') {
+          setUserData({
+            nickname: result.data.nickname,
+            creation_date: result.data.creation_date,
+          });
+        } else {
+          console.error('Error en la respuesta de la API:', result.message);
+        }
+      } catch (error) {
+        console.error('Error al obtener los datos del usuario:', error);
+      }
+    };
+
     fetchPaymentData();
+    fetchUserData();
   }, [client_id]);
 
   const total =
@@ -84,6 +108,64 @@ const MetodosPago: React.FC = () => {
         },
       },
     },
+  };
+
+  const generatePDF = (): void => {
+    const doc = new jsPDF();
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("Reporte de Métodos de Pago", 105, 20, { align: "center" });
+    doc.setDrawColor(0, 0, 0);
+    doc.line(20, 25, 190, 25);
+    doc.setFontSize(12);
+
+    if (userData) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0); // Black font
+      doc.text(`Usuario: ${userData.nickname}`, 20, 55);
+      doc.text(`Fecha de Creación: ${userData.creation_date}`, 20, 65);
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(34, 139, 34); // Green for total
+    doc.text(`Total de Transacciones: ${total}`, 20, 35);
+
+    autoTable(doc, {
+      startY: 70,
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: [255, 255, 255],
+        fontSize: 12,
+        halign: "center",
+      },
+      bodyStyles: {
+        fontSize: 10,
+        textColor: [0, 0, 0],
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240],
+      },
+      head: [["Método de Pago", "Cantidad", "Porcentaje"]],
+      body: [
+        ["Dinero en Cuenta", paymentData.account_money, `${calculatePercentage(paymentData.account_money)}%`],
+        ["Tarjeta de Débito", paymentData.debit_card, `${calculatePercentage(paymentData.debit_card)}%`],
+        ["Tarjeta de Crédito", paymentData.credit_card, `${calculatePercentage(paymentData.credit_card)}%`],
+      ],
+    });
+
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150); // Grey for footer
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, {
+      align: "center",
+    });
+
+    const pdfData = doc.output("datauristring");
+    setPdfDataUrl(pdfData);
+    setShowModal(true);
   };
 
   return (
@@ -157,12 +239,39 @@ const MetodosPago: React.FC = () => {
                       key={3}
                     />
                   </ProgressBar>
+                  <button
+                    type="button"
+                    className="btn btn-success mt-3"
+                    onClick={generatePDF}
+                  >
+                    Exportar a PDF
+                  </button>
                 </div>
               </div>
             </Card.Body>
           </Card>
         </div>
       )}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Reporte de Métodos de Pago</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {pdfDataUrl && (
+            <iframe
+              src={pdfDataUrl}
+              width="100%"
+              height="500px"
+              title="Reporte de Métodos de Pago"
+            />
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+            Cerrar
+          </button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };
