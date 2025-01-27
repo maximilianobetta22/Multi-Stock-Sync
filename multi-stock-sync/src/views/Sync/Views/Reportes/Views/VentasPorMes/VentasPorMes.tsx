@@ -232,7 +232,30 @@ interface ChartModalProps {
 }
 
 const ChartModal = ({ show, handleClose, orders }: ChartModalProps) => {
-    const labels = orders.flatMap(order => order.sold_products.map(product => product.title));
+    const productSales: { title: string, total: number }[] = [];
+
+    orders.forEach(order => {
+        order.sold_products.forEach(product => {
+            const existingProduct = productSales.find(p => p.title === product.title);
+            if (existingProduct) {
+                existingProduct.total += product.price * product.quantity;
+            } else {
+                productSales.push({ title: product.title, total: product.price * product.quantity });
+            }
+        });
+    });
+
+    productSales.sort((a, b) => b.total - a.total);
+
+    const topProducts = productSales.slice(0, 10);
+    const otherProductsTotal = productSales.slice(10).reduce((acc, product) => acc + product.total, 0);
+
+    if (otherProductsTotal > 0) {
+        topProducts.push({ title: 'Other', total: otherProductsTotal });
+    }
+
+    const labels = topProducts.map(product => product.title);
+    const dataValues = topProducts.map(product => product.total);
 
     const backgroundColors = labels.map(() => {
         const r = Math.floor(Math.random() * 255);
@@ -245,7 +268,7 @@ const ChartModal = ({ show, handleClose, orders }: ChartModalProps) => {
         const rgba = color.match(/\d+/g);
         if (rgba) {
             const [r, g, b] = rgba.map(Number);
-            return `rgba(${r - 50}, ${g - 50}, ${b - 50}, 1)`;
+            return `rgba(${Math.max(r - 50, 0)}, ${Math.max(g - 50, 0)}, ${Math.max(b - 50, 0)}, 1)`;
         }
         return color;
     });
@@ -255,15 +278,17 @@ const ChartModal = ({ show, handleClose, orders }: ChartModalProps) => {
         datasets: [
             {
                 label: 'Ventas por Producto ($)',
-                data: orders.flatMap(order => order.sold_products.map(product => product.price * product.quantity)),
+                data: dataValues,
                 backgroundColor: backgroundColors,
                 borderColor: borderColors,
-                borderWidth: 1
+                borderWidth: 1,
+                barThickness: 20 // Adjust the thickness of the bars
             }
         ]
     };
 
     const options = {
+        indexAxis: 'y' as const, // Change the chart to horizontal bar chart
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -283,35 +308,40 @@ const ChartModal = ({ show, handleClose, orders }: ChartModalProps) => {
             },
             datalabels: {
                 display: true,
-                align: 'center', // Center the label horizontally
-                anchor: 'center', // Center the label vertically
+                align: 'end', // Align the label to the end of the bar
+                anchor: 'end', // Anchor the label to the end of the bar
                 formatter: (value: number) => {
                     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(value);
                 }
             }
         },
         scales: {
-            y: {
+            x: {
                 beginAtZero: true,
             },
+            y: {
+                align: 'start' // Align the labels to the start (left) of the container
+            }
         },
     };
 
     return (
         <Modal show={show} onHide={handleClose} size="lg" centered>
             <Modal.Header closeButton>
-                <Modal.Title>Ventas por Mes</Modal.Title>
+                <Modal.Title>Detalles de Ventas</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <div className="chart-container" style={{ width: '100%', height: '400px' }}>
+                <div style={{ width: '100%', height: '500px', margin: '0 auto' }}>
                     <Bar data={data} options={options} />
                 </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
-                    Close
+                    Cerrar
                 </Button>
             </Modal.Footer>
         </Modal>
     );
 };
+
+export { ChartModal };
