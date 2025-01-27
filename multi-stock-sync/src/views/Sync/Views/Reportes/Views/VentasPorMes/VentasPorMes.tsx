@@ -10,10 +10,14 @@ import {
   Legend
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { CoreChartOptions, ElementChartOptions, PluginChartOptions, DatasetChartOptions, ScaleChartOptions, BarControllerChartOptions, _DeepPartialObject } from 'chart.js';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import styles from './VentasPorMes.module.css';
+import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
+import { useParams } from 'react-router-dom';
+import { Modal, Button, Form } from 'react-bootstrap';
 
-<<<<<<< HEAD:multi-stock-sync/src/views/Sync/Views/Reportes/Views/ventasPorMes/VentasPorMes.tsx
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -23,11 +27,6 @@ ChartJS.register(
   Legend,
   ChartDataLabels
 );
-=======
-import { useParams } from 'react-router-dom';
-
-Chart.register(...registerables);
->>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045:multi-stock-sync/src/views/Sync/Views/Reportes/Views/VentasPorMes/VentasPorMes.tsx
 
 interface Venta {
     fecha: string;
@@ -37,31 +36,48 @@ interface Venta {
     total: number;
 }
 
-interface VentasPorMesProps {
-    clientId: string;
+interface Order {
+    id: number;
+    date_created: string;
+    total_amount: number;
+    status: string;
+    sold_products: Producto[];
 }
 
-const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
+interface Producto {
+    order_id: number;
+    order_date: string;
+    title: string;
+    quantity: number;
+    price: number;
+}
+
+const VentasPorMes: React.FC = () => {
     const [ventas, setVentas] = useState<Venta[]>([]);
     const [loading, setLoading] = useState(true);
     const [toastMessage, setToastMessage] = useState<string | null>(null);
     const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
     const [yearSeleccionado, setYearSeleccionado] = useState<number>(2025);
     const [monthSeleccionado, setMonthSeleccionado] = useState<number>(1);
+    const { client_id } = useParams<{ client_id: string }>();
+    const [showModal, setShowModal] = useState<boolean>(false);
+    const [orders, setOrders] = useState<Order[]>([]);
 
     useEffect(() => {
         const fetchVentas = async () => {
             try {
                 const formattedMonth = String(monthSeleccionado).padStart(2, '0'); // Format the month as a two-digit string
-                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${clientId}?month=${formattedMonth}&year=${yearSeleccionado}`;
+                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}?month=${formattedMonth}&year=${yearSeleccionado}`;
                 const response = await axios.get(apiUrl);
                 const ventasData = response.data.data;
                 const ventasArray: Venta[] = [];
+                const ordersArray: Order[] = [];
 
                 for (const value of Object.values(ventasData)) {
                     const { orders } = value as any;
-                    orders.forEach((order: any) => {
-                        order.sold_products.forEach((product: any) => {
+                    orders.forEach((order: Order) => {
+                        ordersArray.push(order);
+                        order.sold_products.forEach((product: Producto) => {
                             ventasArray.push({
                                 fecha: product.order_date,
                                 producto: product.title,
@@ -74,6 +90,7 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
                 }
 
                 setVentas(ventasArray);
+                setOrders(ordersArray);
             } catch (error) {
                 console.error('Error al obtener las ventas:', error);
                 setToastMessage((error as any).response?.data?.message || 'Error al obtener las ventas');
@@ -84,7 +101,7 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
         };
 
         fetchVentas();
-    }, [clientId, yearSeleccionado, monthSeleccionado]); // Add monthSeleccionado to the dependency array
+    }, [client_id, yearSeleccionado, monthSeleccionado]); // Add monthSeleccionado to the dependency array
 
     const totalVentasMes = ventas.reduce((acc, venta) => {
         const year = new Date(venta.fecha).getFullYear();
@@ -109,7 +126,7 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
         ]
     };
 
-    const options: _DeepPartialObject<CoreChartOptions<'bar'> & ElementChartOptions<'bar'> & PluginChartOptions<'bar'> & DatasetChartOptions<'bar'> & ScaleChartOptions<'bar'> & BarControllerChartOptions> = {
+    const options = {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
@@ -129,96 +146,156 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
             },
             datalabels: {
                 display: true,
-                align: 'center' as 'center', // Center the label horizontally
+                align: 'center', // Center the label horizontally
                 anchor: 'center', // Center the label vertically
                 formatter: (value: number) => {
                     return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(value);
                 }
             }
-        }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+            },
+        },
     };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-            <h2>Ventas por Mes</h2>
-            <div style={{ marginBottom: '1rem' }}>
-                <select value={yearSeleccionado} onChange={(e) => setYearSeleccionado(Number(e.target.value))}>
-                    <option value={2025}>2025</option>
-                    <option value={2024}>2024</option>
-                    <option value={2023}>2023</option>
-                    {/* Add more years as needed */}
-                </select>
-                <select value={monthSeleccionado} onChange={(e) => setMonthSeleccionado(Number(e.target.value))}>
-                    <option value={1}>Enero</option>
-                    <option value={2}>Febrero</option>
-                    <option value={3}>Marzo</option>
-                    <option value={4}>Abril</option>
-                    <option value={5}>Mayo</option>
-                    <option value={6}>Junio</option>
-                    <option value={7}>Julio</option>
-                    <option value={8}>Agosto</option>
-                    <option value={9}>Septiembre</option>
-                    <option value={10}>Octubre</option>
-                    <option value={11}>Noviembre</option>
-                    <option value={12}>Diciembre</option>
-                </select>
-            </div>
-            <div style={{ width: '600px', height: '400px' }}>
-                <Bar data={data} options={options} />
-            </div>
-        </div>
+        <>
+            {loading && <LoadingDinamico variant="container" />}
+            {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
+            {!loading && (
+                <section className={`${styles.VentasPorMes} d-flex flex-column align-items-center`}>
+                    <div className="w-75 rounded p-3 shadow" style={{ backgroundColor: '#f8f9fa', borderRadius: '15px' }}>
+                        <h1 className="text-center">Ventas por Mes</h1>
+                        <Form className="mb-4">
+                            <Form.Group controlId="formYear">
+                                <Form.Label>Año</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    value={yearSeleccionado}
+                                    onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+                                >
+                                    {[2023, 2024, 2025, 2026].map((year) => (
+                                        <option key={year} value={year}>
+                                            {year}
+                                        </option>
+                                    ))}
+                                </Form.Control>
+                            </Form.Group>
+                            <Form.Group controlId="formMonth" className="mt-3">
+                                <Form.Label>Mes</Form.Label>
+                                <Form.Control
+                                    as="select"
+                                    value={monthSeleccionado}
+                                    onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
+                                >
+                                    {[
+                                        { value: 1, label: 'Enero' },
+                                        { value: 2, label: 'Febrero' },
+                                        { value: 3, label: 'Marzo' },
+                                        { value: 4, label: 'Abril' },
+                                        { value: 5, label: 'Mayo' },
+                                        { value: 6, label: 'Junio' },
+                                        { value: 7, label: 'Julio' },
+                                        { value: 8, label: 'Agosto' },
+                                        { value: 9, label: 'Septiembre' },
+                                        { value: 10, label: 'Octubre' },
+                                        { value: 11, label: 'Noviembre' },
+                                        { value: 12, label: 'Diciembre' },
+                                    ].map((month) => (
+                                        <option key={month.value} value={month.value}>
+                                            {month.label}
+                                        </option>
+                                    ))}
+                                </Form.Control>
+                            </Form.Group>
+                        </Form>
+                        <div className="chart-container" style={{ width: '600px', height: '400px', margin: '0 auto' }}>
+                            <Bar data={data} options={options} />
+                        </div>
+                        <Button variant="primary" onClick={() => setShowModal(true)} className="mt-3">Ver Detalles</Button>
+                    </div>
+                </section>
+            )}
+            <ChartModal show={showModal} handleClose={() => setShowModal(false)} orders={orders} />
+        </>
     );
 };
 
-<<<<<<< HEAD:multi-stock-sync/src/views/Sync/Views/Reportes/Views/ventasPorMes/VentasPorMes.tsx
 export default VentasPorMes;
-=======
-export { VentasPorMes };
-import { Modal, Button } from 'react-bootstrap';
 
 interface ChartModalProps {
     show: boolean;
     handleClose: () => void;
-    ventas: Venta[];
+    orders: Order[];
 }
 
-const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
-    useEffect(() => {
-        if (show && ventas.length > 0) {
-            const ctx = document.getElementById('ventasPorMesChartModal') as HTMLCanvasElement;
-            const ventasPorMes = ventas.reduce((acc, venta) => {
-                const mes = new Date(venta.fecha).toLocaleString('default', { month: 'long' });
-                acc[mes] = (acc[mes] || 0) + venta.total;
-                return acc;
-            }, {} as Record<string, number>);
+const ChartModal = ({ show, handleClose, orders }: ChartModalProps) => {
+    const labels = orders.flatMap(order => order.sold_products.map(product => product.title));
 
-            new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(ventasPorMes),
-                    datasets: [
-                        {
-                            label: 'Ventas por Mes ($)',
-                            data: Object.values(ventasPorMes),
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            borderColor: 'rgba(75, 192, 192, 1)',
-                            borderWidth: 1,
-                        },
-                    ],
-                },
-                options: {
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                        },
-                    },
-                },
-            });
+    const backgroundColors = labels.map(() => {
+        const r = Math.floor(Math.random() * 255);
+        const g = Math.floor(Math.random() * 255);
+        const b = Math.floor(Math.random() * 255);
+        return `rgba(${r}, ${g}, ${b}, 0.6)`;
+    });
+
+    const borderColors = backgroundColors.map(color => {
+        const rgba = color.match(/\d+/g);
+        if (rgba) {
+            const [r, g, b] = rgba.map(Number);
+            return `rgba(${r - 50}, ${g - 50}, ${b - 50}, 1)`;
         }
-    }, [show, ventas]);
+        return color;
+    });
 
-    const { client_id } = useParams<{ client_id: string }>();
-    
+    const data = {
+        labels: labels,
+        datasets: [
+            {
+                label: 'Ventas por Producto ($)',
+                data: orders.flatMap(order => order.sold_products.map(product => product.price * product.quantity)),
+                backgroundColor: backgroundColors,
+                borderColor: borderColors,
+                borderWidth: 1
+            }
+        ]
+    };
+
+    const options = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'top' as const
+            },
+            title: {
+                display: true,
+                text: 'Detalles de Ventas por Producto'
+            },
+            tooltip: {
+                callbacks: {
+                    label: function (context: any) {
+                        return `${context.dataset.label}: ${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(context.raw)}`;
+                    }
+                }
+            },
+            datalabels: {
+                display: true,
+                align: 'center', // Center the label horizontally
+                anchor: 'center', // Center the label vertically
+                formatter: (value: number) => {
+                    return new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(value);
+                }
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+            },
+        },
+    };
 
     return (
         <Modal show={show} onHide={handleClose} size="lg" centered>
@@ -226,7 +303,9 @@ const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
                 <Modal.Title>Ventas por Mes</Modal.Title>
             </Modal.Header>
             <Modal.Body>
-                <canvas id="ventasPorMesChartModal"></canvas>
+                <div className="chart-container" style={{ width: '100%', height: '400px' }}>
+                    <Bar data={data} options={options} />
+                </div>
             </Modal.Body>
             <Modal.Footer>
                 <Button variant="secondary" onClick={handleClose}>
@@ -236,6 +315,3 @@ const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
         </Modal>
     );
 };
-
-export default ChartModal;
->>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045:multi-stock-sync/src/views/Sync/Views/Reportes/Views/VentasPorMes/VentasPorMes.tsx
