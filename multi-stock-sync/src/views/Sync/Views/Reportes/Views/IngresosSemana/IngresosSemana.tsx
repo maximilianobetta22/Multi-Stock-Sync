@@ -219,9 +219,8 @@ const IngresosSemana: React.FC = () => {
       const result = await response.json();
       console.log("Resultado:", result);
       setUserData({
-
-        nickname: result.nickname,
-        profile_image: result.profile_image,
+        nickname: result.data.nickname,
+        profile_image: result.data.profile_image,
       });
     } catch (error: any) {
       console.error("Error al obtener los datos del usuario:", error.message);
