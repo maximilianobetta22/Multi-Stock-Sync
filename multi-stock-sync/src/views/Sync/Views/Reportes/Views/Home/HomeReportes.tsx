@@ -54,7 +54,7 @@ const HomeReportes: React.FC = () => {
     try {
       const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/summary/${clientId}`);
       setStoreSummary(response.data.data);
-      setToastMessage('Resumen de la tienda cargado con éxito');
+      setToastMessage('Resumen de la tienda cargado con éxito.');
       setToastType('success');
     } catch (error) {
       console.error('Error al obtener el resumen de la tienda:', error);
@@ -75,7 +75,7 @@ const HomeReportes: React.FC = () => {
     <>
     {loading && <LoadingDinamico variant="container" />}
     <div className={`${styles.container} container`}>
-      {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
+      {toastMessage && <ToastComponent message={toastMessage} type={toastType} timeout={2000} onClose={() => setToastMessage(null)} />}
       {!loading && (
         <>
           <h1 className="text-center my-4">Estadísticas Generales</h1>

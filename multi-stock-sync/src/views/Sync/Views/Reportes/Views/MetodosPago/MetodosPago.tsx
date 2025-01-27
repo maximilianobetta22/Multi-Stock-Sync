@@ -7,44 +7,77 @@ import {
   Legend,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { Card, ProgressBar } from 'react-bootstrap';
+import { Card, ProgressBar, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useParams } from 'react-router-dom';
 import styles from './MetodosPago.module.css';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const MetodosPago: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-  const [loading, setLoading] = useState(true);
-
+  const [loading, setLoading] = useState(false);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
+  const [userData, setUserData] = useState<{ nickname: string; creation_date: string; request_date: string } | null>(null);
+  const [year, setYear] = useState<string>('alloftimes');
+  const [selectedYear, setSelectedYear] = useState<string>('alloftimes');
   const [paymentData, setPaymentData] = useState({
     account_money: 0,
     debit_card: 0,
     credit_card: 0,
   });
+  const [chartVisible, setChartVisible] = useState(false);
+
+  const fetchPaymentData = async (selectedYear: string) => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/top-payment-methods/${client_id}?year=${selectedYear}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setPaymentData(result.data);
+      } else {
+        console.error('Error en la respuesta de la API:', result.message);
+      }
+    } catch (error) {
+      console.error('Error al obtener los datos de la API:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      const result = await response.json();
+
+      if (result.status === 'success') {
+        setUserData({
+          nickname: result.data.nickname,
+          creation_date: result.data.creation_date || 'N/A',
+          request_date: result.data.request_date || 'N/A',
+        });
+      } else {
+        console.error('Error en la respuesta de la API:', result.message);
+      }
+    } catch (error) {
+      console.error('Error al obtener los datos del usuario:', error);
+    }
+  };
 
   useEffect(() => {
-    const fetchPaymentData = async () => {
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/top-payment-methods/${client_id}`);
-        const result = await response.json();
-
-        if (result.status === 'success') {
-          setPaymentData(result.data);
-        } else {
-          console.error('Error en la respuesta de la API:', result.message);
-        }
-      } catch (error) {
-        console.error('Error al obtener los datos de la API:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchPaymentData();
+    fetchUserData();
   }, [client_id]);
+
+  const handleGenerateChart = () => {
+    setLoading(true);
+    setSelectedYear(year);
+    setChartVisible(true);
+    fetchPaymentData(year);
+  };
 
   const total =
     paymentData.account_money + paymentData.debit_card + paymentData.credit_card;
@@ -86,83 +119,186 @@ const MetodosPago: React.FC = () => {
     },
   };
 
+  const generatePDF = (): void => {
+    const doc = new jsPDF();
+    const currentDate = new Date().toLocaleString();
+    const displayYear = selectedYear === 'alloftimes' ? 'El origen de los tiempos' : selectedYear;
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("Reporte de Métodos de Pago", 105, 20, { align: "center" });
+    doc.setDrawColor(0, 0, 0);
+    doc.line(20, 25, 190, 25);
+    doc.setFontSize(12);
+
+    if (userData) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(14);
+      doc.setTextColor(0, 0, 0); // Black font
+      doc.text(`Usuario: ${userData.nickname}`, 20, 55);
+      doc.text(`Fecha de Creación del Reporte: ${currentDate}`, 20, 75);
+      doc.text(`Año Seleccionado: ${displayYear}`, 20, 85);
+    }
+
+    autoTable(doc, {
+      startY: 90,
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: [255, 255, 255],
+        fontSize: 12,
+        halign: "center",
+      },
+      bodyStyles: {
+        fontSize: 10,
+        textColor: [0, 0, 0],
+      },
+      alternateRowStyles: {
+        fillColor: [240, 240, 240],
+      },
+      head: [["Método de Pago", "Cantidad", "Porcentaje"]],
+      body: [
+        ["Dinero en Cuenta", paymentData.account_money, `${calculatePercentage(paymentData.account_money)}%`],
+        ["Tarjeta de Débito", paymentData.debit_card, `${calculatePercentage(paymentData.debit_card)}%`],
+        ["Tarjeta de Crédito", paymentData.credit_card, `${calculatePercentage(paymentData.credit_card)}%`],
+      ],
+    });
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(34, 139, 34); // Green for total
+    doc.text(`Total de Transacciones: ${total}`, 20, (doc as any).autoTable.previous.finalY + 10);
+
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150); // Grey for footer
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, {
+      align: "center",
+    });
+
+    const pdfData = doc.output("datauristring");
+    setPdfDataUrl(pdfData);
+    setShowModal(true);
+  };
+
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: currentYear - 2000 + 1 }, (_, i) => (currentYear - i).toString());
+
   return (
     <>
-      {loading ? (
-        <LoadingDinamico variant="container" />
-      ) : (
-        <div className={`container ${styles.container}`}>
-            <h1 className={`text-center mb-4`}>Métodos de Pago más utilizados</h1>
-            <h5 className="text-center text-muted mb-5">Distribución de los métodos de pago utilizados por el cliente</h5>
-          <Card className="shadow-lg">
-            <Card.Body>
-              <div className="row">
-                <div className="col-md-6 d-flex justify-content-center">
-                  <div className={styles.chartContainer}>
-                    <Pie data={chartData} options={chartOptions} />
+      <div className={`container ${styles.container}`}>
+        <h1 className={`text-center mb-4`}>Métodos de Pago más utilizados</h1>
+        <h5 className="text-center text-muted mb-5">Distribución de los métodos de pago utilizados por el cliente</h5>
+        <div className="mb-4">
+          <label htmlFor="yearSelect" className="form-label">Seleccione el Año:</label>
+          <select id="yearSelect" className="form-select" value={year} onChange={(e) => setYear(e.target.value)}>
+            <option value="alloftimes">Desde el origen de los tiempos</option>
+            {years.map((year) => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+          <button className="btn btn-primary mt-3" onClick={handleGenerateChart}>Generar Gráfico</button>
+        </div>
+        {loading ? (
+          <LoadingDinamico variant="container" />
+        ) : (
+          chartVisible && (
+            <Card className="shadow-lg">
+              <Card.Body>
+                <div className="row">
+                  <div className="col-md-6 d-flex justify-content-center">
+                    <div className={styles.chartContainer}>
+                      <Pie data={chartData} options={chartOptions} />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <h4 className={`text-center mb-3 ${styles.h4}`}>Resumen</h4>
+                    <ul className="list-group mb-4">
+                      <li className="list-group-item d-flex justify-content-between align-items-center">
+                        Dinero en Cuenta
+                        <span className="badge bg-primary rounded-pill">
+                          {calculatePercentage(paymentData.account_money)}% ({paymentData.account_money})
+                        </span>
+                      </li>
+                      <li className="list-group-item d-flex justify-content-between align-items-center">
+                        Tarjeta de Débito
+                        <span className="badge bg-warning rounded-pill">
+                          {calculatePercentage(paymentData.debit_card)}% ({paymentData.debit_card})
+                        </span>
+                      </li>
+                      <li className="list-group-item d-flex justify-content-between align-items-center">
+                        Tarjeta de Crédito
+                        <span className="badge bg-success rounded-pill">
+                          {calculatePercentage(paymentData.credit_card)}% ({paymentData.credit_card})
+                        </span>
+                      </li>
+                    </ul>
+                    <h4 className={`text-center mb-3 ${styles.h4}`}>Distribución</h4>
+                    <ProgressBar className={styles.progressBar}>
+                      <ProgressBar
+                        now={parseFloat(calculatePercentage(paymentData.account_money))}
+                        label={
+                          parseFloat(calculatePercentage(paymentData.account_money)) > 5
+                            ? `Dinero (${calculatePercentage(paymentData.account_money)}%)`
+                            : ''
+                        }
+                        variant="primary"
+                        key={1}
+                      />
+                      <ProgressBar
+                        now={parseFloat(calculatePercentage(paymentData.debit_card))}
+                        label={
+                          parseFloat(calculatePercentage(paymentData.debit_card)) > 5
+                            ? `Débito (${calculatePercentage(paymentData.debit_card)}%)`
+                            : ''
+                        }
+                        variant="warning"
+                        key={2}
+                      />
+                      <ProgressBar
+                        now={parseFloat(calculatePercentage(paymentData.credit_card))}
+                        label={
+                          parseFloat(calculatePercentage(paymentData.credit_card)) > 5
+                            ? `Crédito (${calculatePercentage(paymentData.credit_card)}%)`
+                            : ''
+                        }
+                        variant="success"
+                        key={3}
+                      />
+                    </ProgressBar>
+                    <button
+                      type="button"
+                      className="btn btn-success mt-3"
+                      onClick={generatePDF}
+                    >
+                      Exportar a PDF
+                    </button>
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <h4 className={`text-center mb-3 ${styles.h4}`}>Resumen</h4>
-                  <ul className="list-group mb-4">
-                    <li className="list-group-item d-flex justify-content-between align-items-center">
-                      Dinero en Cuenta
-                      <span className="badge bg-primary rounded-pill">
-                        {calculatePercentage(paymentData.account_money)}% ({paymentData.account_money})
-                      </span>
-                    </li>
-                    <li className="list-group-item d-flex justify-content-between align-items-center">
-                      Tarjeta de Débito
-                      <span className="badge bg-warning rounded-pill">
-                        {calculatePercentage(paymentData.debit_card)}% ({paymentData.debit_card})
-                      </span>
-                    </li>
-                    <li className="list-group-item d-flex justify-content-between align-items-center">
-                      Tarjeta de Crédito
-                      <span className="badge bg-success rounded-pill">
-                        {calculatePercentage(paymentData.credit_card)}% ({paymentData.credit_card})
-                      </span>
-                    </li>
-                  </ul>
-                  <h4 className={`text-center mb-3 ${styles.h4}`}>Distribución</h4>
-                  <ProgressBar className={styles.progressBar}>
-                    <ProgressBar
-                      now={parseFloat(calculatePercentage(paymentData.account_money))}
-                      label={
-                        parseFloat(calculatePercentage(paymentData.account_money)) > 5
-                          ? `Dinero (${calculatePercentage(paymentData.account_money)}%)`
-                          : ''
-                      }
-                      variant="primary"
-                      key={1}
-                    />
-                    <ProgressBar
-                      now={parseFloat(calculatePercentage(paymentData.debit_card))}
-                      label={
-                        parseFloat(calculatePercentage(paymentData.debit_card)) > 5
-                          ? `Débito (${calculatePercentage(paymentData.debit_card)}%)`
-                          : ''
-                      }
-                      variant="warning"
-                      key={2}
-                    />
-                    <ProgressBar
-                      now={parseFloat(calculatePercentage(paymentData.credit_card))}
-                      label={
-                        parseFloat(calculatePercentage(paymentData.credit_card)) > 5
-                          ? `Crédito (${calculatePercentage(paymentData.credit_card)}%)`
-                          : ''
-                      }
-                      variant="success"
-                      key={3}
-                    />
-                  </ProgressBar>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
-        </div>
-      )}
+              </Card.Body>
+            </Card>
+          )
+        )}
+      </div>
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Reporte de Métodos de Pago</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {pdfDataUrl && (
+            <iframe
+              src={pdfDataUrl}
+              width="100%"
+              height="500px"
+              title="Reporte de Métodos de Pago"
+            />
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+            Cerrar
+          </button>
+        </Modal.Footer>
+      </Modal>
     </>
   );
 };

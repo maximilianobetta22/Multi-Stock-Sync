@@ -411,7 +411,7 @@ const IngresosSemana: React.FC = () => {
 
               <button
                 type="button"
-                className="btn btn-success mt-3"
+                className="btn btn-success mt-3 mb-3"
                 onClick={generatePDF}
                 disabled={chartData.labels.length === 0}
               >
