@@ -4,7 +4,7 @@ import FiltrarDatos from "../Views/FiltrarDatos/FiltrarDatos";
 import ExportarDatos from "../Views/ExportarDatos/ExportarDatos";
 import HomeReportes from "../Views/Home/HomeReportes";
 import VentasPorDia from "../Views/VentasPorDia/VentasPorDia";
-import { VentasPorMes } from "../Views/VentasPorMes/VentasPorMes";
+import VentasPorMes from "../Views/VentasPorMes/VentasPorMes";
 import IngresosSemana from "../Views/IngresosSemana/IngresosSemana";
 import MetodosPago from "../Views/MetodosPago/MetodosPago";
 import DevolucionesReembolso from "../Views/DevolucionesReembolsos/DevolucionesReembolsos";
