@@ -22,8 +22,9 @@ const MetodosPago: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
-  const [userData, setUserData] = useState<{ nickname: string; creation_date: string } | null>(null);
+  const [userData, setUserData] = useState<{ nickname: string; creation_date: string; request_date: string } | null>(null);
   const [year, setYear] = useState<string>('alloftimes');
+  const [selectedYear, setSelectedYear] = useState<string>('alloftimes');
   const [paymentData, setPaymentData] = useState({
     account_money: 0,
     debit_card: 0,
@@ -55,7 +56,8 @@ const MetodosPago: React.FC = () => {
       if (result.status === 'success') {
         setUserData({
           nickname: result.data.nickname,
-          creation_date: result.data.creation_date,
+          creation_date: result.data.creation_date || 'N/A',
+          request_date: result.data.request_date || 'N/A',
         });
       } else {
         console.error('Error en la respuesta de la API:', result.message);
@@ -71,6 +73,7 @@ const MetodosPago: React.FC = () => {
 
   const handleGenerateChart = () => {
     setLoading(true);
+    setSelectedYear(year);
     fetchPaymentData(year);
   };
 
@@ -116,6 +119,8 @@ const MetodosPago: React.FC = () => {
 
   const generatePDF = (): void => {
     const doc = new jsPDF();
+    const currentDate = new Date().toLocaleString();
+    const displayYear = selectedYear === 'alloftimes' ? 'El origen de los tiempos' : selectedYear;
 
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
@@ -129,7 +134,8 @@ const MetodosPago: React.FC = () => {
       doc.setFontSize(14);
       doc.setTextColor(0, 0, 0); // Black font
       doc.text(`Usuario: ${userData.nickname}`, 20, 55);
-      doc.text(`Fecha de Creación: ${userData.creation_date}`, 20, 65);
+      doc.text(`Fecha de Creación del Reporte: ${currentDate}`, 20, 75);
+      doc.text(`Año Seleccionado: ${displayYear}`, 20, 85);
     }
 
     doc.setFont("helvetica", "bold");
@@ -138,7 +144,7 @@ const MetodosPago: React.FC = () => {
     doc.text(`Total de Transacciones: ${total}`, 20, 35);
 
     autoTable(doc, {
-      startY: 70,
+      startY: 90,
       headStyles: {
         fillColor: [41, 128, 185],
         textColor: [255, 255, 255],
