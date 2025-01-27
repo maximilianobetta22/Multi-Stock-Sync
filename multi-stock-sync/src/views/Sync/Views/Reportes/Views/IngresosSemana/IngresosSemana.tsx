@@ -241,62 +241,52 @@ const IngresosSemana: React.FC = () => {
   /* pdf */
   const generatePDF = (): void => {
     const doc = new jsPDF();
-
-    if (userData) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(14);
-      doc.setTextColor(0, 0, 0); // Negro
-      doc.text(`Usuario: ${userData.nickname}`, 20, 55);
-    }
-
-    if (userData && userData.profile_image) {
-      const imageUrl = userData.profile_image;
-      const imgWidth = 30; // Ancho de la imagen
-      const imgHeight = 30; // Altura de la imagen
-      const xPosition = 160; // Posición X
-      const yPosition = 40; // Posición Y
-
-      const image = new Image();
-      image.src = imageUrl;
-      image.onload = () => {
-        doc.addImage(image, "JPEG", xPosition, yPosition, imgWidth, imgHeight);
-        doc.save("reporte_semanal.pdf"); // Guarda el PDF después de agregar la imagen
-      };
-    }
-
-
+  
+    // Agregar el título del reporte
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.text("Reporte Semanal de Ingresos", 105, 20, { align: "center" });
+    doc.setDrawColor(0, 0, 0);
+    doc.line(20, 25, 190, 25);
+  
     // Función para obtener el nombre del mes en español
     const getMonthName = (monthNumber: number): string => {
       const months: string[] = [
         "enero", "febrero", "marzo", "abril", "mayo", "junio",
         "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
       ];
-      return months[monthNumber - 1]; // Restar 1 porque los meses son 1-indexados en este caso
+      return months[monthNumber - 1];
     };
-
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(20);
-    doc.text("Reporte Semanal de Ingresos", 105, 20, { align: "center" });
-    doc.setDrawColor(0, 0, 0);
-    doc.line(20, 25, 190, 25);
-    doc.setFontSize(12);
-
-    // Datos del reporte: Año, Mes (nombre) y Semana
+  
+    // Agregar datos del usuario
+    if (userData) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Usuario: ${userData.nickname}`, 20, 55);
+    }
+  
+    // Agregar detalles del reporte: Año, Mes y Semana
     if (selectedWeek && month && year) {
       const monthNumber = parseInt(month);
       const monthName: string = getMonthName(monthNumber);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
       doc.text(`Año: ${year}`, 20, 35);
       doc.text(`Mes: ${monthName}`, 20, 42);
       doc.text(`Semana: ${selectedWeek}`, 20, 49);
     }
-
+  
+    // Agregar el total de ingresos
     if (totalSales !== null) {
+      const positionY = 70 + (chartData.labels.length * 10) + 10; 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(16);
-      doc.setTextColor(34, 139, 34); // Verde
-      doc.text(`Total de Ingresos: $${totalSales.toLocaleString()}`, 20, 60);
+      doc.setTextColor(34, 139, 34);
+      doc.text(`Total de Ingresos: $${totalSales.toLocaleString()}`, 20, positionY);
     }
-
+    
+    // Generar tabla con datos
     autoTable(doc, {
       startY: 70,
       headStyles: {
@@ -319,27 +309,20 @@ const IngresosSemana: React.FC = () => {
         chartData.datasets[1].data[index],
       ]),
     });
-
+  
+    // Agregar pie de página
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150); // Gris claro
-    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, {
-      align: "center",
-    });
-
+    doc.setTextColor(150, 150, 150);
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+  
+    // Generar y mostrar el PDF
     const pdfData = doc.output("datauristring");
     setPdfDataUrl(pdfData);
     setShowModal(true);
   };
-
-
+  
   /* fin del pdf */
-
-
-
-
-
-
 
   return (
     <>
@@ -388,22 +371,23 @@ const IngresosSemana: React.FC = () => {
                 {loading ? (
                   <p>Cargando semanas...</p>
                 ) : (
-                  <div className="mb-3">
-                    <label htmlFor="week" className="form-label">Semana:</label>
-                    <select
-                      id="week"
-                      className="form-select"
-                      value={selectedWeek}
-                      onChange={handleWeekChange}
-                    >
-                      <option value="">Selecciona una semana</option>
-                      {weeks.length > 0 && weeks.map((week, index) => (
-                        <option key={index} value={`${week.start_date} a ${week.end_date}`}>
-                          {`${week.start_date} a ${week.end_date}`}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                <div className="mb-3">
+                  <label htmlFor="week" className="form-label">Semana:</label>
+                  <select
+                    id="week"
+                    className="form-select"
+                    value={selectedWeek}
+                    onChange={handleWeekChange}
+                    disabled={!year || !month} 
+                  >
+                    <option value="">Selecciona una semana</option>
+                    {weeks.length > 0 && weeks.map((week, index) => (
+                      <option key={index} value={`${week.start_date} a ${week.end_date}`}>
+                        {`${week.start_date} a ${week.end_date}`}
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 )}
                 <button type="submit" className="btn btn-primary" disabled={loading}>
                   {loading ? "Cargando..." : "Consultar"}
@@ -427,7 +411,7 @@ const IngresosSemana: React.FC = () => {
 
               <button
                 type="button"
-                className="btn btn-success mt-3"
+                className="btn btn-success mt-3 mb-3"
                 onClick={generatePDF}
                 disabled={chartData.labels.length === 0}
               >
