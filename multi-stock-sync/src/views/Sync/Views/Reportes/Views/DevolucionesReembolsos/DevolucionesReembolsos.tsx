@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import './DevolucionesReembolsos.module.css';
-
 import { useParams } from 'react-router-dom';
+import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 
 interface Order {
   id: number;
@@ -23,9 +22,9 @@ interface Category {
 const DevolucionesReembolsos = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
 
-  
-  const { client_id } = useParams<{ client_id: string }>();  
+  const { client_id } = useParams<{ client_id: string }>();
 
   useEffect(() => {
     const fetchDevoluciones = async () => {
@@ -33,7 +32,6 @@ const DevolucionesReembolsos = () => {
         const url = `${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`;
         const response = await axios.get(url);
 
-        
         if (response.data.status === 'success') {
           const fetchedCategories = Object.entries(response.data.data).map(
             ([key, value]: [string, any]) => ({
@@ -49,19 +47,25 @@ const DevolucionesReembolsos = () => {
       } catch (error) {
         console.error(error);
         setError('Hubo un problema al obtener los datos de la API.');
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchDevoluciones();
   }, [client_id]);
 
+  if (loading) {
+    return <LoadingDinamico variant='container' />;
+  }
+
   return (
-    <div className="devoluciones-container">
-      <h1>Devoluciones por Categoría</h1>
+    <div className="container mt-5">
+      <h1 className="mb-4">Devoluciones por Categoría</h1>
 
-      {error && <p className="error">{error}</p>}
+      {error && <div className="alert alert-danger">{error}</div>}
 
-      <table className="devoluciones-table">
+      <table className="table table-striped">
         <thead>
           <tr>
             <th>Categoría</th>
@@ -75,7 +79,7 @@ const DevolucionesReembolsos = () => {
               <td>{category.category_id}</td>
               <td>{category.total_refunds}</td>
               <td>
-                <table className="orders-table">
+                <table className="table table-bordered">
                   <thead>
                     <tr>
                       <th>ID de Orden</th>
