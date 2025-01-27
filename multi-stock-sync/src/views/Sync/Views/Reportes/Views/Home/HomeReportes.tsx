@@ -6,6 +6,7 @@ import ToastComponent from '../../../../Components/ToastComponent/ToastComponent
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity } from '@fortawesome/free-solid-svg-icons';
 
 interface Connection {
   client_id: string;
@@ -120,11 +121,11 @@ const HomeReportes: React.FC = () => {
               <h4 className="mt-4">Métodos de Pago Preferidos</h4>
               <ul>
                 {storeSummary.top_payment_methods.account_money || storeSummary.top_payment_methods.debit_card || storeSummary.top_payment_methods.credit_card ? (
-                  <>
-                    <li>Dinero en cuenta: {storeSummary.top_payment_methods.account_money}</li>
-                    <li>Tarjeta de débito: {storeSummary.top_payment_methods.debit_card}</li>
-                    <li>Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
-                  </>
+                    <>
+                    <li className={styles.noDecoration}><FontAwesomeIcon icon={faMoneyBillWave} className="mr-2" /> Dinero en cuenta: {storeSummary.top_payment_methods.account_money}</li>
+                    <li className={styles.noDecoration}><FontAwesomeIcon icon={faUniversity} className="mr-2" /> Tarjeta de débito: {storeSummary.top_payment_methods.debit_card}</li>
+                    <li className={styles.noDecoration}><FontAwesomeIcon icon={faCreditCardIcon} className="mr-2" /> Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
+                    </>
                 ) : (
                   <li>No se encontraron datos registrados</li>
                 )}
