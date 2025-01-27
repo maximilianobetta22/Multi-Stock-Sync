@@ -30,6 +30,7 @@ const MetodosPago: React.FC = () => {
     debit_card: 0,
     credit_card: 0,
   });
+  const [chartVisible, setChartVisible] = useState(false);
 
   const fetchPaymentData = async (selectedYear: string) => {
     try {
@@ -74,6 +75,7 @@ const MetodosPago: React.FC = () => {
   const handleGenerateChart = () => {
     setLoading(true);
     setSelectedYear(year);
+    setChartVisible(true);
     fetchPaymentData(year);
   };
 
@@ -199,80 +201,82 @@ const MetodosPago: React.FC = () => {
         {loading ? (
           <LoadingDinamico variant="container" />
         ) : (
-          <Card className="shadow-lg">
-            <Card.Body>
-              <div className="row">
-                <div className="col-md-6 d-flex justify-content-center">
-                  <div className={styles.chartContainer}>
-                    <Pie data={chartData} options={chartOptions} />
+          chartVisible && (
+            <Card className="shadow-lg">
+              <Card.Body>
+                <div className="row">
+                  <div className="col-md-6 d-flex justify-content-center">
+                    <div className={styles.chartContainer}>
+                      <Pie data={chartData} options={chartOptions} />
+                    </div>
+                  </div>
+                  <div className="col-md-6">
+                    <h4 className={`text-center mb-3 ${styles.h4}`}>Resumen</h4>
+                    <ul className="list-group mb-4">
+                      <li className="list-group-item d-flex justify-content-between align-items-center">
+                        Dinero en Cuenta
+                        <span className="badge bg-primary rounded-pill">
+                          {calculatePercentage(paymentData.account_money)}% ({paymentData.account_money})
+                        </span>
+                      </li>
+                      <li className="list-group-item d-flex justify-content-between align-items-center">
+                        Tarjeta de Débito
+                        <span className="badge bg-warning rounded-pill">
+                          {calculatePercentage(paymentData.debit_card)}% ({paymentData.debit_card})
+                        </span>
+                      </li>
+                      <li className="list-group-item d-flex justify-content-between align-items-center">
+                        Tarjeta de Crédito
+                        <span className="badge bg-success rounded-pill">
+                          {calculatePercentage(paymentData.credit_card)}% ({paymentData.credit_card})
+                        </span>
+                      </li>
+                    </ul>
+                    <h4 className={`text-center mb-3 ${styles.h4}`}>Distribución</h4>
+                    <ProgressBar className={styles.progressBar}>
+                      <ProgressBar
+                        now={parseFloat(calculatePercentage(paymentData.account_money))}
+                        label={
+                          parseFloat(calculatePercentage(paymentData.account_money)) > 5
+                            ? `Dinero (${calculatePercentage(paymentData.account_money)}%)`
+                            : ''
+                        }
+                        variant="primary"
+                        key={1}
+                      />
+                      <ProgressBar
+                        now={parseFloat(calculatePercentage(paymentData.debit_card))}
+                        label={
+                          parseFloat(calculatePercentage(paymentData.debit_card)) > 5
+                            ? `Débito (${calculatePercentage(paymentData.debit_card)}%)`
+                            : ''
+                        }
+                        variant="warning"
+                        key={2}
+                      />
+                      <ProgressBar
+                        now={parseFloat(calculatePercentage(paymentData.credit_card))}
+                        label={
+                          parseFloat(calculatePercentage(paymentData.credit_card)) > 5
+                            ? `Crédito (${calculatePercentage(paymentData.credit_card)}%)`
+                            : ''
+                        }
+                        variant="success"
+                        key={3}
+                      />
+                    </ProgressBar>
+                    <button
+                      type="button"
+                      className="btn btn-success mt-3"
+                      onClick={generatePDF}
+                    >
+                      Exportar a PDF
+                    </button>
                   </div>
                 </div>
-                <div className="col-md-6">
-                  <h4 className={`text-center mb-3 ${styles.h4}`}>Resumen</h4>
-                  <ul className="list-group mb-4">
-                    <li className="list-group-item d-flex justify-content-between align-items-center">
-                      Dinero en Cuenta
-                      <span className="badge bg-primary rounded-pill">
-                        {calculatePercentage(paymentData.account_money)}% ({paymentData.account_money})
-                      </span>
-                    </li>
-                    <li className="list-group-item d-flex justify-content-between align-items-center">
-                      Tarjeta de Débito
-                      <span className="badge bg-warning rounded-pill">
-                        {calculatePercentage(paymentData.debit_card)}% ({paymentData.debit_card})
-                      </span>
-                    </li>
-                    <li className="list-group-item d-flex justify-content-between align-items-center">
-                      Tarjeta de Crédito
-                      <span className="badge bg-success rounded-pill">
-                        {calculatePercentage(paymentData.credit_card)}% ({paymentData.credit_card})
-                      </span>
-                    </li>
-                  </ul>
-                  <h4 className={`text-center mb-3 ${styles.h4}`}>Distribución</h4>
-                  <ProgressBar className={styles.progressBar}>
-                    <ProgressBar
-                      now={parseFloat(calculatePercentage(paymentData.account_money))}
-                      label={
-                        parseFloat(calculatePercentage(paymentData.account_money)) > 5
-                          ? `Dinero (${calculatePercentage(paymentData.account_money)}%)`
-                          : ''
-                      }
-                      variant="primary"
-                      key={1}
-                    />
-                    <ProgressBar
-                      now={parseFloat(calculatePercentage(paymentData.debit_card))}
-                      label={
-                        parseFloat(calculatePercentage(paymentData.debit_card)) > 5
-                          ? `Débito (${calculatePercentage(paymentData.debit_card)}%)`
-                          : ''
-                      }
-                      variant="warning"
-                      key={2}
-                    />
-                    <ProgressBar
-                      now={parseFloat(calculatePercentage(paymentData.credit_card))}
-                      label={
-                        parseFloat(calculatePercentage(paymentData.credit_card)) > 5
-                          ? `Crédito (${calculatePercentage(paymentData.credit_card)}%)`
-                          : ''
-                      }
-                      variant="success"
-                      key={3}
-                    />
-                  </ProgressBar>
-                  <button
-                    type="button"
-                    className="btn btn-success mt-3"
-                    onClick={generatePDF}
-                  >
-                    Exportar a PDF
-                  </button>
-                </div>
-              </div>
-            </Card.Body>
-          </Card>
+              </Card.Body>
+            </Card>
+          )
         )}
       </div>
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
