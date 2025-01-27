@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from "react"; 
+import React, { useState, useEffect } from "react";
+
 import { Bar } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
 import { useParams, useNavigate } from "react-router-dom";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
+
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 
 const IngresosSemana: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
@@ -15,6 +19,9 @@ const IngresosSemana: React.FC = () => {
   const [weeks, setWeeks] = useState<{ start_date: string; end_date: string }[]>([]);
   const [selectedWeek, setSelectedWeek] = useState<string>('');
   const [totalSales, setTotalSales] = useState<number | null>(null);
+
+
+
   const [chartData, setChartData] = useState<any>({
     labels: [],
     datasets: [
@@ -188,10 +195,84 @@ const IngresosSemana: React.FC = () => {
       },
     },
   };
-
+/* urls ventas por mes  */
   const handleNavigate = () => {
     navigate(`/sync/reportes/ventas-mes/${client_id}`);
   };
+
+/* fin de urls ventas por mes  */
+  
+
+
+
+
+/* pdf */
+const generatePDF = () => {
+  const doc = new jsPDF();
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.text("Reporte Semanal de Ingresos", 105, 20, { align: "center" });
+  doc.setDrawColor(0, 0, 0);
+  doc.line(20, 25, 190, 25);
+
+  doc.setFontSize(12);
+  if (year && month && selectedWeek) {
+    doc.text(`Año: ${year}`, 20, 35);
+    doc.text(`Mes: ${month}`, 20, 42);
+    doc.text(`Semana: ${selectedWeek}`, 20, 49);
+  }
+
+  // Total de ingresos
+  if (totalSales !== null) {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(34, 139, 34); 
+    doc.text(`Total de Ingresos: $${totalSales.toLocaleString()}`, 20, 60);
+  }
+
+  // Tabla de datos y colores
+  autoTable(doc, {
+    startY: 70,
+    headStyles: {
+      fillColor: [41, 128, 185], 
+      textColor: [255, 255, 255], 
+      fontSize: 12,
+      halign: "center",
+    },
+    bodyStyles: {
+      fontSize: 10,
+      textColor: [0, 0, 0],
+    },
+    alternateRowStyles: {
+      fillColor: [240, 240, 240], 
+    },
+    head: [["Producto", "Ingresos Totales", "Cantidad Vendida"]],
+    body: chartData.labels.map((label: string, index: number) => [
+      label,
+      `$${chartData.datasets[0].data[index]}`,
+      chartData.datasets[1].data[index],
+    ]),
+  });
+
+  // Pie de página
+  const pageHeight = doc.internal.pageSize.height;
+  doc.setFontSize(10);
+  doc.setTextColor(150, 150, 150); // Gris claro
+  doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, {
+    align: "center",
+  });
+
+  // Guardar el PDF
+  doc.save("reporte_semanal.pdf");
+};
+  /* fin del pdf */
+
+
+
+
+
+
 
   return (
     <>
@@ -268,16 +349,23 @@ const IngresosSemana: React.FC = () => {
                 </div>
               )}
 
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={handleNavigate}
+              >
+                Ir a Ventas por Mes
+              </button>
+              <br />
 
-
-            <button
-              type="button"
-              className="btn btn-secondary"
-              onClick={handleNavigate}
-            >
-              Ir a Ventas por Mes
-            </button>
-
+              <button
+                type="button"
+                className="btn btn-success mt-3"
+                onClick={generatePDF}
+                disabled={chartData.labels.length === 0}
+              >
+                Exportar a PDF
+              </button>
 
 
             </div>
