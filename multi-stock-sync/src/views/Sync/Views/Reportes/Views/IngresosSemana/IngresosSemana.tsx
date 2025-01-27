@@ -21,9 +21,16 @@ const IngresosSemana: React.FC = () => {
       {
         label: "Ingresos Totales",
         data: [],
-        backgroundColor: "rgb(13, 3, 77)",
-        borderColor: "rgb(0, 0, 0)",
-        borderWidth: 3,
+        backgroundColor: "rgba(75, 192, 192, 0.6)",
+        borderColor: "rgba(75, 192, 192, 1)",
+        borderWidth: 2,
+      },
+      {
+        label: "Cantidad Vendida",
+        data: [],
+        backgroundColor: "rgba(153, 102, 255, 0.6)",
+        borderColor: "rgba(153, 102, 255, 1)",
+        borderWidth: 2,
       },
     ],
   });
@@ -87,14 +94,21 @@ const IngresosSemana: React.FC = () => {
       const result = await response.json();
       setTotalSales(result.data.total_sales);
       setChartData({
-        labels: [`${result.data.week_start_date} a ${result.data.week_end_date}`],
+        labels: result.data.sold_products.map((product: any) => product.title),
         datasets: [
           {
             label: "Ingresos Totales",
-            data: [result.data.total_sales],
-            backgroundColor: "rgb(18, 255, 1)",
-            borderColor: "rgb(0, 0, 0)",
-            borderWidth: 3,
+            data: result.data.sold_products.map((product: any) => product.total_amount),
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+          },
+          {
+            label: "Cantidad Vendida",
+            data: result.data.sold_products.map((product: any) => product.quantity),
+            backgroundColor: "rgba(153, 102, 255, 0.6)",
+            borderColor: "rgba(153, 102, 255, 1)",
+            borderWidth: 2,
           },
         ],
       });
@@ -120,10 +134,20 @@ const IngresosSemana: React.FC = () => {
     plugins: {
       legend: {
         position: "top",
+        labels: {
+          font: {
+            size: 14,
+          },
+          color: "#333",
+        },
       },
       title: {
         display: true,
-        text: "Ingresos por Semana",
+        text: "Ingresos y Cantidad Vendida por Producto",
+        font: {
+          size: 18,
+        },
+        color: "#333",
       },
     },
     scales: {
@@ -131,13 +155,35 @@ const IngresosSemana: React.FC = () => {
         beginAtZero: true,
         title: {
           display: true,
-          text: "Ingresos",
+          text: "Valores",
+          font: {
+            size: 14,
+          },
+          color: "#333",
+        },
+        stacked: true,
+        ticks: {
+          font: {
+            size: 12,
+          },
+          color: "#333",
         },
       },
       x: {
         title: {
           display: true,
-          text: "Semanas",
+          text: "Productos",
+          font: {
+            size: 14,
+          },
+          color: "#333",
+        },
+        stacked: true,
+        ticks: {
+          font: {
+            size: 12,
+          },
+          color: "#333",
         },
       },
     },
