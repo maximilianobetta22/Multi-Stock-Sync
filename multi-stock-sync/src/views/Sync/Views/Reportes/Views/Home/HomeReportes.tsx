@@ -3,21 +3,6 @@ import styles from './HomeReportes.module.css';
 import axios from 'axios';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
-<<<<<<< HEAD
-import VentasPorMes from '../ventasPorMes/VentasPorMes';
-
-interface Connection {
-  client_id: string;
-  client_secret: string;
-  access_token: string;
-  refresh_token: string;
-  expires_at: string;
-  nickname: string;
-  email: string;
-  profile_image: string;
-  created_at: string;
-  updated_at: string;
-=======
 import { Link } from 'react-router-dom';
 
 interface Connection {
@@ -34,17 +19,10 @@ interface StoreSummary {
   monthly_sales: number;
   annual_sales: number;
   top_payment_methods: { account_money: number; debit_card: number; credit_card: number };
->>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045
 }
 
 const HomeReportes: React.FC = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
-<<<<<<< HEAD
-  const [loadingConnections, setLoadingConnections] = useState(true);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
-  const [selectedConnection, setSelectedConnection] = useState<string | null>(null);
-=======
   const [selectedConnection, setSelectedConnection] = useState<string>('');
   const [storeSummary, setStoreSummary] = useState<StoreSummary | null>(null);
   const [loading, setLoading] = useState(true);
@@ -53,21 +31,10 @@ const HomeReportes: React.FC = () => {
 
   const currentMonth = new Date().toLocaleString('default', { month: 'long' });
   const currentYear = new Date().getFullYear();
->>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045
 
   useEffect(() => {
     const fetchConnections = async () => {
       try {
-<<<<<<< HEAD
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials`);
-        setConnections(response.data.data);
-      } catch (error) {
-        console.error('Error fetching connections:', error);
-        setToastMessage((error as any).response?.data?.message || 'Error fetching connections');
-        setToastType('danger');
-      } finally {
-        setLoadingConnections(false);
-=======
         const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`);
         setConnections(response.data.data);
       } catch (error) {
@@ -76,25 +43,12 @@ const HomeReportes: React.FC = () => {
         setToastType('danger');
       } finally {
         setLoading(false);
->>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045
       }
     };
 
     fetchConnections();
   }, []);
 
-<<<<<<< HEAD
-  return (
-    <>
-      {loadingConnections && <LoadingDinamico variant="container" />}
-      <div className={styles.content}>
-        {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
-        {!loadingConnections && (
-          <>
-            <h1>Home Reportes</h1>
-            <p>Selecciona una conexión</p>
-            <select className="form-control" onChange={(e) => setSelectedConnection(e.target.value)}>
-=======
   const fetchStoreSummary = async (clientId: string) => {
     setLoading(true);
     try {
@@ -132,7 +86,6 @@ const HomeReportes: React.FC = () => {
               value={selectedConnection}
               onChange={handleConnectionChange}
             >
->>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045
               <option value="">Selecciona una conexión</option>
               {connections.map((connection) => (
                 <option key={connection.client_id} value={connection.client_id}>
@@ -140,12 +93,6 @@ const HomeReportes: React.FC = () => {
                 </option>
               ))}
             </select>
-<<<<<<< HEAD
-            {selectedConnection && <VentasPorMes clientId={selectedConnection} />}
-          </>
-        )}
-      </div>
-=======
           </div>
           {storeSummary && (
             <div className="card shadow-sm p-4 mb-4">
@@ -202,7 +149,6 @@ const HomeReportes: React.FC = () => {
         </>
       )}
     </div>
->>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045
     </>
   );
 };
