@@ -2,7 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import styles from "./HomeSync.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFolderOpen, faServer } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
 const HomeSync: React.FC = () => {
@@ -41,6 +41,13 @@ const HomeSync: React.FC = () => {
             icon: faFolderOpen, 
             link: "/sync/reportes", 
             color: "bg-info"
+        },
+        {
+            title:"Información",
+            description:"Revisa el estado actual del sistema y la información de la API.",
+            icon: faServer,
+            link: "/sync/info",
+            color: "bg-dark"
         }
     ];
 
