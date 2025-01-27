@@ -1,0 +1,16 @@
+.info-container {
+    margin-top: 2rem;
+}
+
+.info-card {
+    margin-bottom: 1.5rem;
+}
+
+.info-card-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+}
+
+.info-card-text {
+    font-size: 1rem;
+}

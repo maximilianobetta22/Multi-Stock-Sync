@@ -13,6 +13,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { CoreChartOptions, ElementChartOptions, PluginChartOptions, DatasetChartOptions, ScaleChartOptions, BarControllerChartOptions, _DeepPartialObject } from 'chart.js';
 import axios from 'axios';
 
+<<<<<<< HEAD:multi-stock-sync/src/views/Sync/Views/Reportes/Views/ventasPorMes/VentasPorMes.tsx
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -22,6 +23,11 @@ ChartJS.register(
   Legend,
   ChartDataLabels
 );
+=======
+import { useParams } from 'react-router-dom';
+
+Chart.register(...registerables);
+>>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045:multi-stock-sync/src/views/Sync/Views/Reportes/Views/VentasPorMes/VentasPorMes.tsx
 
 interface Venta {
     fecha: string;
@@ -164,4 +170,72 @@ const VentasPorMes: React.FC<VentasPorMesProps> = ({ clientId }) => {
     );
 };
 
+<<<<<<< HEAD:multi-stock-sync/src/views/Sync/Views/Reportes/Views/ventasPorMes/VentasPorMes.tsx
 export default VentasPorMes;
+=======
+export { VentasPorMes };
+import { Modal, Button } from 'react-bootstrap';
+
+interface ChartModalProps {
+    show: boolean;
+    handleClose: () => void;
+    ventas: Venta[];
+}
+
+const ChartModal = ({ show, handleClose, ventas }: ChartModalProps) => {
+    useEffect(() => {
+        if (show && ventas.length > 0) {
+            const ctx = document.getElementById('ventasPorMesChartModal') as HTMLCanvasElement;
+            const ventasPorMes = ventas.reduce((acc, venta) => {
+                const mes = new Date(venta.fecha).toLocaleString('default', { month: 'long' });
+                acc[mes] = (acc[mes] || 0) + venta.total;
+                return acc;
+            }, {} as Record<string, number>);
+
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(ventasPorMes),
+                    datasets: [
+                        {
+                            label: 'Ventas por Mes ($)',
+                            data: Object.values(ventasPorMes),
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                        },
+                    ],
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+        }
+    }, [show, ventas]);
+
+    const { client_id } = useParams<{ client_id: string }>();
+    
+
+    return (
+        <Modal show={show} onHide={handleClose} size="lg" centered>
+            <Modal.Header closeButton>
+                <Modal.Title>Ventas por Mes</Modal.Title>
+            </Modal.Header>
+            <Modal.Body>
+                <canvas id="ventasPorMesChartModal"></canvas>
+            </Modal.Body>
+            <Modal.Footer>
+                <Button variant="secondary" onClick={handleClose}>
+                    Close
+                </Button>
+            </Modal.Footer>
+        </Modal>
+    );
+};
+
+export default ChartModal;
+>>>>>>> 6ef4f8831135a35dd37bb4ac10acbdc77f690045:multi-stock-sync/src/views/Sync/Views/Reportes/Views/VentasPorMes/VentasPorMes.tsx
