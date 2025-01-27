@@ -17,6 +17,8 @@ import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/Lo
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { useParams } from 'react-router-dom';
 import { Modal, Button, Form } from 'react-bootstrap';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 ChartJS.register(
   CategoryScale,
@@ -61,7 +63,10 @@ const VentasPorMes: React.FC = () => {
     const [monthSeleccionado, setMonthSeleccionado] = useState<number>(1);
     const { client_id } = useParams<{ client_id: string }>();
     const [showModal, setShowModal] = useState<boolean>(false);
+    const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
+    const [pdfData, setPdfData] = useState<string | null>(null);
     const [orders, setOrders] = useState<Order[]>([]);
+    const [userName, setUserName] = useState<string>(''); // Add state for user name
 
     useEffect(() => {
         const fetchVentas = async () => {
@@ -100,7 +105,18 @@ const VentasPorMes: React.FC = () => {
             }
         };
 
+        const fetchUserName = async () => {
+            try {
+                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`;
+                const response = await axios.get(apiUrl);
+                setUserName(response.data.data.nickname); // Extract the nickname from the response
+            } catch (error) {
+                console.error('Error al obtener el nombre del usuario:', error);
+            }
+        };
+
         fetchVentas();
+        fetchUserName();
     }, [client_id, yearSeleccionado, monthSeleccionado]); // Add monthSeleccionado to the dependency array
 
     const totalVentasMes = ventas.reduce((acc, venta) => {
@@ -112,12 +128,15 @@ const VentasPorMes: React.FC = () => {
         return acc;
     }, 0);
 
+    // Format the total sales amount as currency
+    const formattedTotalVentasMes = new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(totalVentasMes);
+
     // Proceed to render the chart if there are sales
     const data = {
-        labels: [`Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('default', { month: 'long' })} ${yearSeleccionado}`],
+        labels: [`Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('es-ES', { month: 'long' })} ${yearSeleccionado}`],
         datasets: [
             {
-                label: `Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('default', { month: 'long' })} ${yearSeleccionado}`,
+                label: `Total Ventas en ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('es-ES', { month: 'long' })} ${yearSeleccionado}`,
                 data: [totalVentasMes],
                 backgroundColor: 'rgba(75, 192, 192, 0.6)',
                 borderColor: 'rgba(75, 192, 192, 1)',
@@ -160,6 +179,32 @@ const VentasPorMes: React.FC = () => {
         },
     };
 
+    const generatePDF = () => {
+        const doc = new jsPDF();
+        const pageHeight = doc.internal.pageSize.height;
+        doc.text(`Ventas por Mes - ${new Date(yearSeleccionado, monthSeleccionado - 1).toLocaleString('es-ES', { month: 'long' })} ${yearSeleccionado}`, 10, 10);
+        doc.text(`Usuario: ${userName}`, 10, 20);
+        autoTable(doc, {
+            startY: 30,
+            head: [['Producto', 'Cantidad', 'Precio Unitario', 'Total']],
+            body: ventas.map(venta => [venta.producto, venta.cantidad, venta.precioUnitario, venta.total]),
+            foot: [['', '', 'Total Ventas:', formattedTotalVentasMes]],
+            didDrawCell: (data) => {
+                if (data.section === 'foot' && data.column.index === 3) {
+                    doc.setTextColor(150, 150, 150); // Set text color to green
+                }
+            },
+            didDrawPage: (_data) => {
+                doc.setTextColor(150, 150, 150);
+                doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: 'center' });
+                
+            }
+        });
+        const pdfOutput = doc.output('datauristring');
+        setPdfData(pdfOutput);
+        setShowPDFModal(true);
+    };
+
     return (
         <>
             {loading && <LoadingDinamico variant="container" />}
@@ -168,6 +213,7 @@ const VentasPorMes: React.FC = () => {
                 <section className={`${styles.VentasPorMes} d-flex flex-column align-items-center`}>
                     <div className="w-75 rounded p-3 shadow" style={{ backgroundColor: '#f8f9fa', borderRadius: '15px' }}>
                         <h1 className="text-center">Ventas por Mes</h1>
+                        <h5 className="text-center">Usuario: {userName}</h5>
                         <Form className="mb-4">
                             <Form.Group controlId="formYear">
                                 <Form.Label>Año</Form.Label>
@@ -211,14 +257,42 @@ const VentasPorMes: React.FC = () => {
                                 </Form.Control>
                             </Form.Group>
                         </Form>
-                        <div className="chart-container" style={{ width: '600px', height: '400px', margin: '0 auto' }}>
+                        <div className="chart-container" style={{ position: 'relative', height: '400px', width: '100%' }}>
                             <Bar data={data} options={options} />
                         </div>
-                        <Button variant="primary" onClick={() => setShowModal(true)} className="mt-3">Ver Detalles</Button>
+                        <Button variant="primary" onClick={() => setShowModal(true)} className="mt-3 mx-2" >Ver Detalles</Button>
+                        <Button variant="secondary" onClick={generatePDF} className="mt-3">Guardar Ventas PDF</Button>
                     </div>
                 </section>
             )}
             <ChartModal show={showModal} handleClose={() => setShowModal(false)} orders={orders} />
+            <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Vista Previa del PDF</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {pdfData && (
+                        <iframe
+                            src={pdfData}
+                            style={{ width: '100%', height: '500px' }}
+                            title="PDF Preview"
+                        />
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowPDFModal(false)}>
+                        Cerrar
+                    </Button>
+                    <Button variant="primary" onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = pdfData!;
+                        link.download = 'VentasPorMes.pdf';
+                        link.click();
+                    }}>
+                        Guardar PDF
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
 };
@@ -319,9 +393,6 @@ const ChartModal = ({ show, handleClose, orders }: ChartModalProps) => {
             x: {
                 beginAtZero: true,
             },
-            y: {
-                align: 'start' // Align the labels to the start (left) of the container
-            }
         },
     };
 
