@@ -54,6 +54,10 @@ const CompareMonthMonth: React.FC = () => {
         fetchNickname();
     }, [client_id]);
 
+    const handleDropdownChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setter(e.target.value);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -80,7 +84,7 @@ const CompareMonthMonth: React.FC = () => {
                         <form onSubmit={handleSubmit}>
                             <div className="form-group">
                                 <label>Año 1</label>
-                                <select className="form-control" value={year1} onChange={(e) => setYear1(e.target.value)} required>
+                                <select className="form-control" value={year1} onChange={handleDropdownChange(setYear1)} required>
                                     <option value="">Seleccione un año</option>
                                     {years.map((year) => (
                                         <option key={year} value={year}>{year}</option>
@@ -89,7 +93,7 @@ const CompareMonthMonth: React.FC = () => {
                             </div>
                             <div className="form-group">
                                 <label>Mes 1</label>
-                                <select className="form-control" value={month1} onChange={(e) => setMonth1(e.target.value)} required>
+                                <select className="form-control" value={month1} onChange={handleDropdownChange(setMonth1)} required>
                                     <option value="">Seleccione un mes</option>
                                     {orderedMonths.map(([value, label]) => (
                                         <option key={value} value={value}>{label}</option>
@@ -98,7 +102,7 @@ const CompareMonthMonth: React.FC = () => {
                             </div>
                             <div className="form-group">
                                 <label>Año 2</label>
-                                <select className="form-control" value={year2} onChange={(e) => setYear2(e.target.value)} required>
+                                <select className="form-control" value={year2} onChange={handleDropdownChange(setYear2)} required>
                                     <option value="">Seleccione un año</option>
                                     {years.map((year) => (
                                         <option key={year} value={year}>{year}</option>
@@ -107,7 +111,7 @@ const CompareMonthMonth: React.FC = () => {
                             </div>
                             <div className="form-group">
                                 <label>Mes 2</label>
-                                <select className="form-control" value={month2} onChange={(e) => setMonth2(e.target.value)} required>
+                                <select className="form-control" value={month2} onChange={handleDropdownChange(setMonth2)} required>
                                     <option value="">Seleccione un mes</option>
                                     {orderedMonths.map(([value, label]) => (
                                         <option key={value} value={value}>{label}</option>
@@ -121,7 +125,7 @@ const CompareMonthMonth: React.FC = () => {
                                 <h2>Resultado de la Comparación</h2>
                                 <p>{result.message}</p>
                                 <div className={styles.tableContainer}>
-                                    <h3>{months[month1]} {year1}</h3>
+                                    <h3>{months[result.data.month1.month]} {result.data.month1.year}</h3>
                                     <p>Total Ventas: {formatCurrency(result.data.month1.total_sales)}</p>
                                     <div className={styles.tableContainer}>
                                         <table className={`table table-striped ${styles.table}`}>
@@ -145,7 +149,7 @@ const CompareMonthMonth: React.FC = () => {
                                     </div>
                                 </div>
                                 <div className={styles.tableContainer}>
-                                    <h3>{months[month2]} {year2}</h3>
+                                    <h3>{months[result.data.month2.month]} {result.data.month2.year}</h3>
                                     <p>Total Ventas: {formatCurrency(result.data.month2.total_sales)}</p>
                                     <div className={styles.tableContainer}>
                                         <table className={`table table-striped ${styles.table}`}>
