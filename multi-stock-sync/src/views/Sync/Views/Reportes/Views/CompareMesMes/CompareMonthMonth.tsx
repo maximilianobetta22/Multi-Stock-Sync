@@ -124,11 +124,10 @@ const CompareMonthMonth: React.FC = () => {
                         </form>
                         {result && (
                             <div>
-                                <h2>Resultado de la Comparación</h2>
-                                <p>{result.message}</p>
+                                <h1>Resultado de la Comparación</h1>
                                 <div className={styles.tableContainer}>
                                     <h3>{months[result.data.month1.month]} {result.data.month1.year}</h3>
-                                    <p>Total Ventas: {formatCurrency(result.data.month1.total_sales)}</p>
+                                    <p>Total Ventas: <strong>{formatCurrency(result.data.month1.total_sales)}</strong></p>
                                     <div className={styles.tableContainer}>
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
@@ -152,7 +151,7 @@ const CompareMonthMonth: React.FC = () => {
                                 </div>
                                 <div className={styles.tableContainer}>
                                     <h3>{months[result.data.month2.month]} {result.data.month2.year}</h3>
-                                    <p>Total Ventas: {formatCurrency(result.data.month2.total_sales)}</p>
+                                    <p>Total Ventas: <strong>{formatCurrency(result.data.month2.total_sales)}</strong></p>
                                     <div className={styles.tableContainer}>
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
@@ -174,9 +173,9 @@ const CompareMonthMonth: React.FC = () => {
                                         </table>
                                     </div>
                                 </div>
-                                <p>Diferencia: {formatCurrency(result.data.difference)}</p>
+                                <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
                                 <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
-                                    Cambio Porcentual: {result.data.percentage_change}%
+                                    Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
                                 </p>
                             </div>
                         )}
