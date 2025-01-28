@@ -1,29 +1,55 @@
-.devoluciones-container {
-  padding: 20px;
-}
-
-h1 {
-  text-align: center;
-}
-
-.devoluciones-table, .orders-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-}
-
-.devoluciones-table th, .devoluciones-table td, .orders-table th, .orders-table td {
-  border: 1px solid #ddd;
-  padding: 8px;
-  text-align: left;
-}
-
-.devoluciones-table th, .orders-table th {
-  background-color: #f4f4f4;
-}
-
-.error {
-  color: red;
-  text-align: center;
-  margin-top: 20px;
-}
+.wrapper {
+    background-color: #f9f9f9;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .title {
+    color: #070707;
+    font-weight: bold;
+    text-align: center;
+  }
+  
+  .button {
+    background-color: #1f9d58;
+    border: none;
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .button:hover {
+    background-color: #0056b3;
+  }
+  
+  .table {
+    background-color: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+  }
+  
+  .table th {
+    background-color: #2588b9;
+    color: #fff;
+    text-align: center;
+  }
+  
+  .table td {
+    text-align: center;
+  }
+  
+  .subTable {
+    margin-top: 10px;
+  }
+  
+  .error {
+    color: #ff0000;
+    font-weight: bold;
+    text-align: center;
+  }
+  

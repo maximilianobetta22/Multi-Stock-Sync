@@ -1,129 +1,232 @@
-import React, { useState, useEffect } from 'react';
-import { Line } from 'react-chartjs-2';
+import React, { useState, useEffect } from "react";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
-  LineElement,
+  BarElement,
   Title,
   Tooltip,
   Legend,
-  PointElement
-} from 'chart.js';
-import axios from 'axios';
-import { useParams } from 'react-router-dom';
-import { Modal, Button } from 'react-bootstrap';
-import styles from './VentasPorDia.module.css';
+} from "chart.js";
+import { useParams } from "react-router-dom";
+import { Modal } from "react-bootstrap";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import styles from "./VentasPorDia.module.css";
+import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  PointElement
-);
 
-interface Producto {
-  nombre: string;
-  cantidad: number;
-  fecha: string;
-}
-
-interface Order {
-  sold_products: Producto[];
-}
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const VentasPorDia: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-  const [fechaSeleccionada, setFechaSeleccionada] = useState<string>('2025-01-23');
-  const [datosVentas, setDatosVentas] = useState<Producto[]>([]);
+  const [fecha, setFecha] = useState<string>("2025-01-01");
+  const [chartData, setChartData] = useState<any>({
+    labels: [],
+    datasets: [],
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
+  const [totalIngresos, setTotalIngresos] = useState<number>(0);
+  const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
+
+
+
+  const fetchIncomes = async (date: string, clientId: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${clientId}?week_start_date=${date}&week_end_date=${date}`
+      );
+      if (!response.ok) {
+        throw new Error("Error al obtener los ingresos de la API");
+      }
+      const result = await response.json();
+      const soldProducts = result.data.sold_products;
+
+      setTotalIngresos(soldProducts.reduce((acc: number, product: any) => acc + product.total_amount, 0));
+
+      setChartData({
+        labels: soldProducts.map((product: any) => product.title),
+        datasets: [
+          {
+            label: "Ingresos Totales",
+            data: soldProducts.map((product: any) => product.total_amount),
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+          },
+          {
+            label: "Cantidad Vendida",
+            data: soldProducts.map((product: any) => product.quantity),
+            backgroundColor: "rgba(153, 102, 255, 0.6)",
+            borderColor: "rgba(153, 102, 255, 1)",
+            borderWidth: 2,
+          },
+        ],
+      });
+      setError(null);
+    } catch (error) {
+      console.error("Error:", error);
+      setError("Hubo un problema al obtener los ingresos. Inténtalo nuevamente.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchVentas = async () => {
+    if (client_id) {
+      fetchIncomes(fecha, client_id);
+    }
+  }, [fecha, client_id]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/daily-sales/${client_id}`);
-        const ventas = response.data.data;
-        const ventasFormateadas = Object.keys(ventas).flatMap((key) =>
-          ventas[key].orders ? ventas[key].orders.flatMap((order: Order) =>
-            order.sold_products.map((product: Producto) => ({
-              nombre: product.nombre,
-              cantidad: product.cantidad,
-              fecha: product.fecha.split('T')[0]
-            }))
-          ) : []
-        );
-        setDatosVentas(ventasFormateadas);
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/user-data`);
+        if (!response.ok) {
+          throw new Error("Error al obtener los datos del usuario");
+        }
+        const data = await response.json();
+        setUserData(data);
       } catch (error) {
-        console.error('Error fetching sales data:', error);
+        console.error("Error al obtener datos del usuario:", error);
       }
     };
 
-    fetchVentas();
-  }, [client_id]);
-
-
-  const datosFiltrados = datosVentas.filter((venta: Producto) => venta.fecha === fechaSeleccionada);
-
-
-  const data = {
-    labels: datosFiltrados.map((producto: Producto) => producto.nombre),
-    datasets: [
-      {
-        label: 'Cantidad Vendida',
-        data: datosFiltrados.map((producto: Producto) => producto.cantidad),
-        backgroundColor: 'rgba(75, 192, 192, 0.6)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-        fill: false,
-        tension: 0.1
+    fetchUserData();
+  }, []);
+  /* llamar a la api */
+  const fetchUserData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error del servidor: ${errorText}`);
       }
-    ]
-  };
-
-
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const
-      },
-      title: {
-        display: true,
-        text: `Ventas del ${new Date(fechaSeleccionada).toLocaleDateString('es-ES')}`
-      }
+      const result = await response.json();
+      console.log("Resultado:", result);
+      setUserData({
+        nickname: result.data.nickname,
+        profile_image: result.data.profile_image,
+      });
+    } catch (error: any) {
+      console.error("Error al obtener los datos del usuario:", error.message);
+      setError(error.message || "Hubo un problema al cargar los datos del usuario.");
+    } finally {
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (client_id) {
+      fetchUserData();
+    }
+  }, [client_id]);
+  /* fin llamar a la api */
+
+
+
+
+  /* pdf */
+  const generatePDF = async () => { 
+    const doc = new jsPDF();
+    doc.setFillColor(0, 121, 191);
+    doc.rect(0, 0, 210, 30, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Reporte de Ventas por Día", 14, 20);
+  
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fecha: ${fecha}`, 14, 40);
+  
+    if (userData) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Usuario: ${userData.nickname}`, 14, 50);
+    }
+  
+    if (totalIngresos !== null) {
+      doc.text(`Total de Ingresos: ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalIngresos)}`, 14, 60);
+      doc.setFontSize(12);
+      doc.setTextColor(34, 139, 34);
+    }
+  
+    autoTable(doc, {
+      head: [["Producto", "Ingresos", "Cantidad"]],
+      body: chartData.labels.map((label: string, index: number) => [
+        label,
+        new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(chartData.datasets[0].data[index]),
+        chartData.datasets[1].data[index],
+      ]),
+      startY: 70,
+      theme: 'grid', // Esto aplica un estilo de cuadrícula
+    });
+  
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+  
+    const pdfData = doc.output("datauristring");
+    setPdfDataUrl(pdfData);
+    setShowModal(true);
+  };
+  
+  /* fin de pdf */
 
   return (
     <div className={styles.container}>
       <h2 className={styles.header}>Ventas por Día</h2>
-      <Button variant="primary" onClick={() => setShowModal(true)}>Seleccionar Fecha</Button>
-      <Modal show={showModal} onHide={() => setShowModal(false)}>
-        <Modal.Header closeButton>
-          <Modal.Title>Seleccionar Fecha</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <input
-            type="date"
-            value={fechaSeleccionada}
-            onChange={(e) => setFechaSeleccionada(e.target.value)}
-            className="form-control"
-          />
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Cerrar</Button>
-          <Button variant="primary" onClick={() => setShowModal(false)}>Aceptar</Button>
-        </Modal.Footer>
-      </Modal>
-      <div className={styles.tableContainer}>
+      <div className="form-group">
+        <label htmlFor="fecha">Seleccionar Fecha:</label>
+        <input
+          type="date"
+          id="fecha"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          className="form-control"
+        />
       </div>
-      <div style={{ width: '600px', height: '400px', marginTop: '2rem' }}>
-        <Line data={data} options={options} />
+
+      <div style={{ width: "600px", height: "400px", marginTop: "2rem" }}>
+        {loading ? (
+          <LoadingDinamico variant="container" />
+        ) : error ? (
+          <p className="text-danger">{error}</p>
+        ) : (
+          <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
+        )}
       </div>
+      <div style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
+        <strong>Total del Día:</strong> {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalIngresos)}
+      </div>
+
+      <button
+        type="button"
+        className="btn btn-success mt-3 mb-3"
+        onClick={generatePDF}
+        disabled={chartData.labels.length === 0}
+      >
+        Exportar a PDF
+      </button>
+      {pdfDataUrl && (
+        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Vista Previa del PDF</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF"></iframe>
+          </Modal.Body>
+        </Modal>
+      )}
     </div>
   );
 };
