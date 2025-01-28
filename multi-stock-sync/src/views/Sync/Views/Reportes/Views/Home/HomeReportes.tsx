@@ -6,7 +6,7 @@ import ToastComponent from '../../../../Components/ToastComponent/ToastComponent
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo } from '@fortawesome/free-solid-svg-icons';
-import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity } from '@fortawesome/free-solid-svg-icons';
+import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity, faCalendar ,faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 
 interface Connection {
   client_id: string;
@@ -162,6 +162,16 @@ const HomeReportes: React.FC = () => {
                 </Link>
                 <Link to={`/sync/reportes/devoluciones-reembolsos/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                   <FontAwesomeIcon icon={faUndo} className="mr-2" /> Devoluciones o reembolsos por categoría
+                </Link>
+              </div>
+
+              <h3 className="mt-4">Reportes de Comparaciones Disponibles</h3>
+              <div className="list-group mb-5">
+                <Link to={`/sync/reportes/compare-month-month/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCalendarDays} className="mr-2" /> Comparar ganancias entre dos meses
+                </Link>
+                <Link to={`/sync/reportes/compare-year-year/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCalendar} className="mr-2" /> Comparar ganancias anuales
                 </Link>
               </div>
             </>

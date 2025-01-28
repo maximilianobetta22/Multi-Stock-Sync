@@ -12,6 +12,8 @@ import ProductosMasVendidos from "../Views/ProductosMasVendidos/ProductosMasVend
 import OpinionesClientes from "../Views/OpinionesClientes/OpinionesClients";
 import IngresosCategoriaProducto from "../Views/IngresosCategoriaProducto/IngresosCategoriaProducto";
 import EstadosOrdenes from "../Views/EstadosOrdenes/EstadosOrdenes";
+import CompareMonthMonth from "../Views/CompareMesMes/CompareMonthMonth";
+import CompareYearYear from "../Views/CompareYearYear/CompareYearYear";
 
 
 function RouterReportes() {
@@ -31,6 +33,8 @@ function RouterReportes() {
             <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
             <Route path="ingresos-categoria-producto/:client_id" element={<IngresosCategoriaProducto />} />
             <Route path="estados-ordenes/:client_id" element={<EstadosOrdenes />} />
+            <Route path="compare-month-month/:client_id" element={<CompareMonthMonth />} />
+            <Route path="compare-year-year/:client_id" element={<CompareYearYear />} />
 
         </Routes>
     );
