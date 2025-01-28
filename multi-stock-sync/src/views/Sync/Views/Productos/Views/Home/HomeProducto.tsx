@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl, Spinner, Alert } from 'react-bootstrap';
+import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl } from 'react-bootstrap';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 interface Connection {
   client_id: string;
@@ -42,6 +44,8 @@ const statusDictionary: { [key: string]: string } = {
   deleted: 'Eliminado',
 };
 
+const MySwal = withReactContent(Swal);
+
 const HomeProducto = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState('');
@@ -49,7 +53,7 @@ const HomeProducto = () => {
   const [allProductos, setAllProductos] = useState<Product[]>([]);
   const [loadingConnections, setLoadingConnections] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
+  const [toastType, setToastType] = useState<'success' | 'warning' | 'error'>('error');
   const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
   const [isEditing, setIsEditing] = useState<{ [key: string]: boolean }>({});
   const [isUpdating, setIsUpdating] = useState(false);
@@ -69,7 +73,7 @@ const HomeProducto = () => {
       } catch (error) {
         console.error('Error fetching connections:', error);
         setToastMessage((error as any).response?.data?.message || 'Error fetching connections');
-        setToastType('danger');
+        setToastType('error');
       } finally {
         setLoadingConnections(false);
       }
@@ -77,6 +81,17 @@ const HomeProducto = () => {
 
     fetchConnections();
   }, []);
+
+  useEffect(() => {
+    if (toastMessage) {
+      MySwal.fire({
+        icon: toastType,
+        title: toastMessage,
+        showConfirmButton: false,
+        timer: 3000
+      }).then(() => setToastMessage(null));
+    }
+  }, [toastMessage]);
 
   const handleConnectionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const clientId = event.target.value;
@@ -104,7 +119,7 @@ const HomeProducto = () => {
     } catch (error) {
       console.error('Error fetching products:', error);
       setToastMessage((error as any).response?.data?.message || 'Error fetching products');
-      setToastType('danger');
+      setToastType('error');
     } finally {
       setLoading(false);
     }
@@ -137,7 +152,7 @@ const HomeProducto = () => {
 
       if (!selectedConnectionData) {
         setToastMessage('Conexión no encontrada');
-        setToastType('danger');
+        setToastType('error');
         return;
       }
 
@@ -165,7 +180,7 @@ const HomeProducto = () => {
     } catch (error) {
       console.error('Error updating stock:', error);
       setToastMessage('Error al actualizar el stock');
-      setToastType('danger');
+      setToastType('error');
     } finally {
       setIsUpdating(false);
     }
@@ -180,7 +195,7 @@ const HomeProducto = () => {
 
       if (!selectedConnectionData) {
         setToastMessage('Conexión no encontrada');
-        setToastType('danger');
+        setToastType('error');
         return;
       }
 
@@ -208,7 +223,7 @@ const HomeProducto = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       setToastMessage('Error al actualizar el estado');
-      setToastType('danger');
+      setToastType('error');
     } finally {
       setIsUpdating(false);
     }
@@ -293,7 +308,6 @@ const HomeProducto = () => {
     <>
       {(loadingConnections || loading || isUpdating) && <LoadingDinamico variant="container" />}
       <Container>
-        {toastMessage && <Alert variant={toastType} onClose={() => setToastMessage(null)} dismissible>{toastMessage}</Alert>}
         {!loadingConnections && !loading && !isUpdating && (
           <section>
             <Row className="mb-3 mt-3">
