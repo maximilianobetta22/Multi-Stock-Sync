@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import axios from 'axios';
@@ -30,6 +30,23 @@ const CompareMonthMonth: React.FC = () => {
     const [month2, setMonth2] = useState('');
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
+    const [nickname, setNickname] = useState('');
+
+    useEffect(() => {
+        const fetchNickname = async () => {
+            setLoading(true);
+            try {
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+                console.log('Nickname response:', response.data); // Debugging statement
+                setNickname(response.data.data.nickname); // Correct path to nickname
+            } catch (error) {
+                console.error(error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchNickname();
+    }, [client_id]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -47,106 +64,112 @@ const CompareMonthMonth: React.FC = () => {
     };
 
     return (
-        <div className={styles.container}>
-            <h1>Comparar Ventas entre Meses</h1>
-            <p>Client ID: {client_id}</p>
-            <form onSubmit={handleSubmit}>
-                <div className="form-group">
-                    <label>Año 1</label>
-                    <select className="form-control" value={year1} onChange={(e) => setYear1(e.target.value)} required>
-                        <option value="">Seleccione un año</option>
-                        {years.map((year) => (
-                            <option key={year} value={year}>{year}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label>Mes 1</label>
-                    <select className="form-control" value={month1} onChange={(e) => setMonth1(e.target.value)} required>
-                        <option value="">Seleccione un mes</option>
-                        {Object.entries(months).map(([value, label]) => (
-                            <option key={value} value={value}>{label}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label>Año 2</label>
-                    <select className="form-control" value={year2} onChange={(e) => setYear2(e.target.value)} required>
-                        <option value="">Seleccione un año</option>
-                        {years.map((year) => (
-                            <option key={year} value={year}>{year}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="form-group">
-                    <label>Mes 2</label>
-                    <select className="form-control" value={month2} onChange={(e) => setMonth2(e.target.value)} required>
-                        <option value="">Seleccione un mes</option>
-                        {Object.entries(months).map(([value, label]) => (
-                            <option key={value} value={value}>{label}</option>
-                        ))}
-                    </select>
-                </div>
-                <button type="submit" className="btn btn-primary">Comparar</button>
-            </form>
+        <>
             {loading && <LoadingDinamico variant="container" />}
-            {result && (
-                <div>
-                    <h2>Resultado de la Comparación</h2>
-                    <p>{result.message}</p>
-                    <div className={styles.tableContainer}>
-                        <h3>{months[month1]} {year1}</h3>
-                        <p>Total Ventas: {result.data.month1.total_sales}</p>
-                        <div className={styles.tableContainer}>
-                            <table className={`table table-striped ${styles.table}`}>
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {result.data.month1.sold_products.map((product: any) => (
-                                        <tr key={product.order_id}>
-                                            <td>{product.title}</td>
-                                            <td>{product.quantity}</td>
-                                            <td>{product.price}</td>
-                                        </tr>
+            <div className={styles.container}>
+                {!loading && (
+                    <>
+                        <h1>Comparar Ventas entre Meses</h1>
+                        <p>USUARIO: {nickname}</p>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Año 1</label>
+                                <select className="form-control" value={year1} onChange={(e) => setYear1(e.target.value)} required>
+                                    <option value="">Seleccione un año</option>
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>{year}</option>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div className={styles.tableContainer}>
-                        <h3>{months[month2]} {year2}</h3>
-                        <p>Total Ventas: {result.data.month2.total_sales}</p>
-                        <div className={styles.tableContainer}>
-                            <table className={`table table-striped ${styles.table}`}>
-                                <thead>
-                                    <tr>
-                                        <th>Producto</th>
-                                        <th>Cantidad</th>
-                                        <th>Precio</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {result.data.month2.sold_products.map((product: any) => (
-                                        <tr key={product.order_id}>
-                                            <td>{product.title}</td>
-                                            <td>{product.quantity}</td>
-                                            <td>{product.price}</td>
-                                        </tr>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Mes 1</label>
+                                <select className="form-control" value={month1} onChange={(e) => setMonth1(e.target.value)} required>
+                                    <option value="">Seleccione un mes</option>
+                                    {Object.entries(months).map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
                                     ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <p>Diferencia: {result.data.difference}</p>
-                    <p>Cambio Porcentual: {result.data.percentage_change}%</p>
-                </div>
-            )}
-        </div>
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Año 2</label>
+                                <select className="form-control" value={year2} onChange={(e) => setYear2(e.target.value)} required>
+                                    <option value="">Seleccione un año</option>
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Mes 2</label>
+                                <select className="form-control" value={month2} onChange={(e) => setMonth2(e.target.value)} required>
+                                    <option value="">Seleccione un mes</option>
+                                    {Object.entries(months).map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <button type="submit" className="btn btn-primary">Comparar</button>
+                        </form>
+                        {result && (
+                            <div>
+                                <h2>Resultado de la Comparación</h2>
+                                <p>{result.message}</p>
+                                <div className={styles.tableContainer}>
+                                    <h3>{months[month1]} {year1}</h3>
+                                    <p>Total Ventas: {result.data.month1.total_sales}</p>
+                                    <div className={styles.tableContainer}>
+                                        <table className={`table table-striped ${styles.table}`}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Precio</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {result.data.month1.sold_products.map((product: any) => (
+                                                    <tr key={product.order_id}>
+                                                        <td>{product.title}</td>
+                                                        <td>{product.quantity}</td>
+                                                        <td>{product.price}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <div className={styles.tableContainer}>
+                                    <h3>{months[month2]} {year2}</h3>
+                                    <p>Total Ventas: {result.data.month2.total_sales}</p>
+                                    <div className={styles.tableContainer}>
+                                        <table className={`table table-striped ${styles.table}`}>
+                                            <thead>
+                                                <tr>
+                                                    <th>Producto</th>
+                                                    <th>Cantidad</th>
+                                                    <th>Precio</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {result.data.month2.sold_products.map((product: any) => (
+                                                    <tr key={product.order_id}>
+                                                        <td>{product.title}</td>
+                                                        <td>{product.quantity}</td>
+                                                        <td>{product.price}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <p>Diferencia: {result.data.difference}</p>
+                                <p>Cambio Porcentual: {result.data.percentage_change}%</p>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+        </>
     );
 };
 
