@@ -65,7 +65,7 @@ const HomeSync: React.FC = () => {
                                 <div className="card-body d-flex flex-column align-items-center justify-content-center">
                                     <FontAwesomeIcon icon={card.icon} size="3x" />
                                     <h5 className="card-title mt-3">{card.title}</h5>
-                                    <p className="card-text">{card.description}</p>
+                                    <p className="text-white">{card.description}</p>
                                 </div>
                             </div>
                         </Link>

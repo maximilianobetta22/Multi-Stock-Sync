@@ -153,3 +153,7 @@ td {
 canvas{
     border: 0!important;
 }
+
+a{
+    text-decoration: none;
+}
