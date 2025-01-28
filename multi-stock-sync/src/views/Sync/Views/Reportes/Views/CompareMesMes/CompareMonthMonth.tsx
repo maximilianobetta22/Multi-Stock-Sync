@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import axios from 'axios';
+import styles from './CompareMonthMonth.module.css';
 
 const months: { [key: string]: string } = {
     "01": "Enero",
@@ -45,7 +46,7 @@ const CompareMonthMonth: React.FC = () => {
     };
 
     return (
-        <div className="container">
+        <div className={styles.container}>
             <h1>Comparar Ventas entre Meses</h1>
             <p>Client ID: {client_id}</p>
             <form onSubmit={handleSubmit} className="mb-4">
@@ -92,23 +93,53 @@ const CompareMonthMonth: React.FC = () => {
                 <div>
                     <h2>Resultado de la Comparación</h2>
                     <p>{result.message}</p>
-                    <div>
+                    <div className={styles.tableContainer}>
                         <h3>{months[month1]} {year1}</h3>
                         <p>Total Ventas: {result.data.month1.total_sales}</p>
-                        <ul>
-                            {result.data.month1.sold_products.map((product: any) => (
-                                <li key={product.order_id}>{product.title} - {product.quantity} x {product.price}</li>
-                            ))}
-                        </ul>
+                        <div className={styles.tableContainer}>
+                            <table className={`table table-striped ${styles.table}`}>
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {result.data.month1.sold_products.map((product: any) => (
+                                        <tr key={product.order_id}>
+                                            <td>{product.title}</td>
+                                            <td>{product.quantity}</td>
+                                            <td>{product.price}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
-                    <div>
+                    <div className={styles.tableContainer}>
                         <h3>{months[month2]} {year2}</h3>
                         <p>Total Ventas: {result.data.month2.total_sales}</p>
-                        <ul>
-                            {result.data.month2.sold_products.map((product: any) => (
-                                <li key={product.order_id}>{product.title} - {product.quantity} x {product.price}</li>
-                            ))}
-                        </ul>
+                        <div className={styles.tableContainer}>
+                            <table className={`table table-striped ${styles.table}`}>
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {result.data.month2.sold_products.map((product: any) => (
+                                        <tr key={product.order_id}>
+                                            <td>{product.title}</td>
+                                            <td>{product.quantity}</td>
+                                            <td>{product.price}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                     <p>Diferencia: {result.data.difference}</p>
                     <p>Cambio Porcentual: {result.data.percentage_change}%</p>
