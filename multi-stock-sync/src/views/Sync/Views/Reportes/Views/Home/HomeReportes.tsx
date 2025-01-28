@@ -4,6 +4,9 @@ import axios from 'axios';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity, faCalendar ,faCalendarDays } from '@fortawesome/free-solid-svg-icons';
 
 interface Connection {
   client_id: string;
@@ -118,11 +121,11 @@ const HomeReportes: React.FC = () => {
               <h4 className="mt-4">Métodos de Pago Preferidos</h4>
               <ul>
                 {storeSummary.top_payment_methods.account_money || storeSummary.top_payment_methods.debit_card || storeSummary.top_payment_methods.credit_card ? (
-                  <>
-                    <li>Dinero en cuenta: {storeSummary.top_payment_methods.account_money}</li>
-                    <li>Tarjeta de débito: {storeSummary.top_payment_methods.debit_card}</li>
-                    <li>Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
-                  </>
+                    <>
+                    <li className={styles.noDecoration}><FontAwesomeIcon icon={faMoneyBillWave} className="mr-2" /> Dinero en cuenta: {storeSummary.top_payment_methods.account_money}</li>
+                    <li className={styles.noDecoration}><FontAwesomeIcon icon={faUniversity} className="mr-2" /> Tarjeta de débito: {storeSummary.top_payment_methods.debit_card}</li>
+                    <li className={styles.noDecoration}><FontAwesomeIcon icon={faCreditCardIcon} className="mr-2" /> Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card}</li>
+                    </>
                 ) : (
                   <li>No se encontraron datos registrados</li>
                 )}
@@ -133,15 +136,43 @@ const HomeReportes: React.FC = () => {
             <>
               <h3 className="mt-4">Reportes Disponibles</h3>
               <div className="list-group mb-5">
-                <Link to={`/sync/reportes/ventas-mes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Ventas totales por mes</Link>
-                <Link to={`/sync/reportes/ventas-dia/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Ventas totales por día</Link>
-                <Link to={`/sync/reportes/ingresos-categoria-producto/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Ingresos por categoría de producto</Link>
-                <Link to={`/sync/reportes/productos-mas-vendidos/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Productos más vendidos</Link>
-                <Link to={`/sync/reportes/ingreso-semana/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Ingresos totales por semana</Link>
-                <Link to={`/sync/reportes/estados-ordenes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Estados de órdenes (pagadas, pendientes, canceladas)</Link>
-                <Link to={`/sync/reportes/metodos-pago/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Métodos de pago más utilizados</Link>
-                <Link to={`/sync/reportes/opiniones-clientes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Opiniones de clientes por producto</Link>
-                <Link to={`/sync/reportes/devoluciones-reembolsos/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">Devoluciones o reembolsos por categoría</Link>
+                <Link to={`/sync/reportes/ventas-mes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Ventas totales por mes
+                </Link>
+                <Link to={`/sync/reportes/ventas-dia/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCalendarDay} className="mr-2" /> Ventas totales por día
+                </Link>
+                <Link to={`/sync/reportes/ingresos-categoria-producto/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faTags} className="mr-2" /> Ingresos por categoría de producto
+                </Link>
+                <Link to={`/sync/reportes/productos-mas-vendidos/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faStar} className="mr-2" /> Productos más vendidos
+                </Link>
+                <Link to={`/sync/reportes/ingreso-semana/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCalendarWeek} className="mr-2" /> Ingresos totales por semana
+                </Link>
+                <Link to={`/sync/reportes/estados-ordenes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Estados de órdenes (pagadas, pendientes, canceladas)
+                </Link>
+                <Link to={`/sync/reportes/metodos-pago/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCreditCard} className="mr-2" /> Métodos de pago más utilizados
+                </Link>
+                <Link to={`/sync/reportes/opiniones-clientes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faComments} className="mr-2" /> Opiniones de clientes por producto
+                </Link>
+                <Link to={`/sync/reportes/devoluciones-reembolsos/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faUndo} className="mr-2" /> Devoluciones o reembolsos por categoría
+                </Link>
+              </div>
+
+              <h3 className="mt-4">Reportes de Comparaciones Disponibles</h3>
+              <div className="list-group mb-5">
+                <Link to={`/sync/reportes/compare-month-month/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCalendarDays} className="mr-2" /> Comparar ganancias entre dos meses
+                </Link>
+                <Link to={`/sync/reportes/compare-year-year/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCalendar} className="mr-2" /> Comparar ganancias anuales
+                </Link>
               </div>
             </>
           )}
