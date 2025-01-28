@@ -20,6 +20,8 @@ const months: { [key: string]: string } = {
     "12": "Diciembre"
 };
 
+const orderedMonths = Object.entries(months).sort(([a], [b]) => parseInt(a) - parseInt(b));
+
 const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
 
 const CompareMonthMonth: React.FC = () => {
@@ -85,7 +87,7 @@ const CompareMonthMonth: React.FC = () => {
                                 <label>Mes 1</label>
                                 <select className="form-control" value={month1} onChange={(e) => setMonth1(e.target.value)} required>
                                     <option value="">Seleccione un mes</option>
-                                    {Object.entries(months).map(([value, label]) => (
+                                    {orderedMonths.map(([value, label]) => (
                                         <option key={value} value={value}>{label}</option>
                                     ))}
                                 </select>
@@ -103,7 +105,7 @@ const CompareMonthMonth: React.FC = () => {
                                 <label>Mes 2</label>
                                 <select className="form-control" value={month2} onChange={(e) => setMonth2(e.target.value)} required>
                                     <option value="">Seleccione un mes</option>
-                                    {Object.entries(months).map(([value, label]) => (
+                                    {orderedMonths.map(([value, label]) => (
                                         <option key={value} value={value}>{label}</option>
                                     ))}
                                 </select>
