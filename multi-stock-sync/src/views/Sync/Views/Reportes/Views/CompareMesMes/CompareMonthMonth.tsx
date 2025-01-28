@@ -98,6 +98,8 @@ const CompareMonthMonth: React.FC = () => {
 
             doc.setFontSize(14);
             doc.text(`${months[month1.month]} ${month1.year}`, 105, 70, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`Total Ventas: ${formatCurrency(month1.total_sales)}`, 105, 80, { align: 'center' });
 
             autoTable(doc, {
                 head: [["Producto", "Cantidad", "Precio"]],
@@ -106,13 +108,15 @@ const CompareMonthMonth: React.FC = () => {
                     product.quantity,
                     formatCurrency(product.price),
                 ]),
-                startY: 80,
+                startY: 90,
                 theme: 'grid',
                 margin: { bottom: 10 }
             });
 
             doc.setFontSize(14);
             doc.text(`${months[month2.month]} ${month2.year}`, 105, (doc as any).lastAutoTable.finalY + 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`Total Ventas: ${formatCurrency(month2.total_sales)}`, 105, (doc as any).lastAutoTable.finalY + 30, { align: 'center' });
 
             autoTable(doc, {
                 head: [["Producto", "Cantidad", "Precio"]],
@@ -121,7 +125,7 @@ const CompareMonthMonth: React.FC = () => {
                     product.quantity,
                     formatCurrency(product.price),
                 ]),
-                startY: (doc as any).lastAutoTable.finalY + 30,
+                startY: (doc as any).lastAutoTable.finalY + 40,
                 theme: 'grid',
                 margin: { bottom: 10 }
             });
