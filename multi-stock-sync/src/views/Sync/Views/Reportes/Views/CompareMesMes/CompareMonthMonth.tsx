@@ -96,6 +96,9 @@ const CompareMonthMonth: React.FC = () => {
 
             doc.text(`Comparación entre ${months[month1.month]} ${month1.year} y ${months[month2.month]} ${month2.year}`, 14, 50);
 
+            doc.setFontSize(14);
+            doc.text(`${months[month1.month]} ${month1.year}`, 105, 70, { align: 'center' });
+
             autoTable(doc, {
                 head: [["Producto", "Cantidad", "Precio"]],
                 body: month1.sold_products.map((product: any) => [
@@ -103,13 +106,13 @@ const CompareMonthMonth: React.FC = () => {
                     product.quantity,
                     formatCurrency(product.price),
                 ]),
-                startY: 60,
+                startY: 80,
                 theme: 'grid',
-                margin: { bottom: 10 },
-                didDrawPage: (data) => {
-                    doc.text(`${months[month1.month]} ${month1.year}`, data.settings.margin.left, data.settings.startY - 10);
-                }
+                margin: { bottom: 10 }
             });
+
+            doc.setFontSize(14);
+            doc.text(`${months[month2.month]} ${month2.year}`, 105, (doc as any).lastAutoTable.finalY + 20, { align: 'center' });
 
             autoTable(doc, {
                 head: [["Producto", "Cantidad", "Precio"]],
@@ -118,17 +121,14 @@ const CompareMonthMonth: React.FC = () => {
                     product.quantity,
                     formatCurrency(product.price),
                 ]),
-                startY: (doc as any).lastAutoTable.finalY + 10,
+                startY: (doc as any).lastAutoTable.finalY + 30,
                 theme: 'grid',
-                margin: { bottom: 10 },
-                didDrawPage: (data) => {
-                    doc.text(`${months[month2.month]} ${month2.year}`, data.settings.margin.left, data.settings.startY - 10);
-                }
+                margin: { bottom: 10 }
             });
 
-            doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, (doc as any).lastAutoTable.finalY + 20);
+            doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, (doc as any).lastAutoTable.finalY + 30);
             doc.setTextColor(percentage_change > 0 ? 'green' : 'red');
-            doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 30);
+            doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 40);
         }
 
         const pageHeight = doc.internal.pageSize.height;
