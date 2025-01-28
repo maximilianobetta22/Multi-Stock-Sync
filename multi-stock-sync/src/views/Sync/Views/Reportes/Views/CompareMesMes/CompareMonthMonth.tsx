@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import axios from 'axios';
 import styles from './CompareMonthMonth.module.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const months: { [key: string]: string } = {
     "01": "Enero",
@@ -49,7 +50,7 @@ const CompareMonthMonth: React.FC = () => {
         <div className={styles.container}>
             <h1>Comparar Ventas entre Meses</h1>
             <p>Client ID: {client_id}</p>
-            <form onSubmit={handleSubmit} className="mb-4">
+            <form onSubmit={handleSubmit}>
                 <div className="form-group">
                     <label>Año 1</label>
                     <select className="form-control" value={year1} onChange={(e) => setYear1(e.target.value)} required>
