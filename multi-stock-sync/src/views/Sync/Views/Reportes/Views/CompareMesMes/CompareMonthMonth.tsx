@@ -24,6 +24,10 @@ const orderedMonths = Object.entries(months).sort(([a], [b]) => parseInt(a) - pa
 
 const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
 
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+};
+
 const CompareMonthMonth: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
     const [year1, setYear1] = useState('');
@@ -118,7 +122,7 @@ const CompareMonthMonth: React.FC = () => {
                                 <p>{result.message}</p>
                                 <div className={styles.tableContainer}>
                                     <h3>{months[month1]} {year1}</h3>
-                                    <p>Total Ventas: {result.data.month1.total_sales}</p>
+                                    <p>Total Ventas: {formatCurrency(result.data.month1.total_sales)}</p>
                                     <div className={styles.tableContainer}>
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
@@ -133,7 +137,7 @@ const CompareMonthMonth: React.FC = () => {
                                                     <tr key={product.order_id}>
                                                         <td>{product.title}</td>
                                                         <td>{product.quantity}</td>
-                                                        <td>{product.price}</td>
+                                                        <td>{formatCurrency(product.price)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
@@ -142,7 +146,7 @@ const CompareMonthMonth: React.FC = () => {
                                 </div>
                                 <div className={styles.tableContainer}>
                                     <h3>{months[month2]} {year2}</h3>
-                                    <p>Total Ventas: {result.data.month2.total_sales}</p>
+                                    <p>Total Ventas: {formatCurrency(result.data.month2.total_sales)}</p>
                                     <div className={styles.tableContainer}>
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
@@ -157,14 +161,14 @@ const CompareMonthMonth: React.FC = () => {
                                                     <tr key={product.order_id}>
                                                         <td>{product.title}</td>
                                                         <td>{product.quantity}</td>
-                                                        <td>{product.price}</td>
+                                                        <td>{formatCurrency(product.price)}</td>
                                                     </tr>
                                                 ))}
                                             </tbody>
                                         </table>
                                     </div>
                                 </div>
-                                <p>Diferencia: {result.data.difference}</p>
+                                <p>Diferencia: {formatCurrency(result.data.difference)}</p>
                                 <p>Cambio Porcentual: {result.data.percentage_change}%</p>
                             </div>
                         )}
