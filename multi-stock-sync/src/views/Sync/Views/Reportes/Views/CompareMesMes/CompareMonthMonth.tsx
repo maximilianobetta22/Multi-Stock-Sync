@@ -6,6 +6,7 @@ import styles from './CompareMonthMonth.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Modal } from 'react-bootstrap';
 
 const months: { [key: string]: string } = {
     "01": "Enero",
@@ -39,6 +40,8 @@ const CompareMonthMonth: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<any>(null);
     const [nickname, setNickname] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchNickname = async () => {
@@ -133,7 +136,9 @@ const CompareMonthMonth: React.FC = () => {
         doc.setTextColor(150, 150, 150);
         doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
 
-        doc.save('Reporte_Comparacion_Ventas.pdf');
+        const pdfData = doc.output("datauristring");
+        setPdfDataUrl(pdfData);
+        setShowModal(true);
     };
 
     return (
@@ -246,6 +251,17 @@ const CompareMonthMonth: React.FC = () => {
                     </>
                 )}
             </div>
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Reporte de Comparación de Ventas</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {pdfDataUrl && <iframe src={pdfDataUrl} width="100%" height="500px" />}
+                </Modal.Body>
+                <Modal.Footer>
+                    <button onClick={() => setShowModal(false)} className="btn btn-secondary">Cerrar</button>
+                </Modal.Footer>
+            </Modal>
         </>
     );
 };
