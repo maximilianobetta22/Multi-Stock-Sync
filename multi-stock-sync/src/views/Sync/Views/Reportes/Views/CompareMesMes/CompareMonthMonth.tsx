@@ -133,9 +133,9 @@ const CompareMonthMonth: React.FC = () => {
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
                                                 <tr>
-                                                    <th>Producto</th>
-                                                    <th>Cantidad</th>
-                                                    <th>Precio</th>
+                                                    <th className='table_header'>Producto</th>
+                                                    <th className='table_header'>Cantidad</th>
+                                                    <th className='table_header'>Precio</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
@@ -157,9 +157,9 @@ const CompareMonthMonth: React.FC = () => {
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
                                                 <tr>
-                                                    <th>Producto</th>
-                                                    <th>Cantidad</th>
-                                                    <th>Precio</th>
+                                                    <th className='table_header'>Producto</th>
+                                                    <th className='table_header'>Cantidad</th>
+                                                    <th className='table_header'>Precio</th>
                                                 </tr>
                                             </thead>
                                             <tbody>

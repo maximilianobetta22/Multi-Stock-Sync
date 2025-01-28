@@ -55,6 +55,7 @@ button:hover {
     width: 100%;
     margin-bottom: 0;
     border-collapse: collapse;
+    border: 3px solid #ccc;
 }
 
 .table th, .table td {
