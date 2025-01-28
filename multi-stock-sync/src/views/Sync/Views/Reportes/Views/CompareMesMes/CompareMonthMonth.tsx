@@ -1,310 +1,269 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Pie } from 'react-chartjs-2';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ArcElement
-} from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-import axios from 'axios';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import axios from 'axios';
+import styles from './CompareMonthMonth.module.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { Modal } from 'react-bootstrap';
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  ChartDataLabels,
-  ArcElement
-);
+const months: { [key: string]: string } = {
+    "01": "Enero",
+    "02": "Febrero",
+    "03": "Marzo",
+    "04": "Abril",
+    "05": "Mayo",
+    "06": "Junio",
+    "07": "Julio",
+    "08": "Agosto",
+    "09": "Septiembre",
+    "10": "Octubre",
+    "11": "Noviembre",
+    "12": "Diciembre"
+};
 
-interface SalesData {
-    year: string;
-    month: string;
-    total_sales: number;
-    sold_products: { order_id: number; order_date: string; title: string; quantity: number; price: number }[];
-}
+const orderedMonths = Object.entries(months).sort(([a], [b]) => parseInt(a) - parseInt(b));
 
-interface ComparisonData {
-    month1: SalesData;
-    month2: SalesData;
-    difference: number;
-    percentage_change: number;
-}
+const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+};
 
 const CompareMonthMonth: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
-    const [comparisonData, setComparisonData] = useState<ComparisonData | null>(null);
+    const [year1, setYear1] = useState('');
+    const [month1, setMonth1] = useState('');
+    const [year2, setYear2] = useState('');
+    const [month2, setMonth2] = useState('');
     const [loading, setLoading] = useState(false);
-    const [userName, setUserName] = useState<string>('');
-    const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
-    const [pdfData, setPdfData] = useState<string | null>(null);
-    const [year1, setYear1] = useState<number>(2025);
-    const [month1, setMonth1] = useState<number>(1);
-    const [year2, setYear2] = useState<number>(2025);
-    const [month2, setMonth2] = useState<number>(2);
-    const chartRef = useRef<HTMLDivElement>(null);
+    const [result, setResult] = useState<any>(null);
+    const [nickname, setNickname] = useState('');
+    const [showModal, setShowModal] = useState(false);
+    const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
 
     useEffect(() => {
-        const fetchUserName = async () => {
+        const fetchNickname = async () => {
+            setLoading(true);
             try {
-                const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`;
-                const response = await axios.get(apiUrl);
-                setUserName(response.data.data.nickname);
+                const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+                console.log('Nickname response:', response.data); // Debugging statement
+                setNickname(response.data.data.nickname); // Correct path to nickname
             } catch (error) {
-                console.error('Error al obtener el nombre del usuario:', error);
+                console.error(error);
+            } finally {
+                setLoading(false);
             }
         };
-
-        fetchUserName();
+        fetchNickname();
     }, [client_id]);
 
-    const fetchSalesData = async () => {
+    const handleDropdownChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setter(e.target.value);
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         setLoading(true);
         try {
-            const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/compare-sales-data/${client_id}?year1=${year1}&month1=${month1}&year2=${year2}&month2=${month2}`;
-            const response = await axios.get(apiUrl);
-            setComparisonData(response.data.data);
+            const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-sales-data/${client_id}`, {
+                params: { year1, month1, year2, month2 }
+            });
+            setResult(response.data);
         } catch (error) {
-            console.error('Error al obtener los datos de ventas:', error);
-            setComparisonData(null);
+            console.error(error);
         } finally {
             setLoading(false);
         }
     };
 
     const generatePDF = () => {
-        if (!comparisonData) return;
-
         const doc = new jsPDF();
-        const pageHeight = doc.internal.pageSize.height;
-        doc.text('Comparación de Ventas Mes a Mes', 10, 10);
-        doc.text(`Usuario: ${userName}`, 10, 20);
-        autoTable(doc, {
-            startY: 30,
-            head: [['Mes', 'Ventas Totales', 'Productos Vendidos']],
-            body: [
-                [
-                    `${comparisonData.month1.year}-${comparisonData.month1.month}`,
-                    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(comparisonData.month1.total_sales),
-                    comparisonData.month1.sold_products.map(product => `${product.title}: ${product.quantity}`).join('\n')
-                ],
-                [
-                    `${comparisonData.month2.year}-${comparisonData.month2.month}`,
-                    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(comparisonData.month2.total_sales),
-                    comparisonData.month2.sold_products.map(product => `${product.title}: ${product.quantity}`).join('\n')
-                ]
-            ],
-            didDrawPage: (_data) => {
-                doc.setTextColor(150, 150, 150);
-                doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: 'center' });
-            }
-        });
+        doc.setFillColor(0, 121, 191);
+        doc.rect(0, 0, 210, 30, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(255, 255, 255);
+        doc.text("Reporte de Comparación de Ventas", 14, 20);
 
-        const pdfOutput = doc.output('datauristring');
-        setPdfData(pdfOutput);
-        setShowPDFModal(true);
-    };
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Cliente: ${nickname}`, 14, 40);
 
-    const totalSales = (comparisonData?.month1.total_sales ?? 0) + (comparisonData?.month2.total_sales ?? 0);
-    const month1Percentage = ((comparisonData?.month1.total_sales ?? 0) / totalSales) * 100;
-    const month2Percentage = ((comparisonData?.month2.total_sales ?? 0) / totalSales) * 100;
+        if (result) {
+            const { month1, month2, difference, percentage_change } = result.data;
 
-    const data = {
-        labels: [
-            `${comparisonData?.month1.year}-${comparisonData?.month1.month}`,
-            `${comparisonData?.month2.year}-${comparisonData?.month2.month}`
-        ],
-        datasets: [
-            {
-                label: 'Ventas Totales',
-                data: [comparisonData?.month1.total_sales, comparisonData?.month2.total_sales],
-                backgroundColor: ['rgba(75, 192, 192, 0.6)', 'rgba(192, 75, 75, 0.6)'],
-                borderColor: ['rgba(75, 192, 192, 1)', 'rgba(192, 75, 75, 1)'],
-                borderWidth: 1
-            }
-        ]
-    };
+            doc.text(`Comparación entre ${months[month1.month]} ${month1.year} y ${months[month2.month]} ${month2.year}`, 14, 50);
 
-    const options = {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: {
-                position: 'top' as const
-            },
-            title: {
-                display: true,
-                text: 'Comparación de Ventas Mes a Mes'
-            },
-            tooltip: {
-                callbacks: {
-                    label: function (context: any) {
-                        const salesAmount = context.raw;
-                        const percentage = ((salesAmount / totalSales) * 100).toFixed(2);
-                        return `${context.label}: ${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(salesAmount)} (${percentage}%)`;
-                    }
-                }
-            },
-            datalabels: {
-                display: true,
-                align: 'center',
-                anchor: 'center',
-                formatter: (value: number, context: any) => {
-                    const salesAmount = context.dataset.data[context.dataIndex];
-                    const percentage = ((salesAmount / totalSales) * 100).toFixed(2);
-                    return `${new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'CLP' }).format(salesAmount)}\n(${percentage}%)`;
-                }
-            }
+            doc.setFontSize(14);
+            doc.text(`${months[month1.month]} ${month1.year}`, 105, 70, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`Total Ventas: ${formatCurrency(month1.total_sales)}`, 105, 80, { align: 'center' });
+
+            autoTable(doc, {
+                head: [["Producto", "Cantidad", "Precio"]],
+                body: month1.sold_products.map((product: any) => [
+                    product.title,
+                    product.quantity,
+                    formatCurrency(product.price),
+                ]),
+                startY: 90,
+                theme: 'grid',
+                margin: { bottom: 10 }
+            });
+
+            doc.setFontSize(14);
+            doc.text(`${months[month2.month]} ${month2.year}`, 105, (doc as any).lastAutoTable.finalY + 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text(`Total Ventas: ${formatCurrency(month2.total_sales)}`, 105, (doc as any).lastAutoTable.finalY + 30, { align: 'center' });
+
+            autoTable(doc, {
+                head: [["Producto", "Cantidad", "Precio"]],
+                body: month2.sold_products.map((product: any) => [
+                    product.title,
+                    product.quantity,
+                    formatCurrency(product.price),
+                ]),
+                startY: (doc as any).lastAutoTable.finalY + 40,
+                theme: 'grid',
+                margin: { bottom: 10 }
+            });
+
+            doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, (doc as any).lastAutoTable.finalY + 30);
+            doc.setTextColor(percentage_change > 0 ? 'green' : 'red');
+            doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 40);
         }
+
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+
+        const pdfData = doc.output("datauristring");
+        setPdfDataUrl(pdfData);
+        setShowModal(true);
     };
 
     return (
         <>
-            {loading && <div>Loading...</div>}
-            {!loading && (
-                <section className="d-flex flex-column align-items-center">
-                    <div className="w-75 rounded p-3 shadow" style={{ backgroundColor: '#f8f9fa', borderRadius: '15px' }}>
-                        <h1 className="text-center">Comparación de Ventas Mes a Mes</h1>
-                        <h5 className="text-center">Usuario: {userName}</h5>
-                        <Form className="mb-4 d-flex justify-content-center">
-                            <div className="d-flex flex-column align-items-center" style={{ width: '200px' }}>
-                                <Form.Group controlId="formYear1">
-                                    <Form.Label>Año 1</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        value={year1}
-                                        onChange={(e) => setYear1(Number(e.target.value))}
-                                    >
-                                        {[2023, 2024, 2025, 2026].map((year) => (
-                                            <option key={year} value={year}>
-                                                {year}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group>
-                                <Form.Group controlId="formMonth1" className="mt-3">
-                                    <Form.Label>Mes 1</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        value={month1}
-                                        onChange={(e) => setMonth1(Number(e.target.value))}
-                                    >
-                                        {[
-                                            { value: 1, label: 'Enero' },
-                                            { value: 2, label: 'Febrero' },
-                                            { value: 3, label: 'Marzo' },
-                                            { value: 4, label: 'Abril' },
-                                            { value: 5, label: 'Mayo' },
-                                            { value: 6, label: 'Junio' },
-                                            { value: 7, label: 'Julio' },
-                                            { value: 8, label: 'Agosto' },
-                                            { value: 9, label: 'Septiembre' },
-                                            { value: 10, label: 'Octubre' },
-                                            { value: 11, label: 'Noviembre' },
-                                            { value: 12, label: 'Diciembre' },
-                                        ].map((month) => (
-                                            <option key={month.value} value={month.value}>
-                                                {month.label}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group>
+            {loading && <LoadingDinamico variant="container" />}
+            <div className={styles.container} style={{ display: loading ? 'none' : 'block' }}>
+                {!loading && (
+                    <>
+                        <h1>Comparar Ventas entre Meses</h1>
+                        <p>USUARIO: {nickname}</p>
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label>Año 1</label>
+                                <select className="form-control" value={year1} onChange={handleDropdownChange(setYear1)} required>
+                                    <option value="">Seleccione un año</option>
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
                             </div>
-                            <div className="d-flex flex-column align-items-center" style={{ width: '200px' }}>
-                                <Form.Group controlId="formYear2">
-                                    <Form.Label>Año 2</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        value={year2}
-                                        onChange={(e) => setYear2(Number(e.target.value))}
-                                    >
-                                        {[2023, 2024, 2025, 2026].map((year) => (
-                                            <option key={year} value={year}>
-                                                {year}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group>
-                                <Form.Group controlId="formMonth2" className="mt-3">
-                                    <Form.Label>Mes 2</Form.Label>
-                                    <Form.Control
-                                        as="select"
-                                        value={month2}
-                                        onChange={(e) => setMonth2(Number(e.target.value))}
-                                    >
-                                        {[
-                                            { value: 1, label: 'Enero' },
-                                            { value: 2, label: 'Febrero' },
-                                            { value: 3, label: 'Marzo' },
-                                            { value: 4, label: 'Abril' },
-                                            { value: 5, label: 'Mayo' },
-                                            { value: 6, label: 'Junio' },
-                                            { value: 7, label: 'Julio' },
-                                            { value: 8, label: 'Agosto' },
-                                            { value: 9, label: 'Septiembre' },
-                                            { value: 10, label: 'Octubre' },
-                                            { value: 11, label: 'Noviembre' },
-                                            { value: 12, label: 'Diciembre' },
-                                        ].map((month) => (
-                                            <option key={month.value} value={month.value}>
-                                                {month.label}
-                                            </option>
-                                        ))}
-                                    </Form.Control>
-                                </Form.Group>
+                            <div className="form-group">
+                                <label>Mes 1</label>
+                                <select className="form-control" value={month1} onChange={handleDropdownChange(setMonth1)} required>
+                                    <option value="">Seleccione un mes</option>
+                                    {orderedMonths.map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
+                                </select>
                             </div>
-                        </Form>
-                        <Button variant="primary" onClick={fetchSalesData} className="mt-3">Comparar</Button>
-                        {comparisonData && (
-                            <>
-                                <div ref={chartRef} className="chart-container" style={{ position: 'relative', height: '400px', width: '100%' }}>
-                                    <Pie data={data} options={options} />
+                            <div className="form-group">
+                                <label>Año 2</label>
+                                <select className="form-control" value={year2} onChange={handleDropdownChange(setYear2)} required>
+                                    <option value="">Seleccione un año</option>
+                                    {years.map((year) => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className="form-group">
+                                <label>Mes 2</label>
+                                <select className="form-control" value={month2} onChange={handleDropdownChange(setMonth2)} required>
+                                    <option value="">Seleccione un mes</option>
+                                    {orderedMonths.map(([value, label]) => (
+                                        <option key={value} value={value}>{label}</option>
+                                    ))}
+                                </select>
+                            </div>
+                            <div className={styles.buttonContainer}>
+                                <button type="submit" className="btn btn-primary">Comparar</button>
+                            </div>
+                        </form>
+                        {result && (
+                            <div>
+                                <h1>Resultado de la Comparación</h1>
+                                <div className={styles.tableContainer}>
+                                    <h3>{months[result.data.month1.month]} {result.data.month1.year}</h3>
+                                    <p>Total Ventas: <strong>{formatCurrency(result.data.month1.total_sales)}</strong></p>
+                                    <div className={styles.tableContainer}>
+                                        <table className={`table table-striped ${styles.table}`}>
+                                            <thead>
+                                                <tr>
+                                                    <th className='table_header'>Producto</th>
+                                                    <th className='table_header'>Cantidad</th>
+                                                    <th className='table_header'>Precio</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {result.data.month1.sold_products.map((product: any) => (
+                                                    <tr key={product.order_id}>
+                                                        <td>{product.title}</td>
+                                                        <td>{product.quantity}</td>
+                                                        <td>{formatCurrency(product.price)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
                                 </div>
-                                <Button variant="secondary" onClick={generatePDF} className="mt-3">Guardar Reporte PDF</Button>
-                            </>
+                                <div className={styles.tableContainer}>
+                                    <h3>{months[result.data.month2.month]} {result.data.month2.year}</h3>
+                                    <p>Total Ventas: <strong>{formatCurrency(result.data.month2.total_sales)}</strong></p>
+                                    <div className={styles.tableContainer}>
+                                        <table className={`table table-striped ${styles.table}`}>
+                                            <thead>
+                                                <tr>
+                                                    <th className='table_header'>Producto</th>
+                                                    <th className='table_header'>Cantidad</th>
+                                                    <th className='table_header'>Precio</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {result.data.month2.sold_products.map((product: any) => (
+                                                    <tr key={product.order_id}>
+                                                        <td>{product.title}</td>
+                                                        <td>{product.quantity}</td>
+                                                        <td>{formatCurrency(product.price)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                                <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
+                                <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
+                                    Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
+                                </p>
+                                <button onClick={generatePDF} className="btn btn-secondary">Generar PDF</button>
+                            </div>
                         )}
-                    </div>
-                </section>
-            )}
-            <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
+                    </>
+                )}
+            </div>
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
                 <Modal.Header closeButton>
-                    <Modal.Title>Vista Previa del PDF</Modal.Title>
+                    <Modal.Title>Reporte de Comparación de Ventas</Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
-                    {pdfData ? (
-                        <iframe
-                            src={pdfData}
-                            style={{ width: '100%', height: '500px' }}
-                            title="PDF Preview"
-                        />
-                    ) : (
-                        <div>Error al cargar la vista previa del PDF.</div>
-                    )}
+                    {pdfDataUrl && <iframe src={pdfDataUrl} width="100%" height="500px" />}
                 </Modal.Body>
                 <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowPDFModal(false)}>
-                        Cerrar
-                    </Button>
-                    <Button variant="primary" onClick={() => {
-                        const link = document.createElement('a');
-                        link.href = pdfData!;
-                        link.download = 'ComparacionMesMes.pdf';
-                        link.click();
-                    }}>
-                        Guardar PDF
-                    </Button>
+                    <button onClick={() => setShowModal(false)} className="btn btn-secondary">Cerrar</button>
                 </Modal.Footer>
             </Modal>
         </>
