@@ -169,7 +169,9 @@ const CompareMonthMonth: React.FC = () => {
                                     </div>
                                 </div>
                                 <p>Diferencia: {formatCurrency(result.data.difference)}</p>
-                                <p>Cambio Porcentual: {result.data.percentage_change}%</p>
+                                <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
+                                    Cambio Porcentual: {result.data.percentage_change}%
+                                </p>
                             </div>
                         )}
                     </>
