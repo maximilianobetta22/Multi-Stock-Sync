@@ -4,6 +4,8 @@ import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/Lo
 import axios from 'axios';
 import styles from './CompareMonthMonth.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 const months: { [key: string]: string } = {
     "01": "Enero",
@@ -71,6 +73,67 @@ const CompareMonthMonth: React.FC = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const generatePDF = () => {
+        const doc = new jsPDF();
+        doc.setFillColor(0, 121, 191);
+        doc.rect(0, 0, 210, 30, "F");
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(18);
+        doc.setTextColor(255, 255, 255);
+        doc.text("Reporte de Comparación de Ventas", 14, 20);
+
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text(`Cliente: ${nickname}`, 14, 40);
+
+        if (result) {
+            const { month1, month2, difference, percentage_change } = result.data;
+
+            doc.text(`Comparación entre ${months[month1.month]} ${month1.year} y ${months[month2.month]} ${month2.year}`, 14, 50);
+
+            autoTable(doc, {
+                head: [["Producto", "Cantidad", "Precio"]],
+                body: month1.sold_products.map((product: any) => [
+                    product.title,
+                    product.quantity,
+                    formatCurrency(product.price),
+                ]),
+                startY: 60,
+                theme: 'grid',
+                margin: { bottom: 10 },
+                didDrawPage: (data) => {
+                    doc.text(`${months[month1.month]} ${month1.year}`, data.settings.margin.left, data.settings.startY - 10);
+                }
+            });
+
+            autoTable(doc, {
+                head: [["Producto", "Cantidad", "Precio"]],
+                body: month2.sold_products.map((product: any) => [
+                    product.title,
+                    product.quantity,
+                    formatCurrency(product.price),
+                ]),
+                startY: (doc as any).lastAutoTable.finalY + 10,
+                theme: 'grid',
+                margin: { bottom: 10 },
+                didDrawPage: (data) => {
+                    doc.text(`${months[month2.month]} ${month2.year}`, data.settings.margin.left, data.settings.startY - 10);
+                }
+            });
+
+            doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, (doc as any).lastAutoTable.finalY + 20);
+            doc.setTextColor(percentage_change > 0 ? 'green' : 'red');
+            doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 30);
+        }
+
+        const pageHeight = doc.internal.pageSize.height;
+        doc.setFontSize(10);
+        doc.setTextColor(150, 150, 150);
+        doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+
+        doc.save('Reporte_Comparacion_Ventas.pdf');
     };
 
     return (
@@ -177,6 +240,7 @@ const CompareMonthMonth: React.FC = () => {
                                 <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
                                     Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
                                 </p>
+                                <button onClick={generatePDF} className="btn btn-secondary">Generar PDF</button>
                             </div>
                         )}
                     </>
