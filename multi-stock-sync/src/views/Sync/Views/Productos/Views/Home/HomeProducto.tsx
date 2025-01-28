@@ -1,9 +1,6 @@
-import styles from './HomeProducto.module.css';
-import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl, Spinner, Alert } from 'react-bootstrap';
 
 interface Connection {
   client_id: string;
@@ -292,133 +289,141 @@ const HomeProducto = () => {
   };
 
   return (
-    <>
-      {(loadingConnections || loading || isUpdating) && <LoadingDinamico variant="container" />}
-      {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
+    <Container>
+      {(loadingConnections || loading || isUpdating) && <Spinner animation="border" />}
+      {toastMessage && <Alert variant={toastType} onClose={() => setToastMessage(null)} dismissible>{toastMessage}</Alert>}
       {!loadingConnections && !loading && !isUpdating && (
-        <section className={`${styles.HomeProducto}`}>
-          <div className={`${styles.container__HomeProducto}`}>
-            <h1>Lista de productos</h1>
-            <div className={`${styles.search__HomeProducto}`}>
-              <select
-                className={`form-select ${styles.select__HomeProducto}`}
-                value={selectedConnection}
-                onChange={handleConnectionChange}
-              >
+        <section>
+          <Row className="mb-3">
+            <Col>
+              <h1>Lista de productos</h1>
+            </Col>
+          </Row>
+          <Row className="mb-3">
+            <Col md={4}>
+              <Form.Select value={selectedConnection} onChange={handleConnectionChange}>
                 <option value="">Selecciona una conexión</option>
                 {connections.map((connection) => (
                   <option key={connection.client_id} value={connection.client_id}>
                     {connection.nickname} ({connection.client_id})
                   </option>
                 ))}
-              </select>
-              <form onSubmit={handleSearch} className={`${styles.searchForm__HomeProducto}`}>
-                <input
-                  className={`form-control ${styles.input__HomeProducto}`}
-                  placeholder="Buscar producto"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button type="submit" className="btn btn-primary">Buscar</button>
-              </form>
-            </div>
-            {!selectedConnection ? (
-              <p>Por favor, seleccione una conexión para ver los productos.</p>
-            ) : (
-              <>
-                <div className={styles.tableContainer}>
-                  <table className={styles.table}>
-                    <thead>
-                      <tr>
-                        <th className='table_header'>Imágen</th>
-                        <th className='table_header'>ID MLC</th>
-                        <th className='table_header'>Título</th>
-                        <th className='table_header'>Código categoría</th>
-                        <th className='table_header'>Precio CLP</th>
-                        <th className='table_header'>Stock MercadoLibre</th>
-                        <th className='table_header'>Bodega asignada</th>
-                        <th className='table_header'>Stock Bodega</th>
-                        <th className='table_header'>Status</th>
-                        <th className='table_header'>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allProductos.length > 0 ? (
-                        allProductos.map((producto) => (
-                          <tr key={producto.id}>
-                            <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
-                            <td>{producto.id}</td>
-                            <td>{producto.title}</td>
-                            <td>{producto.category_id}</td>
-                            <td>{formatPriceCLP(producto.price)}</td>
-                            <td>
-                              {producto.available_quantity}
-                              {isEditing[producto.id] && (
-                                <>
-                                  <input
-                                    type="number"
-                                    value={stockEdit[producto.id] || producto.available_quantity}
-                                    onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
-                                    min="0"
-                                    className={`${styles.customInput}`}
-                                  />
-                                  <button
-                                    className="btn btn-success"
-                                    onClick={async () => {
-                                      setAllProductos((prevProductos) =>
-                                        prevProductos.map((p) =>
-                                          p.id === producto.id
-                                            ? { ...p, available_quantity: stockEdit[producto.id] }
-                                            : p
-                                        )
-                                      );
-                                      await updateStock(producto.id, stockEdit[producto.id]);
-                                      fetchProducts(selectedConnection, searchQuery, limit, offset);
-                                      setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
-                                    }}
-                                  >
-                                    Guardar
-                                  </button>
-                                </>
-                              )}
-                            </td>
-                            <td>no especificada</td>
-                            <td>no especificado</td>
-                            <td>{translateStatus(producto.status)}</td>
-                            <td>
-                              <button className="btn btn-primary" onClick={() => openModal(producto)}>
-                                Acciones
-                              </button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={10} className="text-muted">No hay productos disponibles.</td>
+              </Form.Select>
+            </Col>
+            <Col md={8}>
+              <Form onSubmit={handleSearch}>
+                <InputGroup>
+                  <FormControl
+                    placeholder="Buscar producto"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                  <Button type="submit" variant="primary">Buscar</Button>
+                </InputGroup>
+              </Form>
+            </Col>
+          </Row>
+          {!selectedConnection ? (
+            <p>Por favor, seleccione una conexión para ver los productos.</p>
+          ) : (
+            <>
+              <div className="table-container">
+                <Table striped bordered hover>
+                  <thead>
+                    <tr>
+                      <th className='table_header'>Imágen</th>
+                      <th className='table_header'>ID MLC</th>
+                      <th className='table_header'>Título</th>
+                      <th className='table_header'>Código categoría</th>
+                      <th className='table_header'>Precio CLP</th>
+                      <th className='table_header'>Stock MercadoLibre</th>
+                      <th className='table_header'>Bodega asignada</th>
+                      <th className='table_header'>Stock Bodega</th>
+                      <th className='table_header'>Status</th>
+                      <th className='table_header'>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allProductos.length > 0 ? (
+                      allProductos.map((producto) => (
+                        <tr key={producto.id}>
+                          <td className="text-center"><img src={producto.thumbnail} className='rounded' alt="IMG producto" style={{ maxWidth: '100px', height: 'auto' }} /></td>
+                          <td>{producto.id}</td>
+                          <td>{producto.title}</td>
+                          <td>{producto.category_id}</td>
+                          <td>{formatPriceCLP(producto.price)}</td>
+                          <td>
+                            {producto.available_quantity}
+                            {isEditing[producto.id] && (
+                              <>
+                                <FormControl
+                                  type="number"
+                                  value={stockEdit[producto.id] || producto.available_quantity}
+                                  onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
+                                  min="0"
+                                  className="d-inline-block w-50"
+                                />
+                                <Button
+                                  variant="success"
+                                  className="ms-2"
+                                  onClick={async () => {
+                                    setAllProductos((prevProductos) =>
+                                      prevProductos.map((p) =>
+                                        p.id === producto.id
+                                          ? { ...p, available_quantity: stockEdit[producto.id] }
+                                          : p
+                                      )
+                                    );
+                                    await updateStock(producto.id, stockEdit[producto.id]);
+                                    fetchProducts(selectedConnection, searchQuery, limit, offset);
+                                    setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
+                                  }}
+                                >
+                                  Guardar
+                                </Button>
+                              </>
+                            )}
+                          </td>
+                          <td>no especificada</td>
+                          <td>no especificado</td>
+                          <td>{translateStatus(producto.status)}</td>
+                          <td>
+                            <Button variant="primary" onClick={() => openModal(producto)}>
+                              Acciones
+                            </Button>
+                          </td>
                         </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-                <div className={styles.pagination__container}>
-                  <button
-                    className="btn btn-secondary"
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan={10} className="text-muted">No hay productos disponibles.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </div>
+              <Row className="mt-3">
+                <Col>
+                  <Button
+                    variant="secondary"
                     onClick={() => handlePageChange(offset - limit)}
                     disabled={offset === 0}
                   >
                     Anterior
-                  </button>
-                  <button
-                    className="btn btn-secondary"
+                  </Button>
+                </Col>
+                <Col className="text-end">
+                  <Button
+                    variant="secondary"
                     onClick={() => handlePageChange(offset + limit)}
                     disabled={offset + limit >= totalProducts}
                   >
                     Siguiente
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
+                  </Button>
+                </Col>
+              </Row>
+            </>
+          )}
         </section>
       )}
       <Modal show={modalIsOpen} onHide={closeModal}>
@@ -434,7 +439,7 @@ const HomeProducto = () => {
           </Button>
         </Modal.Footer>
       </Modal>
-    </>
+    </Container>
   );
 };
 
