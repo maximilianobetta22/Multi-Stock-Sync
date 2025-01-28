@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap'; // Para el dropdown del gráfico
 import { Bar } from 'react-chartjs-2'; // Asegúrate de tener instalado chart.js y react-chartjs-2
+import style from "./ProductoMasVendido.module.css";
 
 const Productos: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
@@ -91,121 +92,120 @@ const Productos: React.FC = () => {
     const { mostSold, leastSold } = getMostAndLeastSoldProduct();
 
     return (
-        <div>
+    <div className={style.container__HomeProducto}>
         <h1 className="text-center">Productos</h1>
-
+        
         {/* Tarjetas de Producto Más Vendido y Menos Vendido */}
-        <div className="d-flex justify-content-around mb-3">
-            <div className="card" style={{ width: '18rem' }}>
-            <div className="card-body">
-                <h5 className="card-title">Producto Más Vendido</h5>
-                {mostSold ? (
-                <>
-                    <h6 className="card-subtitle mb-2 text-muted">{mostSold.title}</h6>
-                    <p className="card-text">Cantidad: {mostSold.quantity}</p>
-                    <p className="card-text">Total: ${mostSold.total_amount}</p>
-                </>
+        <div className="d-flex justify-content-around mb-4">
+        {['Producto Más Vendido', 'Producto Menos Vendido'].map((title, index) => {
+        const product = index === 0 ? mostSold : leastSold;
+        return (
+            <div className="card shadow-sm" style={{ width: '18rem' }} key={index}>
+                <div className="card-body">
+                <h5 className="card-title">{title}</h5>
+                {product ? (
+                    <>
+                    <h6 className="card-subtitle mb-2 text-muted">{product.title}</h6>
+                    <p className="card-text">Cantidad: {product.quantity}</p>
+                    <p className="card-text">Total: ${product.total_amount}</p>
+                    </>
                 ) : (
                 <p className="card-text">No hay datos disponibles.</p>
                 )}
+                </div>
             </div>
-            </div>
+            );
+        })}
+    </div>
 
-            <div className="card" style={{ width: '18rem' }}>
-            <div className="card-body">
-                <h5 className="card-title">Producto Menos Vendido</h5>
-                {leastSold ? (
-                <>
-                    <h6 className="card-subtitle mb-2 text-muted">{leastSold.title}</h6>
-                    <p className="card-text">Cantidad: {leastSold.quantity}</p>
-                    <p className="card-text">Total: ${leastSold.total_amount}</p>
-                </>
-                ) : (
-                <p className="card-text">No hay datos disponibles.</p>
-                )}
-            </div>
-            </div>
-        </div>
-
-        {/* Selector de mes y año */}
-        <div className="text-center mb-3">
-            <label htmlFor="monthSelector">Selecciona el mes y año:</label>
-            <input
+    {/* Selector de mes y año */}
+    <div className="text-center mb-4">
+    <label htmlFor="monthSelector" className="form-label">
+        Selecciona el mes y año:
+    </label>
+        <input
             type="month"
             id="monthSelector"
             value={selectedMonth}
             onChange={handleMonthChange}
-            />
+            className="form-control w-auto mx-auto"
+        />
         </div>
 
-        {loading && <p className="text-center">Cargando productos...</p>}
-        {error && <p className="text-center">{error}</p>}
-
-        {/* Tabla de productos */}
-        <div className="table-responsive d-flex justify-content-center">
-            <table className="table table-bordered" style={{ width: '80%' }}>
-            <thead>
-                <tr>
+    {/* Mensajes de estado */}
+    {loading && <p className="text-center text-primary">Cargando productos...</p>}
+    {error && <p className="text-center text-danger">{error}</p>}
+    
+    {/* Tabla de productos */}
+    <div className={style.table__container}>
+    <table className="table table-striped table-bordered">
+        <thead>
+            <tr>
                 <th>Título</th>
                 <th>Cantidad</th>
                 <th>Total</th>
-                </tr>
-            </thead>
+            </tr>
+        </thead>
             <tbody>
-                {currentProducts.map((producto, index) => (
+            {currentProducts.map((producto, index) => (
                 <tr key={index}>
                     <td>{producto.title}</td>
                     <td>{producto.quantity}</td>
                     <td>${producto.total_amount}</td>
                 </tr>
-                ))}
+            ))}
             </tbody>
-            </table>
-        </div>
+        </table>
+    </div>
 
-        {/* Paginación de la tabla */}
-        <div className="d-flex justify-content-center mt-3">
-            <button
+    {/* Paginación */}
+    <div className="pagination__container">
+        <button
             onClick={() => paginate(currentPage - 1)}
             disabled={currentPage === 1}
             className="btn btn-primary"
-            >
+        >
             Anterior
-            </button>
-            <span className="mx-2">Página {currentPage}</span>
-            <button
+        </button>
+        <span>Página {currentPage}</span>
+        <button
             onClick={() => paginate(currentPage + 1)}
             disabled={indexOfLastProduct >= productos.length}
             className="btn btn-primary"
-            >
+        >
             Siguiente
-            </button>
+        </button>
         </div>
 
-        {/* Dropdown para cambiar cantidad de datos en el gráfico */}
-        <div className="text-center mb-3">
-            <Dropdown>
-            <Dropdown.Toggle variant="secondary" id="dropdownMenuButton">
-                Seleccionar cantidad de datos para el gráfico
+    {/* Dropdown para el gráfico */}
+    <div className="text-center my-4">
+        <Dropdown>
+        <Dropdown.Toggle variant="secondary" id="dropdownMenuButton">
+            Seleccionar cantidad de datos para el gráfico
             </Dropdown.Toggle>
-            <Dropdown.Menu aria-labelledby="dropdownMenuButton">
-                {[10, 25, 50, 100, 1000].map((option) => (
-                <Dropdown.Item key={option} onClick={() => handleGraphItemsChange(option)}>
+            <Dropdown.Menu>
+            {[10, 25, 50, 100, 1000].map((option) => (
+                <Dropdown.Item
+                    key={option}
+                    onClick={() => handleGraphItemsChange(option)}
+                >
                     Mostrar {option} productos
                 </Dropdown.Item>
-                ))}
+            ))}
             </Dropdown.Menu>
-            </Dropdown>
-        </div>
+        </Dropdown>
+    </div>
 
-      {/* Gráfico de barras */}
-        {productos.length > 0 && (
-            <div className="mt-5">
+    {/* Gráfico de barras */}
+    {productos.length > 0 && (
+        <div className="mt-5">
             <h3 className="text-center">Gráfico de Barra: Precio Total de Productos</h3>
+            <div className="chart__container">
             <Bar data={chartData} options={chartOptions} />
             </div>
-        )}
         </div>
+        )}
+    </div>
     );
 };
 
