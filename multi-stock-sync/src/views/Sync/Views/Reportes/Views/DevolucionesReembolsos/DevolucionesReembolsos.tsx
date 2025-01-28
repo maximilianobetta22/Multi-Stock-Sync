@@ -1,6 +1,9 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import styles from './DevolucionesReembolsos.module.css'; 
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 
 interface Order {
@@ -59,17 +62,66 @@ const DevolucionesReembolsos = () => {
     fetchDevoluciones();
   }, [client_id]);
 
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    let y = 10;
+
+    doc.setFontSize(18);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Reporte de Devoluciones por Categoría', 10, y);
+    y += 10;
+
+    categories.forEach((category) => {
+      doc.setFontSize(14);
+      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(40, 40, 40);
+      doc.text(`Categoría: ${category.category_id}`, 10, y);
+      y += 8;
+
+      doc.setFontSize(12);
+      doc.setFont('helvetica', 'normal');
+      doc.setTextColor(60, 60, 60);
+      doc.text(`Total Devoluciones: ${formatCLP(category.total_refunds)}`, 10, y);
+      y += 8;
+
+      doc.autoTable({
+        startY: y,
+        head: [['ID de Orden', 'Fecha de Creación', 'Total Monto', 'Estado']],
+        body: category.orders.map((order) => [
+          order.id,
+          new Date(order.date_created).toLocaleString(),
+          formatCLP(order.total_amount),
+          order.status,
+        ]),
+        margin: { top: 10, left: 10, right: 10 },
+        styles: { fontSize: 10, halign: 'center', lineColor: [200, 200, 200] },
+        headStyles: {
+          fillColor: [30, 144, 255],
+          textColor: [255, 255, 255],
+        },
+      });
+
+      y = doc.lastAutoTable.finalY + 15;
+    });
+
+    doc.save('reporte_devoluciones.pdf');
+  };
+
   if (loading) {
-    return <LoadingDinamico variant='container' />;
+    return <LoadingDinamico variant="container" />;
   }
 
   return (
-    <div className="container mt-5">
-      <h1 className="mb-4">Devoluciones por Categoría</h1>
+    <div className={`container mt-5 ${styles.wrapper}`}>
+      <h1 className={`mb-4 ${styles.title}`}>Devoluciones por Categoría</h1>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      {error && <div className={`alert alert-danger ${styles.error}`}>{error}</div>}
 
-      <table className="table table-striped">
+      <button className={`btn btn-primary mb-4 ${styles.button}`} onClick={exportToPDF}>
+        Exportar a PDF
+      </button>
+
+      <table className={`table table-striped ${styles.table}`}>
         <thead>
           <tr>
             <th>Categoría</th>
@@ -83,7 +135,7 @@ const DevolucionesReembolsos = () => {
               <td>{category.category_id}</td>
               <td>{formatCLP(category.total_refunds)}</td>
               <td>
-                <table className="table table-bordered">
+                <table className={`table table-bordered ${styles.subTable}`}>
                   <thead>
                     <tr>
                       <th>ID de Orden</th>
