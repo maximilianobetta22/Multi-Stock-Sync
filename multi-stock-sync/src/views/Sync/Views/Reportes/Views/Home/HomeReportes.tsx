@@ -6,7 +6,7 @@ import ToastComponent from '../../../../Components/ToastComponent/ToastComponent
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo } from '@fortawesome/free-solid-svg-icons';
-import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity, faCalendar ,faCalendarDays } from '@fortawesome/free-solid-svg-icons';
+import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity, faCalendar ,faCalendarDays, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
 
 interface Connection {
   client_id: string;
@@ -139,6 +139,9 @@ const HomeReportes: React.FC = () => {
                 <Link to={`/sync/reportes/ventas-mes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                   <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Ventas totales por mes
                 </Link>
+                <Link to={`/sync/reportes/ventas-year/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  <FontAwesomeIcon icon={faCalendarCheck} className="mr-2" /> Ventas totales por año
+                </Link>  
                 <Link to={`/sync/reportes/ventas-dia/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                   <FontAwesomeIcon icon={faCalendarDay} className="mr-2" /> Ventas totales por día
                 </Link>

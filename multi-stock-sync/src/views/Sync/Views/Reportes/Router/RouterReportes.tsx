@@ -14,6 +14,7 @@ import IngresosCategoriaProducto from "../Views/IngresosCategoriaProducto/Ingres
 import EstadosOrdenes from "../Views/EstadosOrdenes/EstadosOrdenes";
 import CompareMonthMonth from "../Views/CompareMesMes/CompareMonthMonth";
 import CompareYearYear from "../Views/CompareYearYear/CompareYearYear";
+import VentasPorYear from "../Views/VentasPorYear/VentasPorYear";
 
 
 function RouterReportes() {
@@ -35,6 +36,7 @@ function RouterReportes() {
             <Route path="estados-ordenes/:client_id" element={<EstadosOrdenes />} />
             <Route path="compare-month-month/:client_id" element={<CompareMonthMonth />} />
             <Route path="compare-year-year/:client_id" element={<CompareYearYear />} />
+            <Route path="ventas-year/:client_id" element={<VentasPorYear />} />
 
         </Routes>
     );
