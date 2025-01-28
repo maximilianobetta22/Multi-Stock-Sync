@@ -90,3 +90,10 @@ p {
     margin: 10px 0;
     color: #555;
 }
+
+.buttonContainer {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}

@@ -118,7 +118,9 @@ const CompareMonthMonth: React.FC = () => {
                                     ))}
                                 </select>
                             </div>
-                            <button type="submit" className="btn btn-primary">Comparar</button>
+                            <div className={styles.buttonContainer}>
+                                <button type="submit" className="btn btn-primary">Comparar</button>
+                            </div>
                         </form>
                         {result && (
                             <div>
