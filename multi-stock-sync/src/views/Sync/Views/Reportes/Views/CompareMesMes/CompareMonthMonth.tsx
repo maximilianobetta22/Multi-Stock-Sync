@@ -66,7 +66,7 @@ const CompareMonthMonth: React.FC = () => {
     return (
         <>
             {loading && <LoadingDinamico variant="container" />}
-            <div className={styles.container}>
+            <div className={styles.container} style={{ display: loading ? 'none' : 'block' }}>
                 {!loading && (
                     <>
                         <h1>Comparar Ventas entre Meses</h1>
