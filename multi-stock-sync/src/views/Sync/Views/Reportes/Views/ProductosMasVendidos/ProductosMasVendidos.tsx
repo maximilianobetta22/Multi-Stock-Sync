@@ -117,12 +117,11 @@ const Productos = () => {
 
     return (
         <div className="container mt-4">
-            <h1 className="text-center">Productos</h1>
+            <h1 className="text-center mb-4">Reporte de Productos</h1>
 
-            {/* Contenedor principal con Flexbox */}
-            <div className="d-flex justify-content-between mb-4 flex-wrap">
+            <div className="row mb-4">
                 {/* Columna izquierda con las tarjetas */}
-                <div className="d-flex flex-column" style={{ flex: 1, maxWidth: '40%', marginRight: '20px' }}>
+                <div className="col-md-6">
                     <div className="card shadow-sm mb-3">
                         <div className="card-body">
                             <h5 className="card-title">Producto Más Vendido</h5>
@@ -154,16 +153,16 @@ const Productos = () => {
                 </div>
 
                 {/* Columna derecha con el gráfico */}
-                <div className="d-flex flex-column" style={{ flex: 1, maxWidth: '55%' }}>
+                <div className="col-md-6">
                     <h3 className="text-center">Gráfico de Barra: Precio Total de Productos</h3>
-                    <div className="chart-container" style={{ height: '250px' }}>
+                    <div className="chart-container mb-4" style={{ height: '300px' }}>
                         <Bar data={chartData} options={chartOptions} />
                     </div>
                 </div>
             </div>
 
             {/* Selector de mes/año */}
-            <div className="d-flex justify-content-end w-100 mb-4">
+            <div className="d-flex justify-content-end mb-4">
                 <div className="d-inline-block">
                     <label htmlFor="monthSelector" className="form-label">Selecciona el mes y año:</label>
                     <input
@@ -231,7 +230,7 @@ const Productos = () => {
 
             {/* Botón para generar el PDF */}
             <div className="text-center my-4">
-                <button onClick={generatePDFs} className="btn btn-success">
+                <button onClick={generatePDFs} className="btn btn-success mx-2">
                     Generar Reporte en PDF
                 </button>
                 <button onClick={exportToExcel} className="btn btn-primary mx-2">
