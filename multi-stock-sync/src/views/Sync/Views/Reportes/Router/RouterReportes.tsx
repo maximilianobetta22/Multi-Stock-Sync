@@ -10,11 +10,11 @@ function RouterReportes() {
 
     return (
         <Routes>
-            <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />
+           <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
             <Route path="home" element={<HomeReportes/>} />
             <Route path="filtrar-datos" element={<FiltrarDatos />} />
             <Route path="exportar-datos" element={<ExportarDatos />} />
-            <Route path='ingresos-categoria-producto' element={<IngresosCategoriaProducto/>} />
+            <Route path="ingresos-categoria-producto" element={<IngresosCategoriaProducto/>} />
         </Routes>
     );
 };
