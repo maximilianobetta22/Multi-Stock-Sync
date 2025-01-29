@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 type eventChange = React.ChangeEvent<HTMLInputElement>;
 type eventForm = React.FormEvent<HTMLFormElement>;
 
-export const IngresosCategoriaProducto = () => {
+const IngresosCategoriaProducto = () => {
 
   const [initDate, setInitDate] = useState<string>('');
   const [endDate, setEndDate] = useState<string>('');
@@ -118,6 +118,7 @@ export const IngresosCategoriaProducto = () => {
                 <td>$10.000</td>
                 <td>$13.000</td>
               </tr>
+              
               <tr className={styles.body__row}>
                 <td>POLERA</td>
                 <td>documento</td>
@@ -125,6 +126,14 @@ export const IngresosCategoriaProducto = () => {
                 <td>$10.000</td>
                 <td>$13.000</td>
               </tr>
+              <tr className={styles.body__row}>
+                <td>POLERA</td>
+                <td>documento</td>
+                <td>10</td>
+                <td>$10.000</td>
+                <td>$13.000</td>
+              </tr>
+              
               <tr className={styles.body__row}>
                 <td>POLERA</td>
                 <td>documento</td>
@@ -144,19 +153,21 @@ export const IngresosCategoriaProducto = () => {
           <div className={styles.data__total}>
             <div className={styles.total__item}>
               <div className={styles.item__total}>
-                <p>Total de ingresos</p>
-                <p>$19.000</p>
+                <p className={styles.total__p}>Total de ingresos</p>
+                <p className={styles.total__p}>$19.000</p>
               </div>
             </div>
             <div className={styles.total__buttonExport}>
-              <button className={styles.buttonExport_btn}>
-                <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
-                Exportar a Pdf
-              </button>
-              <button className={styles.buttonExport_btn}>
-                <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
-                Exportar a Excel
-              </button>
+              <div className={styles.buttonExport__container}>
+                <button className={styles.buttonExport_btn}>
+                  <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
+                  Exportar a Pdf
+                </button>
+                <button className={styles.buttonExport_btn}>
+                  <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
+                  Exportar a Excel
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -168,3 +179,5 @@ export const IngresosCategoriaProducto = () => {
     </div>
   );
 };
+
+export default IngresosCategoriaProducto;

@@ -1,24 +1,6 @@
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from "chart.js";
 import { Pie } from "react-chartjs-2";
 import styles from "../IngresosCategoriaProducto.module.css";
 import { createRandomColors } from "../helpers";
-
-ChartJS.register(
-  CategoryScale,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
 
 export const PieChart = () => {
 
@@ -45,10 +27,17 @@ export const PieChart = () => {
           }}
           options={{
             responsive: true,
+            maintainAspectRatio: false,
             plugins: {
               legend: {
                 display: false,
-              }
+              },
+              tooltip: {
+                enabled: false, // Deshabilita los tooltips
+              },
+              datalabels: {
+                display: false, // Deshabilita las etiquetas de datos
+              },
             },
           }}
         />
@@ -60,8 +49,7 @@ export const PieChart = () => {
             dias.map((dia, index) => (
               <li key={index} className={styles.data__item}>
                 <div className={styles.item__color} style={{ backgroundColor: colors[index] }}></div>
-                <p>{dia}</p>
-                <p>{ganancias[index]}</p>
+                <p className={styles.item__categoria}>{dia}</p>
               </li>
             ))
           }
