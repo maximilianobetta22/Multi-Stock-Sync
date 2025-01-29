@@ -21,7 +21,7 @@ function RouterReportes() {
 
     return (
         <Routes>
-           <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
+            <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
             <Route path="home" element={<HomeReportes/>} />
             <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
             <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
