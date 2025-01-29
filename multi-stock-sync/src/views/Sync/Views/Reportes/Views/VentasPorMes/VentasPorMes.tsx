@@ -179,6 +179,9 @@ const VentasPorMes: React.FC = () => {
         },
     };
 
+
+
+
     const generatePDF = () => {
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height;
@@ -204,6 +207,8 @@ const VentasPorMes: React.FC = () => {
         setPdfData(pdfOutput);
         setShowPDFModal(true);
     };
+
+
 
     return (
         <>
@@ -306,6 +311,10 @@ const VentasPorMes: React.FC = () => {
 };
 
 export default VentasPorMes;
+
+
+
+
 
 interface ChartModalProps {
     show: boolean;
