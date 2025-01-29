@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
-import { Pie } from 'react-chartjs-2'; // Cambié de Bar a Pie
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import { Pie } from 'react-chartjs-2';
+import { jsPDF } from 'jspdf'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as XLSX from 'xlsx';
 
@@ -46,7 +45,6 @@ const Productos:React.FC = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
     const handleGraphItemsChange = (value) => setItemsPerGraph(value);
 
-    // Cambié el chartData para un gráfico de torta
     const chartData = {
         labels: productos.slice(0, itemsPerGraph).map((producto) => producto.title),
         datasets: [
@@ -102,41 +100,6 @@ const Productos:React.FC = () => {
 
     const { mostSold, leastSold } = getMostAndLeastSoldProduct();
 
-    const generatePDFs = () => {
-        // Generar el primer PDF (Tabla y datos)
-        const doc1 = new jsPDF();
-        doc1.setFontSize(16);
-        doc1.text('Reporte de Productos', 14, 20);
-        doc1.setFontSize(12);
-        doc1.text(`Producto Más Vendido: ${mostSold ? mostSold.title : 'No disponible'}`, 14, 30);
-        doc1.text(`Producto Menos Vendido: ${leastSold ? leastSold.title : 'No disponible'}`, 14, 40);
-    
-        // Agregar tabla con todos los productos
-        doc1.autoTable({
-            head: [['Título', 'Cantidad', 'Total']],
-            body: productos.map(producto => [
-                producto.title,
-                producto.quantity,
-                `$${producto.total_amount}`,
-            ]),
-            startY: 50,
-        });
-    
-        // Guardar el primer PDF
-        doc1.save('reporte_productos.pdf');
-    
-        // Generar el segundo PDF (Solo gráfico)
-        const doc2 = new jsPDF('landscape'); // Formato horizontal
-        const canvas = document.querySelector('canvas');
-        if (canvas) {
-            const imgData = canvas.toDataURL('image/png');
-            doc2.addImage(imgData, 'PNG', 10, 20, 270, 140);
-        }
-    
-        // Guardar el segundo PDF
-        doc2.save('grafico_productos.pdf');
-    };
-
     const exportToExcel = () => {
         const worksheet = XLSX.utils.json_to_sheet(productos);
         const workbook = XLSX.utils.book_new();
@@ -149,7 +112,15 @@ const Productos:React.FC = () => {
             <h1 className="text-center mb-4">Reporte de Productos</h1>
 
             <div className="row mb-4">
-                {/* Columna izquierda con las tarjetas más pequeñas */}
+                {/* Columna izquierda con el gráfico más grande */}
+                <div className="col-md-8">
+                    <h3 className="text-center">Gráfico de Torta: Precio Total de Productos</h3>
+                    <div className="chart-container mb-4" style={{ height: '500px' }}> {/* Aumenté el tamaño del gráfico */}
+                        <Pie data={chartData} options={chartOptions} />
+                    </div>
+                </div>
+
+                {/* Columna derecha con las tarjetas */}
                 <div className="col-md-4">
                     <div className="card shadow-sm mb-3">
                         <div className="card-body">
@@ -178,14 +149,6 @@ const Productos:React.FC = () => {
                                 <p className="card-text">No hay datos disponibles.</p>
                             )}
                         </div>
-                    </div>
-                </div>
-
-                {/* Columna derecha con el gráfico que ocupa más espacio */}
-                <div className="col-md-8">
-                    <h3 className="text-center">Gráfico de Torta: Precio Total de Productos</h3>
-                    <div className="chart-container mb-4" style={{ height: '300px' }}>
-                        <Pie data={chartData} options={chartOptions} />
                     </div>
                 </div>
             </div>
@@ -259,9 +222,6 @@ const Productos:React.FC = () => {
 
             {/* Botón para generar el PDF */}
             <div className="text-center my-4">
-                <button onClick={generatePDFs} className="btn btn-success mx-2">
-                    Generar Reporte en PDF
-                </button>
                 <button onClick={exportToExcel} className="btn btn-primary mx-2">
                     Exportar a Excel
                 </button>
