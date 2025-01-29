@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
+import { Pie } from 'react-chartjs-2'; // Cambié de Bar a Pie
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as XLSX from 'xlsx';
 
-const Productos = () => {
+const Productos:React.FC = () => {
     const { client_id } = useParams();
     const [productos, setProductos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -46,22 +46,51 @@ const Productos = () => {
     const paginate = (pageNumber) => setCurrentPage(pageNumber);
     const handleGraphItemsChange = (value) => setItemsPerGraph(value);
 
+    // Cambié el chartData para un gráfico de torta
     const chartData = {
         labels: productos.slice(0, itemsPerGraph).map((producto) => producto.title),
         datasets: [
             {
-                label: 'Precio Total',
                 data: productos.slice(0, itemsPerGraph).map((producto) => producto.total_amount),
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(54, 162, 235, 1)',
+                ],
                 borderWidth: 1,
             },
         ],
     };
 
     const chartOptions = {
-        scales: {
-            y: { beginAtZero: true },
+        responsive: true,
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: (context) => {
+                        return `$${context.raw}`; // Solo muestra el valor, no el nombre del producto
+                    },
+                },
+            },
         },
     };
 
@@ -120,8 +149,8 @@ const Productos = () => {
             <h1 className="text-center mb-4">Reporte de Productos</h1>
 
             <div className="row mb-4">
-                {/* Columna izquierda con las tarjetas */}
-                <div className="col-md-6">
+                {/* Columna izquierda con las tarjetas más pequeñas */}
+                <div className="col-md-4">
                     <div className="card shadow-sm mb-3">
                         <div className="card-body">
                             <h5 className="card-title">Producto Más Vendido</h5>
@@ -152,11 +181,11 @@ const Productos = () => {
                     </div>
                 </div>
 
-                {/* Columna derecha con el gráfico */}
-                <div className="col-md-6">
-                    <h3 className="text-center">Gráfico de Barra: Precio Total de Productos</h3>
+                {/* Columna derecha con el gráfico que ocupa más espacio */}
+                <div className="col-md-8">
+                    <h3 className="text-center">Gráfico de Torta: Precio Total de Productos</h3>
                     <div className="chart-container mb-4" style={{ height: '300px' }}>
-                        <Bar data={chartData} options={chartOptions} />
+                        <Pie data={chartData} options={chartOptions} />
                     </div>
                 </div>
             </div>
