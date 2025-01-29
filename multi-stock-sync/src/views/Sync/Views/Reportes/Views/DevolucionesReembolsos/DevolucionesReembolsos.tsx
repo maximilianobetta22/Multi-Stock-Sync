@@ -2,10 +2,13 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useParams } from 'react-router-dom';
 import jsPDF from 'jspdf';
-import 'jspdf-autotable';
-import styles from './DevolucionesReembolsos.module.css'; 
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
+import styles from './DevolucionesReembolsos.module.css';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 
+// Interfaces de datos
 interface Order {
   id: number;
   date_created: string;
@@ -26,6 +29,8 @@ const DevolucionesReembolsos = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(true);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [pdfPreview, setPdfPreview] = useState<jsPDF | null>(null);
 
   const { client_id } = useParams<{ client_id: string }>();
 
@@ -33,6 +38,7 @@ const DevolucionesReembolsos = () => {
     return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
   };
 
+  
   useEffect(() => {
     const fetchDevoluciones = async () => {
       try {
@@ -62,7 +68,24 @@ const DevolucionesReembolsos = () => {
     fetchDevoluciones();
   }, [client_id]);
 
-  const exportToPDF = () => {
+  
+  const translateStatus = (status: string): string => {
+    switch (status.toLowerCase()) {
+      case 'completed':
+        return 'Completado';
+      case 'pending':
+        return 'Pendiente';
+      case 'refunded':
+        return 'Reembolsado';
+      case 'cancelled':
+        return 'Cancelado';  
+      default:
+        return status; 
+    }
+  };
+
+  
+  const generatePDFPreview = () => {
     const doc = new jsPDF();
     let y = 10;
 
@@ -91,7 +114,7 @@ const DevolucionesReembolsos = () => {
           order.id,
           new Date(order.date_created).toLocaleString(),
           formatCLP(order.total_amount),
-          order.status,
+          translateStatus(order.status), // Traducir estado
         ]),
         margin: { top: 10, left: 10, right: 10 },
         styles: { fontSize: 10, halign: 'center', lineColor: [200, 200, 200] },
@@ -104,7 +127,40 @@ const DevolucionesReembolsos = () => {
       y = doc.lastAutoTable.finalY + 15;
     });
 
-    doc.save('reporte_devoluciones.pdf');
+    setPdfPreview(doc);
+    setShowModal(true);  
+  };
+
+  
+  const exportToPDF = () => {
+    if (pdfPreview) {
+      pdfPreview.save('reporte_devoluciones.pdf');
+      setShowModal(false);  
+    }
+  };
+
+ 
+  const exportToExcel = () => {
+    const workbook = XLSX.utils.book_new();
+
+    categories.forEach((category) => {
+      const worksheetData = [
+        ['ID de Orden', 'Fecha de Creación', 'Total Monto', 'Estado'],
+        ...category.orders.map((order) => [
+          order.id,
+          new Date(order.date_created).toLocaleString(),
+          formatCLP(order.total_amount),
+          translateStatus(order.status), // Traducir estado
+        ]),
+      ];
+
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      XLSX.utils.book_append_sheet(workbook, worksheet, `Categoria ${category.category_id}`);
+    });
+
+    const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+    const archivo = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    saveAs(archivo, 'reporte_devoluciones.xlsx');
   };
 
   if (loading) {
@@ -117,10 +173,16 @@ const DevolucionesReembolsos = () => {
 
       {error && <div className={`alert alert-danger ${styles.error}`}>{error}</div>}
 
-      <button className={`btn btn-primary mb-4 ${styles.button}`} onClick={exportToPDF}>
-        Exportar a PDF
-      </button>
+      <div className="d-flex gap-2 mb-4">
+        <button className={`btn btn-primary ${styles.button}`} onClick={generatePDFPreview}>
+          Exportar a PDF
+        </button>
+        <button className={`btn btn-success ${styles.button}`} onClick={exportToExcel}>
+          Exportar a Excel
+        </button>
+      </div>
 
+      
       <table className={`table table-striped ${styles.table}`}>
         <thead>
           <tr>
@@ -150,7 +212,7 @@ const DevolucionesReembolsos = () => {
                         <td>{order.id}</td>
                         <td>{new Date(order.date_created).toLocaleString()}</td>
                         <td>{formatCLP(order.total_amount)}</td>
-                        <td>{order.status}</td>
+                        <td>{translateStatus(order.status)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -160,6 +222,25 @@ const DevolucionesReembolsos = () => {
           ))}
         </tbody>
       </table>
+
+     
+      {showModal && pdfPreview && (
+        <div className={styles.modal} onClick={() => setShowModal(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+            <h3>Vista previa del PDF</h3>
+            <div>
+              <iframe
+                src={pdfPreview.output('datauristring')}
+                width="100%"
+                height="400px"
+                title="Vista previa del PDF"
+              />
+            </div>
+            <button className="btn btn-primary" onClick={exportToPDF}>Descargar PDF</button>
+            <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
