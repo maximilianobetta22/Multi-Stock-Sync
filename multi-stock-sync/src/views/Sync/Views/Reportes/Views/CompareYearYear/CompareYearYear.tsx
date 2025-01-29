@@ -29,13 +29,15 @@ const CompareYearYear: React.FC = () => {
             setLoading(true);
             try {
                 const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+                console.log('Nickname response:', response.data);
                 setNickname(response.data.data.nickname);
             } catch (error) {
-                console.error(error);
+                console.error('Error fetching nickname:', error);
             } finally {
                 setLoading(false);
             }
         };
+
         fetchNickname();
     }, [client_id]);
 
@@ -50,6 +52,7 @@ const CompareYearYear: React.FC = () => {
             const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-annual-sales-data/${client_id}`, {
                 params: { year1, year2 }
             });
+            console.log('Comparison response:', response.data);
             setResult(response.data);
         } catch (error) {
             console.error(error);
@@ -57,7 +60,7 @@ const CompareYearYear: React.FC = () => {
             setLoading(false);
         }
     };
-
+/* Pdf------------------------------------------------------ */
     const generatePDF = () => {
         const doc = new jsPDF();
         doc.setFillColor(0, 121, 191);
@@ -75,7 +78,6 @@ const CompareYearYear: React.FC = () => {
             const { year1Data, year2Data, difference, percentage_change } = result.data;
 
             doc.text(`Comparación entre ${year1} y ${year2}`, 14, 50);
-
 
             doc.setFontSize(14);
             doc.text(`${year1}`, 105, 70, { align: 'center' });
@@ -126,7 +128,7 @@ const CompareYearYear: React.FC = () => {
         setPdfDataUrl(pdfData);
         setShowModal(true);
     };
-
+/* fin del pdf----------------------------------------------------------- */
     return (
         <>
             {loading && <LoadingDinamico variant="container" />}
@@ -163,71 +165,66 @@ const CompareYearYear: React.FC = () => {
                             </div>
                         </form>
 
-       
-                        {result && (
+                        {/* generasion de la tabla ----------------------- */}
+                        {result && result.data.year1Data && result.data.year2Data && (
                             <div>
                                 <h1>Resultado de la Comparación</h1>
 
                                 <div className={styles.tableContainer}>
                                     <h3>{year1}</h3>
                                     <p>Total Ventas: <strong>{formatCurrency(result.data.year1Data.total_sales)}</strong></p>
-                                    <div className={styles.tableContainer}>
-                                        <table className={`table table-striped ${styles.table}`}>
-                                            <thead>
-                                                <tr>
-                                                    <th className="table_header">Producto</th>
-                                                    <th className="table_header">Cantidad</th>
-                                                    <th className="table_header">Precio</th>
+                                    <table className={`table table-striped ${styles.table}`}>
+                                        <thead>
+                                            <tr>
+                                                <th className="table_header">Producto</th>
+                                                <th className="table_header">Cantidad</th>
+                                                <th className="table_header">Precio</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {result.data.year1Data.sold_products.map((product: any) => (
+                                                <tr key={product.order_id}>
+                                                    <td>{product.title}</td>
+                                                    <td>{product.quantity}</td>
+                                                    <td>{formatCurrency(product.price)}</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {result.data.year1Data.sold_products.map((product: any) => (
-                                                    <tr key={product.order_id}>
-                                                        <td>{product.title}</td>
-                                                        <td>{product.quantity}</td>
-                                                        <td>{formatCurrency(product.price)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
 
                                 <div className={styles.tableContainer}>
                                     <h3>{year2}</h3>
                                     <p>Total Ventas: <strong>{formatCurrency(result.data.year2Data.total_sales)}</strong></p>
-                                    <div className={styles.tableContainer}>
-                                        <table className={`table table-striped ${styles.table}`}>
-                                            <thead>
-                                                <tr>
-                                                    <th className="table_header">Producto</th>
-                                                    <th className="table_header">Cantidad</th>
-                                                    <th className="table_header">Precio</th>
+                                    <table className={`table table-striped ${styles.table}`}>
+                                        <thead>
+                                            <tr>
+                                                <th className="table_header">Producto</th>
+                                                <th className="table_header">Cantidad</th>
+                                                <th className="table_header">Precio</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {result.data.year2Data.sold_products.map((product: any) => (
+                                                <tr key={product.order_id}>
+                                                    <td>{product.title}</td>
+                                                    <td>{product.quantity}</td>
+                                                    <td>{formatCurrency(product.price)}</td>
                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                {result.data.year2Data.sold_products.map((product: any) => (
-                                                    <tr key={product.order_id}>
-                                                        <td>{product.title}</td>
-                                                        <td>{product.quantity}</td>
-                                                        <td>{formatCurrency(product.price)}</td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                            ))}
+                                        </tbody>
+                                    </table>
                                 </div>
-
 
                                 <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
                                 <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
                                     Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
                                 </p>
 
-
                                 <button onClick={generatePDF} className="btn btn-secondary">Generar PDF</button>
                             </div>
                         )}
+                        {/* fin de la generacion de la tabla  */}
                     </>
                 )}
             </div>
