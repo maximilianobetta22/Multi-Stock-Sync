@@ -33,10 +33,10 @@ const OpinionesClientes: React.FC = () => {
       return;
     }
 
-    // API
+    // API para obtener las opiniones
     const fetchOpiniones = async () => {
       try {
-        const response = await axios.get(`${client_id}`);
+        const response = await axios.get(`/api/opiniones/${client_id}`);
         if (Array.isArray(response.data)) {
           setOpiniones(response.data);
         } else {
@@ -69,10 +69,10 @@ const OpinionesClientes: React.FC = () => {
       console.error('Error al agregar opinión:', error);
     }
   };
-  //???
+
   const handleEliminarOpinion = async (id: number) => {
     try {
-      await axios.delete(`${id}`);
+      await axios.delete(`/api/opiniones/${id}`);
       setOpiniones((prevOpiniones) =>
         prevOpiniones.filter((opinion) => opinion.id !== id)
       );
@@ -81,44 +81,71 @@ const OpinionesClientes: React.FC = () => {
     }
   };
 
+  // Función para agrupar las opiniones por producto
+  const agruparPorProducto = (opiniones: Opinion[]) => {
+    return opiniones.reduce((secciones, opinion) => {
+      const { producto } = opinion;
+      if (!secciones[producto]) {
+        secciones[producto] = [];
+      }
+      secciones[producto].push(opinion);
+      return secciones;
+    }, {} as Record<string, Opinion[]>);
+  };
+
+  const opinionesAgrupadas = agruparPorProducto(opiniones);
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>Opiniones de Clientes</h1>
 
-      
       <div className="mb-12 space-y-8">
         <h2 className={styles.sectionTitle}>Lista de Opiniones</h2>
-        {opiniones.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {opiniones.map((opinion) => (
-              <div key={opinion.id} className={styles.opinionCard}>
-                <h3 className={styles.productName}>{opinion.producto}</h3>
-                <p className={styles.comment}>{opinion.comentario}</p>
-                <div className={styles.stars}>
-                  {[...Array(5)].map((_, index) => (
-                    <FontAwesomeIcon
-                      key={index}
-                      icon={faStar}
-                      color={index < opinion.estrellas ? 'gold' : 'gray'}
-                      className="text-xl"
-                    />
+        {Object.keys(opinionesAgrupadas).length > 0 ? (
+          Object.entries(opinionesAgrupadas).map(([producto, opinionesProducto]) => (
+            <div key={producto}>
+              <h3 className={styles.sectionTitle}>{producto}</h3>
+              <table className="table-auto w-full text-left">
+                <thead>
+                  <tr>
+                    <th className="px-4 py-2">Comentario</th>
+                    <th className="px-4 py-2">Estrellas</th>
+                    <th className="px-4 py-2">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {opinionesProducto.map((opinion) => (
+                    <tr key={opinion.id}>
+                      <td className="border px-4 py-2">{opinion.comentario}</td>
+                      <td className="border px-4 py-2">
+                        {[...Array(5)].map((_, index) => (
+                          <FontAwesomeIcon
+                            key={index}
+                            icon={faStar}
+                            color={index < opinion.estrellas ? 'gold' : 'gray'}
+                            className="text-xl"
+                          />
+                        ))}
+                      </td>
+                      <td className="border px-4 py-2">
+                        <button
+                          className="bg-red-500 text-white py-1 px-3 rounded"
+                          onClick={() => handleEliminarOpinion(opinion.id)}
+                        >
+                          Eliminar
+                        </button>
+                      </td>
+                    </tr>
                   ))}
-                </div>
-                <button
-                  className={styles.deleteButton}
-                  onClick={() => handleEliminarOpinion(opinion.id)}
-                >
-                  Eliminar
-                </button>
-              </div>
-            ))}
-          </div>
+                </tbody>
+              </table>
+            </div>
+          ))
         ) : (
           <p>No hay opiniones disponibles.</p>
         )}
       </div>
 
-      
       <div className={styles.formContainer}>
         <h2 className={styles.sectionTitle}>Agregar Nueva Opinión</h2>
         <div className="space-y-4">

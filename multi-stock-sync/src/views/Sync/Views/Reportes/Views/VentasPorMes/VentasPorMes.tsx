@@ -16,7 +16,7 @@ import styles from './VentasPorMes.module.css';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { useParams } from 'react-router-dom';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Row, Col } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
@@ -179,6 +179,9 @@ const VentasPorMes: React.FC = () => {
         },
     };
 
+
+
+
     const generatePDF = () => {
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height;
@@ -205,6 +208,8 @@ const VentasPorMes: React.FC = () => {
         setShowPDFModal(true);
     };
 
+
+
     return (
         <>
             {loading && <LoadingDinamico variant="container" />}
@@ -215,47 +220,55 @@ const VentasPorMes: React.FC = () => {
                         <h1 className="text-center">Ventas por Mes</h1>
                         <h5 className="text-center">Usuario: {userName}</h5>
                         <Form className="mb-4">
-                            <Form.Group controlId="formYear">
-                                <Form.Label>Año</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    value={yearSeleccionado}
-                                    onChange={(e) => setYearSeleccionado(Number(e.target.value))}
-                                >
-                                    {[2023, 2024, 2025, 2026].map((year) => (
-                                        <option key={year} value={year}>
-                                            {year}
-                                        </option>
-                                    ))}
-                                </Form.Control>
-                            </Form.Group>
-                            <Form.Group controlId="formMonth" className="mt-3">
-                                <Form.Label>Mes</Form.Label>
-                                <Form.Control
-                                    as="select"
-                                    value={monthSeleccionado}
-                                    onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
-                                >
-                                    {[
-                                        { value: 1, label: 'Enero' },
-                                        { value: 2, label: 'Febrero' },
-                                        { value: 3, label: 'Marzo' },
-                                        { value: 4, label: 'Abril' },
-                                        { value: 5, label: 'Mayo' },
-                                        { value: 6, label: 'Junio' },
-                                        { value: 7, label: 'Julio' },
-                                        { value: 8, label: 'Agosto' },
-                                        { value: 9, label: 'Septiembre' },
-                                        { value: 10, label: 'Octubre' },
-                                        { value: 11, label: 'Noviembre' },
-                                        { value: 12, label: 'Diciembre' },
-                                    ].map((month) => (
-                                        <option key={month.value} value={month.value}>
-                                            {month.label}
-                                        </option>
-                                    ))}
-                                </Form.Control>
-                            </Form.Group>
+                            <Row className="d-flex justify-content-center">
+                                <Col xs="auto">
+                                    <Form.Group controlId="formYear">
+                                        <Form.Label>Año</Form.Label>
+                                        <Form.Control
+                                            as="select"
+                                            value={yearSeleccionado}
+                                            onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+                                            className="w-auto"
+                                        >
+                                            {[2023, 2024, 2025, 2026].map((year) => (
+                                                <option key={year} value={year}>
+                                                    {year}
+                                                </option>
+                                            ))}
+                                        </Form.Control>
+                                    </Form.Group>
+                                </Col>
+                                <Col xs="auto">
+                                    <Form.Group controlId="formMonth">
+                                        <Form.Label>Mes</Form.Label>
+                                        <Form.Control
+                                            as="select"
+                                            value={monthSeleccionado}
+                                            onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
+                                            className="w-auto"
+                                        >
+                                            {[
+                                                { value: 1, label: 'Enero' },
+                                                { value: 2, label: 'Febrero' },
+                                                { value: 3, label: 'Marzo' },
+                                                { value: 4, label: 'Abril' },
+                                                { value: 5, label: 'Mayo' },
+                                                { value: 6, label: 'Junio' },
+                                                { value: 7, label: 'Julio' },
+                                                { value: 8, label: 'Agosto' },
+                                                { value: 9, label: 'Septiembre' },
+                                                { value: 10, label: 'Octubre' },
+                                                { value: 11, label: 'Noviembre' },
+                                                { value: 12, label: 'Diciembre' },
+                                            ].map((month) => (
+                                                <option key={month.value} value={month.value}>
+                                                    {month.label}
+                                                </option>
+                                            ))}
+                                        </Form.Control>
+                                    </Form.Group>
+                                </Col>
+                            </Row>
                         </Form>
                         <div className="chart-container" style={{ position: 'relative', height: '400px', width: '100%' }}>
                             <Bar data={data} options={options} />
@@ -298,6 +311,10 @@ const VentasPorMes: React.FC = () => {
 };
 
 export default VentasPorMes;
+
+
+
+
 
 interface ChartModalProps {
     show: boolean;

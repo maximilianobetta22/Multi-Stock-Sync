@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Dropdown } from 'react-bootstrap';
-import { Bar } from 'react-chartjs-2';
-import { jsPDF } from 'jspdf';
+import { Pie } from 'react-chartjs-2';
+import { jsPDF } from 'jspdf'; 
 import 'bootstrap/dist/css/bootstrap.min.css';
+import * as XLSX from 'xlsx';
 
-const Productos = () => {
+const Productos:React.FC = () => {
     const { client_id } = useParams();
     const [productos, setProductos] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -48,18 +49,46 @@ const Productos = () => {
         labels: productos.slice(0, itemsPerGraph).map((producto) => producto.title),
         datasets: [
             {
-                label: 'Precio Total',
                 data: productos.slice(0, itemsPerGraph).map((producto) => producto.total_amount),
-                backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                borderColor: 'rgba(75, 192, 192, 1)',
+                backgroundColor: [
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                ],
+                borderColor: [
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)',
+                    'rgba(54, 162, 235, 1)',
+                ],
                 borderWidth: 1,
             },
         ],
     };
 
     const chartOptions = {
-        scales: {
-            y: { beginAtZero: true },
+        responsive: true,
+        plugins: {
+            tooltip: {
+                callbacks: {
+                    label: (context) => {
+                        return `$${context.raw}`; // Solo muestra el valor, no el nombre del producto
+                    },
+                },
+            },
         },
     };
 
@@ -71,49 +100,28 @@ const Productos = () => {
 
     const { mostSold, leastSold } = getMostAndLeastSoldProduct();
 
-    // Función para generar el PDF
-    const generatePDF = () => {
-        const doc = new jsPDF();
-        doc.setFontSize(16);
-
-        // Título
-        doc.text('Reporte de Productos', 14, 20);
-
-        // Productos más y menos vendidos
-        doc.setFontSize(12);
-        doc.text(`Producto Más Vendido: ${mostSold ? mostSold.title : 'No disponible'}`, 14, 30);
-        doc.text(`Producto Menos Vendido: ${leastSold ? leastSold.title : 'No disponible'}`, 14, 40);
-
-        // Agregar tabla de productos
-        doc.autoTable({
-            head: [['Título', 'Cantidad', 'Total']],
-            body: currentProducts.map(producto => [
-                producto.title,
-                producto.quantity,
-                `$${producto.total_amount}`,
-            ]),
-            startY: 50,
-        });
-
-        // Agregar gráfico (convertir el gráfico a imagen)
-        const canvas = document.querySelector('canvas');
-        if (canvas) {
-            const imgData = canvas.toDataURL('image/png');
-            doc.addImage(imgData, 'PNG', 14, doc.lastAutoTable.finalY + 10, 180, 100);
-        }
-
-        // Guardar el PDF
-        doc.save('reporte_productos.pdf');
+    const exportToExcel = () => {
+        const worksheet = XLSX.utils.json_to_sheet(productos);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
+        XLSX.writeFile(workbook, 'reporte_productos.xlsx');
     };
 
     return (
         <div className="container mt-4">
-            <h1 className="text-center">Productos</h1>
+            <h1 className="text-center mb-4">Reporte de Productos</h1>
 
-            {/* Contenedor principal con Flexbox */}
-            <div className="d-flex justify-content-between mb-4 flex-wrap">
-                {/* Columna izquierda con las tarjetas */}
-                <div className="d-flex flex-column" style={{ flex: 1, maxWidth: '40%', marginRight: '20px' }}>
+            <div className="row mb-4">
+                {/* Columna izquierda con el gráfico más grande */}
+                <div className="col-md-8">
+                    <h3 className="text-center">Gráfico de Torta: Precio Total de Productos</h3>
+                    <div className="chart-container mb-4" style={{ height: '500px' }}> {/* Aumenté el tamaño del gráfico */}
+                        <Pie data={chartData} options={chartOptions} />
+                    </div>
+                </div>
+
+                {/* Columna derecha con las tarjetas */}
+                <div className="col-md-4">
                     <div className="card shadow-sm mb-3">
                         <div className="card-body">
                             <h5 className="card-title">Producto Más Vendido</h5>
@@ -143,18 +151,10 @@ const Productos = () => {
                         </div>
                     </div>
                 </div>
-
-                {/* Columna derecha con el gráfico */}
-                <div className="d-flex flex-column" style={{ flex: 1, maxWidth: '55%' }}>
-                    <h3 className="text-center">Gráfico de Barra: Precio Total de Productos</h3>
-                    <div className="chart-container" style={{ height: '250px' }}>
-                        <Bar data={chartData} options={chartOptions} />
-                    </div>
-                </div>
             </div>
 
             {/* Selector de mes/año */}
-            <div className="d-flex justify-content-end w-100 mb-4">
+            <div className="d-flex justify-content-end mb-4">
                 <div className="d-inline-block">
                     <label htmlFor="monthSelector" className="form-label">Selecciona el mes y año:</label>
                     <input
@@ -222,8 +222,8 @@ const Productos = () => {
 
             {/* Botón para generar el PDF */}
             <div className="text-center my-4">
-                <button onClick={generatePDF} className="btn btn-success">
-                    Generar Reporte en PDF
+                <button onClick={exportToExcel} className="btn btn-primary mx-2">
+                    Exportar a Excel
                 </button>
             </div>
         </div>
