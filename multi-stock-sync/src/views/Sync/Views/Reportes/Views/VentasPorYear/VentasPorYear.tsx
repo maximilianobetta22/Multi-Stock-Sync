@@ -304,7 +304,7 @@ const VentasPorYear: React.FC = () => {
                     <Button variant="primary" onClick={() => {
                         const link = document.createElement('a');
                         link.href = pdfData!;
-                        link.download = 'VentasPorYear.pdf';
+                        link.download = `VentasPor${selectedYear}.pdf`;
                         link.click();
                     }}>
                         Guardar PDF
