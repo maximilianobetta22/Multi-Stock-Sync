@@ -147,11 +147,11 @@ const VentasPorYear: React.FC = () => {
                 month.sold_products.map((product: any) => `${product.title}: ${product.quantity}`).join('\n')
             ])
         ];
-
+    
         const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'VentasPorYear');
-
+    
         // Apply some basic styling
         const wscols = [
             { wch: 15 }, // "Mes" column width
@@ -159,8 +159,10 @@ const VentasPorYear: React.FC = () => {
             { wch: 50 }  // "Productos Vendidos" column width
         ];
         worksheet['!cols'] = wscols;
-
-        XLSX.writeFile(workbook, 'VentasPorYear.xlsx');
+    
+        const fileName = `VentasPor${selectedYear}.xlsx`;
+    
+        XLSX.writeFile(workbook, fileName);
     };
 
     const years = Array.from({ length: 4 }, (_, i) => (2025 - i).toString());
