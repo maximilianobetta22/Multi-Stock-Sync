@@ -1,9 +1,9 @@
-import styles from './HomeProducto.module.css';
-import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
-import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
-import { Modal, Button, Form } from 'react-bootstrap';
+import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl } from 'react-bootstrap';
+import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 
 interface Connection {
   client_id: string;
@@ -44,6 +44,8 @@ const statusDictionary: { [key: string]: string } = {
   deleted: 'Eliminado',
 };
 
+const MySwal = withReactContent(Swal);
+
 const HomeProducto = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState('');
@@ -51,7 +53,7 @@ const HomeProducto = () => {
   const [allProductos, setAllProductos] = useState<Product[]>([]);
   const [loadingConnections, setLoadingConnections] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'warning' | 'danger'>('danger');
+  const [toastType, setToastType] = useState<'success' | 'warning' | 'error'>('error');
   const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
   const [isEditing, setIsEditing] = useState<{ [key: string]: boolean }>({});
   const [isUpdating, setIsUpdating] = useState(false);
@@ -71,7 +73,7 @@ const HomeProducto = () => {
       } catch (error) {
         console.error('Error fetching connections:', error);
         setToastMessage((error as any).response?.data?.message || 'Error fetching connections');
-        setToastType('danger');
+        setToastType('error');
       } finally {
         setLoadingConnections(false);
       }
@@ -79,6 +81,17 @@ const HomeProducto = () => {
 
     fetchConnections();
   }, []);
+
+  useEffect(() => {
+    if (toastMessage) {
+      MySwal.fire({
+        icon: toastType,
+        title: toastMessage,
+        showConfirmButton: false,
+        timer: 3000
+      }).then(() => setToastMessage(null));
+    }
+  }, [toastMessage]);
 
   const handleConnectionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const clientId = event.target.value;
@@ -106,7 +119,7 @@ const HomeProducto = () => {
     } catch (error) {
       console.error('Error fetching products:', error);
       setToastMessage((error as any).response?.data?.message || 'Error fetching products');
-      setToastType('danger');
+      setToastType('error');
     } finally {
       setLoading(false);
     }
@@ -139,7 +152,7 @@ const HomeProducto = () => {
 
       if (!selectedConnectionData) {
         setToastMessage('Conexión no encontrada');
-        setToastType('danger');
+        setToastType('error');
         return;
       }
 
@@ -167,7 +180,7 @@ const HomeProducto = () => {
     } catch (error) {
       console.error('Error updating stock:', error);
       setToastMessage('Error al actualizar el stock');
-      setToastType('danger');
+      setToastType('error');
     } finally {
       setIsUpdating(false);
     }
@@ -182,7 +195,7 @@ const HomeProducto = () => {
 
       if (!selectedConnectionData) {
         setToastMessage('Conexión no encontrada');
-        setToastType('danger');
+        setToastType('error');
         return;
       }
 
@@ -210,7 +223,7 @@ const HomeProducto = () => {
     } catch (error) {
       console.error('Error updating status:', error);
       setToastMessage('Error al actualizar el estado');
-      setToastType('danger');
+      setToastType('error');
     } finally {
       setIsUpdating(false);
     }
@@ -294,40 +307,44 @@ const HomeProducto = () => {
   return (
     <>
       {(loadingConnections || loading || isUpdating) && <LoadingDinamico variant="container" />}
-      {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
-      {!loadingConnections && !loading && !isUpdating && (
-        <section className={`${styles.HomeProducto}`}>
-          <div className={`${styles.container__HomeProducto}`}>
-            <h1>Lista de productos</h1>
-            <div className={`${styles.search__HomeProducto}`}>
-              <select
-                className={`form-select ${styles.select__HomeProducto}`}
-                value={selectedConnection}
-                onChange={handleConnectionChange}
-              >
-                <option value="">Selecciona una conexión</option>
-                {connections.map((connection) => (
-                  <option key={connection.client_id} value={connection.client_id}>
-                    {connection.nickname} ({connection.client_id})
-                  </option>
-                ))}
-              </select>
-              <form onSubmit={handleSearch} className={`${styles.searchForm__HomeProducto}`}>
-                <input
-                  className={`form-control ${styles.input__HomeProducto}`}
-                  placeholder="Buscar producto"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                />
-                <button type="submit" className="btn btn-primary">Buscar</button>
-              </form>
-            </div>
+      <Container>
+        {!loadingConnections && !loading && !isUpdating && (
+          <section>
+            <Row className="mb-3 mt-3">
+              <Col>
+                <h1>Lista de productos</h1>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col md={4}>
+                <Form.Select value={selectedConnection} onChange={handleConnectionChange}>
+                  <option value="">Selecciona una conexión</option>
+                  {connections.map((connection) => (
+                    <option key={connection.client_id} value={connection.client_id}>
+                      {connection.nickname} ({connection.client_id})
+                    </option>
+                  ))}
+                </Form.Select>
+              </Col>
+              <Col md={8}>
+                <Form onSubmit={handleSearch}>
+                  <InputGroup>
+                    <FormControl
+                      placeholder="Buscar producto"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
+                    <Button type="submit" variant="primary">Buscar</Button>
+                  </InputGroup>
+                </Form>
+              </Col>
+            </Row>
             {!selectedConnection ? (
               <p>Por favor, seleccione una conexión para ver los productos.</p>
             ) : (
               <>
-                <div className={styles.tableContainer}>
-                  <table className={styles.table}>
+                <div className="table-container">
+                  <Table striped bordered hover>
                     <thead>
                       <tr>
                         <th className='table_header'>Imágen</th>
@@ -346,7 +363,7 @@ const HomeProducto = () => {
                       {allProductos.length > 0 ? (
                         allProductos.map((producto) => (
                           <tr key={producto.id}>
-                            <td className={styles.img__center}><img src={producto.thumbnail} alt="IMG producto" /></td>
+                            <td className="text-center"><img src={producto.thumbnail} className='rounded' alt="IMG producto" style={{ maxWidth: '100px', height: 'auto' }} /></td>
                             <td>{producto.id}</td>
                             <td>{producto.title}</td>
                             <td>{producto.category_id}</td>
@@ -355,15 +372,16 @@ const HomeProducto = () => {
                               {producto.available_quantity}
                               {isEditing[producto.id] && (
                                 <>
-                                  <input
+                                  <FormControl
                                     type="number"
                                     value={stockEdit[producto.id] || producto.available_quantity}
                                     onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
                                     min="0"
-                                    className={`${styles.customInput}`}
+                                    className="d-inline-block w-50"
                                   />
-                                  <button
-                                    className="btn btn-success"
+                                  <Button
+                                    variant="success"
+                                    className="ms-2"
                                     onClick={async () => {
                                       setAllProductos((prevProductos) =>
                                         prevProductos.map((p) =>
@@ -378,7 +396,7 @@ const HomeProducto = () => {
                                     }}
                                   >
                                     Guardar
-                                  </button>
+                                  </Button>
                                 </>
                               )}
                             </td>
@@ -386,9 +404,9 @@ const HomeProducto = () => {
                             <td>no especificado</td>
                             <td>{translateStatus(producto.status)}</td>
                             <td>
-                              <button className="btn btn-primary" onClick={() => openModal(producto)}>
+                              <Button variant="primary" onClick={() => openModal(producto)}>
                                 Acciones
-                              </button>
+                              </Button>
                             </td>
                           </tr>
                         ))
@@ -398,42 +416,46 @@ const HomeProducto = () => {
                         </tr>
                       )}
                     </tbody>
-                  </table>
+                  </Table>
                 </div>
-                <div className={styles.pagination__container}>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => handlePageChange(offset - limit)}
-                    disabled={offset === 0}
-                  >
-                    Anterior
-                  </button>
-                  <button
-                    className="btn btn-secondary"
-                    onClick={() => handlePageChange(offset + limit)}
-                    disabled={offset + limit >= totalProducts}
-                  >
-                    Siguiente
-                  </button>
-                </div>
+                <Row className="mt-3">
+                  <Col>
+                    <Button
+                      variant="secondary"
+                      onClick={() => handlePageChange(offset - limit)}
+                      disabled={offset === 0}
+                    >
+                      Anterior
+                    </Button>
+                  </Col>
+                  <Col className="text-end">
+                    <Button
+                      variant="secondary"
+                      onClick={() => handlePageChange(offset + limit)}
+                      disabled={offset + limit >= totalProducts}
+                    >
+                      Siguiente
+                    </Button>
+                  </Col>
+                </Row>
               </>
             )}
-          </div>
-        </section>
-      )}
-      <Modal show={modalIsOpen} onHide={closeModal}>
-        <Modal.Header closeButton>
-          <Modal.Title>Acciones para <strong>{currentProduct?.title}</strong> </Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {renderModalContent()}
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={closeModal}>
-            Cerrar
-          </Button>
-        </Modal.Footer>
-      </Modal>
+          </section>
+        )}
+        <Modal show={modalIsOpen} onHide={closeModal}>
+          <Modal.Header closeButton>
+            <Modal.Title>Acciones para <strong>{currentProduct?.title}</strong> </Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {renderModalContent()}
+          </Modal.Body>
+          <Modal.Footer>
+            <Button variant="secondary" onClick={closeModal}>
+              Cerrar
+            </Button>
+          </Modal.Footer>
+        </Modal>
+      </Container>
     </>
   );
 };

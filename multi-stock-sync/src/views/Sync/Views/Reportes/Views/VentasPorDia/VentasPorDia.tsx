@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Bar } from 'react-chartjs-2';
+import React, { useState, useEffect } from "react";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -7,104 +7,226 @@ import {
   BarElement,
   Title,
   Tooltip,
-  Legend
-} from 'chart.js';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
+  Legend,
+} from "chart.js";
+import { useParams } from "react-router-dom";
+import { Modal } from "react-bootstrap";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import styles from "./VentasPorDia.module.css";
+import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
 
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend
-);
+
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const VentasPorDia: React.FC = () => {
-  // Datos estáticos con fechas
-  const datosVentas = [
-    { nombre: 'Producto A', cantidad: 24, fecha: '2025-01-02' },
-    { nombre: 'Producto A', cantidad: 10, fecha: '2025-01-03' },
-    { nombre: 'Producto B', cantidad: 30, fecha: '2025-01-02' },
-    { nombre: 'Producto B', cantidad: 20, fecha: '2025-01-03' },
-    { nombre: 'Producto C', cantidad: 70, fecha: '2025-01-02' },
-    { nombre: 'Producto C', cantidad: 15, fecha: '2025-01-03' },
-    { nombre: 'Producto D', cantidad: 40, fecha: '2025-01-02' },
-    { nombre: 'Producto D', cantidad: 25, fecha: '2025-01-03' }
-  ];
+  const { client_id } = useParams<{ client_id: string }>();
+  const [fecha, setFecha] = useState<string>("2025-01-01");
+  const [chartData, setChartData] = useState<any>({
+    labels: [],
+    datasets: [],
+  });
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+  const [totalIngresos, setTotalIngresos] = useState<number>(0);
+  const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
 
-  // Estado para la fecha seleccionada
-  const [fechaSeleccionada, setFechaSeleccionada] = useState<string>('2025-01-23');
 
-  // Filtrar datos
-  const datosFiltrados = datosVentas.filter((venta) => venta.fecha === fechaSeleccionada);
 
-  // Colores para los productos
-  const colores = [
-    'rgba(255, 99, 132, 0.6)',
-    'rgba(54, 162, 235, 0.6)',
-    'rgba(255, 206, 86, 0.6)',
-    'rgba(75, 192, 192, 0.6)',
-    'rgba(153, 102, 255, 0.6)',
-    'rgba(255, 159, 64, 0.6)'
-  ];
-
-  // CONF datos del grafico
-  const data = {
-    labels: datosFiltrados.map((producto) => producto.nombre),
-    datasets: [
-      {
-        label: 'Cantidad Vendida',
-        data: datosFiltrados.map((producto) => producto.cantidad),
-        backgroundColor: datosFiltrados.map((_, index) => colores[index % colores.length]),
-        borderColor: datosFiltrados.map((_, index) => colores[index % colores.length].replace('0.6', '1')),
-        borderWidth: 1
+  const fetchIncomes = async (date: string, clientId: string) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${clientId}?week_start_date=${date}&week_end_date=${date}`
+      );
+      if (!response.ok) {
+        throw new Error("Error al obtener los ingresos de la API");
       }
-    ]
-  };
+      const result = await response.json();
+      const soldProducts = result.data.sold_products;
 
-  // Opciones del gráfico
-  const options = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'top' as const
-      },
-      title: {
-        display: true,
-        text: `Ventas del ${new Date(fechaSeleccionada).toLocaleDateString('es-ES')}`
-      }
+      setTotalIngresos(soldProducts.reduce((acc: number, product: any) => acc + product.total_amount, 0));
+
+      setChartData({
+        labels: soldProducts.map((product: any) => product.title),
+        datasets: [
+          {
+            label: "Ingresos Totales",
+            data: soldProducts.map((product: any) => product.total_amount),
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 2,
+          },
+          {
+            label: "Cantidad Vendida",
+            data: soldProducts.map((product: any) => product.quantity),
+            backgroundColor: "rgba(153, 102, 255, 0.6)",
+            borderColor: "rgba(153, 102, 255, 1)",
+            borderWidth: 2,
+          },
+        ],
+      });
+      setError(null);
+    } catch (error) {
+      console.error("Error:", error);
+      setError("Hubo un problema al obtener los ingresos. Inténtalo nuevamente.");
+    } finally {
+      setLoading(false);
     }
   };
 
-  // HORA LOCAL
-  const ajustarFechaLocal = (date: Date): Date => {
-    const localDate = new Date(date); 
-    localDate.setHours(1, 0, 0, 0);  
-    return localDate;
+  useEffect(() => {
+    if (client_id) {
+      fetchIncomes(fecha, client_id);
+    }
+  }, [fecha, client_id]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      try {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/user-data`);
+        if (!response.ok) {
+          throw new Error("Error al obtener los datos del usuario");
+        }
+        const data = await response.json();
+        setUserData(data);
+      } catch (error) {
+        console.error("Error al obtener datos del usuario:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []);
+  /* llamar a la api */
+  const fetchUserData = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`Error del servidor: ${errorText}`);
+      }
+      const result = await response.json();
+      console.log("Resultado:", result);
+      setUserData({
+        nickname: result.data.nickname,
+        profile_image: result.data.profile_image,
+      });
+    } catch (error: any) {
+      console.error("Error al obtener los datos del usuario:", error.message);
+      setError(error.message || "Hubo un problema al cargar los datos del usuario.");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  useEffect(() => {
+    if (client_id) {
+      fetchUserData();
+    }
+  }, [client_id]);
+  /* fin llamar a la api */
+
+
+
+
+  /* pdf */
+  const generatePDF = async () => { 
+    const doc = new jsPDF();
+    doc.setFillColor(0, 121, 191);
+    doc.rect(0, 0, 210, 30, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Reporte de Ventas por Día", 14, 20);
+  
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fecha: ${fecha}`, 14, 40);
+  
+    if (userData) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Usuario: ${userData.nickname}`, 14, 50);
+    }
+  
+    if (totalIngresos !== null) {
+      doc.text(`Total de Ingresos: ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalIngresos)}`, 14, 60);
+      doc.setFontSize(12);
+      doc.setTextColor(34, 139, 34);
+    }
+  
+    autoTable(doc, {
+      head: [["Producto", "Ingresos", "Cantidad"]],
+      body: chartData.labels.map((label: string, index: number) => [
+        label,
+        new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(chartData.datasets[0].data[index]),
+        chartData.datasets[1].data[index],
+      ]),
+      startY: 70,
+      theme: 'grid', // Esto aplica un estilo de cuadrícula
+    });
+  
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+  
+    const pdfData = doc.output("datauristring");
+    setPdfDataUrl(pdfData);
+    setShowModal(true);
+  };
+  
+  /* fin de pdf */
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh' }}>
-      <h2>Ventas por Día</h2>
-      <div style={{ marginBottom: '1rem' }}>
-        <DatePicker
-          selected={ajustarFechaLocal(new Date(fechaSeleccionada))}
-          onChange={(date: Date | null) => {
-            if (date) {
-              // SOLO SE GUARDA LA PARTE AÑO-MES-DIA
-              setFechaSeleccionada(date.toISOString().split('T')[0]);
-            }
-          }}
-          dateFormat="yyyy-MM-dd"
-          className="date-picker"
+    <div className={styles.container}>
+      <h2 className={styles.header}>Ventas por Día</h2>
+      <div className="form-group">
+        <label htmlFor="fecha">Seleccionar Fecha:</label>
+        <input
+          type="date"
+          id="fecha"
+          value={fecha}
+          onChange={(e) => setFecha(e.target.value)}
+          className="form-control"
         />
       </div>
-      <div style={{ width: '600px', height: '400px' }}>
-        <Bar data={data} options={options} />
+
+      <div style={{ width: "600px", height: "400px", marginTop: "2rem" }}>
+        {loading ? (
+          <LoadingDinamico variant="container" />
+        ) : error ? (
+          <p className="text-danger">{error}</p>
+        ) : (
+          <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
+        )}
       </div>
+      <div style={{ marginTop: "1rem", fontSize: "1.2rem" }}>
+        <strong>Total del Día:</strong> {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalIngresos)}
+      </div>
+
+      <button
+        type="button"
+        className="btn btn-success mt-3 mb-3"
+        onClick={generatePDF}
+        disabled={chartData.labels.length === 0}
+      >
+        Exportar a PDF
+      </button>
+      {pdfDataUrl && (
+        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Vista Previa del PDF</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF"></iframe>
+          </Modal.Body>
+        </Modal>
+      )}
     </div>
   );
 };

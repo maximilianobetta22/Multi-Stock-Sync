@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import styles from './ListarTipos.module.css';
 import { Link } from 'react-router-dom';
-import ModalWithDecisions from '../../../../components/Modal/ModalWithDecisions/ModalWithDecisions';
+import { Modal } from 'react-bootstrap';
 
 const ListarTipos: React.FC = () => {
   interface Tipo {
@@ -126,13 +126,16 @@ const ListarTipos: React.FC = () => {
         </div>
       </div>
       {showModal && selectedTipo && (
-        <ModalWithDecisions
-          title="Confirmar Eliminación"
-          primaryAction={confirmDelete}
-          secondaryAction={() => setShowModal(false)}
-          primaryLabel="Eliminar"
-          secondaryLabel="Cancelar"
-        />
+        <Modal
+          isOpen={showModal}
+          onRequestClose={() => setShowModal(false)}
+          contentLabel="Confirmar Eliminación"
+        >
+          <h2>Confirmar Eliminación</h2>
+          <p>¿Estás seguro de que deseas eliminar este tipo de producto?</p>
+          <button onClick={confirmDelete}>Eliminar</button>
+          <button onClick={() => setShowModal(false)}>Cancelar</button>
+        </Modal>
       )}
     </>
   );

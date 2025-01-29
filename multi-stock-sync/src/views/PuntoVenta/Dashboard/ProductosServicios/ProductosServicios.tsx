@@ -5,7 +5,7 @@ import {
   faDollarSign,
   faBoxes,
 } from "@fortawesome/free-solid-svg-icons";
-import Modal from "../../../../components/Modal/Modal";
+import { Modal } from "react-bootstrap";
 import "./ProductosServicios.css";
 
 interface ProductosServiciosProps {

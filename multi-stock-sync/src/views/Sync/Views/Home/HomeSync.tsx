@@ -2,7 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import styles from "./HomeSync.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFolderOpen } from "@fortawesome/free-solid-svg-icons";
+import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFolderOpen, faServer } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
 const HomeSync: React.FC = () => {
@@ -41,6 +41,13 @@ const HomeSync: React.FC = () => {
             icon: faFolderOpen, 
             link: "/sync/reportes", 
             color: "bg-info"
+        },
+        {
+            title:"Información",
+            description:"Revisa el estado actual del sistema y la información de la API.",
+            icon: faServer,
+            link: "/sync/info",
+            color: "bg-dark"
         }
     ];
 
@@ -58,7 +65,7 @@ const HomeSync: React.FC = () => {
                                 <div className="card-body d-flex flex-column align-items-center justify-content-center">
                                     <FontAwesomeIcon icon={card.icon} size="3x" />
                                     <h5 className="card-title mt-3">{card.title}</h5>
-                                    <p className="card-text">{card.description}</p>
+                                    <p className="text-white">{card.description}</p>
                                 </div>
                             </div>
                         </Link>

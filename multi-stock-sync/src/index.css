@@ -149,3 +149,11 @@ td {
     background-color: #17a2b8!important;
     color: white!important;
 }
+
+canvas{
+    border: 0!important;
+}
+
+a{
+    text-decoration: none;
+}
