@@ -9,7 +9,7 @@ import autoTable from 'jspdf-autotable';
 import { Modal } from 'react-bootstrap';
 
 import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
+import { saveAs } from 'file-saver'; /* esta funcionando 👌 */
 
 
 const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
@@ -137,32 +137,33 @@ const CompareYearYear: React.FC = () => {
     /* excel */
     const exportToExcel = () => {
         if (!result) return;
-
+    
         const workbook = XLSX.utils.book_new();
-
-        const createSheet = (yearData: any, year: string) => {
+    
+        const createSheet = (yearData: any) => {
             const data = yearData.sold_products.map((product: any) => ({
                 Producto: product.title,
                 Cantidad: product.quantity,
                 Precio: formatCurrency(product.price),
             }));
-
+    
             data.unshift({ Producto: `Total Ventas: ${formatCurrency(yearData.total_sales)}`, Cantidad: '', Precio: '' });
-
+    
             return XLSX.utils.json_to_sheet(data, { skipHeader: false });
         };
-
-        const sheet1 = createSheet(result.data.year1, year1);
-        const sheet2 = createSheet(result.data.year2, year2);
-
+    
+        const sheet1 = createSheet(result.data.year1);
+        const sheet2 = createSheet(result.data.year2);
+    
         XLSX.utils.book_append_sheet(workbook, sheet1, `Ventas ${year1}`);
         XLSX.utils.book_append_sheet(workbook, sheet2, `Ventas ${year2}`);
-
+    
         const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const excelBlob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-
+    
         saveAs(excelBlob, `Comparacion_Ventas_${year1}_${year2}.xlsx`);
     };
+
     /* fin del excel */
     return (
         <>
