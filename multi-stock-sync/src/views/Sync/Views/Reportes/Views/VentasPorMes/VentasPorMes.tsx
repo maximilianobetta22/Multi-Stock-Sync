@@ -13,7 +13,6 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from './VentasPorMes.module.css';
-import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { useParams } from 'react-router-dom';
 import { Modal, Button, Form, Row, Col, Table } from 'react-bootstrap';
@@ -123,6 +122,7 @@ const VentasPorMes: React.FC = () => {
   const options = {
     responsive: true,
     maintainAspectRatio: false,
+    indexAxis: 'y' as const, // This makes the bar chart horizontal
     plugins: {
       legend: {
         position: 'top' as const
