@@ -8,11 +8,9 @@
 }
   
 .fa-4x {
-  font-size: 5rem; /* Icons size */
+  font-size: 5rem;
 }
   
-
-
 .rotate-180 {
   transform: rotate(180deg);
 }
