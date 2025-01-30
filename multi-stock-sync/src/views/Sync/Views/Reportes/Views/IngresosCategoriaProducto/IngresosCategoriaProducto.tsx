@@ -1,17 +1,24 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PieChart } from "./Graphic";
-
-import styles from "./IngresosCategoriaProducto.module.css";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { IngresosProductosContext } from "./Context";
+import { ItemTable } from "./components/ItemTable";
+
+import styles from "./IngresosCategoriaProducto.module.css";
 
 type eventChange = React.ChangeEvent<HTMLInputElement>;
 type eventForm = React.FormEvent<HTMLFormElement>;
 
 const IngresosCategoriaProducto = () => {
 
-  const [initDate, setInitDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
+  const { ProductoState, getVentas } = useContext(IngresosProductosContext);
+  const { categorias, productos} = ProductoState;
+
+  console.log(productos)
+
+  const [initDate, setInitDate] = useState<string>('2025-01-01');
+  const [endDate, setEndDate] = useState<string>('2025-01-10');
 
   const handleInitDateChange = ({ target }: eventChange) => {
     const date = target.value;
@@ -25,8 +32,13 @@ const IngresosCategoriaProducto = () => {
 
   const handleSubmit = (e: eventForm) => {
     e.preventDefault();
-    console.log(initDate, endDate)
+    if(initDate === '' || endDate === '') return;
+    getVentas(initDate, endDate);
   };
+
+  useEffect(() => {
+    getVentas(initDate, endDate);
+  }, [initDate, endDate]);
 
   return (
     <div className={styles.view__container}>
@@ -39,10 +51,11 @@ const IngresosCategoriaProducto = () => {
               Productos
             </button>
             <ul className="dropdown-menu">
-              <li className={`dropdown-item ${styles.dropdown__item}`} >Poleras</li>
-              <li className={`dropdown-item ${styles.dropdown__item}`} >Pantalones</li>
-              <li className={`dropdown-item ${styles.dropdown__item}`} >Chaquetas</li>
-              <li className={`dropdown-item ${styles.dropdown__item}`} >Lentes</li>
+              {
+                categorias.map((categoria) => (
+                  <li key={categoria.id} className={`dropdown-item ${styles.dropdown__item}`}>{categoria.category}</li>
+                ))
+              }
             </ul>
           </div>
           <input
@@ -79,75 +92,18 @@ const IngresosCategoriaProducto = () => {
                 <th></th>
                 <th>Cantidad</th>
                 <th>Subtotal</th>
-                <th>Margen</th>
+                <th>Total</th>
               </tr>
             </thead>
             <tbody className={styles.table__body}>
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
-              <tr className={styles.body__row}>
-                <td>POLERA</td>
-                <td>documento</td>
-                <td>10</td>
-                <td>$10.000</td>
-                <td>$13.000</td>
-              </tr>
+              {
+                categorias.map((categoria) => (
+                  <ItemTable 
+                    key={categoria.id} 
+                    categoria={categoria}
+                  />
+              ))
+              }
             </tbody>
           </table>
           <div className={styles.data__total}>
@@ -174,7 +130,11 @@ const IngresosCategoriaProducto = () => {
       </div>
       {/**CONTENIDO DERECHO */}
       <div className={styles.container__right}>
+        <h3 className={styles.right__title}>Formas De Pago Y Devoluciones</h3>
+        <hr className={styles.right__hr}/>
+        <div className={styles.right__data}>
 
+        </div>
       </div>
     </div>
   );
