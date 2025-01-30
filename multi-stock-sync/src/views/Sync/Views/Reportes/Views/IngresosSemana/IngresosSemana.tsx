@@ -9,6 +9,7 @@ import { Modal } from "react-bootstrap";
 
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
 
 const IngresosSemana: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
@@ -240,68 +241,27 @@ const IngresosSemana: React.FC = () => {
 
   /* pdf */
   const generatePDF = (): void => {
+    if (!userData || !userData.nickname) return;
+
     const doc = new jsPDF();
-  
-    // Agregar el título del reporte
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.text("Reporte Semanal de Ingresos", 105, 20, { align: "center" });
-    doc.setDrawColor(0, 0, 0);
     doc.line(20, 25, 190, 25);
-  
-    // Función para obtener el nombre del mes en español
-    const getMonthName = (monthNumber: number): string => {
-      const months: string[] = [
-        "enero", "febrero", "marzo", "abril", "mayo", "junio",
-        "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
-      ];
-      return months[monthNumber - 1];
-    };
-  
-    // Agregar datos del usuario
-    if (userData) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      doc.setTextColor(0, 0, 0);
-      doc.text(`Usuario: ${userData.nickname}`, 20, 55);
-    }
-  
-    // Agregar detalles del reporte: Año, Mes y Semana
-    if (selectedWeek && month && year) {
-      const monthNumber = parseInt(month);
-      const monthName: string = getMonthName(monthNumber);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(12);
-      doc.text(`Año: ${year}`, 20, 35);
-      doc.text(`Mes: ${monthName}`, 20, 42);
-      doc.text(`Semana: ${selectedWeek}`, 20, 49);
-    }
-  
-    // Agregar el total de ingresos
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(12);
+    doc.text(`Usuario: ${userData.nickname}`, 20, 35);
+    doc.text(`Año: ${year}`, 20, 42);
+    doc.text(`Mes: ${month}`, 20, 49);
+    doc.text(`Semana: ${selectedWeek}`, 20, 56);
+
     if (totalSales !== null) {
-      const positionY = 70 + (chartData.labels.length * 10) + 10; 
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(16);
-      doc.setTextColor(34, 139, 34);
-      doc.text(`Total de Ingresos: $${totalSales.toLocaleString()}`, 20, positionY);
+      doc.text(`Total de Ingresos: $${totalSales.toLocaleString()}`, 20, 63);
     }
-    
-    // Generar tabla con datos
+
     autoTable(doc, {
       startY: 70,
-      headStyles: {
-        fillColor: [41, 128, 185],
-        textColor: [255, 255, 255],
-        fontSize: 12,
-        halign: "center",
-      },
-      bodyStyles: {
-        fontSize: 10,
-        textColor: [0, 0, 0],
-      },
-      alternateRowStyles: {
-        fillColor: [240, 240, 240],
-      },
       head: [["Producto", "Ingresos Totales", "Cantidad Vendida"]],
       body: chartData.labels.map((label: string, index: number) => [
         label,
@@ -309,20 +269,43 @@ const IngresosSemana: React.FC = () => {
         chartData.datasets[1].data[index],
       ]),
     });
-  
-    // Agregar pie de página
+
+
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(10);
     doc.setTextColor(150, 150, 150);
     doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
-  
-    // Generar y mostrar el PDF
+
+
     const pdfData = doc.output("datauristring");
-    setPdfDataUrl(pdfData);
+    const pdfFilename = `ReporteIngresosSemana_${client_id}_${userData.nickname}.pdf`;
+
     setShowModal(true);
+    setPdfDataUrl(pdfData);
+    doc.save(pdfFilename);
   };
-  
+
+
   /* fin del pdf */
+  /* excel */
+  const generateExcel = (): void => {
+    if (!userData || !userData.nickname) return;
+
+    const worksheetData = chartData.labels.map((label: string, index: number) => ({
+      Producto: label,
+      "Ingresos Totales": chartData.datasets[0].data[index],
+      "Cantidad Vendida": chartData.datasets[1].data[index],
+    }));
+
+    const worksheet = XLSX.utils.json_to_sheet(worksheetData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Ingresos");
+
+    const excelFilename = `IngresosSemana_${client_id}_${userData.nickname}.xlsx`;
+    XLSX.writeFile(workbook, excelFilename);
+  };
+  /* fin del excel */
+
 
   return (
     <>
@@ -346,12 +329,11 @@ const IngresosSemana: React.FC = () => {
                   >
                     <option value="">Selecciona un año</option>
                     {getYears().map((year) => (
-                      <option key={year} value={year}>
-                        {year}
-                      </option>
+                      <option key={year} value={year}>{year}</option>
                     ))}
                   </select>
                 </div>
+
                 <div className="mb-3">
                   <label htmlFor="month" className="form-label">Mes:</label>
                   <select
@@ -362,33 +344,33 @@ const IngresosSemana: React.FC = () => {
                   >
                     <option value="">Selecciona un mes</option>
                     {getMonths().map((month) => (
-                      <option key={month} value={month}>
-                        {month}
-                      </option>
+                      <option key={month} value={month}>{month}</option>
                     ))}
                   </select>
                 </div>
+
                 {loading ? (
                   <p>Cargando semanas...</p>
                 ) : (
-                <div className="mb-3">
-                  <label htmlFor="week" className="form-label">Semana:</label>
-                  <select
-                    id="week"
-                    className="form-select"
-                    value={selectedWeek}
-                    onChange={handleWeekChange}
-                    disabled={!year || !month} 
-                  >
-                    <option value="">Selecciona una semana</option>
-                    {weeks.length > 0 && weeks.map((week, index) => (
-                      <option key={index} value={`${week.start_date} a ${week.end_date}`}>
-                        {`${week.start_date} a ${week.end_date}`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                  <div className="mb-3">
+                    <label htmlFor="week" className="form-label">Semana:</label>
+                    <select
+                      id="week"
+                      className="form-select"
+                      value={selectedWeek}
+                      onChange={handleWeekChange}
+                      disabled={!year || !month}
+                    >
+                      <option value="">Selecciona una semana</option>
+                      {weeks.length > 0 && weeks.map((week, index) => (
+                        <option key={index} value={`${week.start_date} a ${week.end_date}`}>
+                          {`${week.start_date} a ${week.end_date}`}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 )}
+
                 <button type="submit" className="btn btn-primary" disabled={loading}>
                   {loading ? "Cargando..." : "Consultar"}
                 </button>
@@ -400,32 +382,38 @@ const IngresosSemana: React.FC = () => {
                 </div>
               )}
 
-              <button
-                type="button"
-                className="btn btn-secondary"
-                onClick={handleNavigate}
-              >
+              <button type="button" className="btn btn-secondary" onClick={handleNavigate}>
                 Ir a Ventas por Mes
               </button>
-              <br />
+
+
 
               <button
                 type="button"
                 className="btn btn-success mt-3 mb-3"
                 onClick={generatePDF}
                 disabled={chartData.labels.length === 0}
+                id="descargar"
               >
                 Exportar a PDF
               </button>
 
 
+              <button className="btn btn-primary mt-3 ms-2" onClick={generateExcel}>
+                Exportar a Excel
+              </button>
             </div>
+
+
+
+
             <div className="col-md-8">
               <Bar data={chartData} options={chartOptions} />
             </div>
           </div>
         </div>
       )}
+
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Reporte Semanal de Ingresos</Modal.Title>
