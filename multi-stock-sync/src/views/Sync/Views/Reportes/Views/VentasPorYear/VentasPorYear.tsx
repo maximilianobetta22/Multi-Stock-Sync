@@ -148,32 +148,48 @@ const VentasPorYear: React.FC = () => {
         const pdfOutput = doc.output('datauristring');
         setPdfData(pdfOutput);
         setShowPDFModal(true);
-    };
+    };  
 
     const generateExcel = () => {
         const worksheetData = [
-            ['Mes', 'Ventas Totales', 'Productos Vendidos'],
-            ...salesData.map((month) => [
-                month.month,
-                `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(month.total_sales)} CLP`,
-                month.sold_products.map((product: any) => `${product.title}: ${product.quantity}`).join('\n')
-            ])
+            ['Mes', 'ID', 'Nombre del Producto', 'Cantidad Vendida', 'Valor del Producto'],
+            ...salesData.flatMap((month) => {
+                const monthData = month.sold_products.map((product: any, index: number) => [
+                    index === 0 ? month.month : '', // Print "Mes" only for the first entry of each month
+                    product.order_id.toString(), // Convert ID to string
+                    product.title,
+                    product.quantity,
+                    `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(product.price)} CLP`
+                ]);
+                return monthData;
+            })
         ];
-
+    
         const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'VentasPorYear');
-
+    
         // Apply some basic styling
         const wscols = [
             { wch: 15 }, // "Mes" column width
-            { wch: 20 }, // "Ventas Totales" column width
-            { wch: 50 }  // "Productos Vendidos" column width
+            { wch: 30 }, // "ID" column width
+            { wch: 30 }, // "Nombre del Producto" column width
+            { wch: 20 }, // "Cantidad Vendida" column width
+            { wch: 20 }  // "Valor del Producto" column width
         ];
         worksheet['!cols'] = wscols;
-
-        const fileName = `VentasPor${selectedYear}.xlsx`;
-
+    
+        const cellRange = XLSX.utils.decode_range(worksheet['!ref'] || 'A1:A1');
+        for (let row = 1; row <= cellRange.e.r; row++) {
+            const cellAddress = XLSX.utils.encode_cell({ r: row, c: 2 });
+            if (!worksheet[cellAddress]) continue;
+            worksheet[cellAddress].s = {
+                alignment: { wrapText: true }
+            };
+        }
+    
+        const fileName = `VentasPor${selectedYear}_${userName}.xlsx`;
+    
         XLSX.writeFile(workbook, fileName);
     };
 

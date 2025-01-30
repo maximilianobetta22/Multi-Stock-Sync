@@ -13,6 +13,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from './VentasPorMes.module.css';
+import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { useParams } from 'react-router-dom';
 import { Modal, Button, Form, Row, Col, Table } from 'react-bootstrap';
@@ -179,7 +180,7 @@ const VentasPorMes: React.FC = () => {
     autoTable(doc, {
       head: [["ID", "Nombre del Producto", "Cantidad Vendida", "Valor del Producto"]],
       body: Array.isArray(ventas) ? ventas.map((venta) => [
-        venta.order_id,
+        venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
         `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
@@ -194,7 +195,51 @@ const VentasPorMes: React.FC = () => {
     doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
 
     const pdfData = doc.output("datauristring");
-    setPdfDataUrl(pdfData);
+    setPdfDataUrl(pdfData);    
+  };
+
+  const savePDF = () => {
+    const doc = new jsPDF();
+    doc.setFillColor(0, 121, 191);
+    doc.rect(0, 0, 210, 30, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Reporte de Ventas por Mes", 14, 20);
+
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Fecha: ${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}`, 14, 40);
+
+    if (userName) {
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Usuario: ${userName}`, 14, 50);
+    }
+
+    if (totalVentas !== null) {
+      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
+      doc.setFontSize(12);
+      doc.setTextColor(34, 139, 34);
+    }
+
+    autoTable(doc, {
+      head: [["ID", "Nombre del Producto", "Cantidad Vendida", "Valor del Producto"]],
+      body: Array.isArray(ventas) ? ventas.map((venta) => [
+        venta.order_id.toString(), // Convert ID to string
+        venta.title,
+        venta.quantity,
+        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+      ]) : [],
+      startY: 70,
+      theme: 'grid', // Esto aplica un estilo de cuadrícula
+    });
+
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
 
     // Save the PDF with the selected date and username in the filename
     doc.save(`VentasPor${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}_${userName}.pdf`);
@@ -204,7 +249,7 @@ const VentasPorMes: React.FC = () => {
     const worksheetData = [
       ['ID', 'Nombre del Producto', 'Cantidad Vendida', 'Valor del Producto'],
       ...Array.isArray(ventas) ? ventas.map((venta) => [
-        venta.order_id,
+        venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
         `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
@@ -217,7 +262,7 @@ const VentasPorMes: React.FC = () => {
 
     // Apply some basic styling
     const wscols = [
-      { wch: 15 }, // "ID" column width
+      { wch: 30 }, // "ID" column width
       { wch: 30 }, // "Nombre del Producto" column width
       { wch: 20 }, // "Cantidad Vendida" column width
       { wch: 20 }  // "Valor del Producto" column width
@@ -280,7 +325,7 @@ const VentasPorMes: React.FC = () => {
             </div>
             <div className="d-flex justify-content-center mt-3">
               <Button variant="primary" onClick={() => setShowModal(true)} className="mr-2 mx-2">Mostrar Detalles</Button>
-              <Button variant="primary" onClick={generatePDF} className="mr-2 mx-2">Guardar Reporte PDF</Button>
+              <Button variant="primary" onClick={generatePDF} className="mr-2 mx-2">Generar Vista Previa PDF</Button>
               <Button variant="secondary" onClick={generateExcel}>Guardar Reporte Excel</Button>
             </div>
           </div>
@@ -330,6 +375,10 @@ const VentasPorMes: React.FC = () => {
           <Modal.Body>
             <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF"></iframe>
           </Modal.Body>
+          <Modal.Footer>
+            <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+            <Button variant="secondary" onClick={() => setPdfDataUrl(null)}>Cerrar</Button>
+          </Modal.Footer>
         </Modal>
       )}
     </div>
