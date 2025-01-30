@@ -168,7 +168,7 @@ const CompareYearYear: React.FC = () => {
     return (
         <>
             {loading && <LoadingDinamico variant="container" />}
-
+           
             <div className={styles.container} style={{ display: loading ? 'none' : 'block' }}>
                 {!loading && (
                     <>
@@ -203,12 +203,13 @@ const CompareYearYear: React.FC = () => {
 
                         {/* generasion de la tabla ----------------------- */}
                         {result && (
-                            <div>
+                            <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
                                 <h1>Resultado de la Comparación</h1>
 
                                 <div className={styles.tableContainer}>
                                     <h3>{year1}</h3>
                                     <p>Total Ventas: <strong>{formatCurrency(result.data.year1.total_sales)}</strong></p>
+                                    <div className={styles.tableWrapper} style={{ maxHeight: '400px', overflowY: 'auto' }}></div>
                                     <table className={`table table-striped ${styles.table}`}>
                                         <thead>
                                             <tr>
@@ -232,6 +233,7 @@ const CompareYearYear: React.FC = () => {
                                 <div className={styles.tableContainer}>
                                     <h3>{year2}</h3>
                                     <p>Total Ventas: <strong>{formatCurrency(result.data.year2.total_sales)}</strong></p>
+                                    <div className={styles.tableWrapper} style={{ maxHeight: '400px', overflowY: 'auto' }}></div>
                                     <table className={`table table-striped ${styles.table}`}>
                                         <thead>
                                             <tr>
@@ -257,11 +259,13 @@ const CompareYearYear: React.FC = () => {
                                     Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
                                 </p>
 
-                                <button onClick={generatePDF} className="btn btn-secondary">Generar PDF</button>
-
-                                <button onClick={exportToExcel} className="btn btn-success">Descargar Excel</button>
+                                    <button onClick={generatePDF} className="btn btn-secondary">Generar PDF</button>
+                                                
+                                    <button onClick={exportToExcel} className="btn btn-success">Descargar Excel</button>
 
                             </div>
+
+
                         )}
                         {/* fin de la generacion de la tabla ------------------------------------------------------------------------- */}
                     </>
