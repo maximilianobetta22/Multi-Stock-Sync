@@ -4,17 +4,18 @@ import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IngresosProductosContext } from "./Context";
 import { ItemTable } from "./components/ItemTable";
+import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
+import { formatNumber, handleFilterCategory } from "./helpers";
 
 import styles from "./IngresosCategoriaProducto.module.css";
-import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
 
 type eventChange = React.ChangeEvent<HTMLInputElement>;
 type eventForm = React.FormEvent<HTMLFormElement>;
 
 const IngresosCategoriaProducto = () => {
 
-  const { ProductoState, getVentas } = useContext(IngresosProductosContext);
-  const { categorias, isLoading } = ProductoState;
+  const { ProductoState, getVentas, dispatch } = useContext(IngresosProductosContext);
+  const { categorias, isLoading, totalFinal, categoriasFiltradas, categoriaActiva } = ProductoState;
 
   const [initDate, setInitDate] = useState<string>('2025-01-01');
   const [endDate, setEndDate] = useState<string>('2025-01-10');
@@ -52,12 +53,14 @@ const IngresosCategoriaProducto = () => {
               <form onSubmit={handleSubmit} className={`${styles.left__header}`}>
                 <div className="dropdown">
                   <button className={`dropdown-toggle ${styles.header__dropdown}`} type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                    Productos
+                    {categoriaActiva}
                   </button>
                   <ul className="dropdown-menu">
+                    <li onClick={() => handleFilterCategory('Todo', dispatch, categorias)} className={`dropdown-item ${styles.dropdown__item}`}>Todo</li>
+                    <hr className={styles.dropdown__line}/>
                     {
                       categorias.map((categoria) => (
-                        <li key={categoria.id} className={`dropdown-item ${styles.dropdown__item}`}>{categoria.category}</li>
+                        <li onClick={() => handleFilterCategory(categoria.category, dispatch, categorias)} key={categoria.id} className={`dropdown-item ${styles.dropdown__item}`}>{categoria.category}</li>
                       ))
                     }
                   </ul>
@@ -93,13 +96,13 @@ const IngresosCategoriaProducto = () => {
                       <th>Tipo de producto</th>
                       <th></th>
                       <th>Cantidad</th>
-                      <th>Subtotal</th>
+                      <th>Precio producto</th>
                       <th>Total</th>
                     </tr>
                   </thead>
                   <tbody className={styles.table__body}>
                     {
-                      categorias.map((categoria) => (
+                      categoriasFiltradas.map((categoria) => (
                         <ItemTable
                           key={categoria.id}
                           categoria={categoria}
@@ -112,7 +115,7 @@ const IngresosCategoriaProducto = () => {
                   <div className={styles.total__item}>
                     <div className={styles.item__total}>
                       <p className={styles.total__p}>Total de ingresos</p>
-                      <p className={styles.total__p}>$19.000</p>
+                      <p className={styles.total__p}>{formatNumber(totalFinal)}</p>
                     </div>
                   </div>
                   <div className={styles.total__buttonExport}>

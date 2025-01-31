@@ -27,8 +27,9 @@ export interface Categoria{
 export interface ProductoState {
   ventas: Venta[];
   categorias: Categoria[];
-  totalCategoria: number[];
   productos: Producto[];
-  productosFiltrados: Producto[];
+  categoriasFiltradas: Categoria[];
+  totalFinal: number;
+  categoriaActiva: string;
   isLoading: boolean;
 }
