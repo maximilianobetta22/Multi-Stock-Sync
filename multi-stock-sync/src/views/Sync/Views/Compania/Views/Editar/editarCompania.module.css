@@ -95,9 +95,9 @@
   }
 
   .link{
-    display: flex; /* Asegura que los botones estén alineados en fila */
-    gap: 16px; /* Espacio entre los botones */
-    justify-content: right; /* Centra los botones horizontalmente */
+    display: flex; 
+    gap: 16px; 
+    justify-content: right;
     margin-top: 16px;
 }
   

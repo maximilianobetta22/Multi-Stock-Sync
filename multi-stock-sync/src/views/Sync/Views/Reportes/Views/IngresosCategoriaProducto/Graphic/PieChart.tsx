@@ -1,25 +1,35 @@
 import { Pie } from "react-chartjs-2";
 import styles from "../IngresosCategoriaProducto.module.css";
 import { createRandomColors } from "../helpers";
+import { useContext } from "react";
+import { IngresosProductosContext } from "../Context/IngresosProductosContext";
 
 export const PieChart = () => {
 
-  const dias = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo','Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']
-  const ganancias = [1000, 22030, 2111, 22022, 33333, 12222, 10000, 1000, 22030, 2111, 22022, 33333, 12222, 10000]
+  const { ProductoState } = useContext(IngresosProductosContext);
+  const{ categorias } = ProductoState;
 
-  const colors = createRandomColors({ amount: dias.length })
+  const data = categorias.map((categoria) => {
+    return categoria.total;
+  });
+
+  const etiquetas = categorias.map((categoria) => {
+    return categoria.category
+  });
+
+  const colors = createRandomColors({ amount: categorias.length })
 
   return (
     <div className={styles.left__graphic}>
-      {/**CONTENEDOR DEL GRAFICO */}
+      {/**CONTENEDOR DEL GRAFICO **/}
       <div className={styles.graphic__container}>
         <Pie
           data={{
-            labels: dias,
+            labels: etiquetas,
             datasets: [
               {
                 label: 'Ganancia por día',
-                data: ganancias,
+                data: data,
                 backgroundColor: colors,
                 borderWidth: 1,
               },
@@ -32,11 +42,8 @@ export const PieChart = () => {
               legend: {
                 display: false,
               },
-              tooltip: {
-                enabled: false, // Deshabilita los tooltips
-              },
               datalabels: {
-                display: false, // Deshabilita las etiquetas de datos
+                display: false,
               },
             },
           }}
@@ -46,10 +53,10 @@ export const PieChart = () => {
       <div className={styles.graphic__data}>
         <ul className={styles.data__list}>
           {
-            dias.map((dia, index) => (
+            etiquetas.map((categoria, index) => (
               <li key={index} className={styles.data__item}>
                 <div className={styles.item__color} style={{ backgroundColor: colors[index] }}></div>
-                <p className={styles.item__categoria}>{dia}</p>
+                <p className={styles.item__categoria}>{categoria}</p>
               </li>
             ))
           }
