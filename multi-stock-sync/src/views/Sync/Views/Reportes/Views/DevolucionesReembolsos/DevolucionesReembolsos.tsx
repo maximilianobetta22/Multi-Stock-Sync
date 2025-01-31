@@ -1,13 +1,79 @@
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
+import { Table, Button } from 'react-bootstrap';
 
-const DevolucionesReembolsos = () => {
+interface Refund {
+  id: number;
+  created_date: string;
+  total_amount: number;
+  status: string;
+  product: {
+    title: string;
+    quantity: number;
+    price: number;
+  };
+  buyer: {
+    id: number;
+    name: string;
+  };
+}
+
+const DevolucionesReembolsos: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
+  const [refunds, setRefunds] = useState<Refund[]>([]);
+
+  useEffect(() => {
+    const fetchRefunds = async () => {
+      try {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`);
+        const refundsData = response.data.data;
+        const refundsList: Refund[] = [];
+        for (const category in refundsData) {
+          refundsList.push(...refundsData[category].orders);
+        }
+        setRefunds(refundsList);
+      } catch (error) {
+        console.error('Error fetching refunds data:', error);
+      }
+    };
+
+    if (client_id) {
+      fetchRefunds();
+    }
+  }, [client_id]);
 
   return (
     <div className="container mt-5">
       <h1>Devoluciones por Categoría</h1>
-      <p>Client ID: {client_id}</p>
-      <Link to={`/sync/reportes/devoluciones-reembolsos/${client_id}/12345`}>Ver Detalle de Reembolso</Link>
+      <Table striped bordered hover>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Fecha</th>
+            <th>Monto Total</th>
+            <th>Estado</th>
+            <th>Producto</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {refunds.map((refund) => (
+            <tr key={refund.id}>
+              <td>{refund.id}</td>
+              <td>{new Date(refund.created_date).toLocaleDateString()}</td>
+              <td>{new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount)}</td>
+              <td>{refund.status}</td>
+              <td>{refund.product.title}</td>
+              <td>
+              <Link to={`/sync/reportes/devoluciones-reembolsos/${client_id}/${refund.id}`}>
+                  <Button as="a" variant="primary">Ver Detalle</Button>
+                </Link>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
     </div>
   );
 };
