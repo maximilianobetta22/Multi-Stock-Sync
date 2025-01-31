@@ -15,7 +15,6 @@ export const ItemTable = ({categoria}:ItemTableProps) => {
 
   const menuToggle = () => {
     setMenuOpen(!menuOpen);
-    console.log(menuOpen);
   };
 
   groupByIdProduct(categoria.productos);
@@ -39,7 +38,7 @@ export const ItemTable = ({categoria}:ItemTableProps) => {
         <td className={`${styles.item__four}`}>{formatNumber(categoria.total)}</td>
         <td className={`${styles.item__five}`}>{formatNumber(categoria.total)}</td>
       </tr>
-      <div className={`${styles.body__containerBody}`}>
+      <div className={`${styles.body__containerProducts} ${menuOpen ? styles.body__containerBodyOpen : ''}`}>
         {
           groupByIdProduct(categoria.productos)?.map((producto:Producto) => (
             <tr key={producto.id} className={`${styles.body__categoryRow}`}> 

@@ -1,10 +1,12 @@
 import { Categoria, Producto, ProductoState, Venta } from "../Interfaces/interfaces"
 
-type actionType = 
+export type actionType = 
   | { type: 'getVentas', payload: Venta[] }
   | { type: 'updateProductos', payload: Producto[] } 
   | { type: 'updateCategorias', payload: Categoria[] } 
-  | { type: 'updateTotalCategorias', payload: number[] } 
+  | { type: 'updateTotalFinal', payload: number } 
+  | { type: 'updateCategoriasFiltradas', payload: Categoria[] } 
+  | { type: 'updateCategoriaActiva', payload: string } 
   | { type: 'loading', payload: boolean } 
 
 export const ProductoReducer = (state: ProductoState, action: actionType):ProductoState => {
@@ -25,10 +27,20 @@ export const ProductoReducer = (state: ProductoState, action: actionType):Produc
         ...state,
         categorias: action.payload
       }
-    case 'updateTotalCategorias':
+    case 'updateTotalFinal':
       return{
         ...state,
-        totalCategoria: action.payload
+        totalFinal: action.payload
+      }
+    case 'updateCategoriasFiltradas':
+      return{
+        ...state,
+        categoriasFiltradas: action.payload
+      }
+    case 'updateCategoriaActiva':
+      return{
+        ...state,
+        categoriaActiva: action.payload
       }
     case 'loading':
       return{

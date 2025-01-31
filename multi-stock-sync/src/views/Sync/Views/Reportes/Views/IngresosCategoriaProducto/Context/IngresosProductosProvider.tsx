@@ -3,16 +3,16 @@ import { Producto, ProductoState, Venta } from "../Interfaces/interfaces";
 import { IngresosProductosContext } from "./IngresosProductosContext";
 import { ProductoReducer } from "./ProductoReducer";
 import { useParams } from "react-router-dom";
+import { groupByIdProduct, groupByCategory, handleFilterCategory} from "../helpers";
 import axios from "axios";
-import { groupByIdProduct } from "../helpers/groupByIdProduct";
-import { groupByCategory } from "../helpers/groupByCategory";
 
 const INITIAL_STATE: ProductoState = { 
   ventas: [],
   categorias: [],
-  totalCategoria: [],
   productos: [],
-  productosFiltrados: [],
+  categoriasFiltradas: [],
+  categoriaActiva: 'Todo',
+  totalFinal: 0,
   isLoading: false,
 }
 
@@ -42,10 +42,6 @@ export const IngresosProductosProvider = ({ children }: Props) => {
       },
       timeout: 10000,
     }).then((resp) => {
-      dispatch({ 
-        type: 'loading', 
-        payload: true 
-      })
       const ventas: Venta[] = []
       const allProductos: Producto[] = []
       
@@ -69,6 +65,11 @@ export const IngresosProductosProvider = ({ children }: Props) => {
         type: 'updateCategorias',
         payload: groupByCategory(allProductos)
       })
+      dispatch({
+        type: 'updateTotalFinal',
+        payload: allProductos.reduce((acumulador, prod) => acumulador + (prod.price * prod.quantity), 0)
+      })
+      handleFilterCategory('Todo', dispatch, groupByCategory(allProductos))
       dispatch({ 
         type: 'loading', 
         payload: false
@@ -85,7 +86,8 @@ export const IngresosProductosProvider = ({ children }: Props) => {
   return (
     <IngresosProductosContext.Provider value={{
       ProductoState,
-      getVentas
+      getVentas,
+      dispatch,
     }}>
       {children}
     </IngresosProductosContext.Provider>
