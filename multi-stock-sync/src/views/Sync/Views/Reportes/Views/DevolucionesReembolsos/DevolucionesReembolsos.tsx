@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Table, Button } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
+
+import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 
 interface Refund {
   id: number;
@@ -22,6 +24,7 @@ interface Refund {
 const DevolucionesReembolsos: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const [refunds, setRefunds] = useState<Refund[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchRefunds = async () => {
@@ -35,6 +38,8 @@ const DevolucionesReembolsos: React.FC = () => {
         setRefunds(refundsList);
       } catch (error) {
         console.error('Error fetching refunds data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -43,9 +48,14 @@ const DevolucionesReembolsos: React.FC = () => {
     }
   }, [client_id]);
 
+  if (loading) {
+    return <LoadingDinamico variant="container" />;
+  }
+
   return (
     <div className="container mt-5">
-      <h1>Devoluciones por Categoría</h1>
+      <h1 className='mt-3 mb-3'>Devoluciones por Categoría</h1>
+      <p className='mb-3'>Seleccione una devolución de la lista.</p>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -66,9 +76,7 @@ const DevolucionesReembolsos: React.FC = () => {
               <td>{refund.status}</td>
               <td>{refund.product.title}</td>
               <td>
-              <Link to={`/sync/reportes/devoluciones-reembolsos/${client_id}/${refund.id}`}>
-                  <Button as="a" variant="primary">Ver Detalle</Button>
-                </Link>
+                <Link className='btn btn-primary' to={`/sync/reportes/devoluciones-reembolsos/${client_id}/detalle/${refund.id}`} target='_blank'>Ver detalle</Link>
               </td>
             </tr>
           ))}

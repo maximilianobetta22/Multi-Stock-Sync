@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table } from 'react-bootstrap';
+import { Container, Card, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
+import { LoadingDinamico } from '../../../../../../../components/LoadingDinamico/LoadingDinamico';
 
 interface Refund {
   id: number;
@@ -41,10 +42,22 @@ interface Refund {
   };
 }
 
+const formatRUT = (rut: string) => {
+  const cleaned = rut.replace(/[^0-9kK]/g, '');
+  const rutBody = cleaned.slice(0, -1);
+  const rutDv = cleaned.slice(-1).toUpperCase();
+  return `${rutBody.replace(/\B(?=(\d{3})+(?!\d))/g, '.')} -${rutDv}`;
+};
+
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 const DetalleReembolso: React.FC = () => {
   const { client_id, refund_id } = useParams<{ client_id: string; refund_id: string }>();
   const [refund, setRefund] = useState<Refund | null>(null);
   const [username, setUsername] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchRefund = async () => {
@@ -62,6 +75,8 @@ const DetalleReembolso: React.FC = () => {
         setRefund(selectedRefund);
       } catch (error) {
         console.error('Error fetching refund data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -80,45 +95,57 @@ const DetalleReembolso: React.FC = () => {
     }
   }, [client_id, refund_id]);
 
+  if (loading) {
+    return <LoadingDinamico variant='container'/>;
+  }
+
   return (
-    <div>
-      <h1>Detalle del Reembolso</h1>
-      <h5>Usuario: {username}</h5>
-      {refund ? (
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Comprador</th>
-              <th>Facturación</th>
-              <th>Envío</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <p>{refund.product.title}</p>
-              </td>
-              <td>
-                <p>{refund.buyer.name}</p>
-              </td>
-              <td>
-                <p>{`${refund.billing.first_name} ${refund.billing.last_name}`}</p>
-                <p>{`${refund.billing.identification.type}: ${refund.billing.identification.number}`}</p>
-              </td>
-              <td>
-                <p>{`Método: ${refund.shipping.shipping_method}`}</p>
-                <p>{`Estado: ${refund.shipping.shipping_status}`}</p>
-                <p>{`Dirección: ${refund.shipping.shipping_address.address}, ${refund.shipping.shipping_address.number}, ${refund.shipping.shipping_address.city}, ${refund.shipping.shipping_address.state}, ${refund.shipping.shipping_address.country}`}</p>
-                <p>{`Comentarios: ${refund.shipping.shipping_address.comments}`}</p>
-              </td>
-            </tr>
-          </tbody>
-        </Table>
-      ) : (
-        <p>No se encontró el reembolso.</p>
-      )}
-    </div>
+    <Container className="mt-5">
+      <Card>
+        <Card.Header as="h1">Detalle del Reembolso</Card.Header>
+        <Card.Body>
+          <Card.Title>Usuario: {username || 'Desconocido'}</Card.Title>
+          {refund ? (
+            <Row>
+              <Col md={6}>
+                <Card className="mb-3">
+                  <Card.Header>Producto</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{refund.product?.title || 'No disponible'}</Card.Text>
+                  </Card.Body>
+                </Card>
+                <Card className="mb-3">
+                  <Card.Header>Comprador (Nickname)</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{refund.buyer?.name || 'No disponible'}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={6}>
+                <Card className="mb-3">
+                  <Card.Header>Facturación</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{`${capitalize(refund.billing?.first_name || 'N/A')} ${capitalize(refund.billing?.last_name || 'N/A')}`}</Card.Text>
+                    <Card.Text>{`${refund.billing?.identification?.type || 'N/A'}: ${formatRUT(refund.billing?.identification?.number || 'N/A')}`}</Card.Text>
+                  </Card.Body>
+                </Card>
+                <Card className="mb-3">
+                  <Card.Header>Envío</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{`Método: ${refund.shipping?.shipping_method || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`Estado: ${refund.shipping?.shipping_status || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`Dirección: ${refund.shipping?.shipping_address?.address || 'N/A'}, ${refund.shipping?.shipping_address?.number || 'N/A'}, ${refund.shipping?.shipping_address?.city || 'N/A'}, ${refund.shipping?.shipping_address?.state || 'N/A'}, ${refund.shipping?.shipping_address?.country || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`Comentarios: ${refund.shipping?.shipping_address?.comments || 'N/A'}`}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          ) : (
+            <p>No se encontró el reembolso.</p>
+          )}
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 
