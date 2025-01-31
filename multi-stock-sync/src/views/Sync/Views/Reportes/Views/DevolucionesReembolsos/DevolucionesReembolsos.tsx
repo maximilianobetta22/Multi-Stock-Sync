@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Table, Button } from 'react-bootstrap';
 
+import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+
 interface Refund {
   id: number;
   created_date: string;
@@ -22,6 +24,7 @@ interface Refund {
 const DevolucionesReembolsos: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const [refunds, setRefunds] = useState<Refund[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchRefunds = async () => {
@@ -35,6 +38,8 @@ const DevolucionesReembolsos: React.FC = () => {
         setRefunds(refundsList);
       } catch (error) {
         console.error('Error fetching refunds data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -42,6 +47,10 @@ const DevolucionesReembolsos: React.FC = () => {
       fetchRefunds();
     }
   }, [client_id]);
+
+  if (loading) {
+    return <LoadingDinamico variant="container" />;
+  }
 
   return (
     <div className="container mt-5">
