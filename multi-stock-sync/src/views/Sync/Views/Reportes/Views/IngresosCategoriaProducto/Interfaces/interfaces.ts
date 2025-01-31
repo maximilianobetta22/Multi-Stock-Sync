@@ -1,4 +1,3 @@
-
 export interface Producto {
   id: number;
   title: string;
@@ -16,7 +15,7 @@ export interface Venta {
   total_amount: number;
 }
 
-export interface Categoria{
+export interface Categoria {
   id: string;
   category: string;
   cantidadProductos: number;
