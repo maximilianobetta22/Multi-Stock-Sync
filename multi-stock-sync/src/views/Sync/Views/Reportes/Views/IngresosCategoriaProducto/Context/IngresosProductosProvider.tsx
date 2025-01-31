@@ -26,6 +26,12 @@ export const IngresosProductosProvider = ({ children }: Props) => {
   const [ ProductoState, dispatch ] = useReducer(ProductoReducer, INITIAL_STATE);
 
   const getVentas = ( start_date:string, end_date:string ) => {
+
+    dispatch({ 
+      type: 'loading', 
+      payload: true 
+    })
+
     axios({
       url:`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-date-range/${client_id}?`,
       method: 'GET',
@@ -63,8 +69,16 @@ export const IngresosProductosProvider = ({ children }: Props) => {
         type: 'updateCategorias',
         payload: groupByCategory(allProductos)
       })
+      dispatch({ 
+        type: 'loading', 
+        payload: false
+      })
       }).catch((err) => {
         console.log(err);
+        dispatch({ 
+          type: 'loading', 
+          payload: false
+        })
       })
   };
 

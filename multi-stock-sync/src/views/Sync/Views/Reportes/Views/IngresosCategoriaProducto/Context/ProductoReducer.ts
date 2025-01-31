@@ -13,8 +13,7 @@ export const ProductoReducer = (state: ProductoState, action: actionType):Produc
     case 'getVentas':
       return {
         ...state,
-        ventas: action.payload,
-        isLoading: false
+        ventas: action.payload
       }
     case 'updateProductos':
       return{
