@@ -38,7 +38,22 @@ const DevolucionesReembolsos = () => {
     return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
   };
 
-  
+ 
+  const formatDate = (date: string) => {
+    const parsedDate = new Date(date);
+    if (isNaN(parsedDate.getTime())) {
+      return 'Fecha Inválida';
+    }
+    return parsedDate.toLocaleString('es-ES', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: 'numeric',
+      second: 'numeric',
+    });
+  };
+
   useEffect(() => {
     const fetchDevoluciones = async () => {
       try {
@@ -68,7 +83,6 @@ const DevolucionesReembolsos = () => {
     fetchDevoluciones();
   }, [client_id]);
 
-  
   const translateStatus = (status: string): string => {
     switch (status.toLowerCase()) {
       case 'completed':
@@ -84,7 +98,6 @@ const DevolucionesReembolsos = () => {
     }
   };
 
-  
   const generatePDFPreview = () => {
     const doc = new jsPDF();
     let y = 10;
@@ -112,9 +125,9 @@ const DevolucionesReembolsos = () => {
         head: [['ID de Orden', 'Fecha de Creación', 'Total Monto', 'Estado']],
         body: category.orders.map((order) => [
           order.id,
-          new Date(order.date_created).toLocaleString(),
+          formatDate(order.date_created), 
           formatCLP(order.total_amount),
-          translateStatus(order.status), // Traducir estado
+          translateStatus(order.status), 
         ]),
         margin: { top: 10, left: 10, right: 10 },
         styles: { fontSize: 10, halign: 'center', lineColor: [200, 200, 200] },
@@ -131,7 +144,6 @@ const DevolucionesReembolsos = () => {
     setShowModal(true);  
   };
 
-  
   const exportToPDF = () => {
     if (pdfPreview) {
       pdfPreview.save('reporte_devoluciones.pdf');
@@ -139,7 +151,6 @@ const DevolucionesReembolsos = () => {
     }
   };
 
- 
   const exportToExcel = () => {
     const workbook = XLSX.utils.book_new();
 
@@ -148,9 +159,9 @@ const DevolucionesReembolsos = () => {
         ['ID de Orden', 'Fecha de Creación', 'Total Monto', 'Estado'],
         ...category.orders.map((order) => [
           order.id,
-          new Date(order.date_created).toLocaleString(),
+          formatDate(order.date_created), 
           formatCLP(order.total_amount),
-          translateStatus(order.status), // Traducir estado
+          translateStatus(order.status), 
         ]),
       ];
 
@@ -182,7 +193,6 @@ const DevolucionesReembolsos = () => {
         </button>
       </div>
 
-      
       <table className={`table table-striped ${styles.table}`}>
         <thead>
           <tr>
@@ -210,7 +220,9 @@ const DevolucionesReembolsos = () => {
                     {category.orders.map((order) => (
                       <tr key={order.id}>
                         <td>{order.id}</td>
-                        <td>{new Date(order.date_created).toLocaleString()}</td>
+                        <td>
+                          {formatDate(order.date_created)} 
+                        </td>
                         <td>{formatCLP(order.total_amount)}</td>
                         <td>{translateStatus(order.status)}</td>
                       </tr>
@@ -223,7 +235,6 @@ const DevolucionesReembolsos = () => {
         </tbody>
       </table>
 
-     
       {showModal && pdfPreview && (
         <div className={styles.modal} onClick={() => setShowModal(false)}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
@@ -236,7 +247,7 @@ const DevolucionesReembolsos = () => {
                 title="Vista previa del PDF"
               />
             </div>
-            <button className="btn btn-primary" onClick={exportToPDF}>Descargar PDF</button>
+            <button className="btn btn-primary me-2" onClick={exportToPDF}>Descargar PDF</button>
             <button className="btn btn-secondary" onClick={() => setShowModal(false)}>Cerrar</button>
           </div>
         </div>

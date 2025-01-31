@@ -39,6 +39,57 @@ interface Venta {
   price: number;
 }
 
+/**
+ * VentasPorMes component displays sales data for a selected month and year.
+ * It fetches sales data and user information from an API and displays it in a chart and table format.
+ * It also provides options to generate PDF and Excel reports of the sales data.
+ *
+ * @component
+ * @example
+ * return (
+ *   <VentasPorMes />
+ * )
+ *
+ * @returns {JSX.Element} The rendered component.
+ *
+ * @remarks
+ * This component uses the following hooks:
+ * - `useParams` to get the `client_id` from the URL.
+ * - `useState` to manage the state of the selected year, month, sales data, loading state, error message, toast message, toast type, PDF data URL, modal visibility, and user name.
+ * - `useEffect` to fetch sales data and user information when the component mounts or when the `client_id`, `yearSeleccionado`, or `monthSeleccionado` changes.
+ *
+ * @function fetchVentas
+ * Fetches sales data for the selected year and month from the API.
+ *
+ * @function fetchUserName
+ * Fetches the user name from the API using the `client_id`.
+ *
+ * @function generatePDF
+ * Generates a PDF preview of the sales report using jsPDF and autoTable.
+ *
+ * @function savePDF
+ * Saves the generated PDF with the selected date and username in the filename.
+ *
+ * @function generateExcel
+ * Generates an Excel report of the sales data using xlsx.
+ *
+ * @constant {number} yearSeleccionado - The selected year for the sales report.
+ * @constant {number} monthSeleccionado - The selected month for the sales report.
+ * @constant {Venta[]} ventas - The sales data for the selected month and year.
+ * @constant {boolean} loading - The loading state for the sales data fetch.
+ * @constant {string | null} error - The error message if the sales data fetch fails.
+ * @constant {string | null} toastMessage - The toast message to display.
+ * @constant {'success' | 'warning' | 'secondary' | 'danger'} toastType - The type of the toast message.
+ * @constant {string | null} pdfDataUrl - The data URL of the generated PDF preview.
+ * @constant {boolean} showModal - The visibility state of the modal.
+ * @constant {string} userName - The user name fetched from the API.
+ *
+ * @constant {number} totalVentas - The total sales amount for the selected month and year.
+ * @constant {object} chartData - The data for the sales chart.
+ * @constant {object} options - The options for the sales chart.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
 const VentasPorMes: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const [yearSeleccionado, setYearSeleccionado] = useState<number>(2025);
@@ -113,7 +164,7 @@ const VentasPorMes: React.FC = () => {
         datalabels: {
           color: 'white',
           formatter: (value: number) => {
-            return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
           }
         }
       }
@@ -130,7 +181,7 @@ const VentasPorMes: React.FC = () => {
       },
       title: {
         display: true,
-        text: `Ventas Totales Por Mes (${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}): $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`,
+        text: `Ventas Totales Por Mes (${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}): $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`,
         font: {
           size: 18
         }
@@ -144,7 +195,7 @@ const VentasPorMes: React.FC = () => {
       tooltip: {
         callbacks: {
           label: function (context: any) {
-            return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
           }
         }
       }
@@ -172,7 +223,7 @@ const VentasPorMes: React.FC = () => {
     }
 
     if (totalVentas !== null) {
-      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
+      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -183,7 +234,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
       ]) : [],
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -219,7 +270,7 @@ const VentasPorMes: React.FC = () => {
     }
 
     if (totalVentas !== null) {
-      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
+      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -230,7 +281,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
       ]) : [],
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -252,7 +303,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
       ]) : []
     ];
 
@@ -352,7 +403,7 @@ const VentasPorMes: React.FC = () => {
                     <td>{venta.order_id}</td>
                     <td>{venta.title}</td>
                     <td>{venta.quantity}</td>
-                    <td>{`$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`}</td>
+                    <td>{`$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`}</td>
                   </tr>
                 ))
               ) : (
