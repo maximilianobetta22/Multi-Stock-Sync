@@ -49,6 +49,10 @@ const formatRUT = (rut: string) => {
   return `${rutBody.replace(/\B(?=(\d{3})+(?!\d))/g, '.')} -${rutDv}`;
 };
 
+const capitalize = (str: string) => {
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+};
+
 const DetalleReembolso: React.FC = () => {
   const { client_id, refund_id } = useParams<{ client_id: string; refund_id: string }>();
   const [refund, setRefund] = useState<Refund | null>(null);
@@ -121,7 +125,7 @@ const DetalleReembolso: React.FC = () => {
                 <Card className="mb-3">
                   <Card.Header>Facturación</Card.Header>
                   <Card.Body>
-                    <Card.Text>{`${refund.billing?.first_name || 'N/A'} ${refund.billing?.last_name || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`${capitalize(refund.billing?.first_name || 'N/A')} ${capitalize(refund.billing?.last_name || 'N/A')}`}</Card.Text>
                     <Card.Text>{`${refund.billing?.identification?.type || 'N/A'}: ${formatRUT(refund.billing?.identification?.number || 'N/A')}`}</Card.Text>
                   </Card.Body>
                 </Card>
