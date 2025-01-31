@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Table } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
+import { LoadingDinamico } from '../../../../../../../components/LoadingDinamico/LoadingDinamico';
 
 interface Refund {
   id: number;
@@ -45,6 +46,7 @@ const DetalleReembolso: React.FC = () => {
   const { client_id, refund_id } = useParams<{ client_id: string; refund_id: string }>();
   const [refund, setRefund] = useState<Refund | null>(null);
   const [username, setUsername] = useState<string>('');
+  const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
     const fetchRefund = async () => {
@@ -62,6 +64,8 @@ const DetalleReembolso: React.FC = () => {
         setRefund(selectedRefund);
       } catch (error) {
         console.error('Error fetching refund data:', error);
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -79,6 +83,10 @@ const DetalleReembolso: React.FC = () => {
       fetchUserData();
     }
   }, [client_id, refund_id]);
+
+  if (loading) {
+    return <LoadingDinamico variant='container'/>;
+  }
 
   return (
     <div>
