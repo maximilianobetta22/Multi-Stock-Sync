@@ -307,135 +307,132 @@ const IngresosSemana: React.FC = () => {
   /* fin del excel */
 
 
-  return (
-    <>
-      {loading && <LoadingDinamico variant="container" />}
-      {!loading && (
-        <div className="container">
-          <h1 className="text-center my-4">Ingresos por Rango de Fechas</h1>
+  
+  
 
-          {error && <p className="text-danger">{error}</p>}
+    return (
+      <>
+        {loading && <LoadingDinamico variant="container" />}
+        {!loading && (
+          <div className="container">
+            <h1 className="text-center my-4">Ingresos por Rango de Fechas</h1>
 
-          <div className="row">
-            <div className="col-md-4">
-              <form onSubmit={handleSubmit} className="mb-4">
-                <div className="mb-3">
-                  <label htmlFor="year" className="form-label">Año:</label>
-                  <select
-                    id="year"
-                    className="form-select"
-                    value={year}
-                    onChange={handleYearChange}
-                  >
-                    <option value="">Selecciona un año</option>
-                    {getYears().map((year) => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                </div>
+            {error && <p className="text-danger">{error}</p>}
 
-                <div className="mb-3">
-                  <label htmlFor="month" className="form-label">Mes:</label>
-                  <select
-                    id="month"
-                    className="form-select"
-                    value={month}
-                    onChange={handleMonthChange}
-                  >
-                    <option value="">Selecciona un mes</option>
-                    {getMonths().map((month) => (
-                      <option key={month} value={month}>{month}</option>
-                    ))}
-                  </select>
-                </div>
-
-                {loading ? (
-                  <p>Cargando semanas...</p>
-                ) : (
+            <div className="row">
+              <div className="col-md-4">
+                <form onSubmit={handleSubmit} className="mb-4">
                   <div className="mb-3">
-                    <label htmlFor="week" className="form-label">Semana:</label>
+                    <label htmlFor="year" className="form-label">Año:</label>
                     <select
-                      id="week"
+                      id="year"
                       className="form-select"
-                      value={selectedWeek}
-                      onChange={handleWeekChange}
-                      disabled={!year || !month}
+                      value={year}
+                      onChange={handleYearChange}
                     >
-                      <option value="">Selecciona una semana</option>
-                      {weeks.length > 0 && weeks.map((week, index) => (
-                        <option key={index} value={`${week.start_date} a ${week.end_date}`}>
-                          {`${week.start_date} a ${week.end_date}`}
-                        </option>
+                      <option value="">Selecciona un año</option>
+                      {getYears().map((year) => (
+                        <option key={year} value={year}>{year}</option>
                       ))}
                     </select>
                   </div>
+
+                  <div className="mb-3">
+                    <label htmlFor="month" className="form-label">Mes:</label>
+                    <select
+                      id="month"
+                      className="form-select"
+                      value={month}
+                      onChange={handleMonthChange}
+                    >
+                      <option value="">Selecciona un mes</option>
+                      {getMonths().map((month) => (
+                        <option key={month} value={month}>{month}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {loading ? (
+                    <p>Cargando semanas...</p>
+                  ) : (
+                    <div className="mb-3">
+                      <label htmlFor="week" className="form-label">Semana:</label>
+                      <select
+                        id="week"
+                        className="form-select"
+                        value={selectedWeek}
+                        onChange={handleWeekChange}
+                        disabled={!year || !month}
+                      >
+                        <option value="">Selecciona una semana</option>
+                        {weeks.length > 0 && weeks.map((week, index) => (
+                          <option key={index} value={`${week.start_date} a ${week.end_date}`}>
+                            {`${week.start_date} a ${week.end_date}`}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+
+                  <button type="submit" className="btn btn-primary" disabled={loading}>
+                    {loading ? "Cargando..." : "Consultar"}
+                  </button>
+                </form>
+
+                {totalSales !== null && (
+                  <div className="alert alert-info">
+                    <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+                  </div>
                 )}
 
-                <button type="submit" className="btn btn-primary" disabled={loading}>
-                  {loading ? "Cargando..." : "Consultar"}
+                <button type="button" className="btn btn-secondary" onClick={handleNavigate}>
+                  Ir a Ventas por Mes
                 </button>
-              </form>
 
-              {totalSales !== null && (
-                <div className="alert alert-info">
-                  <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
-                </div>
-              )}
+                <button
+                  type="button"
+                  className="btn btn-success mt-3 mb-3"
+                  onClick={generatePDF}
+                  disabled={chartData.labels.length === 0}
+                  id="descargar"
+                >
+                  Exportar a PDF
+                </button>
 
-              <button type="button" className="btn btn-secondary" onClick={handleNavigate}>
-                Ir a Ventas por Mes
-              </button>
+                <button className="btn btn-primary mt-3 ms-2" onClick={generateExcel}>
+                  Exportar a Excel
+                </button>
+              </div>
 
-
-
-              <button
-                type="button"
-                className="btn btn-success mt-3 mb-3"
-                onClick={generatePDF}
-                disabled={chartData.labels.length === 0}
-                id="descargar"
-              >
-                Exportar a PDF
-              </button>
-
-
-              <button className="btn btn-primary mt-3 ms-2" onClick={generateExcel}>
-                Exportar a Excel
-              </button>
-            </div>
-
-
-
-
-            <div className="col-md-8">
-              <Bar data={chartData} options={chartOptions} />
+              <div className="col-md-8">
+                <Bar data={chartData} options={chartOptions} />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Reporte Semanal de Ingresos</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          {pdfDataUrl && (
-            <iframe
-              src={pdfDataUrl}
-              width="100%"
-              height="500px"
-              title="Reporte Semanal de Ingresos"
-            />
-          )}
-        </Modal.Body>
-        <Modal.Footer>
-          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
-            Cerrar
-          </button>
-        </Modal.Footer>
-      </Modal>
-    </>
-  );
-};
+        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+          <Modal.Header closeButton>
+            <Modal.Title>Reporte Semanal de Ingresos</Modal.Title>
+          </Modal.Header>
+          <Modal.Body>
+            {pdfDataUrl && (
+              <iframe
+                src={pdfDataUrl}
+                width="100%"
+                height="500px"
+                title="Reporte Semanal de Ingresos"
+              />
+            )}
+          </Modal.Body>
+          <Modal.Footer>
+            <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+              Cerrar
+            </button>
+          </Modal.Footer>
+        </Modal>
+      </>
+    );
+  };
 
-export default IngresosSemana;
+  export default IngresosSemana;
