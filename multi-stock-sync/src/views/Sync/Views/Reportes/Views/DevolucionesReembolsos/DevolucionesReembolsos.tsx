@@ -38,7 +38,7 @@ const DevolucionesReembolsos = () => {
     return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(amount);
   };
 
-  // Función para validar y formatear las fechas
+ 
   const formatDate = (date: string) => {
     const parsedDate = new Date(date);
     if (isNaN(parsedDate.getTime())) {
@@ -125,7 +125,7 @@ const DevolucionesReembolsos = () => {
         head: [['ID de Orden', 'Fecha de Creación', 'Total Monto', 'Estado']],
         body: category.orders.map((order) => [
           order.id,
-          formatDate(order.date_created), // Usar la función de formato para las fechas
+          formatDate(order.date_created), 
           formatCLP(order.total_amount),
           translateStatus(order.status), 
         ]),
@@ -159,7 +159,7 @@ const DevolucionesReembolsos = () => {
         ['ID de Orden', 'Fecha de Creación', 'Total Monto', 'Estado'],
         ...category.orders.map((order) => [
           order.id,
-          formatDate(order.date_created), // Usar la función de formato para las fechas
+          formatDate(order.date_created), 
           formatCLP(order.total_amount),
           translateStatus(order.status), 
         ]),
@@ -221,7 +221,7 @@ const DevolucionesReembolsos = () => {
                       <tr key={order.id}>
                         <td>{order.id}</td>
                         <td>
-                          {formatDate(order.date_created)} {/* Formato de fecha válido o inválido */}
+                          {formatDate(order.date_created)} 
                         </td>
                         <td>{formatCLP(order.total_amount)}</td>
                         <td>{translateStatus(order.status)}</td>
