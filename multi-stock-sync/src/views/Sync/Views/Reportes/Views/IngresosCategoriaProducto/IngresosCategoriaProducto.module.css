@@ -1,4 +1,4 @@
-/*CONTENIDO IZQUIERDO*/
+/*LAYOUT*/
 .view__container{
   display: flex;
   flex-direction: row;
@@ -10,7 +10,7 @@
   max-height: 100%;
   gap: 1rem;
 }
-
+/*CONTENIDO IZQUIERDO----------------------------------------------------------------------------------------------------------------*/
 .container__left{
   flex-basis: 70%;
   background-color: #F7F7F7;
@@ -25,7 +25,7 @@
   border-radius: 0.5rem;
   box-shadow: 0.1rem 0.3rem 0.5rem rgb(0, 0, 0, 0.5);
 }
-
+/*HEADER--------------------------------------------------------------------------------------------------------------------*/
 .left__header{
   display: flex;
   flex-direction: row;
@@ -84,7 +84,7 @@
   color: #FFFFFF;
 }
 
-/*GRAFICO*/
+/*GRAFICO--------------------------------------------------------------------------------------------------------------------*/
 .left__graphic{
   display: flex;
   flex-direction: row;
@@ -150,7 +150,7 @@
   padding: 0;
 }
 
-/*TABLE*/
+/*TABLE--------------------------------------------------------------------------------------------------------------------*/
 .left__data{
   display: flex;
   flex-direction: column;
@@ -258,7 +258,7 @@
   justify-content: center;
   width: 100%;
   height: auto;
-  border-bottom: 0.1rem solid rgba(0, 0, 0, 0.2);
+  border-bottom: 0.1rem solid rgba(0, 0, 0, 0.3);
 }
 
 .item__one{
@@ -269,9 +269,19 @@
   flex-basis: 50%;
   font-size: 0.7rem;
   border: none;
+  gap: 0.2rem;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.item__oneIcon{
+  font-size: 0.5rem;
+}
+
+.item__one:hover{
+  cursor: pointer;
+  color: rgba(0, 0, 0, 0.9);
 }
 
 .item__two{
@@ -318,6 +328,7 @@
   display: flex;
   flex-direction: row;
   justify-content: center;
+  background-color: rgba(255, 255, 255, 0.9);
   width: 100%;
   height: auto;
   border: none;
@@ -331,6 +342,7 @@
   flex-basis: 50%;
   font-size: 0.7rem;
   border: none;
+  border-left: 0.1rem solid rgba(0, 0, 0, 0.3);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -375,7 +387,7 @@
   font-size: 0.7rem;
   border: none;
 }
-/*TOTAL---------------------------------------------------------------------------------------------------------*/
+/*DATA-TOTAL----------------------------------------------------------------------------------------------------------------------------------------*/
 .data__total{
   display: flex;
   flex-direction: row;
@@ -468,7 +480,7 @@
   background-color: transparent;
 }
 
-/*CONTENIDO DERECHO*/
+/*CONTENIDO DERECHO-----------------------------------------------------------------------------------------------------------------------*/
 .container__right{
   flex-basis: 30%;
   padding: 0.5rem;
