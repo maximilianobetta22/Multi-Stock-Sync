@@ -15,13 +15,15 @@ import EstadosOrdenes from "../Views/EstadosOrdenes/EstadosOrdenes";
 import CompareMonthMonth from "../Views/CompareMesMes/CompareMonthMonth";
 import CompareYearYear from "../Views/CompareYearYear/CompareYearYear";
 import VentasPorYear from "../Views/VentasPorYear/VentasPorYear";
+import DetalleReembolso from "../Views/DevolucionesReembolsos/DetalleReembolso/DetalleReembolso";
+import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
 
 
 function RouterReportes() {
 
     return (
         <Routes>
-           <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
+            <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
             <Route path="home" element={<HomeReportes/>} />
             <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
             <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
@@ -30,9 +32,14 @@ function RouterReportes() {
             <Route path="ventas-mes/:client_id" element={<VentasPorMes />} />
             <Route path="metodos-pago/:client_id" element={<MetodosPago />} />
             <Route path="devoluciones-reembolsos/:client_id" element={<DevolucionesReembolso />} />
+            <Route path="devoluciones-reembolsos/:client_id/detalle/:refund_id" element={<DetalleReembolso />} />
             <Route path="productos-mas-vendidos/:client_id" element={<ProductosMasVendidos />} />
             <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
-            <Route path="ingresos-categoria-producto/:client_id" element={<IngresosCategoriaProducto />} />
+            <Route path="ingresos-categoria-producto/:client_id" element={
+                <IngresosProductosProvider>
+                    <IngresosCategoriaProducto />
+                </IngresosProductosProvider>
+            } />
             <Route path="estados-ordenes/:client_id" element={<EstadosOrdenes />} />
             <Route path="compare-month-month/:client_id" element={<CompareMonthMonth />} />
             <Route path="compare-year-year/:client_id" element={<CompareYearYear />} />
