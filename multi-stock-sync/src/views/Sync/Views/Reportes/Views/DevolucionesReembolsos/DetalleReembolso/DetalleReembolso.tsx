@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Card, Row, Col, Spinner } from 'react-bootstrap';
+import { Container, Card, Row, Col } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { LoadingDinamico } from '../../../../../../../components/LoadingDinamico/LoadingDinamico';
 
@@ -104,7 +104,7 @@ const DetalleReembolso: React.FC = () => {
                   </Card.Body>
                 </Card>
                 <Card className="mb-3">
-                  <Card.Header>Comprador</Card.Header>
+                  <Card.Header>Comprador (Nickname)</Card.Header>
                   <Card.Body>
                     <Card.Text>{refund.buyer?.name || 'No disponible'}</Card.Text>
                   </Card.Body>
