@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Table } from 'react-bootstrap';
+import { Container, Card, Row, Col, Spinner } from 'react-bootstrap';
 import { useParams } from 'react-router-dom';
 import { LoadingDinamico } from '../../../../../../../components/LoadingDinamico/LoadingDinamico';
 
@@ -89,44 +89,52 @@ const DetalleReembolso: React.FC = () => {
   }
 
   return (
-    <div>
-      <h1>Detalle del Reembolso</h1>
-      <h5>Usuario: {username}</h5>
-      {refund ? (
-        <Table striped bordered hover>
-          <thead>
-            <tr>
-              <th>Producto</th>
-              <th>Comprador</th>
-              <th>Facturación</th>
-              <th>Envío</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <p>{refund.product.title}</p>
-              </td>
-              <td>
-                <p>{refund.buyer.name}</p>
-              </td>
-              <td>
-                <p>{`${refund.billing.first_name} ${refund.billing.last_name}`}</p>
-                <p>{`${refund.billing.identification.type}: ${refund.billing.identification.number}`}</p>
-              </td>
-              <td>
-                <p>{`Método: ${refund.shipping.shipping_method}`}</p>
-                <p>{`Estado: ${refund.shipping.shipping_status}`}</p>
-                <p>{`Dirección: ${refund.shipping.shipping_address.address}, ${refund.shipping.shipping_address.number}, ${refund.shipping.shipping_address.city}, ${refund.shipping.shipping_address.state}, ${refund.shipping.shipping_address.country}`}</p>
-                <p>{`Comentarios: ${refund.shipping.shipping_address.comments}`}</p>
-              </td>
-            </tr>
-          </tbody>
-        </Table>
-      ) : (
-        <p>No se encontró el reembolso.</p>
-      )}
-    </div>
+    <Container className="mt-5">
+      <Card>
+        <Card.Header as="h1">Detalle del Reembolso</Card.Header>
+        <Card.Body>
+          <Card.Title>Usuario: {username}</Card.Title>
+          {refund ? (
+            <Row>
+              <Col md={6}>
+                <Card className="mb-3">
+                  <Card.Header>Producto</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{refund.product.title}</Card.Text>
+                  </Card.Body>
+                </Card>
+                <Card className="mb-3">
+                  <Card.Header>Comprador</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{refund.buyer.name}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={6}>
+                <Card className="mb-3">
+                  <Card.Header>Facturación</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{`${refund.billing.first_name} ${refund.billing.last_name}`}</Card.Text>
+                    <Card.Text>{`${refund.billing.identification.type}: ${refund.billing.identification.number}`}</Card.Text>
+                  </Card.Body>
+                </Card>
+                <Card className="mb-3">
+                  <Card.Header>Envío</Card.Header>
+                  <Card.Body>
+                    <Card.Text>{`Método: ${refund.shipping.shipping_method}`}</Card.Text>
+                    <Card.Text>{`Estado: ${refund.shipping.shipping_status}`}</Card.Text>
+                    <Card.Text>{`Dirección: ${refund.shipping.shipping_address.address}, ${refund.shipping.shipping_address.number}, ${refund.shipping.shipping_address.city}, ${refund.shipping.shipping_address.state}, ${refund.shipping.shipping_address.country}`}</Card.Text>
+                    <Card.Text>{`Comentarios: ${refund.shipping.shipping_address.comments}`}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+          ) : (
+            <p>No se encontró el reembolso.</p>
+          )}
+        </Card.Body>
+      </Card>
+    </Container>
   );
 };
 
