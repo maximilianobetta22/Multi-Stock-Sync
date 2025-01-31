@@ -1,11 +1,11 @@
-import { useContext, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { PieChart } from "./Graphic";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IngresosProductosContext } from "./Context";
 import { ItemTable } from "./components/ItemTable";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
-import { formatNumber, handleFilterCategory } from "./helpers";
+import { exportToExcel, exportToPdf, formatNumber, handleFilterCategory } from "./helpers";
 
 import styles from "./IngresosCategoriaProducto.module.css";
 
@@ -35,6 +35,10 @@ const IngresosCategoriaProducto = () => {
     if (initDate === '' || endDate === '') return;
     getVentas(initDate, endDate);
   };
+
+  useEffect(() => {
+    getVentas(initDate, endDate);
+  },[])
 
   return (
     <div className={styles.view__container}>
@@ -116,11 +120,11 @@ const IngresosCategoriaProducto = () => {
                   </div>
                   <div className={styles.total__buttonExport}>
                     <div className={styles.buttonExport__container}>
-                      <button className={styles.buttonExport_btn}>
+                      <button className={styles.buttonExport_btn} onClick={() => exportToPdf(categoriasFiltradas)}>
                         <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
                         Exportar a Pdf
                       </button>
-                      <button className={styles.buttonExport_btn}>
+                      <button className={styles.buttonExport_btn} onClick={() => exportToExcel(categoriasFiltradas)}>
                         <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
                         Exportar a Excel
                       </button>
