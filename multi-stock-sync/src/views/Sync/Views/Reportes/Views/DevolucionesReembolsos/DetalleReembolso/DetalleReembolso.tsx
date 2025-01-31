@@ -93,20 +93,20 @@ const DetalleReembolso: React.FC = () => {
       <Card>
         <Card.Header as="h1">Detalle del Reembolso</Card.Header>
         <Card.Body>
-          <Card.Title>Usuario: {username}</Card.Title>
+          <Card.Title>Usuario: {username || 'Desconocido'}</Card.Title>
           {refund ? (
             <Row>
               <Col md={6}>
                 <Card className="mb-3">
                   <Card.Header>Producto</Card.Header>
                   <Card.Body>
-                    <Card.Text>{refund.product.title}</Card.Text>
+                    <Card.Text>{refund.product?.title || 'No disponible'}</Card.Text>
                   </Card.Body>
                 </Card>
                 <Card className="mb-3">
                   <Card.Header>Comprador</Card.Header>
                   <Card.Body>
-                    <Card.Text>{refund.buyer.name}</Card.Text>
+                    <Card.Text>{refund.buyer?.name || 'No disponible'}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
@@ -114,17 +114,17 @@ const DetalleReembolso: React.FC = () => {
                 <Card className="mb-3">
                   <Card.Header>Facturación</Card.Header>
                   <Card.Body>
-                    <Card.Text>{`${refund.billing.first_name} ${refund.billing.last_name}`}</Card.Text>
-                    <Card.Text>{`${refund.billing.identification.type}: ${refund.billing.identification.number}`}</Card.Text>
+                    <Card.Text>{`${refund.billing?.first_name || 'N/A'} ${refund.billing?.last_name || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`${refund.billing?.identification?.type || 'N/A'}: ${refund.billing?.identification?.number || 'N/A'}`}</Card.Text>
                   </Card.Body>
                 </Card>
                 <Card className="mb-3">
                   <Card.Header>Envío</Card.Header>
                   <Card.Body>
-                    <Card.Text>{`Método: ${refund.shipping.shipping_method}`}</Card.Text>
-                    <Card.Text>{`Estado: ${refund.shipping.shipping_status}`}</Card.Text>
-                    <Card.Text>{`Dirección: ${refund.shipping.shipping_address.address}, ${refund.shipping.shipping_address.number}, ${refund.shipping.shipping_address.city}, ${refund.shipping.shipping_address.state}, ${refund.shipping.shipping_address.country}`}</Card.Text>
-                    <Card.Text>{`Comentarios: ${refund.shipping.shipping_address.comments}`}</Card.Text>
+                    <Card.Text>{`Método: ${refund.shipping?.shipping_method || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`Estado: ${refund.shipping?.shipping_status || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`Dirección: ${refund.shipping?.shipping_address?.address || 'N/A'}, ${refund.shipping?.shipping_address?.number || 'N/A'}, ${refund.shipping?.shipping_address?.city || 'N/A'}, ${refund.shipping?.shipping_address?.state || 'N/A'}, ${refund.shipping?.shipping_address?.country || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`Comentarios: ${refund.shipping?.shipping_address?.comments || 'N/A'}`}</Card.Text>
                   </Card.Body>
                 </Card>
               </Col>
