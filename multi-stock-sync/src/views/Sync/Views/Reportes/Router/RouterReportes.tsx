@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 
-
+import FiltrarDatos from "../Views/FiltrarDatos/FiltrarDatos";
+import ExportarDatos from "../Views/ExportarDatos/ExportarDatos";
 import HomeReportes from "../Views/Home/HomeReportes";
 import VentasPorDia from "../Views/VentasPorDia/VentasPorDia";
 import VentasPorMes from "../Views/VentasPorMes/VentasPorMes";
@@ -15,7 +16,6 @@ import CompareMonthMonth from "../Views/CompareMesMes/CompareMonthMonth";
 import CompareYearYear from "../Views/CompareYearYear/CompareYearYear";
 import VentasPorYear from "../Views/VentasPorYear/VentasPorYear";
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
-import DetalleReembolso from "../Views/DevolucionesReembolsos/DetalleReembolso/DetalleReembolso";
 
 
 function RouterReportes() {
@@ -24,13 +24,13 @@ function RouterReportes() {
         <Routes>
             <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
             <Route path="home" element={<HomeReportes/>} />
-
+            <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
+            <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
             <Route path="ingreso-semana/:client_id" element={< IngresosSemana/>} />
             <Route path="ventas-dia/:client_id" element={<VentasPorDia />} />
             <Route path="ventas-mes/:client_id" element={<VentasPorMes />} />
             <Route path="metodos-pago/:client_id" element={<MetodosPago />} />
             <Route path="devoluciones-reembolsos/:client_id" element={<DevolucionesReembolso />} />
-            <Route path="devoluciones-reembolsos/:client_id/:order_id" element={<DetalleReembolso />} />
             <Route path="productos-mas-vendidos/:client_id" element={<ProductosMasVendidos />} />
             <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
             <Route path="ingresos-categoria-producto/:client_id" element={

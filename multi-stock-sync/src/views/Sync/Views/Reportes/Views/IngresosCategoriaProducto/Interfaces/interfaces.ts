@@ -1,3 +1,4 @@
+
 export interface Producto {
   id: number;
   title: string;
@@ -15,7 +16,7 @@ export interface Venta {
   total_amount: number;
 }
 
-export interface Categoria {
+export interface Categoria{
   id: string;
   category: string;
   cantidadProductos: number;
@@ -26,8 +27,9 @@ export interface Categoria {
 export interface ProductoState {
   ventas: Venta[];
   categorias: Categoria[];
-  totalCategoria: number[];
   productos: Producto[];
-  productosFiltrados: Producto[];
+  categoriasFiltradas: Categoria[];
+  totalFinal: number;
+  categoriaActiva: string;
   isLoading: boolean;
 }

@@ -282,7 +282,7 @@ const MetodosPago: React.FC = () => {
                     </ProgressBar>
                     <button
                       type="button"
-                      className="btn btn-success mt-3 me-2"
+                      className="btn btn-success mt-3"
                       onClick={generatePDF}
                     >
                       Exportar a PDF
