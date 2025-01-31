@@ -22,6 +22,47 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
+/**
+ * VentasPorDia component fetches and displays daily sales data for a specific client.
+ * It provides options to view the data in a chart, generate a PDF preview, and save the report as an Excel file.
+ *
+ * @component
+ * @example
+ * return (
+ *   <VentasPorDia />
+ * )
+ *
+ * @returns {JSX.Element} The rendered component.
+ *
+ * @remarks
+ * This component uses the following hooks:
+ * - `useParams` to get the `client_id` from the URL.
+ * - `useState` to manage various states such as `fecha`, `chartData`, `loading`, `error`, `showModal`, `showPdfModal`, `totalIngresos`, `userData`, `pdfDataUrl`, `toastMessage`, and `toastType`.
+ * - `useEffect` to fetch sales data and user data when `client_id` or `fecha` changes.
+ *
+ * @function fetchVentas
+ * Fetches sales data for the specified `client_id` and `fecha`.
+ * Updates the `chartData`, `totalIngresos`, and `error` states based on the API response.
+ *
+ * @function fetchUserData
+ * Fetches user data for the specified `client_id`.
+ * Updates the `userData` state based on the API response.
+ *
+ * @function generatePDF
+ * Generates a PDF preview of the sales report using `jsPDF`.
+ * Updates the `pdfDataUrl` and `showPdfModal` states.
+ *
+ * @function savePDF
+ * Saves the generated PDF with the selected date and username in the filename.
+ *
+ * @function generateExcel
+ * Generates and saves an Excel report of the sales data using `XLSX`.
+ *
+ * @constant options
+ * Configuration options for the chart, including responsiveness, legend position, title, tooltips, data labels, and scales.
+ *
+ * @returns {JSX.Element} The rendered component.
+ */
 const VentasPorDia: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const [fecha, setFecha] = useState<string>("2025-01-01");
@@ -118,7 +159,7 @@ const VentasPorDia: React.FC = () => {
               label += ': ';
             }
             if (context.parsed.y !== null) {
-              label += new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(context.parsed.y);
+              label += `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(context.parsed.y)} CLP`;
             }
             return label;
           }
@@ -128,7 +169,7 @@ const VentasPorDia: React.FC = () => {
         anchor: 'center',
         align: 'center' as const,
         formatter: function (value: any) {
-          return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+          return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
         },
         color: 'white',
         font: {
@@ -140,7 +181,7 @@ const VentasPorDia: React.FC = () => {
       y: {
         ticks: {
           callback: function (value: any) {
-            return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
           }
         }
       },
@@ -175,7 +216,7 @@ const VentasPorDia: React.FC = () => {
     }
 
     if (totalIngresos !== null) {
-      doc.text(`Total de Ingresos: ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalIngresos)}`, 14, 60);
+      doc.text(`Total de Ingresos: $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalIngresos)} CLP`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -184,7 +225,7 @@ const VentasPorDia: React.FC = () => {
       head: [["Producto", "Ingresos"]],
       body: chartData.labels.map((label: string, index: number) => [
         label,
-        new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(chartData.datasets[0].data[index]),
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(chartData.datasets[0].data[index])} CLP`,
       ]),
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -221,7 +262,7 @@ const VentasPorDia: React.FC = () => {
     }
 
     if (totalIngresos !== null) {
-      doc.text(`Total de Ingresos: ${new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(totalIngresos)}`, 14, 60);
+      doc.text(`Total de Ingresos: $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalIngresos)} CLP`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -230,7 +271,7 @@ const VentasPorDia: React.FC = () => {
       head: [["Producto", "Ingresos"]],
       body: chartData.labels.map((label: string, index: number) => [
         label,
-        new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(chartData.datasets[0].data[index]),
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(chartData.datasets[0].data[index])} CLP`,
       ]),
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -250,7 +291,7 @@ const VentasPorDia: React.FC = () => {
       ['Producto', 'Ingresos'],
       ...chartData.labels.map((label: string, index: number) => [
         label,
-        new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(chartData.datasets[0].data[index]),
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(chartData.datasets[0].data[index])} CLP`,
       ])
     ];
 
@@ -323,7 +364,7 @@ const VentasPorDia: React.FC = () => {
                 chartData.labels.map((label: string, index: number) => (
                   <tr key={index}>
                     <td>{label}</td>
-                    <td>{new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(chartData.datasets[0].data[index])}</td>
+                    <td>$ {new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(chartData.datasets[0].data[index])} CLP</td>
                   </tr>
                 ))
               ) : (

@@ -164,7 +164,7 @@ const VentasPorMes: React.FC = () => {
         datalabels: {
           color: 'white',
           formatter: (value: number) => {
-            return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
           }
         }
       }
@@ -181,7 +181,7 @@ const VentasPorMes: React.FC = () => {
       },
       title: {
         display: true,
-        text: `Ventas Totales Por Mes (${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}): $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`,
+        text: `Ventas Totales Por Mes (${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}): $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`,
         font: {
           size: 18
         }
@@ -195,7 +195,7 @@ const VentasPorMes: React.FC = () => {
       tooltip: {
         callbacks: {
           label: function (context: any) {
-            return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
           }
         }
       }
@@ -223,7 +223,7 @@ const VentasPorMes: React.FC = () => {
     }
 
     if (totalVentas !== null) {
-      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
+      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -234,7 +234,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
       ]) : [],
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -270,7 +270,7 @@ const VentasPorMes: React.FC = () => {
     }
 
     if (totalVentas !== null) {
-      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
+      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -281,7 +281,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
       ]) : [],
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -303,7 +303,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
       ]) : []
     ];
 
@@ -403,7 +403,7 @@ const VentasPorMes: React.FC = () => {
                     <td>{venta.order_id}</td>
                     <td>{venta.title}</td>
                     <td>{venta.quantity}</td>
-                    <td>{`$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`}</td>
+                    <td>{`$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`}</td>
                   </tr>
                 ))
               ) : (
