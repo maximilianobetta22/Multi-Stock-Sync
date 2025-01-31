@@ -55,6 +55,7 @@ const DevolucionesReembolsos: React.FC = () => {
   return (
     <div className="container mt-5">
       <h1 className='mt-3 mb-3'>Devoluciones por Categoría</h1>
+      <p className='mb-3'>Seleccione una devolución de la lista.</p>
       <Table striped bordered hover>
         <thead>
           <tr>
