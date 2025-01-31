@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Table, Button } from 'react-bootstrap';
+import { Table } from 'react-bootstrap';
 
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
 
@@ -75,8 +75,7 @@ const DevolucionesReembolsos: React.FC = () => {
               <td>{refund.status}</td>
               <td>{refund.product.title}</td>
               <td>
-              <Link className='btn btn-primary' to={`/sync/reportes/devoluciones-reembolsos/${client_id}/${refund.id}`} target='_blank'>Ver detalle
-              </Link>
+                <Link className='btn btn-primary' to={`/sync/reportes/devoluciones-reembolsos/${client_id}/detalle/${refund.id}`} target='_blank'>Ver detalle</Link>
               </td>
             </tr>
           ))}
