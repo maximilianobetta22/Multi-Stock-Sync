@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { PieChart } from "./Graphic";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -35,10 +35,6 @@ const IngresosCategoriaProducto = () => {
     if (initDate === '' || endDate === '') return;
     getVentas(initDate, endDate);
   };
-
-  useEffect(() => {
-    getVentas(initDate, endDate);
-  }, [initDate, endDate]);
 
   return (
     <div className={styles.view__container}>
