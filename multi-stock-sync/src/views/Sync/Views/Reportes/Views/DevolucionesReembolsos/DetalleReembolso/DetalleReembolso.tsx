@@ -42,6 +42,13 @@ interface Refund {
   };
 }
 
+const formatRUT = (rut: string) => {
+  const cleaned = rut.replace(/[^0-9kK]/g, '');
+  const rutBody = cleaned.slice(0, -1);
+  const rutDv = cleaned.slice(-1).toUpperCase();
+  return `${rutBody.replace(/\B(?=(\d{3})+(?!\d))/g, '.')} -${rutDv}`;
+};
+
 const DetalleReembolso: React.FC = () => {
   const { client_id, refund_id } = useParams<{ client_id: string; refund_id: string }>();
   const [refund, setRefund] = useState<Refund | null>(null);
@@ -115,7 +122,7 @@ const DetalleReembolso: React.FC = () => {
                   <Card.Header>Facturación</Card.Header>
                   <Card.Body>
                     <Card.Text>{`${refund.billing?.first_name || 'N/A'} ${refund.billing?.last_name || 'N/A'}`}</Card.Text>
-                    <Card.Text>{`${refund.billing?.identification?.type || 'N/A'}: ${refund.billing?.identification?.number || 'N/A'}`}</Card.Text>
+                    <Card.Text>{`${refund.billing?.identification?.type || 'N/A'}: ${formatRUT(refund.billing?.identification?.number || 'N/A')}`}</Card.Text>
                   </Card.Body>
                 </Card>
                 <Card className="mb-3">
