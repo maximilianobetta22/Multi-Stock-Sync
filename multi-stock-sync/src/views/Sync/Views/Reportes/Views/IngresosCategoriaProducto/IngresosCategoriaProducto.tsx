@@ -7,6 +7,9 @@ import { ItemTable } from "./components/ItemTable";
 
 import styles from "./IngresosCategoriaProducto.module.css";
 
+import { exportToExcel } from "./helpers/exportToExcel";
+import { exportToPdf } from "./helpers/exportToPdf";
+
 type eventChange = React.ChangeEvent<HTMLInputElement>;
 type eventForm = React.FormEvent<HTMLFormElement>;
 
@@ -115,14 +118,17 @@ const IngresosCategoriaProducto = () => {
             </div>
             <div className={styles.total__buttonExport}>
               <div className={styles.buttonExport__container}>
-                <button className={styles.buttonExport_btn}>
+
+                <button className={styles.buttonExport_btn} onClick={() => exportToPdf(categorias)}>
                   <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
                   Exportar a Pdf
                 </button>
-                <button className={styles.buttonExport_btn}>
+                <button className={styles.buttonExport_btn} onClick={() => exportToExcel(categorias)}>
                   <FontAwesomeIcon className={`${styles.btn__icon}`} icon={faDownload} />
                   Exportar a Excel
                 </button>
+
+
               </div>
             </div>
           </div>
