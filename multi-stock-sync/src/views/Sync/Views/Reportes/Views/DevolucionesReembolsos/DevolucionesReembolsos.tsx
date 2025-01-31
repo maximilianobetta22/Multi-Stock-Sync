@@ -54,7 +54,7 @@ const DevolucionesReembolsos: React.FC = () => {
 
   return (
     <div className="container mt-5">
-      <h1>Devoluciones por Categoría</h1>
+      <h1 className='mt-3 mb-3'>Devoluciones por Categoría</h1>
       <Table striped bordered hover>
         <thead>
           <tr>
@@ -75,9 +75,8 @@ const DevolucionesReembolsos: React.FC = () => {
               <td>{refund.status}</td>
               <td>{refund.product.title}</td>
               <td>
-              <Link to={`/sync/reportes/devoluciones-reembolsos/${client_id}/${refund.id}`}>
-                  <Button as="a" variant="primary">Ver Detalle</Button>
-                </Link>
+              <Link className='btn btn-primary' to={`/sync/reportes/devoluciones-reembolsos/${client_id}/${refund.id}`} target='_blank'>Ver detalle
+              </Link>
               </td>
             </tr>
           ))}
