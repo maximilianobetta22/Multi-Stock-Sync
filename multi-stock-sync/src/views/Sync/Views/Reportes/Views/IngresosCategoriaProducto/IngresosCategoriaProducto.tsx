@@ -3,9 +3,9 @@ import { PieChart } from "./Graphic";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IngresosProductosContext } from "./Context";
-import { ItemTable } from "./components/ItemTable";
+import { ItemTable } from "./components/ItemCategory";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
-import { exportToExcel, exportToPdf, formatNumber, handleFilterCategory } from "./helpers";
+import { exportToExcel, exportToPdf, formatNumber, handleDateEnd, handleDateInit, handleFilterCategory } from "./helpers";
 
 import styles from "./IngresosCategoriaProducto.module.css";
 
@@ -16,9 +16,8 @@ const IngresosCategoriaProducto = () => {
 
   const { ProductoState, getVentas, dispatch } = useContext(IngresosProductosContext);
   const { categorias, isLoading, totalFinal, categoriasFiltradas, categoriaActiva } = ProductoState;
-
-  const [initDate, setInitDate] = useState<string>('2025-01-01');
-  const [endDate, setEndDate] = useState<string>('2025-01-10');
+  const [initDate, setInitDate] = useState<string>(handleDateInit);
+  const [endDate, setEndDate] = useState<string>(handleDateEnd);
 
   const handleInitDateChange = ({ target }: eventChange) => {
     const date = target.value;
@@ -44,7 +43,7 @@ const IngresosCategoriaProducto = () => {
     <div className={styles.view__container}>
       {/**CONTENIDO IZQUIERDO */}
       <div className={`border ${styles.container__left}`}>
-        {/**CONTENEDOR HEADER */}
+        {/**CONTENEDOR DE DATOS (HEADER, GRAFICO, DATOS VENTAS) */}
         {
           (isLoading)
             ? <LoadingDinamico variant="container" />
@@ -55,7 +54,7 @@ const IngresosCategoriaProducto = () => {
                   <button className={`dropdown-toggle ${styles.header__dropdown}`} type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                     {categoriaActiva}
                   </button>
-                  <ul className="dropdown-menu">
+                  <ul className={`dropdown-menu ${styles.dropdown__container}`}>
                     <li onClick={() => handleFilterCategory('Todo', dispatch, categorias)} className={`dropdown-item ${styles.dropdown__item}`}>Todo</li>
                     <hr className={styles.dropdown__line}/>
                     {

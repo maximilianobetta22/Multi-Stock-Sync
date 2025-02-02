@@ -4,6 +4,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronDown, faChevronUp } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
 import styles from "../IngresosCategoriaProducto.module.css";
+import { ItemProduct } from "./ItemProduct";
 
 type ItemTableProps = {
   categoria: Categoria
@@ -17,8 +18,6 @@ export const ItemTable = ({categoria}:ItemTableProps) => {
     setMenuOpen(!menuOpen);
   };
 
-  groupByIdProduct(categoria.productos);
-
   return (
     <>
       <tr className={styles.body__row}>
@@ -28,26 +27,24 @@ export const ItemTable = ({categoria}:ItemTableProps) => {
         >
           {categoria.category.toUpperCase()}
           {
-            (menuOpen)
+            (menuOpen && categoria.productos.length > 0)
             ? <FontAwesomeIcon className={styles.item__oneIcon} icon={faChevronUp}/>
             : <FontAwesomeIcon className={styles.item__oneIcon} icon={faChevronDown}/>
           }
         </td>
         <td className={`${styles.item__two}`}>documento</td>
         <td className={`${styles.item__three}`}>{categoria.cantidadProductos}</td>
-        <td className={`${styles.item__four}`}>{formatNumber(categoria.total)}</td>
+        <td className={`${styles.item__four}`}>-</td>
         <td className={`${styles.item__five}`}>{formatNumber(categoria.total)}</td>
       </tr>
-      <div className={`${styles.body__containerProducts} ${menuOpen ? styles.body__containerBodyOpen : ''}`}>
+      <div className={`${styles.body__containerProducts} ${menuOpen ? styles.body__containerProductsOpen : ''}`}>
         {
-          groupByIdProduct(categoria.productos)?.map((producto:Producto) => (
-            <tr key={producto.id} className={`${styles.body__categoryRow}`}> 
-              <td className={`${styles.item__categoryOne}`}>{producto.title}</td>
-              <td className={`${styles.item__categoryTwo}`}>documento</td>
-              <td className={`${styles.item__categoryThree}`}>{producto.quantity}</td>
-              <td className={`${styles.item__categoryFour}`}>{formatNumber(producto.price)}</td>
-              <td className={`${styles.item__categoryFive}`}>{formatNumber(producto.price * producto.quantity)}</td>
-            </tr>
+          groupByIdProduct(categoria.productos)?.map((producto:Producto, indice) => (
+            <ItemProduct 
+              key={producto.id}
+              producto={producto} 
+              indice={indice + 1}
+            />
           ))
         }
       </div>

@@ -7,8 +7,10 @@ export const groupByIdProduct = (productos: Producto[]) => {
   productos.forEach((producto) => {
     if (productosGroupById[producto.id]) {
       productosGroupById[producto.id].quantity += producto.quantity;
+      productosGroupById[producto.id].total += producto.price * producto.quantity;
     } else {
       productosGroupById[producto.id] = { ...producto };
+      productosGroupById[producto.id].total = producto.price * producto.quantity;
     }
   });
 

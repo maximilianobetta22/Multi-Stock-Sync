@@ -1,11 +1,12 @@
 
-export interface Producto {
+export interface Producto { 
   id: number;
   title: string;
   quantity: number;
   price: number;
   category_id: string;
   category: string;
+  total: number;
 }
 
 export interface Venta {
