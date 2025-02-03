@@ -1,11 +1,10 @@
 import { useContext, useEffect, useState } from "react";
-import { PieChart } from "./Graphic";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IngresosProductosContext } from "./Context";
-import { ItemTable } from "./components/ItemTable";
+import { ItemCategory, PieChart } from "./components";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
-import { exportToExcel, exportToPdf, formatNumber, handleFilterCategory } from "./helpers";
+import { exportToExcel, exportToPdf, formatNumber, handleDateEnd, handleDateInit, handleFilterCategory } from "./helpers";
 
 import styles from "./IngresosCategoriaProducto.module.css";
 
@@ -15,10 +14,11 @@ type eventForm = React.FormEvent<HTMLFormElement>;
 const IngresosCategoriaProducto = () => {
 
   const { ProductoState, getVentas, dispatch } = useContext(IngresosProductosContext);
-  const { categorias, isLoading, totalFinal, categoriasFiltradas, categoriaActiva } = ProductoState;
+  const { categorias, isLoading, totalFinal, categoriasFiltradas, categoriaActiva, metodosPago } = ProductoState;
+  const [initDate, setInitDate] = useState<string>(handleDateInit);
+  const [endDate, setEndDate] = useState<string>(handleDateEnd);
 
-  const [initDate, setInitDate] = useState<string>('2025-01-01');
-  const [endDate, setEndDate] = useState<string>('2025-01-10');
+  console.log(ProductoState)
 
   const handleInitDateChange = ({ target }: eventChange) => {
     const date = target.value;
@@ -44,7 +44,7 @@ const IngresosCategoriaProducto = () => {
     <div className={styles.view__container}>
       {/**CONTENIDO IZQUIERDO */}
       <div className={`border ${styles.container__left}`}>
-        {/**CONTENEDOR HEADER */}
+        {/**CONTENEDOR DE DATOS (HEADER, GRAFICO, DATOS VENTAS) */}
         {
           (isLoading)
             ? <LoadingDinamico variant="container" />
@@ -55,7 +55,7 @@ const IngresosCategoriaProducto = () => {
                   <button className={`dropdown-toggle ${styles.header__dropdown}`} type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                     {categoriaActiva}
                   </button>
-                  <ul className="dropdown-menu">
+                  <ul className={`dropdown-menu ${styles.dropdown__container}`}>
                     <li onClick={() => handleFilterCategory('Todo', dispatch, categorias)} className={`dropdown-item ${styles.dropdown__item}`}>Todo</li>
                     <hr className={styles.dropdown__line}/>
                     {
@@ -103,7 +103,7 @@ const IngresosCategoriaProducto = () => {
                   <tbody className={styles.table__body}>
                     {
                       categoriasFiltradas.map((categoria) => (
-                        <ItemTable
+                        <ItemCategory
                           key={categoria.id}
                           categoria={categoria}
                         />
@@ -137,10 +137,26 @@ const IngresosCategoriaProducto = () => {
       </div>
       {/**CONTENIDO DERECHO */}
       <div className={styles.container__right}>
-        <h3 className={styles.right__title}>Formas De Pago Y Devoluciones</h3>
+        <h3 className={styles.right__title}>Formas De Pago</h3>
         <hr className={styles.right__hr} />
         <div className={styles.right__data}>
-
+          <ul className={styles.method__list}>
+            {
+              metodosPago.map((metodo) => (
+                <li key={metodo.payment_method} className={styles.list__item}>
+                  <p className={styles.item__p}>{metodo.payment_method}</p>
+                  <p className={styles.item__number}>{formatNumber(metodo.total)}</p>
+                </li>
+              ))
+            }
+          </ul>
+          <footer className={styles.right__footer}>
+            <hr className={styles.right__hr} />
+            <div className={styles.footer__total}>
+              <p className={styles.method__p}>Total</p>
+              <p className={styles.method__number}>{formatNumber(metodosPago.reduce((acc, curr) => acc + curr.total, 0))}</p>
+            </div>
+          </footer>
         </div>
       </div>
     </div>

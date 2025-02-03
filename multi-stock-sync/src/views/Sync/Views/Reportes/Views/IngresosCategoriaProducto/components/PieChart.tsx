@@ -1,23 +1,30 @@
 import { Pie } from "react-chartjs-2";
-import styles from "../IngresosCategoriaProducto.module.css";
 import { createRandomColors } from "../helpers";
-import { useContext } from "react";
+import { useContext, useMemo } from "react";
 import { IngresosProductosContext } from "../Context/IngresosProductosContext";
+
+import styles from "../IngresosCategoriaProducto.module.css";
 
 export const PieChart = () => {
 
   const { ProductoState } = useContext(IngresosProductosContext);
   const{ categorias } = ProductoState;
 
-  const data = categorias.map((categoria) => {
-    return categoria.total;
-  });
+  const memoData = useMemo(() => {
+    return categorias.map((categoria) => {
+      return categoria.total;
+    });
+  }, [categorias])
 
-  const etiquetas = categorias.map((categoria) => {
-    return categoria.category
-  });
+  const memoEtiquetas = useMemo(() => {
+    return categorias.map((categoria) => {
+      return categoria.category;
+    });
+  },[categorias])
 
-  const colors = createRandomColors({ amount: categorias.length })
+  const memoColors = useMemo(() => {
+    return createRandomColors({ quantity: categorias.length })
+  }, [categorias])
 
   return (
     <div className={styles.left__graphic}>
@@ -25,12 +32,12 @@ export const PieChart = () => {
       <div className={styles.graphic__container}>
         <Pie
           data={{
-            labels: etiquetas,
+            labels: memoEtiquetas,
             datasets: [
               {
                 label: 'Ganancia por día',
-                data: data,
-                backgroundColor: colors,
+                data: memoData,
+                backgroundColor: memoColors,
                 borderWidth: 1,
               },
             ],
@@ -53,9 +60,9 @@ export const PieChart = () => {
       <div className={styles.graphic__data}>
         <ul className={styles.data__list}>
           {
-            etiquetas.map((categoria, index) => (
+            memoEtiquetas.map((categoria, index) => (
               <li key={index} className={styles.data__item}>
-                <div className={styles.item__color} style={{ backgroundColor: colors[index] }}></div>
+                <div className={styles.item__color} style={{ backgroundColor: memoColors[index] }}></div>
                 <p className={styles.item__categoria}>{categoria}</p>
               </li>
             ))

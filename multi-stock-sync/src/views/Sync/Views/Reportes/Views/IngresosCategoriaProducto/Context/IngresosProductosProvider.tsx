@@ -1,17 +1,18 @@
 import { useReducer } from "react";
-import { Producto, ProductoState, Venta } from "../Interfaces/interfaces";
+import { Producto, IngresosProductoState, Venta } from "../Interfaces/interfaces";
 import { IngresosProductosContext } from "./IngresosProductosContext";
 import { ProductoReducer } from "./ProductoReducer";
 import { useParams } from "react-router-dom";
-import { groupByIdProduct, groupByCategory, handleFilterCategory} from "../helpers";
+import { groupByIdProduct, groupByCategory, handleFilterCategory, groupByPaymentMethod} from "../helpers";
 import axios from "axios";
 
-const INITIAL_STATE: ProductoState = { 
+const INITIAL_STATE: IngresosProductoState = { 
   ventas: [],
   categorias: [],
   productos: [],
   categoriasFiltradas: [],
   categoriaActiva: 'Todo',
+  metodosPago: [],
   totalFinal: 0,
   isLoading: false,
 }
@@ -56,6 +57,10 @@ export const IngresosProductosProvider = ({ children }: Props) => {
       dispatch({
         type: 'getVentas',
         payload: ventas
+      })
+      dispatch({
+        type: 'updatePaymentMethods',
+        payload: groupByPaymentMethod(ventas)
       })
       dispatch({
         type: 'updateProductos',

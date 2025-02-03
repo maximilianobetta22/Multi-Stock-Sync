@@ -52,15 +52,18 @@
   background-color: transparent;
 }
 
+.dropdown__container{
+  max-height: 12rem;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
 .dropdown__line{
   margin: 0.2rem 0.3rem;
 }
 
 .dropdown__item{
   color: rgba(0, 0, 0, 0.6);
-}
-
-.dropdown__item:hover{
   cursor: pointer;
 }
 
@@ -69,11 +72,11 @@
   width: 10rem;
   padding-left: 1rem;
   color: rgba(0, 0, 0, 0.6);
-}
-
-.header__btnDate:hover{
   cursor: pointer;
-  color: rgba(0, 0, 0, 0.8);
+
+  &:hover{
+    color: rgba(0, 0, 0, 0.8);
+  }
 }
 
 .header__btnBuscar{
@@ -82,11 +85,11 @@
   background-color: #3FA4CD;
   color: #FFFFFF;
   transition: all 0.2s;
-}
 
-.header__btnBuscar:hover{
-  background-color: #72c0df;
-  color: #FFFFFF;
+  &:hover{
+    background-color: #72c0df;
+    color: #FFFFFF;
+  }
 }
 
 /*GRAFICO--------------------------------------------------------------------------------------------------------------------*/
@@ -252,7 +255,7 @@
   width: 100%;
   height: auto;
   max-height: 10rem;
-  overflow-y: auto;
+  overflow-y: scroll;
   scrollbar-width: thin;
   scrollbar-gutter: initial;
 }
@@ -264,7 +267,7 @@
   width: 100%;
   height: auto;
   border-bottom: 0.1rem solid rgba(0, 0, 0, 0.3);
-  z-index: 2;
+  z-index: 5;
 }
 
 .item__one{
@@ -281,15 +284,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+
+  &:hover{
+    color: rgba(0, 0, 0, 0.9);
+  }
 }
 
 .item__oneIcon{
   font-size: 0.5rem;
   color: #3FA4CD;
-}
-
-.item__one:hover{
-  color: rgba(0, 0, 0, 0.9);
 }
 
 .item__one:hover .item__oneIcon{
@@ -338,19 +341,17 @@
 }
 
 .body__containerProducts{
-  width: auto;
-  height: 0;
+  display: none;
+  height: 0%;
   opacity: 0;
-  transition: all 0.2s;
-  box-shadow: inset 0rem 0rem 0.5rem 0.2rem rgba(0, 0, 0, 0.9);
-  z-index: 1;
+  width: auto;
 }
 
 .body__categoryRow{
   display: flex;
   flex-direction: row;
   justify-content: center;
-  background-color: rgba(255, 255, 255, 0.9);
+  background-color: rgba(255,255,255,0.9);
   width: 100%;
   height: auto;
   border: none;
@@ -528,9 +529,70 @@
   margin: 0;
 }
 
-/*ANIMACIONES Y TRANSICIONES-----------------------------------------------------------------------------------------------------------*/
-.body__containerBodyOpen{
-  opacity: 1;
+.right__data{
+  height: 100%;
   width: 100%;
+  overflow-y: hidden;
+}
+
+.method__list{
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-height: 90%;
+  max-height: 90%;
+  margin: 0;
+  padding: 0;
+  font-size: 0.8rem;
+  overflow-y: auto;
+}
+
+.list__item{
+  display: flex;
+  flex-direction: row;
   height: auto;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.6);
+}
+
+.item__number{
+  font-weight: 500;
+}
+
+.right__footer{
+  max-height: 10%;
+  min-height: 10%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.footer__total{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.method__p{
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.method__number{
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+/*ANIMACIONES Y TRANSICIONES DE CLASES-----------------------------------------------------------------------------------------------------------*/
+.body__containerProductsOpen{
+  display: block;
+  height: auto;
+  opacity: 1;
 }
