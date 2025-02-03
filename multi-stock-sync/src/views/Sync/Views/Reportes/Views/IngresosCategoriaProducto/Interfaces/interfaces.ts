@@ -17,6 +17,12 @@ export interface Venta {
   total_amount: number;
 }
 
+export interface PaymentMethod{
+  payment_method: string;
+  quantity: number;
+  total: number;
+}
+
 export interface Categoria{
   id: string;
   category: string;
@@ -25,12 +31,13 @@ export interface Categoria{
   total: number;
 }
 
-export interface ProductoState {
+export interface IngresosProductoState {
   ventas: Venta[];
   categorias: Categoria[];
   productos: Producto[];
   categoriasFiltradas: Categoria[];
   totalFinal: number;
   categoriaActiva: string;
+  metodosPago: PaymentMethod[];
   isLoading: boolean;
 }

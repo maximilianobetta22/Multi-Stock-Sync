@@ -6,11 +6,11 @@ import { useState } from "react";
 import styles from "../IngresosCategoriaProducto.module.css";
 import { ItemProduct } from "./ItemProduct";
 
-type ItemTableProps = {
+type ItemCategoryProps = {
   categoria: Categoria
 }
 
-export const ItemTable = ({categoria}:ItemTableProps) => {
+export const ItemCategory = ({categoria}:ItemCategoryProps) => {
 
   const [menuOpen, setMenuOpen] = useState(false);
 

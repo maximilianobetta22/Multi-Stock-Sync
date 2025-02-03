@@ -3,7 +3,7 @@ import { Categoria, Producto } from "../Interfaces/interfaces";
 export const groupByCategory = (productos: Producto[]) => {
 
   const categoriasGroupById: { [id: string]: Categoria } = {};
-
+ 
   productos.forEach((producto) => {
     if (categoriasGroupById[producto.category]) {
       categoriasGroupById[producto.category].total += producto.price * producto.quantity;

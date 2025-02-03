@@ -23,7 +23,7 @@ export const PieChart = () => {
   },[categorias])
 
   const memoColors = useMemo(() => {
-    return createRandomColors({ amount: categorias.length })
+    return createRandomColors({ quantity: categorias.length })
   }, [categorias])
 
   return (

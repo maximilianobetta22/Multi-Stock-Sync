@@ -1,9 +1,8 @@
 import { useContext, useEffect, useState } from "react";
-import { PieChart } from "./Graphic";
 import { faDownload } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { IngresosProductosContext } from "./Context";
-import { ItemTable } from "./components/ItemCategory";
+import { ItemCategory, PieChart } from "./components";
 import { LoadingDinamico } from "../../../../../../components/LoadingDinamico/LoadingDinamico";
 import { exportToExcel, exportToPdf, formatNumber, handleDateEnd, handleDateInit, handleFilterCategory } from "./helpers";
 
@@ -15,9 +14,11 @@ type eventForm = React.FormEvent<HTMLFormElement>;
 const IngresosCategoriaProducto = () => {
 
   const { ProductoState, getVentas, dispatch } = useContext(IngresosProductosContext);
-  const { categorias, isLoading, totalFinal, categoriasFiltradas, categoriaActiva } = ProductoState;
+  const { categorias, isLoading, totalFinal, categoriasFiltradas, categoriaActiva, metodosPago } = ProductoState;
   const [initDate, setInitDate] = useState<string>(handleDateInit);
   const [endDate, setEndDate] = useState<string>(handleDateEnd);
+
+  console.log(ProductoState)
 
   const handleInitDateChange = ({ target }: eventChange) => {
     const date = target.value;
@@ -102,7 +103,7 @@ const IngresosCategoriaProducto = () => {
                   <tbody className={styles.table__body}>
                     {
                       categoriasFiltradas.map((categoria) => (
-                        <ItemTable
+                        <ItemCategory
                           key={categoria.id}
                           categoria={categoria}
                         />
@@ -136,10 +137,26 @@ const IngresosCategoriaProducto = () => {
       </div>
       {/**CONTENIDO DERECHO */}
       <div className={styles.container__right}>
-        <h3 className={styles.right__title}>Formas De Pago Y Devoluciones</h3>
+        <h3 className={styles.right__title}>Formas De Pago</h3>
         <hr className={styles.right__hr} />
         <div className={styles.right__data}>
-
+          <ul className={styles.method__list}>
+            {
+              metodosPago.map((metodo) => (
+                <li key={metodo.payment_method} className={styles.list__item}>
+                  <p className={styles.item__p}>{metodo.payment_method}</p>
+                  <p className={styles.item__number}>{formatNumber(metodo.total)}</p>
+                </li>
+              ))
+            }
+          </ul>
+          <footer className={styles.right__footer}>
+            <hr className={styles.right__hr} />
+            <div className={styles.footer__total}>
+              <p className={styles.method__p}>Total</p>
+              <p className={styles.method__number}>{formatNumber(metodosPago.reduce((acc, curr) => acc + curr.total, 0))}</p>
+            </div>
+          </footer>
         </div>
       </div>
     </div>
