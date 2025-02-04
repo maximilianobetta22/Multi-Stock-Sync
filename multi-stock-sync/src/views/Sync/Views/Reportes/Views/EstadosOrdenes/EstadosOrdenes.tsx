@@ -27,7 +27,7 @@ const EstadosOrdenes: React.FC = () => {
     const [year, setYear] = useState<string>('alloftimes');
     const [selectedYear, setSelectedYear] = useState<string>('alloftimes');
     const [EstadoOrdenes, setEstadoOrdenesData] = useState({
-        paid: 36,
+        paid: 0,
         pending: 0,
         canceled: 0
     });
@@ -49,12 +49,12 @@ const EstadosOrdenes: React.FC = () => {
             setLoading(false);
         }
     };
-
+    console.log(EstadoOrdenes)
     const fetchUserData = async () => {
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
             const result = await response.json();
-    
+            console.log(result);
         if (result.status === 'success') {
             setUserData({
                 nickname: result.data.nickname,
