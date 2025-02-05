@@ -1,8 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Table, Form, Button, Row, Col } from 'react-bootstrap';
+import { Table, Form, Button, Row, Col, Container, Modal } from 'react-bootstrap';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import jsPDF from 'jspdf';
+
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface Refund {
   id: number;
@@ -18,6 +27,28 @@ interface Refund {
     id: number;
     name: string;
   };
+  billing: {
+    first_name: string;
+    last_name: string;
+    identification: {
+      type: string;
+      number: string;
+    };
+  };
+  shipping: {
+    shipping_id: string;
+    shipping_method: string;
+    tracking_number: string;
+    shipping_status: string;
+    shipping_address: {
+      address: string;
+      number: string;
+      city: string;
+      state: string;
+      country: string;
+      comments: string;
+    };
+  };
 }
 
 const DevolucionesReembolsos: React.FC = () => {
@@ -26,6 +57,9 @@ const DevolucionesReembolsos: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [month, setMonth] = useState<string>(new Date().toISOString().slice(0, 7).split('-')[1]);
   const [year, setYear] = useState<string>(new Date().toISOString().slice(0, 7).split('-')[0]);
+  const [clientName, setClientName] = useState<string>('');
+  const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
+  const pdfRef = useRef<jsPDF | null>(null);
 
   const fetchRefunds = async () => {
     try {
@@ -54,22 +88,75 @@ const DevolucionesReembolsos: React.FC = () => {
     }
   };
 
+  const fetchClientName = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      setClientName(response.data.data.nickname);
+    } catch (error) {
+      console.error('Error fetching client name:', error);
+    }
+  };
+
   useEffect(() => {
     if (client_id) {
       fetchRefunds();
+      fetchClientName();
     }
   }, [client_id, month, year]);
+
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    const pageHeight = doc.internal.pageSize.height;
+
+    doc.text(`Devoluciones por Categoría - Cliente: ${clientName}`, 20, 10);
+    doc.autoTable({
+      startY: 20,
+      head: [['ID', 'Fecha', 'Monto Total', 'Estado', 'Producto']],
+      body: refunds.map(refund => [
+        refund.id,
+        new Date(refund.created_date).toLocaleDateString(),
+        new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount),
+        refund.status,
+        refund.product.title
+      ])
+    });
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+    pdfRef.current = doc;
+    setShowPDFModal(true);
+  };
+
+  const savePDF = () => {
+    if (pdfRef.current) {
+      const fileName = `Devoluciones_${month}_${year}_${clientName}.pdf`;
+      pdfRef.current.save(fileName);
+      setShowPDFModal(false);
+    }
+  };
+
+  const exportToExcel = () => {
+    const worksheet = XLSX.utils.json_to_sheet(refunds.map(refund => ({
+      ID: `'${refund.id}`, // Format as text
+      Fecha: new Date(refund.created_date).toLocaleDateString(),
+      'Monto Total': new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount),
+      Estado: refund.status,
+      Producto: refund.product.title
+    })));
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Devoluciones');
+    const fileName = `Devoluciones_${month}_${year}_${clientName}.xlsx`;
+    XLSX.writeFile(workbook, fileName);
+  };
 
   if (loading) {
     return <LoadingDinamico variant="container" />;
   }
 
   return (
-    <div className="container mt-5">
-      <h1 className='mt-3 mb-3'>Devoluciones por Categoría</h1>
-      <p className='mb-3'>Seleccione una devolución de la lista.</p>
+    <Container className="mt-5">
+      <h1 className='mt-3 mb-3 text-center'>Devoluciones por Categoría</h1>
+      <p className='mb-3 text-center'>Seleccione una devolución de la lista.</p>
       <Form className="mb-4">
-        <Row>
+        <Row className="align-items-end">
           <Form.Group as={Col} controlId="formMonth">
             <Form.Label>Mes</Form.Label>
             <Form.Control as="select" value={month} onChange={(e) => setMonth(e.target.value)}>
@@ -91,8 +178,7 @@ const DevolucionesReembolsos: React.FC = () => {
             </Form.Control>
           </Form.Group>
           <Form.Group as={Col} controlId="formButton">
-            <Form.Label>&nbsp;</Form.Label>
-            <Button variant="primary" onClick={fetchRefunds} block>
+            <Button variant="primary" onClick={fetchRefunds}>
               Filtrar
             </Button>
           </Form.Group>
@@ -119,7 +205,7 @@ const DevolucionesReembolsos: React.FC = () => {
                 <td>{refund.status}</td>
                 <td>{refund.product.title}</td>
                 <td>
-                  <Link className='btn btn-primary' to={`/sync/reportes/devoluciones-reembolsos/${client_id}/detalle/${refund.id}`} target='_blank'>Ver detalle</Link>
+                  <Link className='btn btn-primary' to={`/sync/reportes/devoluciones-reembolsos/${client_id}/detalle/${refund.id}?date_from=${year}-${month}-01&date_to=${year}-${month}-${new Date(parseInt(year), parseInt(month), 0).getDate()}`} target='_blank'>Ver detalle</Link>
                 </td>
               </tr>
             ))
@@ -130,7 +216,29 @@ const DevolucionesReembolsos: React.FC = () => {
           )}
         </tbody>
       </Table>
-    </div>
+      <div className="text-center mt-4">
+        <Button variant="secondary" onClick={generatePDF} className="mr-2 mx-2">Exportar a PDF</Button>
+        <Button variant="secondary" onClick={exportToExcel}>Exportar a Excel</Button>
+      </div>
+
+      <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Vista previa del PDF</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          <iframe
+            src={pdfRef.current ? pdfRef.current.output('datauristring') : ''}
+            width="100%"
+            height="500px"
+            title="PDF Preview"
+          />
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
+          <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+        </Modal.Footer>
+      </Modal>
+    </Container>
   );
 };
 
