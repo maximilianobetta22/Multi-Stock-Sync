@@ -31,6 +31,14 @@ const EstadosOrdenes: React.FC = () => {
         pending: 0,
         canceled: 0
     });
+    const [filtro, setFiltro] = useState(""); // Estado del filtro
+    
+    const productos = EstadoOrdenes?.data?.products || [];
+    
+    const productosFiltrados = productos.filter((producto) =>
+        filtro ? producto.condition.toLowerCase() === filtro.toLowerCase() : true
+    );
+    
     const [chartVisible, setChartVisible] = useState(false);
     
     const fetchEstadoOrdenesData = async (selectedYear: string) => {
@@ -281,10 +289,11 @@ const EstadosOrdenes: React.FC = () => {
                                                 key={3}
                                                 />
                                     </ProgressBar>
-                                        <button type="button" className="btn btn-success mt-3" onClick={generatePDF}>
+                                    <br />
+                                        <button type="button" className="btn btn-success mx-2" onClick={generatePDF}>
                                             Exportar a PDF
                                         </button>
-                                        <button className='btn btn-success mt-3' onClick={generateExcel}>
+                                        <button className='btn btn-success mx-2' onClick={generateExcel}>
                                             Exportar a Excel
                                         </button>
                                 </div>
@@ -315,14 +324,61 @@ const EstadosOrdenes: React.FC = () => {
                             </Modal.Footer>
                         </Modal>
                         <div>
-                            {/*<h4 className="text-center mb-3">Productos Relacionados</h4>
-                                <ul className="list-group">
-                                    {EstadoOrdenes.products.map((product) => (
-                                        <li key={product.id} className="list-group-item">
-                                            <strong>{product.title}</strong> - {product.variation_attributes.map(attr => `${attr.name}: ${attr.value_name}`).join(", ")}
-                                        </li>
-                                    ))}
-                                </ul>*/}
+                            <div className="container mt-4">
+                            <h4 className="text-center mb-3">Productos Relacionados</h4>
+
+                            <table className="table table-striped">
+                                <thead className="thead-dark">
+                                <tr>
+                                    <th scope="col">Listado</th>
+                                    <th scope="col">Producto</th>
+                                    <th scope="col">Atributos</th>
+                                    <th scope="col">Estado</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {EstadoOrdenes.products.map((product, index) => {
+                                    let estado = "Pendiente"; // Por defecto
+                                    if (index < EstadoOrdenes.statuses.paid) {
+                                    estado = "Pagado";
+                                    } else if (
+                                    index >= EstadoOrdenes.statuses.paid &&
+                                    index < EstadoOrdenes.statuses.paid + EstadoOrdenes.statuses.pending
+                                    ) {
+                                    estado = "Pendiente";
+                                    } else {
+                                    estado = "Cancelado";
+                                    }
+
+                                    return (
+                                    <tr key={product.id}>
+                                        <th scope="row">{index + 1}</th>
+                                        <td>{product.title}</td>
+                                        <td>
+                                        {product.variation_attributes
+                                            .map((attr) => `${attr.name}: ${attr.value_name}`)
+                                            .join(", ")}
+                                        </td>
+                                        <td>
+                                        <span
+                                            className={`badge ${
+                                            estado === "Pagado"
+                                                ? "bg-success"
+                                                : estado === "Pendiente"
+                                                ? "bg-warning"
+                                                : "bg-danger"
+                                            }`}
+                                        >
+                                            {estado}
+                                        </span>
+                                        </td>
+                                    </tr>
+                                    );
+                                })}
+                                </tbody>
+                            </table>
+                            </div>
+
                         </div>
         </>
     );
