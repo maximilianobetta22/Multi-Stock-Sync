@@ -82,43 +82,47 @@ const EstadosOrdenes: React.FC = () => {
     };
     
     const total =
-        EstadoOrdenes.paid + EstadoOrdenes.pending + EstadoOrdenes.canceled;
+        (EstadoOrdenes?.statuses?.paid ?? 0) +
+        (EstadoOrdenes?.statuses?.pending ?? 0) +
+        (EstadoOrdenes?.statuses?.canceled ?? 0);
 
     const calculatePercentage = (value: number) => {
         return total > 0 ? ((value / total) * 100).toFixed(1) : '0';
     };
 
     const chartData = {
-        labels: ['Ordenes Pagadas', 'Ordenes Pendientes', 'Ordenes canceladas'],
+        labels: ['Órdenes Pagadas', 'Órdenes Pendientes', 'Órdenes Canceladas'],
         datasets: [
-        {
-            label: 'Métodos de Pago',
-            data: [
-                EstadoOrdenes.paid,
-                EstadoOrdenes.pending,
-                EstadoOrdenes.canceled,
-            ],
-            backgroundColor: ['#0d6efd', '#ffc107', '#198754'],
-            borderColor: ['#0b5ed7', '#e0a800', '#157347'],
-            borderWidth: 1,
-        },
+            {
+                label: 'Métodos de Pago',
+                data: [
+                    EstadoOrdenes?.statuses?.paid ?? 0,
+                    EstadoOrdenes?.statuses?.pending ?? 0,
+                    EstadoOrdenes?.statuses?.canceled ?? 0,
+                ],
+                backgroundColor: ['#0d6efd', '#ffc107', '#198754'],
+                borderColor: ['#0b5ed7', '#e0a800', '#157347'],
+                borderWidth: 1,
+            },
         ],
     };
+    
     const chartOptions = {
         plugins: {
             datalabels: {
-            formatter: (value: number, context: any) => {
-                const total = context.chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0);
-                const percentage = ((value / total) * 100).toFixed(1);
-                return `${percentage}%`;
-            },
-            color: '#fff',
-            font: {
-                weight: 'bold' as 'bold',
+                formatter: (value: number, context: any) => {
+                    const total = context.chart.data.datasets[0].data.reduce((a: number, b: number) => a + b, 0);
+                    const percentage = total ? ((value / total) * 100).toFixed(1) : "0";
+                    return `${percentage}%`;
+                },
+                color: '#fff',
+                font: {
+                    weight: 'bold' as 'bold',
                 },
             },
         },
     };
+
     const generatePDF = (): void => {
         if (!userData || !userData.nickname) {
             console.error("No se pudo obtener el nickname del usuario.");
@@ -146,9 +150,9 @@ const EstadosOrdenes: React.FC = () => {
             startY: 90,
             head: [["Método de Pago", "Cantidad", "Porcentaje"]],
             body: [
-                ["Pagadas", EstadoOrdenes.paid, `${calculatePercentage(EstadoOrdenes.paid)}%`],
-                ["Pendientes", EstadoOrdenes.pending, `${calculatePercentage(EstadoOrdenes.pending)}%`],
-                ["Canceladas", EstadoOrdenes.canceled, `${calculatePercentage(EstadoOrdenes.canceled)}%`],
+                ["Pagadas", EstadoOrdenes.statuses.paid, `${calculatePercentage(EstadoOrdenes.statuses.paid)}%`],
+                ["Pendientes", EstadoOrdenes.statuses.pending, `${calculatePercentage(EstadoOrdenes.statuses.pending)}%`],
+                ["Canceladas", EstadoOrdenes.statuses.canceled, `${calculatePercentage(EstadoOrdenes.statuses.canceled)}%`],
         ],
     });
     
@@ -180,9 +184,9 @@ const EstadosOrdenes: React.FC = () => {
         }
     
         const ws = XLSX.utils.json_to_sheet([
-            { Metodo: 'Pagadas', Cantidad: EstadoOrdenes.paid, Porcentaje: `${calculatePercentage(EstadoOrdenes.paid)}%` },
-            { Metodo: 'Pendientes', Cantidad: EstadoOrdenes.pending, Porcentaje: `${calculatePercentage(EstadoOrdenes.pending)}%` },
-            { Metodo: 'Canceladas', Cantidad: EstadoOrdenes.canceled, Porcentaje: `${calculatePercentage(EstadoOrdenes.canceled)}%` },
+            { Metodo: 'Pagadas', Cantidad: EstadoOrdenes.statuses.paid, Porcentaje: `${calculatePercentage(EstadoOrdenes.statuses.paid)}%` },
+            { Metodo: 'Pendientes', Cantidad: EstadoOrdenes.statuses.pending, Porcentaje: `${calculatePercentage(EstadoOrdenes.statuses.pending)}%` },
+            { Metodo: 'Canceladas', Cantidad: EstadoOrdenes.statuses.canceled, Porcentaje: `${calculatePercentage(EstadoOrdenes.statuses.canceled)}%` },
         ]);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'MetodosPago');
@@ -228,26 +232,26 @@ const EstadosOrdenes: React.FC = () => {
                                 <li className="list-group-item d-flex justify-content-between align-items-center">
                                     Pedidos Pagados
                                 <span className="badge bg-primary rounded-pill">
-                                    {calculatePercentage(EstadoOrdenes.paid)}% ({EstadoOrdenes.paid})
+                                    {calculatePercentage(EstadoOrdenes.statuses.paid)}% ({EstadoOrdenes.statuses.paid})
                                 </span>
                                 </li>
                                 <li className="list-group-item d-flex justify-content-between align-items-center">
                                     Pedidos Pendientes
                                     <span className="badge bg-warning rounded-pill">
-                                    {calculatePercentage(EstadoOrdenes.pending)}% ({EstadoOrdenes.pending})
+                                    {calculatePercentage(EstadoOrdenes.statuses.pending)}% ({EstadoOrdenes.statuses.pending})
                                     </span>
                                 </li>
                                 <li className="list-group-item d-flex justify-content-between align-items-center">
                                     Pedidos Cancelados
                                     <span className="badge bg-success rounded-pill">
-                                    {calculatePercentage(EstadoOrdenes.canceled)}% ({EstadoOrdenes.canceled})
+                                    {calculatePercentage(EstadoOrdenes.statuses.canceled)}% ({EstadoOrdenes.statuses.canceled})
                                     </span>
                                 </li>
                                     </ul>
                                     <h4 className={`text-center mb-3 ${styles.h4}`}>Distribución</h4>
                                     <ProgressBar className={styles.progressBar}>
                                         <ProgressBar
-                                            now={parseFloat(calculatePercentage(EstadoOrdenes.paid))}
+                                            now={parseFloat(calculatePercentage(EstadoOrdenes.statuses.paid))}
                                             label={
                                             parseFloat(calculatePercentage(EstadoOrdenes.paid)) > 5
                                                 ? `Dinero (${calculatePercentage(EstadoOrdenes.paid)}%)`
@@ -257,7 +261,7 @@ const EstadosOrdenes: React.FC = () => {
                                             key={1}
                                         />
                                         <ProgressBar
-                                            now={parseFloat(calculatePercentage(EstadoOrdenes.pending))}
+                                            now={parseFloat(calculatePercentage(EstadoOrdenes.statuses.canceled))}
                                             label={
                                             parseFloat(calculatePercentage(EstadoOrdenes.pending)) > 5
                                                 ? `Débito (${calculatePercentage(EstadoOrdenes.pending)}%)`
@@ -310,6 +314,16 @@ const EstadosOrdenes: React.FC = () => {
                             </button>
                             </Modal.Footer>
                         </Modal>
+                        <div>
+                            {/*<h4 className="text-center mb-3">Productos Relacionados</h4>
+                                <ul className="list-group">
+                                    {EstadoOrdenes.products.map((product) => (
+                                        <li key={product.id} className="list-group-item">
+                                            <strong>{product.title}</strong> - {product.variation_attributes.map(attr => `${attr.name}: ${attr.value_name}`).join(", ")}
+                                        </li>
+                                    ))}
+                                </ul>*/}
+                        </div>
         </>
     );
 };
