@@ -1,28 +1,29 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { useParams } from 'react-router-dom';
-import { Dropdown } from 'react-bootstrap';
+import { Dropdown, Modal, Button } from 'react-bootstrap';
 import { Pie } from 'react-chartjs-2';
-import { jsPDF } from 'jspdf'; 
+import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as XLSX from 'xlsx';
-import html2canvas from 'html2canvas';
 
-const Productos:React.FC = () => {
-    const { client_id } = useParams();
-    const [productos, setProductos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-    const [selectedMonth, setSelectedMonth] = useState('2024-10');
-    const [currentPage, setCurrentPage] = useState(1);
+const Productos: React.FC = () => {
+    const { client_id } = useParams<{ client_id: string }>();
+    const [productos, setProductos] = useState<any[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    const [selectedMonth, setSelectedMonth] = useState<string>('2024-10');
+    const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage = 10; // Número de productos por página
-    const [itemsPerGraph, setItemsPerGraph] = useState(10); // Cantidad de productos en el gráfico
-    const chartRef = useRef(null);
-    const pdfPreviewRef = useRef(null);
+    const [itemsPerGraph, setItemsPerGraph] = useState<number>(10); // Cantidad de productos en el gráfico
+    const chartRef = useRef<HTMLDivElement | null>(null);
+    const pdfRef = useRef<jsPDF | null>(null);
+    const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
+    const [pdfData, setPdfData] = useState<string | null>(null);
     const currencyFormat = new Intl.NumberFormat('es-CL', {
         style: 'currency',
         currency: 'CLP',
-    }); 
+    });
 
     useEffect(() => {
         const fetchProductos = async () => {
@@ -50,8 +51,8 @@ const Productos:React.FC = () => {
     const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
     const currentProducts = productos.slice(indexOfFirstProduct, indexOfLastProduct);
 
-    const paginate = (pageNumber) => setCurrentPage(pageNumber);
-    const handleGraphItemsChange = (value) => setItemsPerGraph(value);
+    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+    const handleGraphItemsChange = (value: number) => setItemsPerGraph(value);
 
     const chartData = {
         labels: productos.map((producto) => producto.title),
@@ -76,8 +77,8 @@ const Productos:React.FC = () => {
         plugins: {
             tooltip: {
                 callbacks: {
-                    label: (context) => {
-                        return `$${context.raw}`; // Solo muestra el valor, no el nombre del producto
+                    label: (context: any) => {
+                        return currencyFormat.format(context.raw); // Formato CLP
                     },
                 },
             },
@@ -93,15 +94,23 @@ const Productos:React.FC = () => {
     const { mostSold, leastSold } = getMostAndLeastSoldProduct();
 
     const exportToExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(productos);
+        const worksheet = XLSX.utils.json_to_sheet(productos.map(producto => ({
+            ID: `'${producto.id}`, // Format as text
+            Título: producto.title,
+            Cantidad: producto.quantity,
+            Total: currencyFormat.format(producto.total_amount) // Formato CLP
+        })));
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
-        XLSX.writeFile(workbook, 'reporte_productos.xlsx');
+        const fileName = `reporte_Productos_${selectedMonth}_${client_id}.xlsx`;
+        XLSX.writeFile(workbook, fileName);
     };
 
     const generatePDF = async () => {
         const doc = new jsPDF();
-        doc.text('Reporte de Productos', 10, 10);
+        const pageHeight = doc.internal.pageSize.height;
+
+        doc.text(`Reporte de Productos - Cliente: ${client_id}`, 10, 10);
         
         if (mostSold) {
             doc.text(`Producto Más Vendido: ${mostSold.title} - ${currencyFormat.format(mostSold.total_amount)}`, 10, 20);
@@ -113,11 +122,23 @@ const Productos:React.FC = () => {
         autoTable(doc, {
             startY: 40,
             head: [['#', 'Producto', 'Total Vendido']],
-            body: productos.map((prod, index) => [index + 1, prod.title, `$${prod.total_amount}`]),
+            body: productos.map((prod, index) => [index + 1, prod.title, currencyFormat.format(prod.total_amount)]), // Formato CLP
         });
         
-        const pdfUrl = doc.output('bloburl');
-        window.open(pdfUrl);
+        doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+        pdfRef.current = doc;
+        const pdfBlob = doc.output('blob');
+        const pdfUrl = URL.createObjectURL(pdfBlob);
+        setPdfData(pdfUrl);
+        setShowPDFModal(true);
+    };
+
+    const savePDF = () => {
+        if (pdfRef.current) {
+            const fileName = `reporte_Productos_${selectedMonth}_${client_id}.pdf`;
+            pdfRef.current.save(fileName);
+            setShowPDFModal(false);
+        }
     };
 
     return (
@@ -129,7 +150,7 @@ const Productos:React.FC = () => {
                 <div className="col-md-8">
                     <h3 className="text-center">Gráfico de Torta: Precio Total de Productos</h3>
                     <div className="chart-container mb-4" style={{ height: '500px' }} ref={chartRef}>
-                        <Pie data={chartData} />
+                        <Pie data={chartData} options={chartOptions} />
                     </div>
                 </div>
 
@@ -142,7 +163,7 @@ const Productos:React.FC = () => {
                                 <>
                                     <h6 className="card-subtitle mb-2 text-muted">{mostSold.title}</h6>
                                     <p className="card-text">Cantidad: {mostSold.quantity}</p>
-                                    <p className="card-text">Total: ${mostSold.total_amount}</p>
+                                    <p className="card-text">Total: {currencyFormat.format(mostSold.total_amount)}</p> {/* Formato CLP */}
                                 </>
                             ) : (
                                 <p className="card-text">No hay datos disponibles.</p>
@@ -156,7 +177,7 @@ const Productos:React.FC = () => {
                                 <>
                                     <h6 className="card-subtitle mb-2 text-muted">{leastSold.title}</h6>
                                     <p className="card-text">Cantidad: {leastSold.quantity}</p>
-                                    <p className="card-text">Total: ${leastSold.total_amount}</p>
+                                    <p className="card-text">Total: {currencyFormat.format(leastSold.total_amount)}</p> {/* Formato CLP */}
                                 </>
                             ) : (
                                 <p className="card-text">No hay datos disponibles.</p>
@@ -181,29 +202,29 @@ const Productos:React.FC = () => {
             </div>
 
             {/* Sección de la tabla */}
-                {loading && <p className="text-center text-primary">Cargando productos...</p>}
-                {error && <p className="text-center text-danger">{error}</p>}
+            {loading && <p className="text-center text-primary">Cargando productos...</p>}
+            {error && <p className="text-center text-danger">{error}</p>}
 
-                {/* Tabla de productos */}
-                <div className="table-responsive" style={{ overflowY: 'auto' }}>
-                    <table className="table table-striped table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Título</th>
-                                <th>Cantidad</th>
-                                <th>Total</th>
+            {/* Tabla de productos */}
+            <div className="table-responsive" style={{ overflowY: 'auto' }}>
+                <table className="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Cantidad</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {currentProducts.map((producto, index) => (
+                            <tr key={index}>
+                                <td>{producto.title}</td>
+                                <td>{producto.quantity}</td>
+                                <td>{currencyFormat.format(producto.total_amount)}</td> {/* Formato CLP */}
                             </tr>
-                        </thead>
-                        <tbody>
-                            {currentProducts.map((producto, index) => (
-                                <tr key={index}>
-                                    <td>{producto.title}</td>
-                                    <td>{producto.quantity}</td>
-                                    <td>${producto.total_amount}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                        ))}
+                    </tbody>
+                </table>
 
                 {/* Paginación */}
                 <div className="d-flex justify-content-between">
@@ -231,14 +252,33 @@ const Productos:React.FC = () => {
                 </Dropdown>
             </div>
 
-            {/* Botón para generar el PDF */}
+            {/* Botones para exportar */}
             <div className="text-center my-4">
-                <button onClick={exportToExcel} className="btn btn-primary mx-2">
+                <button onClick={exportToExcel} className="btn btn-primary mb-3 mx-2">
                     Exportar a Excel
                 </button>
                 <button onClick={generatePDF} className="btn btn-danger mb-3">Generar Vista Previa PDF</button>
-                <iframe ref={pdfPreviewRef} title="Vista Previa PDF" width="100%" height="500px"></iframe>
             </div>
+
+            {/* Modal para vista previa del PDF */}
+            <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Vista previa del PDF</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {pdfData && (
+                        <iframe
+                            src={pdfData}
+                            style={{ width: '100%', height: '500px' }}
+                            title="PDF Preview"
+                        />
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
+                    <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+                </Modal.Footer>
+            </Modal>
         </div>
     );
 };

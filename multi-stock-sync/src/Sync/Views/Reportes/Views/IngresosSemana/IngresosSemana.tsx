@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from "react";
-
 import { Bar } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
 import { useParams, useNavigate } from "react-router-dom";
-
 import { Modal } from "react-bootstrap";
-
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
@@ -17,9 +14,7 @@ const IngresosSemana: React.FC = () => {
 
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
-
   const [year, setYear] = useState<string>('');
   const [month, setMonth] = useState<string>('');
   const [weeks, setWeeks] = useState<{ start_date: string; end_date: string }[]>([]);
@@ -34,6 +29,13 @@ const IngresosSemana: React.FC = () => {
         backgroundColor: "rgba(75, 192, 192, 0.6)",
         borderColor: "rgba(75, 192, 192, 1)",
         borderWidth: 2,
+        datalabels: {
+          anchor: 'center',
+          align: 'center',
+          formatter: (value: number) => {
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
+          },
+        },
       },
       {
         label: "Cantidad Vendida",
@@ -41,12 +43,23 @@ const IngresosSemana: React.FC = () => {
         backgroundColor: "rgba(153, 102, 255, 0.6)",
         borderColor: "rgba(153, 102, 255, 1)",
         borderWidth: 2,
+        datalabels: {
+          anchor: 'end',
+          align: 'end',
+          formatter: (value: number) => {
+            return value;
+          },
+        },
       },
     ],
   });
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
+  const currencyFormat = new Intl.NumberFormat('es-CL', {
+    style: 'currency',
+    currency: 'CLP',
+  });
 
   useEffect(() => {
     const fetchWeeks = async () => {
@@ -115,6 +128,13 @@ const IngresosSemana: React.FC = () => {
             backgroundColor: "rgba(75, 192, 192, 0.6)",
             borderColor: "rgba(75, 192, 192, 1)",
             borderWidth: 2,
+            datalabels: {
+              anchor: 'center',
+              align: 'center',
+              formatter: (value: number) => {
+                return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
+              },
+            },
           },
           {
             label: "Cantidad Vendida",
@@ -122,6 +142,13 @@ const IngresosSemana: React.FC = () => {
             backgroundColor: "rgba(153, 102, 255, 0.6)",
             borderColor: "rgba(153, 102, 255, 1)",
             borderWidth: 2,
+            datalabels: {
+              anchor: 'end',
+              align: 'end',
+              formatter: (value: number) => {
+                return value;
+              },
+            },
           },
         ],
       });
@@ -162,6 +189,13 @@ const IngresosSemana: React.FC = () => {
         },
         color: "#333",
       },
+      tooltip: {
+        callbacks: {
+          label: function (context: any) {
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
+          }
+        }
+      },
     },
     scales: {
       y: {
@@ -180,6 +214,9 @@ const IngresosSemana: React.FC = () => {
             size: 12,
           },
           color: "#333",
+          callback: function(value) {
+            return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(Number(value))} CLP`; // Formato CLP
+          }
         },
       },
       x: {
@@ -201,14 +238,11 @@ const IngresosSemana: React.FC = () => {
       },
     },
   };
-  /* urls ventas por mes  */
+
   const handleNavigate = () => {
     navigate(`/sync/reportes/ventas-mes/${client_id}`);
   };
 
-  /* fin de urls ventas por mes  */
-
-  /* llamar al api */
   const fetchUserData = async () => {
     setLoading(true);
     try {
@@ -237,9 +271,6 @@ const IngresosSemana: React.FC = () => {
     }
   }, [client_id]);
 
-  /* fin de llamar a la api */
-
-  /* pdf */
   const generatePDF = (): void => {
     if (!userData || !userData.nickname) return;
 
@@ -270,12 +301,10 @@ const IngresosSemana: React.FC = () => {
       ]),
     });
 
-
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(10);
     doc.setTextColor(150, 150, 150);
     doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
-
 
     const pdfData = doc.output("datauristring");
     const pdfFilename = `ReporteIngresosSemana_${client_id}_${userData.nickname}.pdf`;
@@ -285,9 +314,6 @@ const IngresosSemana: React.FC = () => {
     doc.save(pdfFilename);
   };
 
-
-  /* fin del pdf */
-  /* excel */
   const generateExcel = (): void => {
     if (!userData || !userData.nickname) return;
 
@@ -304,94 +330,90 @@ const IngresosSemana: React.FC = () => {
     const excelFilename = `IngresosSemana_${client_id}_${userData.nickname}.xlsx`;
     XLSX.writeFile(workbook, excelFilename);
   };
-  /* fin del excel */
 
+  return (
+    <>
+      {loading && <LoadingDinamico variant="container" />}
+      {!loading && (
+        <div className="container">
+          <h1 className="text-center my-4">Ingresos por Rango de Fechas</h1>
 
-  
-  
+          {error && <p className="text-danger">{error}</p>}
 
-    return (
-      <>
-        {loading && <LoadingDinamico variant="container" />}
-        {!loading && (
-          <div className="container">
-            <h1 className="text-center my-4">Ingresos por Rango de Fechas</h1>
+          <div className="row">
+            <div className="col-md-4">
+              <form onSubmit={handleSubmit} className="mb-4 text-start">
+                <div className="mb-3">
+                  <label htmlFor="year" className="form-label">Año:</label>
+                  <select
+                    id="year"
+                    className="form-select"
+                    value={year}
+                    onChange={handleYearChange}
+                  >
+                    <option value="">Selecciona un año</option>
+                    {getYears().map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                </div>
 
-            {error && <p className="text-danger">{error}</p>}
+                <div className="mb-3">
+                  <label htmlFor="month" className="form-label">Mes:</label>
+                  <select
+                    id="month"
+                    className="form-select"
+                    value={month}
+                    onChange={handleMonthChange}
+                  >
+                    <option value="">Selecciona un mes</option>
+                    {getMonths().map((month) => (
+                      <option key={month} value={month}>{month}</option>
+                    ))}
+                  </select>
+                </div>
 
-            <div className="row">
-              <div className="col-md-4">
-                <form onSubmit={handleSubmit} className="mb-4">
+                {loading ? (
+                  <p>Cargando semanas...</p>
+                ) : (
                   <div className="mb-3">
-                    <label htmlFor="year" className="form-label">Año:</label>
+                    <label htmlFor="week" className="form-label">Semana:</label>
                     <select
-                      id="year"
+                      id="week"
                       className="form-select"
-                      value={year}
-                      onChange={handleYearChange}
+                      value={selectedWeek}
+                      onChange={handleWeekChange}
+                      disabled={!year || !month}
                     >
-                      <option value="">Selecciona un año</option>
-                      {getYears().map((year) => (
-                        <option key={year} value={year}>{year}</option>
+                      <option value="">Selecciona una semana</option>
+                      {weeks.length > 0 && weeks.map((week, index) => (
+                        <option key={index} value={`${week.start_date} a ${week.end_date}`}>
+                          {`${week.start_date} a ${week.end_date}`}
+                        </option>
                       ))}
                     </select>
-                  </div>
-
-                  <div className="mb-3">
-                    <label htmlFor="month" className="form-label">Mes:</label>
-                    <select
-                      id="month"
-                      className="form-select"
-                      value={month}
-                      onChange={handleMonthChange}
-                    >
-                      <option value="">Selecciona un mes</option>
-                      {getMonths().map((month) => (
-                        <option key={month} value={month}>{month}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {loading ? (
-                    <p>Cargando semanas...</p>
-                  ) : (
-                    <div className="mb-3">
-                      <label htmlFor="week" className="form-label">Semana:</label>
-                      <select
-                        id="week"
-                        className="form-select"
-                        value={selectedWeek}
-                        onChange={handleWeekChange}
-                        disabled={!year || !month}
-                      >
-                        <option value="">Selecciona una semana</option>
-                        {weeks.length > 0 && weeks.map((week, index) => (
-                          <option key={index} value={`${week.start_date} a ${week.end_date}`}>
-                            {`${week.start_date} a ${week.end_date}`}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
-
-                  <button type="submit" className="btn btn-primary" disabled={loading}>
-                    {loading ? "Cargando..." : "Consultar"}
-                  </button>
-                </form>
-
-                {totalSales !== null && (
-                  <div className="alert alert-info">
-                    <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
                   </div>
                 )}
 
-                <button type="button" className="btn btn-secondary" onClick={handleNavigate}>
+                <button type="submit" className="btn btn-primary" disabled={loading}>
+                  {loading ? "Cargando..." : "Consultar"}
+                </button>
+              </form>
+
+              {totalSales !== null && (
+                <div className="alert alert-info text-start">
+                  <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+                </div>
+              )}
+
+              <div className="text-start">
+                <button type="button" className="btn btn-secondary mb-3 me-2" onClick={handleNavigate}>
                   Ir a Ventas por Mes
                 </button>
 
                 <button
                   type="button"
-                  className="btn btn-success mt-3 mb-3"
+                  className="btn btn-success mb-3 me-2"
                   onClick={generatePDF}
                   disabled={chartData.labels.length === 0}
                   id="descargar"
@@ -399,40 +421,41 @@ const IngresosSemana: React.FC = () => {
                   Exportar a PDF
                 </button>
 
-                <button className="btn btn-primary mt-3 ms-2" onClick={generateExcel}>
+                <button className="btn btn-primary mb-3" onClick={generateExcel}>
                   Exportar a Excel
                 </button>
               </div>
+            </div>
 
-              <div className="col-md-8">
-                <Bar data={chartData} options={chartOptions} />
-              </div>
+            <div className="col-md-8">
+              <Bar data={chartData} options={chartOptions} />
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-          <Modal.Header closeButton>
-            <Modal.Title>Reporte Semanal de Ingresos</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {pdfDataUrl && (
-              <iframe
-                src={pdfDataUrl}
-                width="100%"
-                height="500px"
-                title="Reporte Semanal de Ingresos"
-              />
-            )}
-          </Modal.Body>
-          <Modal.Footer>
-            <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
-              Cerrar
-            </button>
-          </Modal.Footer>
-        </Modal>
-      </>
-    );
-  };
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Reporte Semanal de Ingresos</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {pdfDataUrl && (
+            <iframe
+              src={pdfDataUrl}
+              width="100%"
+              height="500px"
+              title="Reporte Semanal de Ingresos"
+            />
+          )}
+        </Modal.Body>
+        <Modal.Footer>
+          <button className="btn btn-secondary" onClick={() => setShowModal(false)}>
+            Cerrar
+          </button>
+        </Modal.Footer>
+      </Modal>
+    </>
+  );
+};
 
-  export default IngresosSemana;
+export default IngresosSemana;
