@@ -330,55 +330,26 @@ const EstadosOrdenes: React.FC = () => {
                             <table className="table table-striped">
                                 <thead className="thead-dark">
                                 <tr>
-                                    <th scope="col">Listado</th>
+                                    <th scope="col">#</th>
                                     <th scope="col">Producto</th>
                                     <th scope="col">Atributos</th>
-                                    <th scope="col">Estado</th>
                                 </tr>
                                 </thead>
                                 <tbody>
-                                {EstadoOrdenes.products.map((product, index) => {
-                                    let estado = "Pendiente"; // Por defecto
-                                    if (index < EstadoOrdenes.statuses.paid) {
-                                    estado = "Pagado";
-                                    } else if (
-                                    index >= EstadoOrdenes.statuses.paid &&
-                                    index < EstadoOrdenes.statuses.paid + EstadoOrdenes.statuses.pending
-                                    ) {
-                                    estado = "Pendiente";
-                                    } else {
-                                    estado = "Cancelado";
-                                    }
-
-                                    return (
+                                {EstadoOrdenes.products.map((product, index) => (
                                     <tr key={product.id}>
-                                        <th scope="row">{index + 1}</th>
-                                        <td>{product.title}</td>
-                                        <td>
+                                    <th scope="row">{index + 1}</th>
+                                    <td>{product.title}</td>
+                                    <td>
                                         {product.variation_attributes
-                                            .map((attr) => `${attr.name}: ${attr.value_name}`)
-                                            .join(", ")}
-                                        </td>
-                                        <td>
-                                        <span
-                                            className={`badge ${
-                                            estado === "Pagado"
-                                                ? "bg-success"
-                                                : estado === "Pendiente"
-                                                ? "bg-warning"
-                                                : "bg-danger"
-                                            }`}
-                                        >
-                                            {estado}
-                                        </span>
-                                        </td>
+                                        .map((attr) => `${attr.name}: ${attr.value_name}`)
+                                        .join(", ")}
+                                    </td>
                                     </tr>
-                                    );
-                                })}
+                                ))}
                                 </tbody>
                             </table>
                             </div>
-
                         </div>
         </>
     );
