@@ -11,14 +11,14 @@ import { Card, ProgressBar, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useParams } from 'react-router-dom';
 import styles from './EstadosOrdenes.module.css';
-import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
-const EstadosOrdenes: React.FC = () => {
+const EstadosOrdenesAnual: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState<boolean>(false);
@@ -33,7 +33,12 @@ const EstadosOrdenes: React.FC = () => {
     });
     const [filtro, setFiltro] = useState(""); // Estado del filtro
     
-    const productos = EstadoOrdenes?.data?.products || [];
+    const productos = EstadoOrdenes ? [
+        { type: 'Pagadas', cantidad: EstadoOrdenes.paid },
+        { type: 'Pendientes', cantidad: EstadoOrdenes.pending },
+        { type: 'Canceladas', cantidad: EstadoOrdenes.canceled }
+    ] : [];
+    
     
     const productosFiltrados = productos.filter((producto) =>
         filtro ? producto.condition.toLowerCase() === filtro.toLowerCase() : true
@@ -47,7 +52,12 @@ const EstadosOrdenes: React.FC = () => {
             const result = await response.json();
     
         if (result.status === 'success') {
-            setEstadoOrdenesData(result.data);
+            setEstadoOrdenesData({
+                paid: result.data.statuses.paid ?? 0,
+                pending: result.data.statuses.pending ?? 0,
+                canceled: result.data.statuses.canceled ?? 0
+            });
+            
         } else {
             console.error('Error en la respuesta de la API:', result.message);
         }
@@ -89,10 +99,10 @@ const EstadosOrdenes: React.FC = () => {
         fetchEstadoOrdenesData(year);
     };
     
-    const total =
-        (EstadoOrdenes?.statuses?.paid ?? 0) +
-        (EstadoOrdenes?.statuses?.pending ?? 0) +
-        (EstadoOrdenes?.statuses?.canceled ?? 0);
+    const totalOrdenes =
+        (EstadoOrdenes?.paid ?? 0) +
+        (EstadoOrdenes?.pending ?? 0) +
+        (EstadoOrdenes?.canceled ?? 0);
 
     const calculatePercentage = (value: number) => {
         return total > 0 ? ((value / total) * 100).toFixed(1) : '0';
@@ -355,4 +365,4 @@ const EstadosOrdenes: React.FC = () => {
     );
 };
 
-export default EstadosOrdenes;
+export default EstadosOrdenesAnual;
