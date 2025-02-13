@@ -51,6 +51,23 @@ interface Refund {
   };
 }
 
+const stateDictionary: { [key: string]: string } = {
+  'pending': 'Pendiente',
+  'approved': 'Aprobado',
+  'rejected': 'Rechazado',
+  'cancelled': 'Cancelado',
+  'in_process': 'En Proceso',
+  'partially_approved': 'Parcialmente Aprobado',
+  'charged_back': 'Contracargo',
+  'refunded': 'Reembolsado',
+  'in_mediation': 'En Mediación',
+  'closed': 'Cerrado',
+  'expired': 'Expirado',
+  'authorized': 'Autorizado',
+  'reversed': 'Revertido',
+  // Add more state mappings as needed
+};
+
 const DevolucionesReembolsos: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const [refunds, setRefunds] = useState<Refund[]>([]);
@@ -116,7 +133,7 @@ const DevolucionesReembolsos: React.FC = () => {
         refund.id,
         new Date(refund.created_date).toLocaleDateString(),
         new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount),
-        refund.status,
+        stateDictionary[refund.status] || refund.status,
         refund.product.title
       ])
     });
@@ -138,7 +155,7 @@ const DevolucionesReembolsos: React.FC = () => {
       ID: `'${refund.id}`, // Format as text
       Fecha: new Date(refund.created_date).toLocaleDateString(),
       'Monto Total': new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount),
-      Estado: refund.status,
+      Estado: stateDictionary[refund.status] || refund.status,
       Producto: refund.product.title
     })));
     const workbook = XLSX.utils.book_new();
@@ -157,16 +174,16 @@ const DevolucionesReembolsos: React.FC = () => {
       <p className='mb-3 text-center'>Seleccione una devolución de la lista.</p>
       <Form className="mb-4">
         <Row className="align-items-end">
-          <Form.Group as={Col} controlId="formMonth">
+            <Form.Group as={Col} controlId="formMonth">
             <Form.Label>Mes</Form.Label>
             <Form.Control as="select" value={month} onChange={(e) => setMonth(e.target.value)}>
               {Array.from({ length: 12 }, (_, i) => (
-                <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
-                  {new Date(0, i).toLocaleString('es-CL', { month: 'long' })}
-                </option>
+              <option key={i + 1} value={String(i + 1).padStart(2, '0')}>
+                {new Date(0, i).toLocaleString('es-CL', { month: 'long' }).charAt(0).toUpperCase() + new Date(0, i).toLocaleString('es-CL', { month: 'long' }).slice(1)}
+              </option>
               ))}
             </Form.Control>
-          </Form.Group>
+            </Form.Group>
           <Form.Group as={Col} controlId="formYear">
             <Form.Label>Año</Form.Label>
             <Form.Control as="select" value={year} onChange={(e) => setYear(e.target.value)}>
@@ -202,7 +219,7 @@ const DevolucionesReembolsos: React.FC = () => {
                 <td>{refund.id}</td>
                 <td>{new Date(refund.created_date).toLocaleDateString()}</td>
                 <td>{new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount)}</td>
-                <td>{refund.status}</td>
+                <td>{stateDictionary[refund.status] || refund.status}</td>
                 <td>{refund.product.title}</td>
                 <td>
                   <Link className='btn btn-primary' to={`/sync/reportes/devoluciones-reembolsos/${client_id}/detalle/${refund.id}?date_from=${year}-${month}-01&date_to=${year}-${month}-${new Date(parseInt(year), parseInt(month), 0).getDate()}`} target='_blank'>Ver detalle</Link>
