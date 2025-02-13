@@ -324,8 +324,8 @@ const VentasPorMes: React.FC = () => {
               <Bar data={chartData} options={options} />
             </div>
             <div className="d-flex justify-content-center mt-3">
-              <Button variant="primary" onClick={() => setShowModal(true)} className="mr-2 mx-2">Mostrar Detalles</Button>
-              <Button variant="primary" onClick={generatePDF} className="mr-2 mx-2">Generar Vista Previa PDF</Button>
+              <Button variant="primary" onClick={() => setShowModal(true)} className="mr-2 mx-3">Mostrar Detalles</Button>
+              <Button variant="primary" onClick={generatePDF} className="mr-2 mx-3">Generar Vista Previa PDF</Button>
               <Button variant="secondary" onClick={generateExcel}>Guardar Reporte Excel</Button>
             </div>
           </div>
