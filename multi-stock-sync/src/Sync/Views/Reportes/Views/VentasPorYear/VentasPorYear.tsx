@@ -130,10 +130,10 @@ const VentasPorYear: React.FC = () => {
             head: [['Mes', 'Ventas Totales', 'Productos Vendidos']],
             body: salesData.map((month) => [
                 month.month,
-                `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(month.total_sales)} CLP`,
+                `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(month.total_sales)} CLP`,
                 month.sold_products.map((product: any) => `${product.title}: ${product.quantity}`).join('\n')
             ]),
-            foot: [['', 'Total Ventas:', `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalSales)} CLP`]],
+            foot: [['', 'Total Ventas:', `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalSales)} CLP`]],
             didDrawCell: (data) => {
                 if (data.section === 'foot' && data.column.index === 2) {
                     doc.setTextColor(150, 150, 150); // Set text color to gray
@@ -159,7 +159,7 @@ const VentasPorYear: React.FC = () => {
                     product.order_id.toString(), // Convert ID to string
                     product.title,
                     product.quantity,
-                    `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(product.price)} CLP`
+                    `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(product.price)} CLP`
                 ]);
                 return monthData;
             })
@@ -230,7 +230,7 @@ const VentasPorYear: React.FC = () => {
             },
             title: {
                 display: true,
-                text: `Ventas Totales Por Año (${selectedYear}): $${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalSales)} CLP`,
+                text: `Ventas Totales Por Año (${selectedYear}): $${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalSales)} CLP`,
                 font: {
                     size: 18 // Add font size here
                 }
@@ -241,13 +241,13 @@ const VentasPorYear: React.FC = () => {
                     weight: 'bold' as 'bold'
                 },
                 formatter: (value: number) => {
-                    return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
+                    return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
                 }
             },
             tooltip: {
                 callbacks: {
                     label: function (context: any) {
-                        return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
+                        return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
                     }
                 }
             },
@@ -257,7 +257,7 @@ const VentasPorYear: React.FC = () => {
                 ctx.font = 'bold 16px Arial';
                 ctx.fillStyle = 'black';
                 ctx.textAlign = 'center';
-                ctx.fillText(`Total Ventas: $${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalSales)} CLP`, chart.chartArea.width / 2, chart.chartArea.top - 10);
+                ctx.fillText(`Total Ventas: $${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(totalSales)} CLP`, chart.chartArea.width / 2, chart.chartArea.top - 10);
                 ctx.restore();
             }
         }
@@ -307,7 +307,7 @@ const VentasPorYear: React.FC = () => {
                                         {salesData.map((month) => (
                                             <tr key={month.month}>
                                                 <td>{month.month}</td>
-                                                <td>{`$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(month.total_sales)} CLP`}</td>
+                                                <td>{`$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(month.total_sales)} CLP`}</td>
                                                 <td>{month.sold_products.map((product: any) => `${product.title}: ${product.quantity}`).join('\n')}</td>
                                             </tr>
                                         ))}
