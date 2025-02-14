@@ -115,7 +115,7 @@ const HomeReportes: React.FC = () => {
                     <li className="list-group-item">No hay productos más vendidos</li>
                   )}
                   {storeSummary.top_selling_products.length > 0 && (
-                    <Link to="/sync/" className='btn btn-primary mt-3'>Ver lista completa</Link>
+                    <Link to={`/sync/reportes/productos-mas-vendidos/${selectedConnection}`} className='btn btn-primary mt-3'>Ver lista completa</Link>
                   )}
                 </ul>
                 <h4 className="mt-4">Métodos de Pago Preferidos</h4>
