@@ -47,9 +47,8 @@ const VentasPorMes: React.FC = () => {
   const [monthSeleccionado, setMonthSeleccionado] = useState<number>(currentMonth);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<'success' | 'warning' | 'secondary' | 'danger'>('danger');
+  const [toastType] = useState<'success' | 'warning' | 'secondary' | 'danger'>('danger');
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>('');
@@ -76,10 +75,9 @@ const VentasPorMes: React.FC = () => {
         ) || [];
 
         setVentas(ventasData);
-        setError(null);
+
       } catch (error) {
         console.error('Error fetching sales data:', error);
-        setError('Hubo un problema al obtener los datos de ventas. Inténtalo nuevamente.');
         setVentas([]);
       } finally {
         setLoading(false);

@@ -1,4 +1,5 @@
-import Navbar from "../components/Navbar/Navbar";
+import { JSX } from 'react';
+import Navbar from '../Sync/Components/Navbar/NavbarSync';
 import styles from './LayoutApp.module.css';
 
 interface LayoutAppProps {
