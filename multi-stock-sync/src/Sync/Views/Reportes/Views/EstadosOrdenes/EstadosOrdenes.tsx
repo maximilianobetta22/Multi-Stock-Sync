@@ -19,7 +19,7 @@ const EstadosOrdenes: React.FC = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
     const [clientName, setClientName] = useState<string>('');
-    const [detailsPdfDataUrl, setDetailsPdfDataUrl] = useState<string | null>(null);
+    const [detailsPdfDataUrl] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState<boolean>(false);
     const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
 
