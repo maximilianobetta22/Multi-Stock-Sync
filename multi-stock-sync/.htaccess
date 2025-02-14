@@ -1,0 +1,15 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # Redirect all requests to index.html except for existing files and directories
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule ^ index.html [L]
+</IfModule>
+
+# Serve static assets with far-future expiration dates
+<FilesMatch "\.(js|css|png|jpg|jpeg|gif|svg|ico|webp)$">
+  ExpiresActive On
+  ExpiresDefault "access plus 1 year"
+</FilesMatch>
