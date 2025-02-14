@@ -45,6 +45,23 @@ interface Refund {
   };
 }
 
+const stateDictionary: { [key: string]: string } = {
+  'pending': 'Pendiente',
+  'approved': 'Aprobado',
+  'rejected': 'Rechazado',
+  'cancelled': 'Cancelado',
+  'in_process': 'En Proceso',
+  'partially_approved': 'Parcialmente Aprobado',
+  'charged_back': 'Contracargo',
+  'refunded': 'Reembolsado',
+  'in_mediation': 'En Mediación',
+  'closed': 'Cerrado',
+  'expired': 'Expirado',
+  'authorized': 'Autorizado',
+  'reversed': 'Revertido',
+  // Add more state mappings as needed
+};
+
 const formatRUT = (rut: string) => {
   const cleaned = rut.replace(/[^0-9kK]/g, '');
   const rutBody = cleaned.slice(0, -1);
@@ -74,12 +91,10 @@ const DetalleReembolso: React.FC = () => {
   useEffect(() => {
     const fetchRefund = async () => {
       try {
-        console.log(`Fetching refund details for client_id: ${client_id}, refund_id: ${refund_id}, date_from: ${date_from}, date_to: ${date_to}`);
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`, {
           params: { date_from, date_to }
         });
         const refundsData = response.data.data;
-        console.log('Refunds data:', refundsData);
         let selectedRefund: Refund | null = null;
         for (const category in refundsData) {
           const foundRefund = refundsData[category]?.orders?.find((order: Refund) => order.id === parseInt(refund_id!));
@@ -88,7 +103,6 @@ const DetalleReembolso: React.FC = () => {
             break;
           }
         }
-        console.log('Selected refund:', selectedRefund);
         setRefund(selectedRefund);
       } catch (error) {
         console.error('Error fetching refund data:', error);
@@ -99,9 +113,7 @@ const DetalleReembolso: React.FC = () => {
 
     const fetchUserData = async () => {
       try {
-        console.log(`Fetching user data for client_id: ${client_id}`);
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-        console.log('User data:', response.data.data);
         setUsername(response.data.data.nickname);
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -128,13 +140,13 @@ const DetalleReembolso: React.FC = () => {
         ['ID', refund.id],
         ['Fecha', new Date(refund.created_date).toLocaleDateString()],
         ['Monto Total', new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount)],
-        ['Estado', refund.status],
+        ['Estado', stateDictionary[refund.status] || refund.status],
         ['Producto', refund.product.title],
         ['Cantidad', refund.product.quantity],
         ['Precio', new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.product.price)],
         ['Comprador', refund.buyer.name],
-        ['Facturación', `${refund.billing.first_name} ${refund.billing.last_name}\n${refund.billing.identification.type}: ${refund.billing.identification.number}`],
-        ['Envío', `${refund.shipping.shipping_method}\n${refund.shipping.shipping_status}\n${refund.shipping.shipping_address.address}, ${refund.shipping.shipping_address.number}, ${refund.shipping.shipping_address.city}, ${refund.shipping.shipping_address.state}, ${refund.shipping.shipping_address.country}\nComentarios: ${refund.shipping.shipping_address.comments}`]
+        ['Facturación', `${capitalize(refund.billing.first_name)} ${capitalize(refund.billing.last_name)}\n${refund.billing.identification.type}: ${formatRUT(refund.billing.identification.number)}`],
+        ['Envío', `${refund.shipping.shipping_method || 'N/A'}\n${refund.shipping.shipping_status || 'N/A'}\n${refund.shipping.shipping_address?.address || 'N/A'}, ${refund.shipping.shipping_address?.number || 'N/A'}, ${refund.shipping.shipping_address?.city || 'N/A'}, ${refund.shipping.shipping_address?.state || 'N/A'}, ${refund.shipping.shipping_address?.country || 'N/A'}\nComentarios: ${refund.shipping.shipping_address?.comments || 'N/A'}`]
       ]
     });
     doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
@@ -157,23 +169,19 @@ const DetalleReembolso: React.FC = () => {
       ID: `'${refund.id}`, // Format as text
       Fecha: new Date(refund.created_date).toLocaleDateString(),
       'Monto Total': new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.total_amount),
-      Estado: refund.status,
+      Estado: stateDictionary[refund.status] || refund.status,
       Producto: refund.product.title,
       Cantidad: refund.product.quantity,
       Precio: new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(refund.product.price),
       Comprador: refund.buyer.name,
-      Facturación: `${refund.billing.first_name} ${refund.billing.last_name}\n${refund.billing.identification.type}: ${refund.billing.identification.number}`,
-      Envío: `${refund.shipping.shipping_method}\n${refund.shipping.shipping_status}\n${refund.shipping.shipping_address.address}, ${refund.shipping.shipping_address.number}, ${refund.shipping.shipping_address.city}, ${refund.shipping.shipping_address.state}, ${refund.shipping.shipping_address.country}\nComentarios: ${refund.shipping.shipping_address.comments}`
+      Facturación: `${capitalize(refund.billing.first_name)} ${capitalize(refund.billing.last_name)}\n${refund.billing.identification.type}: ${formatRUT(refund.billing.identification.number)}`,
+      Envío: `${refund.shipping.shipping_method || 'N/A'}\n${refund.shipping.shipping_status || 'N/A'}\n${refund.shipping.shipping_address?.address || 'N/A'}, ${refund.shipping.shipping_address?.number || 'N/A'}, ${refund.shipping.shipping_address?.city || 'N/A'}, ${refund.shipping.shipping_address?.state || 'N/A'}, ${refund.shipping.shipping_address?.country || 'N/A'}\nComentarios: ${refund.shipping.shipping_address?.comments || 'N/A'}`
     }]);
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'Detalle Reembolso');
     const fileName = `Detalle_Reembolso_${refund_id}_${username}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
-
-  useEffect(() => {
-    console.log('Refund state updated:', refund);
-  }, [refund]);
 
   if (loading) {
     return <LoadingDinamico variant='container'/>;
@@ -209,7 +217,7 @@ const DetalleReembolso: React.FC = () => {
               </tr>
               <tr>
                 <td>Estado</td>
-                <td>{refund.status}</td>
+                <td>{stateDictionary[refund.status] || refund.status}</td>
               </tr>
               <tr>
                 <td>Producto</td>
@@ -237,10 +245,10 @@ const DetalleReembolso: React.FC = () => {
               <tr>
                 <td>Envío</td>
                 <td>
-                  {`Método: ${refund.shipping.shipping_method}`}<br />
-                  {`Estado: ${refund.shipping.shipping_status}`}<br />
-                  {`Dirección: ${refund.shipping.shipping_address.address}, ${refund.shipping.shipping_address.number}, ${refund.shipping.shipping_address.city}, ${refund.shipping.shipping_address.state}, ${refund.shipping.shipping_address.country}`}<br />
-                  {`Comentarios: ${refund.shipping.shipping_address.comments}`}
+                  {`Método: ${refund.shipping.shipping_method || 'N/A'}`}<br />
+                  {`Estado: ${refund.shipping.shipping_status || 'N/A'}`}<br />
+                  {`Dirección: ${refund.shipping.shipping_address?.address || 'N/A'}, ${refund.shipping.shipping_address?.number || 'N/A'}, ${refund.shipping.shipping_address?.city || 'N/A'}, ${refund.shipping.shipping_address?.state || 'N/A'}, ${refund.shipping.shipping_address?.country || 'N/A'}`}<br />
+                  {`Comentarios: ${refund.shipping.shipping_address?.comments || 'N/A'}`}
                 </td>
               </tr>
             </tbody>

@@ -115,7 +115,7 @@ const HomeReportes: React.FC = () => {
                     <li className="list-group-item">No hay productos más vendidos</li>
                   )}
                   {storeSummary.top_selling_products.length > 0 && (
-                    <Link to="/sync/" className='btn btn-primary mt-3'>Ver lista completa</Link>
+                    <Link to={`/sync/reportes/productos-mas-vendidos/${selectedConnection}`} className='btn btn-primary mt-3'>Ver lista completa</Link>
                   )}
                 </ul>
                 <h4 className="mt-4">Métodos de Pago Preferidos</h4>
@@ -157,6 +157,9 @@ const HomeReportes: React.FC = () => {
                   </Link>
                   <Link to={`/sync/reportes/ingreso-semana/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faCalendarWeek} className="mr-2" /> Ingresos totales por semana
+                  </Link>
+                  <Link to={`/sync/reportes/estados-ordenes-anual/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Estados de órdenes Resumen Anual (pagadas, pendientes, canceladas)
                   </Link>
                   <Link to={`/sync/reportes/estados-ordenes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Estados de órdenes (pagadas, pendientes, canceladas)

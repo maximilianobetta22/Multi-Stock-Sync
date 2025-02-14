@@ -258,7 +258,8 @@ const CompareYearYear: React.FC = () => {
                                         Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
                                     </p>
 
-                                    <button onClick={generatePDF} className="btn btn-secondary" style={{ marginRight: '20px' }}>Generar PDF</button>
+                                    <button onClick={generatePDF} className="btn btn-secondary mx-3">Generar PDF</button>
+                                                
 
                                     <button onClick={exportToExcel} className="btn btn-success">Descargar Excel</button>
 
@@ -268,8 +269,6 @@ const CompareYearYear: React.FC = () => {
                             )}
                         </div>
 
-
-                        {/* fin de la generacion de la tabla -------------------------------------------------------------------------- */}
                     </>
                 )}
             </div>
