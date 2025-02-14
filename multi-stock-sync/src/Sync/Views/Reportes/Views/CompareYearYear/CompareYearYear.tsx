@@ -116,7 +116,6 @@ const CompareYearYear: React.FC = () => {
                 theme: 'grid',
                 margin: { bottom: 10 }
             });
-
             doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, (doc as any).lastAutoTable.finalY + 30);
             doc.setTextColor(percentage_change > 0 ? 'green' : 'red');
             doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 40);
@@ -137,30 +136,30 @@ const CompareYearYear: React.FC = () => {
     /* excel */
     const exportToExcel = () => {
         if (!result) return;
-    
+
         const workbook = XLSX.utils.book_new();
-    
+
         const createSheet = (yearData: any) => {
             const data = yearData.sold_products.map((product: any) => ({
                 Producto: product.title,
                 Cantidad: product.quantity,
                 Precio: formatCurrency(product.price),
             }));
-    
+
             data.unshift({ Producto: `Total Ventas: ${formatCurrency(yearData.total_sales)}`, Cantidad: '', Precio: '' });
-    
+
             return XLSX.utils.json_to_sheet(data, { skipHeader: false });
         };
-    
+
         const sheet1 = createSheet(result.data.year1);
         const sheet2 = createSheet(result.data.year2);
-    
+
         XLSX.utils.book_append_sheet(workbook, sheet1, `Ventas ${year1}`);
         XLSX.utils.book_append_sheet(workbook, sheet2, `Ventas ${year2}`);
-    
+
         const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
         const excelBlob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-    
+
         saveAs(excelBlob, `Comparacion_Ventas_${year1}_${year2}.xlsx`);
     };
 
@@ -168,8 +167,8 @@ const CompareYearYear: React.FC = () => {
     return (
         <>
             {loading && <LoadingDinamico variant="container" />}
-           
-            <div className={styles.container} style={{ display: loading ? 'none' : 'block' }}>
+
+            <div className={styles.container} style={{ display: loading ? 'none' : 'block', maxWidth: '90%', margin: '0 auto' }}>
                 {!loading && (
                     <>
                         <h1>Comparar Ventas entre Años</h1>
@@ -200,74 +199,76 @@ const CompareYearYear: React.FC = () => {
                                 <button type="submit" className="btn btn-primary">Comparar</button>
                             </div>
                         </form>
+                        <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
+                            {/* generasion de la tabla ----------------------- */}
+                            {result && (
+                                <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
+                                    <h1>Resultado de la Comparación</h1>
 
-                        {/* generasion de la tabla ----------------------- */}
-                        {result && (
-                            <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
-                                <h1>Resultado de la Comparación</h1>
-
-                                <div className={styles.tableContainer}>
-                                    <h3>{year1}</h3>
-                                    <p>Total Ventas: <strong>{formatCurrency(result.data.year1.total_sales)}</strong></p>
-                                    <div className={styles.tableWrapper} style={{ maxHeight: '400px', overflowY: 'auto' }}></div>
-                                    <table className={`table table-striped ${styles.table}`}>
-                                        <thead>
-                                            <tr>
-                                                <th className="table_header">Producto</th>
-                                                <th className="table_header">Cantidad</th>
-                                                <th className="table_header">Precio</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {result.data.year1.sold_products.map((product: any) => (
-                                                <tr key={product.order_id}>
-                                                    <td>{product.title}</td>
-                                                    <td>{product.quantity}</td>
-                                                    <td>{formatCurrency(product.price)}</td>
+                                    <div className={styles.tableContainer}>
+                                        <h3>{year1}</h3>
+                                        <p>Total Ventas: <strong>{formatCurrency(result.data.year1.total_sales)}</strong></p>
+                                        
+                                        <table className={`table table-striped ${styles.table}`}>
+                                            <thead>
+                                                <tr>
+                                                    <th className="table_header">Producto</th>
+                                                    <th className="table_header">Cantidad</th>
+                                                    <th className="table_header">Precio</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                {result.data.year1.sold_products.map((product: any) => (
+                                                    <tr key={product.order_id}>
+                                                        <td>{product.title}</td>
+                                                        <td>{product.quantity}</td>
+                                                        <td>{formatCurrency(product.price)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
 
-                                <div className={styles.tableContainer}>
-                                    <h3>{year2}</h3>
-                                    <p>Total Ventas: <strong>{formatCurrency(result.data.year2.total_sales)}</strong></p>
-                                    <div className={styles.tableWrapper} style={{ maxHeight: '400px', overflowY: 'auto' }}></div>
-                                    <table className={`table table-striped ${styles.table}`}>
-                                        <thead>
-                                            <tr>
-                                                <th className="table_header">Producto</th>
-                                                <th className="table_header">Cantidad</th>
-                                                <th className="table_header">Precio</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {result.data.year2.sold_products.map((product: any) => (
-                                                <tr key={product.order_id}>
-                                                    <td>{product.title}</td>
-                                                    <td>{product.quantity}</td>
-                                                    <td>{formatCurrency(product.price)}</td>
+                                    <div className={styles.tableContainer}>
+                                        <h3>{year2}</h3>
+                                        <p>Total Ventas: <strong>{formatCurrency(result.data.year2.total_sales)}</strong></p>
+                                        
+                                        <table className={`table table-striped ${styles.table}`}>
+                                            <thead>
+                                                <tr>
+                                                    <th className="table_header">Producto</th>
+                                                    <th className="table_header">Cantidad</th>
+                                                    <th className="table_header">Precio</th>
                                                 </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                                            </thead>
+                                            <tbody>
+                                                {result.data.year2.sold_products.map((product: any) => (
+                                                    <tr key={product.order_id}>
+                                                        <td>{product.title}</td>
+                                                        <td>{product.quantity}</td>
+                                                        <td>{formatCurrency(product.price)}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
 
-                                <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
-                                <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
-                                    Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
-                                </p>
+                                    <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
+                                    <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
+                                        Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
+                                    </p>
 
                                     <button onClick={generatePDF} className="btn btn-secondary mx-3">Generar PDF</button>
                                                 
+
                                     <button onClick={exportToExcel} className="btn btn-success">Descargar Excel</button>
 
-                            </div>
+                                </div>
 
 
-                        )}
-                        {/* fin de la generacion de la tabla ------------------------------------------------------------------------- */}
+                            )}
+                        </div>
+
                     </>
                 )}
             </div>

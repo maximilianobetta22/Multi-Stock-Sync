@@ -125,24 +125,24 @@ const MetodosPago: React.FC = () => {
       console.error("No se pudo obtener el nickname del usuario.");
       return;
     }
-  
+
     const doc = new jsPDF();
     const currentDate = new Date().toLocaleString();
     const displayYear = selectedYear === 'alloftimes' ? 'El origen de los tiempos' : selectedYear;
-  
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(20);
     doc.text("Reporte de Métodos de Pago", 105, 20, { align: "center" });
     doc.setDrawColor(0, 0, 0);
     doc.line(20, 25, 190, 25);
     doc.setFontSize(12);
-  
+
     doc.setFont("helvetica", "normal");
     doc.setFontSize(14);
     doc.text(`Usuario: ${userData.nickname}`, 20, 55);
     doc.text(`Fecha de Creación del Reporte: ${currentDate}`, 20, 75);
     doc.text(`Año Seleccionado: ${displayYear}`, 20, 85);
-  
+
     autoTable(doc, {
       startY: 90,
       head: [["Método de Pago", "Cantidad", "Porcentaje"]],
@@ -152,27 +152,27 @@ const MetodosPago: React.FC = () => {
         ["Tarjeta de Crédito", paymentData.credit_card, `${calculatePercentage(paymentData.credit_card)}%`],
       ],
     });
-  
+
     doc.setFont("helvetica", "bold");
     doc.setFontSize(16);
-    doc.setTextColor(34, 139, 34); 
+    doc.setTextColor(34, 139, 34);
     doc.text(`Total de Transacciones: ${total}`, 20, (doc as any).autoTable.previous.finalY + 10);
-  
+
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150); 
+    doc.setTextColor(150, 150, 150);
     doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
-  
+
 
     const pdfData = doc.output("datauristring");
     setPdfDataUrl(pdfData);
     setShowModal(true);
-  
+
 
     const pdfFilename = `MetodosPago_${client_id}_${userData.nickname}.pdf`;
     doc.save(pdfFilename);
   };
-  
+
 
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: currentYear - 2000 + 1 }, (_, i) => (currentYear - i).toString());
@@ -182,7 +182,7 @@ const MetodosPago: React.FC = () => {
       console.error("No se pudo obtener el nickname del usuario.");
       return;
     }
-  
+
     const ws = XLSX.utils.json_to_sheet([
       { Metodo: 'Dinero en Cuenta', Cantidad: paymentData.account_money, Porcentaje: `${calculatePercentage(paymentData.account_money)}%` },
       { Metodo: 'Tarjeta de Débito', Cantidad: paymentData.debit_card, Porcentaje: `${calculatePercentage(paymentData.debit_card)}%` },
@@ -190,10 +190,10 @@ const MetodosPago: React.FC = () => {
     ]);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'MetodosPago');
-  
+
     const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' });
     const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-  
+
     const excelFilename = `MetodosPago_${client_id}_${userData.nickname}.xlsx`;
     saveAs(data, excelFilename);
   };
@@ -282,14 +282,13 @@ const MetodosPago: React.FC = () => {
                     </ProgressBar>
                     <button
                       type="button"
-                      className="btn btn-success mt-3 mx-3"
+                      className="btn btn-primary mt-3 mx-3"
                       onClick={generatePDF}
                     >
                       Exportar a PDF
                     </button>
 
-                    <button className='btn btn-success mt-3' onClick={generateExcel}>Exportar a Excel</button>
-
+                    <button className='btn btn-primary mt-3' onClick={generateExcel}>Exportar a Excel</button>
 
                   </div>
                 </div>
