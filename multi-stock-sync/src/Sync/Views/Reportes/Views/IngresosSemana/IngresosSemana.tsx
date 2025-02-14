@@ -56,10 +56,7 @@ const IngresosSemana: React.FC = () => {
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
-  const currencyFormat = new Intl.NumberFormat('es-CL', {
-    style: 'currency',
-    currency: 'CLP',
-  });
+
 
   useEffect(() => {
     const fetchWeeks = async () => {
