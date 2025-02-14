@@ -1,5 +1,4 @@
 import React from 'react';
-import styles from './ExportarDatos.module.css';
 import { useParams } from 'react-router-dom';
 
 const ExportarDatos: React.FC = () => {
