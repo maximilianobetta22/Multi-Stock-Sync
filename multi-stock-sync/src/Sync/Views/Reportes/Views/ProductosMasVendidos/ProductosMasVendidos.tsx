@@ -14,8 +14,7 @@ const Productos: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [selectedMonth, setSelectedMonth] = useState<string>('2024-10');
     const [currentPage, setCurrentPage] = useState<number>(1);
-    const itemsPerPage = 10; // Número de productos por página
-    const [itemsPerGraph, setItemsPerGraph] = useState<number>(10); // Cantidad de productos en el gráfico
+    const itemsPerPage = 10; 
     const chartRef = useRef<HTMLDivElement | null>(null);
     const pdfRef = useRef<jsPDF | null>(null);
     const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
@@ -52,7 +51,7 @@ const Productos: React.FC = () => {
     const currentProducts = productos.slice(indexOfFirstProduct, indexOfLastProduct);
 
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
-    const handleGraphItemsChange = (value: number) => setItemsPerGraph(value);
+    const handleGraphItemsChange = (value: number) => (value);
 
     const chartData = {
         labels: productos.map((producto) => producto.title),
