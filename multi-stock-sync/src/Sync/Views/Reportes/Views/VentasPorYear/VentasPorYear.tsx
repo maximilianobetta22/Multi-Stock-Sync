@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import { Modal, Button, Form } from 'react-bootstrap';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -90,7 +90,7 @@ const VentasPorYear: React.FC = () => {
             setLoading(true);
             try {
                 const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/annual-sales/${client_id}?year=${selectedYear}`;
-                const response = await axios.get(apiUrl);
+                const response = await axiosInstance.get(apiUrl);
                 const data = response.data.data;
                 const formattedData = Object.keys(data).map(month => ({
                     month,
@@ -109,7 +109,7 @@ const VentasPorYear: React.FC = () => {
         const fetchUserName = async () => {
             try {
                 const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`;
-                const response = await axios.get(apiUrl);
+                const response = await axiosInstance.get(apiUrl);
                 setUserName(response.data.data.nickname);
             } catch (error) {
                 console.error('Error al obtener el nombre del usuario:', error);

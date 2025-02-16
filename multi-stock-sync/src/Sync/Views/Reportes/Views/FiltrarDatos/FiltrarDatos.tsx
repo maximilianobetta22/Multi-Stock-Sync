@@ -7,15 +7,13 @@ import {
   Legend,
 } from 'chart.js';
 import styles from './FiltrarDatos.module.css';
-import { useParams } from 'react-router-dom';
 
 // Registrar los componentes requeridos
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 const FiltrarDatos: React.FC = () => {
-  const { client_id } = useParams<{ client_id: string }>();
   // Estado para los datos del gráfico
-  const [paymentData, setPaymentData] = useState({
+  const [paymentData] = useState({
     tarjeta: 50,
     efectivo: 30,
     transferencia: 20,

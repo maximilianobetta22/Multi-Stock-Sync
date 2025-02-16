@@ -6,6 +6,7 @@ import { jsPDF } from 'jspdf';
 import * as XLSX from 'xlsx';
 import { Modal, Table, Accordion, Card, Button } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+import axiosInstance from '../../../../../axiosConfig';
 
 ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale);
 
@@ -19,7 +20,7 @@ const EstadosOrdenes: React.FC = () => {
     const [showModal, setShowModal] = useState<boolean>(false);
     const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
     const [clientName, setClientName] = useState<string>('');
-    const [detailsPdfDataUrl, setDetailsPdfDataUrl] = useState<string | null>(null);
+    const [detailsPdfDataUrl] = useState<string | null>(null);
     const [showDetails, setShowDetails] = useState<boolean>(false);
     const [showDetailsModal, setShowDetailsModal] = useState<boolean>(false);
 
@@ -27,37 +28,21 @@ const EstadosOrdenes: React.FC = () => {
         setLoading(true);
         try {
             const apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/order-statuses/${client_id}?year=${year}&month=${month}`;
-            const response = await fetch(apiUrl);
-            if (!response.ok) {
-                throw new Error('Error al obtener los datos');
-            }
-            const responseData = await response.json();
-            setData(responseData.data);
+            const response = await axiosInstance.get(apiUrl);
+            setData(response.data.data);
             setLoading(false);
         } catch (error) {
-            if (error instanceof Error) {
-                setError(error.message);
-            } else {
-                setError('Unknown error occurred');
-            }
+            setError((error as Error).message);
             setLoading(false);
         }
 
         // Fetch client name
         try {
             const clientApiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`;
-            const response = await fetch(clientApiUrl);
-            if (!response.ok) {
-                throw new Error('Error al obtener el nombre del cliente');
-            }
-            const responseData = await response.json();
-            setClientName(responseData.data.nickname);
+            const response = await axiosInstance.get(clientApiUrl);
+            setClientName(response.data.data.nickname);
         } catch (error) {
-            if (error instanceof Error) {
-                console.error(error.message);
-            } else {
-                console.error('Unknown error occurred');
-            }
+            console.error((error as Error).message);
         }
     };
 

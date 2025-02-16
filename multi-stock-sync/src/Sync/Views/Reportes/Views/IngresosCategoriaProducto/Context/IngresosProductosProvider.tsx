@@ -4,7 +4,7 @@ import { IngresosProductosContext } from "./IngresosProductosContext";
 import { ProductoReducer } from "./ProductoReducer";
 import { useParams } from "react-router-dom";
 import { groupByIdProduct, groupByCategory, handleFilterCategory, groupByPaymentMethod} from "../helpers";
-import axios from "axios";
+import axiosInstance from "../../../../../../axiosConfig";
 
 const INITIAL_STATE: IngresosProductoState = { 
   ventas: [],
@@ -33,7 +33,7 @@ export const IngresosProductosProvider = ({ children }: Props) => {
       payload: true 
     })
 
-    axios({
+    axiosInstance({
       url:`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-date-range/${client_id}?`,
       method: 'GET',
       headers: { 'Content-Type': 'application/json' },

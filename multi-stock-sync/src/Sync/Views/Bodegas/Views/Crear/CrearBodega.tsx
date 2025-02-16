@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 
 interface Company {
@@ -23,7 +23,7 @@ const CrearBodega: React.FC = () => {
     const [toastType, setToastType] = useState<'success' | 'danger'>('success');
 
     useEffect(() => {
-        axios.get(`${process.env.VITE_API_URL}/companies`)
+        axiosInstance.get(`${process.env.VITE_API_URL}/companies`)
             .then(response => {
                 setCompanies(response.data);
                 setLoading(false);
@@ -53,7 +53,7 @@ const CrearBodega: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        axios.post(`${process.env.VITE_API_URL}/warehouses`, formData)
+        axiosInstance.post(`${process.env.VITE_API_URL}/warehouses`, formData)
             .then(response => {
                 console.log('Success:', response.data);
                 setToastMessage('Bodega creada con éxito.');

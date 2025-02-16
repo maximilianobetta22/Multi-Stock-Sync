@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import styles from './CompareMonthMonth.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import jsPDF from 'jspdf';
@@ -47,7 +47,7 @@ const CompareMonthMonth: React.FC = () => {
         const fetchNickname = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+                const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
                 console.log('Nickname response:', response.data); // Debugging statement
                 setNickname(response.data.data.nickname); // Correct path to nickname
             } catch (error) {
@@ -67,7 +67,7 @@ const CompareMonthMonth: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-sales-data/${client_id}`, {
+            const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-sales-data/${client_id}`, {
                 params: { year1, month1, year2, month2 }
             });
             setResult(response.data);

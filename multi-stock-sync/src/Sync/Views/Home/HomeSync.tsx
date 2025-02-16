@@ -2,7 +2,7 @@ import React from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import styles from "./HomeSync.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faBoxOpen, faWarehouse, faPlug, faBriefcase, faFolderOpen, faServer } from "@fortawesome/free-solid-svg-icons";
+import { faBoxOpen, faWarehouse, faPlug, faFolderOpen, faServer } from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 
 const HomeSync: React.FC = () => {
@@ -27,13 +27,6 @@ const HomeSync: React.FC = () => {
             icon: faPlug, 
             link: "/sync/conexiones", 
             color: "bg-warning"
-        },
-        { 
-            title: "Compañías", 
-            description: "Gestiona las compañías asignadas a tus bodegas.", 
-            icon: faBriefcase, 
-            link: "/sync/companias", 
-            color: "bg-danger"
         },
         { 
             title: "Reportes", 
