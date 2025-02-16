@@ -7,6 +7,7 @@ import RouterBodegas from "../Views/Bodegas/Router/RouterBodega";
 import RouterConexiones from "../Views/Conexiones/Router/RouterConexiones";
 import RouterReportes from "../Views/Reportes/Router/RouterReportes";
 import { Login } from "../../Auth/Pages";
+import Logout from "../../Auth/Pages/Logout";
 
 import Info from "../Views/Info/Info";
 
@@ -23,6 +24,7 @@ function RouterSync() {
         <Route path="/reportes/*" element={<RouterReportes />} />
         <Route path="/info" element={<Info />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/logout" element={<Logout />} />
         <Route path="/*" element={<Navigate to="/sync/home" />} />
       </Routes>
     </LayoutSync>
