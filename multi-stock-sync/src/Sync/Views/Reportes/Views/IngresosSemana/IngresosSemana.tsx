@@ -7,6 +7,7 @@ import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import axiosInstance from "../../../../../axiosConfig";
 
 const IngresosSemana: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
@@ -63,10 +64,10 @@ const IngresosSemana: React.FC = () => {
       if (!year || !month) return;
       setLoading(true);
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/weeks-of-month?year=${year}&month=${month}`);
-        if (!response.ok) throw new Error("Error al obtener las semanas");
-        const result = await response.json();
-        setWeeks(result.data);
+        const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/weeks-of-month`, {
+          params: { year, month }
+        });
+        setWeeks(response.data.data);
       } catch (error) {
         console.error("Error al cargar las semanas:", error);
         setError("Hubo un problema al cargar las semanas disponibles.");
@@ -108,13 +109,12 @@ const IngresosSemana: React.FC = () => {
   const fetchIncomes = async (start: string, end: string, clientId: string) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${clientId}?week_start_date=${start}&week_end_date=${end}`
+      const response = await axiosInstance.get(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${clientId}`, {
+          params: { week_start_date: start, week_end_date: end }
+        }
       );
-      if (!response.ok) {
-        throw new Error("Error al obtener los ingresos de la API");
-      }
-      const result = await response.json();
+      const result = response.data;
       setTotalSales(result.data.total_sales);
       setChartData({
         labels: result.data.sold_products.map((product: any) => product.title),
@@ -243,12 +243,8 @@ const IngresosSemana: React.FC = () => {
   const fetchUserData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error del servidor: ${errorText}`);
-      }
-      const result = await response.json();
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      const result = response.data;
       console.log("Resultado:", result);
       setUserData({
         nickname: result.data.nickname,
