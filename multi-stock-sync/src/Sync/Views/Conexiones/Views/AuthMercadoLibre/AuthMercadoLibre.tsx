@@ -56,14 +56,12 @@ const AuthMercadoLibre = () => {
         }
       } else {
         setStatus("error");
-        setMessage(
-          data.message || "Error: No se pudieron validar las credenciales."
-        );
+        setMessage(data.message || "Error: No se pudieron validar las credenciales.");
       }
     } catch (err) {
       console.error(err);
       setStatus("error");
-      setMessage("Error: Ocurrió un problema inesperado. Inténtalo de nuevo.");
+      setMessage((err as any).response?.data?.message || "Error: Ocurrió un problema inesperado. Inténtalo de nuevo.");
     } finally {
       setLoading(false);
     }
