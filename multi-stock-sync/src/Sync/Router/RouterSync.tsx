@@ -4,7 +4,6 @@ import LayoutSync from "../Layout/LayoutSync";
 
 import RouterProductos from "../Views/Productos/Router/RouterProducto";
 import RouterBodegas from "../Views/Bodegas/Router/RouterBodega";
-import RouterCompania from "../Views/Compania/Router/RouterCompania";
 import RouterConexiones from "../Views/Conexiones/Router/RouterConexiones";
 import RouterReportes from "../Views/Reportes/Router/RouterReportes";
 import { Login } from "../../Auth/Pages";
@@ -21,7 +20,6 @@ function RouterSync() {
         <Route path="/home" element={<HomeSync />} />
         <Route path="/productos/*" element={<RouterProductos />} />
         <Route path="/bodegas/*" element={<RouterBodegas />} />
-        <Route path="/companias/*" element={<RouterCompania />} />
         <Route path="/reportes/*" element={<RouterReportes />} />
         <Route path="/info" element={<Info />} />
         <Route path="/login" element={<Login />} />
