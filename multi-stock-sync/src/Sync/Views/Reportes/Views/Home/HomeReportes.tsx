@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styles from './HomeReportes.module.css';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -38,7 +38,7 @@ const HomeReportes: React.FC = () => {
   useEffect(() => {
     const fetchConnections = async () => {
       try {
-        const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`);
+        const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`);
         setConnections(response.data.data);
       } catch (error) {
         console.error('Error al obtener las conexiones:', error);
@@ -55,7 +55,7 @@ const HomeReportes: React.FC = () => {
   const fetchStoreSummary = async (clientId: string) => {
     setLoading(true);
     try {
-      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/summary/${clientId}`);
+      const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/summary/${clientId}`);
       setStoreSummary(response.data.data);
       setToastMessage('Resumen de la tienda cargado con éxito.');
       setToastType('success');
