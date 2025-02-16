@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../../../../axiosConfig';
 import { Container, Table, Button, Modal } from 'react-bootstrap';
 import { useParams, useLocation } from 'react-router-dom';
 import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
@@ -91,7 +91,7 @@ const DetalleReembolso: React.FC = () => {
   useEffect(() => {
     const fetchRefund = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`, {
+        const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`, {
           params: { date_from, date_to }
         });
         const refundsData = response.data.data;
@@ -113,7 +113,7 @@ const DetalleReembolso: React.FC = () => {
 
     const fetchUserData = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+        const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
         setUsername(response.data.data.nickname);
       } catch (error) {
         console.error('Error fetching user data:', error);
