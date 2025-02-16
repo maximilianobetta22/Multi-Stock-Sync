@@ -6,6 +6,7 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as XLSX from 'xlsx';
+import axiosInstance from '../../../../../axiosConfig';
 
 const Productos: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
@@ -28,10 +29,10 @@ const Productos: React.FC = () => {
         const fetchProductos = async () => {
             try {
                 const [year, month] = selectedMonth.split('-');
-                const response = await fetch(
+                const response = await axiosInstance.get(
                     `${import.meta.env.VITE_API_URL}/mercadolibre/top-selling-products/${client_id}?year=${year}&month=${month}`
                 );
-                const data = await response.json();
+                const data = response.data;
                 if (data.status === 'success') {
                     setProductos(data.data);
                 } else {

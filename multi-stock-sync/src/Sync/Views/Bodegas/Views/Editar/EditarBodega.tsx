@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 
@@ -24,7 +24,7 @@ const EditarBodega: React.FC = () => {
     const [toastType, setToastType] = useState<'success' | 'danger'>('success');
 
     useEffect(() => {
-        axios.get(`${process.env.VITE_API_URL}/companies`)
+        axiosInstance.get(`${process.env.VITE_API_URL}/companies`)
             .then(response => {
                 setCompanies(response.data);
                 setLoading(false);
@@ -36,7 +36,7 @@ const EditarBodega: React.FC = () => {
     }, []);
 
     useEffect(() => {
-        axios.get(`${process.env.VITE_API_URL}/warehouses/${id}`)
+        axiosInstance.get(`${process.env.VITE_API_URL}/warehouses/${id}`)
             .then(response => {
                 setFormData({
                     name: response.data.name || '',
@@ -70,7 +70,7 @@ const EditarBodega: React.FC = () => {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
-        axios.patch(`${process.env.VITE_API_URL}/warehouses/${id}`, formData)
+        axiosInstance.patch(`${process.env.VITE_API_URL}/warehouses/${id}`, formData)
             .then(response => {
                 console.log('Success:', response.data);
                 setToastMessage('Bodega actualizada con éxito.');

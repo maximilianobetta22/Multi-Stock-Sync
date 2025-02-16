@@ -16,6 +16,8 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import axiosInstance from '../../../../../axiosConfig';
+
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 interface Product {
@@ -61,8 +63,8 @@ const EstadosOrdenesAnual: React.FC = () => {
     const fetchEstadoOrdenesData = async (selectedYear: string) => {
         try {
             setLoading(true);
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/order-statuses/${client_id}?year=${selectedYear}`);
-            const result = await response.json();
+            const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/order-statuses/${client_id}?year=${selectedYear}`);
+            const result = response.data;
     
             if (result.status === 'success') {
                 setEstadoOrdenesData({
@@ -81,8 +83,8 @@ const EstadosOrdenesAnual: React.FC = () => {
 
     const fetchUserData = async () => {
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-            const result = await response.json();
+            const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+            const result = response.data;
             if (result.status === 'success') {
                 setUserData({
                     nickname: result.data.nickname,

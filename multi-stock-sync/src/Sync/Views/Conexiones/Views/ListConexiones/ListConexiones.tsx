@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import "react-datepicker/dist/react-datepicker.css";
 import { Link } from "react-router-dom";
 import styles from "./ListConexiones.module.css";
-import axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
@@ -11,6 +10,7 @@ import { SyncData } from "../../interface";
 import { copyToClipboard } from "../../helpers";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faList } from "@fortawesome/free-solid-svg-icons";
+import axiosInstance from "../../../../../axiosConfig";
 const MySwal = withReactContent(Swal);
 
 const ListConexiones: React.FC = () => {
@@ -46,7 +46,7 @@ const ListConexiones: React.FC = () => {
     });
 
     try {
-      const response = await axios.delete(url);
+      const response = await axiosInstance.delete(url);
       if (response.data.status === "success") {
         setConexiones(conexiones.filter(conexion => conexion.client_id !== clientId));
         await MySwal.fire({
@@ -85,7 +85,7 @@ const ListConexiones: React.FC = () => {
       allowOutsideClick: false
     });
     try {
-      const response = await axios.get(url);
+      const response = await axiosInstance.get(url);
       if (response.data.status === "success") {
         MySwal.fire({
           title: 'Éxito',
@@ -112,7 +112,7 @@ const ListConexiones: React.FC = () => {
   useEffect(() => {
     const fetchConexiones = async () => {
       try {
-        const response = await axios.get(API_URL);
+        const response = await axiosInstance.get(API_URL);
         if (response.data.status === "success") {
           setConexiones(response.data.data);
         }

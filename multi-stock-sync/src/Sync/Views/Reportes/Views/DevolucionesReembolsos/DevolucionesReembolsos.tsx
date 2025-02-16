@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import { Table, Form, Button, Row, Col, Container, Modal } from 'react-bootstrap';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import 'jspdf-autotable';
@@ -85,7 +85,7 @@ const DevolucionesReembolsos: React.FC = () => {
       const category = 'MLC12345'; // Example category ID
 
       console.log(`Fetching refunds for client_id: ${client_id}, date_from: ${date_from}, date_to: ${date_to}, category: ${category}`);
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`, {
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/refunds-by-category/${client_id}`, {
         params: { date_from, date_to, category }
       });
       console.log('API response:', response.data);
@@ -107,7 +107,7 @@ const DevolucionesReembolsos: React.FC = () => {
 
   const fetchClientName = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
       setClientName(response.data.data.nickname);
     } catch (error) {
       console.error('Error fetching client name:', error);
