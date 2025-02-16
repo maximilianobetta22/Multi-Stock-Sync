@@ -19,8 +19,8 @@ export const Login: React.FC = () => {
       localStorage.setItem('user', JSON.stringify(response.data.user));
       navigate('/');
     } catch (err) {
-      setError('Invalid credentials');
-      console.log(err)
+      setError((err as any).response?.data?.message || 'Invalid credentials');
+      console.log(err);
     }
   };
 
