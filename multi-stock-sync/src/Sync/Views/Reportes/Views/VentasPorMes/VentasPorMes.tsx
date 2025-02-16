@@ -10,7 +10,7 @@ import {
   Legend
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from './VentasPorMes.module.css';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
@@ -61,7 +61,7 @@ const VentasPorMes: React.FC = () => {
         if (yearSeleccionado) params.year = yearSeleccionado;
         if (monthSeleccionado) params.month = monthSeleccionado.toString().padStart(2, '0');
 
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, { params });
+        const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, { params });
         console.log('API response:', response.data.data);
 
         const ventasData = response.data.data[`${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}`]?.orders.flatMap((order: any) =>
@@ -86,7 +86,7 @@ const VentasPorMes: React.FC = () => {
 
     const fetchUserName = async () => {
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+        const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
         setUserName(response.data.data.nickname);
       } catch (error) {
         console.error('Error fetching user data:', error);
