@@ -7,6 +7,7 @@ import RouterBodegas from "../Views/Bodegas/Router/RouterBodega";
 import RouterCompania from "../Views/Compania/Router/RouterCompania";
 import RouterConexiones from "../Views/Conexiones/Router/RouterConexiones";
 import RouterReportes from "../Views/Reportes/Router/RouterReportes";
+import { Login } from "../../Auth/Pages";
 
 import Info from "../Views/Info/Info";
 
@@ -23,7 +24,7 @@ function RouterSync() {
         <Route path="/companias/*" element={<RouterCompania />} />
         <Route path="/reportes/*" element={<RouterReportes />} />
         <Route path="/info" element={<Info />} />
-
+        <Route path="/login" element={<Login />} />
         <Route path="/*" element={<Navigate to="/sync/home" />} />
       </Routes>
     </LayoutSync>

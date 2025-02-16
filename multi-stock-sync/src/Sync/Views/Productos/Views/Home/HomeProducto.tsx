@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig'; // Importa la configuración de Axios
 import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
@@ -68,7 +68,7 @@ const HomeProducto = () => {
   useEffect(() => {
     const fetchConnections = async () => {
       try {
-        const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`);
+        const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`);
         setConnections(response.data.data);
       } catch (error) {
         console.error('Error fetching connections:', error);
@@ -111,7 +111,7 @@ const HomeProducto = () => {
       const url = query
         ? `${process.env.VITE_API_URL}/mercadolibre/products/search/${clientId}`
         : `${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`;
-      const response = await axios.get(url, {
+      const response = await axiosInstance.get(url, {
         params: query ? { q: query, limit, offset } : { limit, offset }
       });
       setAllProductos(response.data.data);
@@ -159,7 +159,7 @@ const HomeProducto = () => {
       const ACCESS_TOKEN = selectedConnectionData.access_token; 
       const ITEM_ID = productId;
 
-      const response = await axios.put(
+      const response = await axiosInstance.put(
         `https://api.mercadolibre.com/items/${ITEM_ID}`,
         pause ? { status: 'paused' } : { available_quantity: newStock },
         {
@@ -202,7 +202,7 @@ const HomeProducto = () => {
       const ACCESS_TOKEN = selectedConnectionData.access_token; 
       const ITEM_ID = productId;
 
-      const response = await axios.put(
+      const response = await axiosInstance.put(
         `https://api.mercadolibre.com/items/${ITEM_ID}`,
         { status: newStatus },
         {
