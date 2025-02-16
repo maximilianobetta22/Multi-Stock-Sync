@@ -1,9 +1,10 @@
 import { useState } from "react";
+import axiosInstance from "../../../../../axiosConfig";
 import styles from "./AuthMercadoLibre.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { Link } from "react-router-dom";
 import { faLock, faLockOpen, faAddressCard } from "@fortawesome/free-solid-svg-icons";
-import { Modal, Button } from "react-bootstrap"; // Import Bootstrap components
+import { Modal, Button } from "react-bootstrap";
 import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
 
 const AuthMercadoLibre = () => {
@@ -34,20 +35,19 @@ const AuthMercadoLibre = () => {
     };
 
     try {
-      const response = await fetch(
+      const response = await axiosInstance.post(
         `${import.meta.env.VITE_API_URL}/mercadolibre/login`,
+        payload,
         {
-          method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify(payload),
         }
       );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
+      if (response.status === 200) {
         setStatus(data.status || "success");
         setMessage(data.message || "URL generada correctamente. Redirigiendo...");
 
