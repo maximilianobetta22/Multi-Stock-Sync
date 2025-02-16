@@ -13,9 +13,9 @@ import { useParams } from "react-router-dom";
 import { Modal } from "react-bootstrap";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import axiosInstance from "../../../../../axiosConfig";
 import styles from "./VentasPorDia.module.css";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -33,18 +33,13 @@ const VentasPorDia: React.FC = () => {
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
 
-
-
   const fetchIncomes = async (date: string, clientId: string) => {
     setLoading(true);
     try {
-      const response = await fetch(
+      const response = await axiosInstance.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${clientId}?week_start_date=${date}&week_end_date=${date}`
       );
-      if (!response.ok) {
-        throw new Error("Error al obtener los ingresos de la API");
-      }
-      const result = await response.json();
+      const result = response.data;
       const soldProducts = result.data.sold_products;
 
       setTotalIngresos(soldProducts.reduce((acc: number, product: any) => acc + product.total_amount, 0));
@@ -86,11 +81,8 @@ const VentasPorDia: React.FC = () => {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/user-data`);
-        if (!response.ok) {
-          throw new Error("Error al obtener los datos del usuario");
-        }
-        const data = await response.json();
+        const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/user-data`);
+        const data = response.data;
         setUserData(data);
       } catch (error) {
         console.error("Error al obtener datos del usuario:", error);
@@ -99,16 +91,12 @@ const VentasPorDia: React.FC = () => {
 
     fetchUserData();
   }, []);
-  /* llamar a la api */
+
   const fetchUserData = async () => {
     setLoading(true);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Error del servidor: ${errorText}`);
-      }
-      const result = await response.json();
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      const result = response.data;
       console.log("Resultado:", result);
       setUserData({
         nickname: result.data.nickname,
@@ -127,10 +115,6 @@ const VentasPorDia: React.FC = () => {
       fetchUserData();
     }
   }, [client_id]);
-  /* fin llamar a la api */
-
-
-
 
   /* pdf */
   const generatePDF = async () => { 
