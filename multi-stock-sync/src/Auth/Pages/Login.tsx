@@ -17,7 +17,7 @@ export const Login: React.FC = () => {
       const response = await axios.post(`${process.env.VITE_API_URL}/login`, { email, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
-      navigate('/'); // Redirect to home or dashboard
+      navigate('/');
     } catch (err) {
       setError('Invalid credentials');
       console.log(err)
@@ -30,26 +30,22 @@ export const Login: React.FC = () => {
         <div className={`${styles.loginBox__loginContainer}`}>
           <header className={`${styles.header__loginBox}`}>
             <h1 className={`${styles.title__header}`}>Multi-Stock-Sync</h1>
+            <p>Iniciar sesión</p>
           </header>
           <hr/>
-          <form className={`${styles.form__loginContainer}`} onSubmit={handleSubmit}>
-            <div className={`${styles.formGroup__loginContainer}`}>
-              <label 
-                htmlFor="username" 
-                className="form-label"
-              >
-                  Nombre de Usuario
-              </label>
+          <form className="form" onSubmit={handleSubmit}>
+            <div className="mb-3">
+              <label htmlFor="username" className="form-label">Nombre de Usuario</label>
               <input
                 type="text"
                 className="form-control"
                 id="username"
-                placeholder="Ejemplo: multi@stocksync.io"
+                placeholder="Ejemplo: luismiguel@email.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div className={`${styles.formGroup__loginContainer}`}>
+            <div className="mb-3">
               <label htmlFor="password" className="form-label">Contraseña</label>
               <input
                 type="password"
@@ -61,29 +57,10 @@ export const Login: React.FC = () => {
               />
             </div>
             {error && <div className="alert alert-danger">{error}</div>}
-            <button 
-              type="submit" 
-              className={`btn btn-primary w-100 ${styles.btn__loginContainer}`}
-            >
-              Iniciar Sesión
-            </button>
-            <div>
-              <p>¿No tienes una cuenta?</p>
-              <Link 
-                to="/register" 
-                className="d-block text-decoration-none text-primary"
-              >
-                Registrarse
-              </Link>
+            <button type="submit" className="btn btn-primary w-100">Iniciar Sesión</button>
+            <div className="mt-3">
+              <Link to="/register" className="d-block text-decoration-none text-primary text-center">Registrarse</Link>
             </div>
-            <div className="help-box bg-light p-3 border">
-              ¿Tienes dudas? <br />
-              <strong>Llámanos al +562 29381115</strong>
-            </div>
-            
-            <a href="#" className="d-block text-decoration-none text-danger">
-              ¿Olvidaste tu contraseña?
-            </a>
           </form>
         </div>
       </div>
