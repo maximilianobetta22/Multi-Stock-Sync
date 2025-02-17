@@ -7,6 +7,7 @@ import {
   faWarehouse,
   faPlug,
   faFolderOpen,
+  faHandshake
 } from "@fortawesome/free-solid-svg-icons";
 
 const SideBar = () => {
@@ -42,6 +43,12 @@ const SideBar = () => {
             <NavLink to="/sync/reportes/home" className={styles.NavLink}>
               <FontAwesomeIcon icon={faFolderOpen} />
               Reportes
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/sync/about" className={styles.NavLink}>
+              <FontAwesomeIcon icon={faHandshake} />
+              Sobre el proyecto (Developers)
             </NavLink>
           </li>
         </ul>
