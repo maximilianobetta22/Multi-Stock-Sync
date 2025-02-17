@@ -5,6 +5,13 @@ import { Link } from 'react-router-dom';
 import styles from '../Css/Register.module.css';
 import { LoadingDinamico } from '../../components/LoadingDinamico/LoadingDinamico';
 
+const formatPhoneNumber = (phone: string) => {
+  if (!phone.startsWith('+')) {
+    phone = `${phone}`;
+  }
+  return phone;
+};
+
 const Register: React.FC = () => {
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
@@ -15,6 +22,12 @@ const Register: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target.value.replace(/\D/g, ''); 
+    const formattedPhone = formatPhoneNumber(input);
+    setTelefono(formattedPhone);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,6 +71,7 @@ const Register: React.FC = () => {
                   id="nombre"
                   placeholder="Ejemplo: Arthur"
                   value={nombre}
+                  required
                   onChange={(e) => setNombre(e.target.value)}
                 />
                 {errors.nombre && <div className="text-danger">{errors.nombre[0]}</div>}
@@ -70,20 +84,26 @@ const Register: React.FC = () => {
                   id="apellidos"
                   placeholder="Ejemplo: Morgan 🤠"
                   value={apellidos}
+                  required
                   onChange={(e) => setApellidos(e.target.value)}
                 />
                 {errors.apellidos && <div className="text-danger">{errors.apellidos[0]}</div>}
               </div>
               <div className="mb-3">
                 <label htmlFor="telefono" className="form-label">Teléfono</label>
-                <input
-                  type="text"
-                  className="form-control"
-                  id="telefono"
-                  placeholder="Ejemplo: +56999999999"
-                  value={telefono}
-                  onChange={(e) => setTelefono(e.target.value)}
-                />
+                <div className="input-group">
+                  <span className="input-group-text">+</span>
+                  <input
+                    type="text"
+                    className="form-control"
+                    id="telefono"
+                    placeholder="56999999999"
+                    value={telefono}
+                    maxLength={11}
+                    required
+                    onChange={handlePhoneChange}
+                  />
+                </div>
                 {errors.telefono && <div className="text-danger">{errors.telefono[0]}</div>}
               </div>
               <div className="mb-3">
@@ -94,6 +114,7 @@ const Register: React.FC = () => {
                   id="email"
                   placeholder="Ejemplo: thisismyemail@email.com"
                   value={email}
+                  required
                   onChange={(e) => setEmail(e.target.value)}
                 />
                 {errors.email && <div className="text-danger">{errors.email[0]}</div>}
@@ -106,6 +127,7 @@ const Register: React.FC = () => {
                   id="password"
                   placeholder="Tu contraseña"
                   value={password}
+                  required
                   onChange={(e) => setPassword(e.target.value)}
                 />
                 {errors.password && <div className="text-danger">{errors.password[0]}</div>}
@@ -118,6 +140,7 @@ const Register: React.FC = () => {
                   id="passwordConfirmation"
                   placeholder="Confirma tu contraseña"
                   value={passwordConfirmation}
+                  required
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
                 />
                 {errors.password_confirmation && <div className="text-danger">{errors.password_confirmation[0]}</div>}
