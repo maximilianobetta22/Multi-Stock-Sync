@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axiosInstance from "../../../axiosConfig";
 import styles from "./NavbarSync.module.css";
 
 interface User {
@@ -19,16 +18,8 @@ const Navbar = () => {
     }
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await axiosInstance.post(`${import.meta.env.VITE_API_URL}/logout`);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      setUser(null);
-      navigate("/sync/login");
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
+  const handleLogout = () => {
+    navigate("/sync/logout");
   };
 
   return (
