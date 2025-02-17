@@ -25,7 +25,9 @@ const Navbar = () => {
         <div className="d-flex align-items-center ms-auto">
           {user ? (
             <>
-              <span className="navbar-text me-3 text-light">{user.nombre} {user.apellidos}</span>
+                <span className="navbar-text me-3 text-light">
+                {user.nombre.charAt(0).toUpperCase() + user.nombre.slice(1)} {user.apellidos.charAt(0).toUpperCase() + user.apellidos.slice(1)}
+                </span>
               <button className="btn btn-outline-light" onClick={handleLogout}>Cerrar sesión</button>
             </>
           ) : (
