@@ -48,7 +48,7 @@ const SideBar = () => {
           <li>
             <NavLink to="/sync/about" className={styles.NavLink}>
               <FontAwesomeIcon icon={faHandshake} />
-              Sobre el proyecto (Developers)
+              Sobre el proyecto <br /> (Developers)
             </NavLink>
           </li>
         </ul>

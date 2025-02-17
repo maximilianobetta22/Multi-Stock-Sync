@@ -26,11 +26,10 @@
   gap: 1.3rem;
   padding: 0.9rem 0.7rem;
   margin: 0 0.5rem;
-  white-space: normal;
+  white-space: nowrap;
   overflow: hidden;
   color: white;
   border-radius: 0.5rem;
-  word-wrap: break-word;
 }
 
 .container .NavLink:hover {
