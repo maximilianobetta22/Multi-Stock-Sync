@@ -44,7 +44,7 @@ const Register: React.FC = () => {
         password,
         password_confirmation: passwordConfirmation
       });
-      navigate('/sync/home');
+      navigate('/sync/login');
     } catch (err) {
       setErrors((err as any).response?.data?.errors || {});
       console.log(err);
