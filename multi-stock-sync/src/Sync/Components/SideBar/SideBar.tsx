@@ -6,7 +6,6 @@ import {
   faBoxOpen,
   faWarehouse,
   faPlug,
-  faBriefcase,
   faFolderOpen,
 } from "@fortawesome/free-solid-svg-icons";
 
@@ -16,37 +15,31 @@ const SideBar = () => {
       <div className={styles.container}>
         <ul className={styles.NavList}>
           <li>
-            <NavLink to={"/sync/menu"} className={styles.NavLink}>
+            <NavLink to={"/sync/home"} className={styles.NavLink}>
               <FontAwesomeIcon icon={faHouse} />
-              Menu
+              Inicio
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/productos" className={styles.NavLink}>
+            <NavLink to="/sync/productos/home" className={styles.NavLink}>
               <FontAwesomeIcon icon={faBoxOpen} />
               Productos
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/bodegas" className={styles.NavLink}>
+            <NavLink to="/sync/bodegas/home" className={styles.NavLink}>
               <FontAwesomeIcon icon={faWarehouse} />
               Bodegas
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/conexiones" className={styles.NavLink}>
+            <NavLink to="/sync/conexiones/home" className={styles.NavLink}>
               <FontAwesomeIcon icon={faPlug} />
               Conexiones a ML
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/companias" className={styles.NavLink}>
-              <FontAwesomeIcon icon={faBriefcase} />
-              Compañías
-            </NavLink>
-          </li>
-          <li>
-            <NavLink to="/sync/reportes" className={styles.NavLink}>
+            <NavLink to="/sync/reportes/home" className={styles.NavLink}>
               <FontAwesomeIcon icon={faFolderOpen} />
               Reportes
             </NavLink>
