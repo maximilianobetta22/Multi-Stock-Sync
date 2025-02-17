@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 import styles from './CompareYearYear.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import jsPDF from 'jspdf';
@@ -32,7 +32,7 @@ const CompareYearYear: React.FC = () => {
         const fetchNickname = async () => {
             setLoading(true);
             try {
-                const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+                const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
                 console.log('Nickname response:', response.data);
                 setNickname(response.data.data.nickname);
             } catch (error) {
@@ -53,7 +53,7 @@ const CompareYearYear: React.FC = () => {
         e.preventDefault();
         setLoading(true);
         try {
-            const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-annual-sales-data/${client_id}`, {
+            const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-annual-sales-data/${client_id}`, {
                 params: { year1, year2 }
             });
             console.log('Comparison response:', response.data);
