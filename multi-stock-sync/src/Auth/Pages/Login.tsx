@@ -11,6 +11,7 @@ export const Login: React.FC = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -55,15 +56,24 @@ export const Login: React.FC = () => {
               </div>
               <div className="mb-3">
                 <label htmlFor="password" className="form-label">Contraseña</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  id="password"
-                  placeholder="Tu contraseña"
-                  value={password}
-                  required
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="input-group">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="form-control"
+                    id="password"
+                    placeholder="Tu contraseña"
+                    value={password}
+                    required
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? "Ocultar" : "Mostrar"}
+                  </button>
+                </div>
               </div>
               {error && <div className="alert alert-danger">{error}</div>}
               <button type="submit" className="btn btn-primary w-100">Iniciar Sesión</button>
