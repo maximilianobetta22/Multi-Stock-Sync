@@ -1,25 +1,19 @@
 import { Link, useNavigate } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useContext } from "react";
 import styles from "./NavbarSync.module.css";
-
-interface User {
-  nombre: string;
-  apellidos: string;
-}
+import { UserContext } from "../../Context/UserContext";
 
 const Navbar = () => {
-  const [user, setUser] = useState<User | null>(null);
+  const userContext = useContext(UserContext);
+  if (!userContext) {
+    throw new Error("UserContext must be used within a UserProvider");
+  }
+  const { user, setUser } = userContext;
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
 
   const handleLogout = () => {
     navigate("/sync/logout");
+    setUser(null);
   };
 
   return (
