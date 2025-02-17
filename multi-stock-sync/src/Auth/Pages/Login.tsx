@@ -66,7 +66,7 @@ export const Login: React.FC = () => {
               {error && <div className="alert alert-danger">{error}</div>}
               <button type="submit" className="btn btn-primary w-100">Iniciar Sesión</button>
               <div className="mt-3">
-                <Link to="/register" className="d-block text-decoration-none text-primary text-center">Registrarse</Link>
+                <Link to="/sync/register" className="d-block text-decoration-none text-primary text-center">Registrarse</Link>
               </div>
             </form>
           </div>
