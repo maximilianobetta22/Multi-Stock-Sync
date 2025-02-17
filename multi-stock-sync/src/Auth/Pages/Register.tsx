@@ -12,13 +12,14 @@ const Register: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrors({});
     try {
       await axios.post(`${process.env.VITE_API_URL}/users`, {
         nombre,
@@ -30,7 +31,7 @@ const Register: React.FC = () => {
       });
       navigate('/sync/home');
     } catch (err) {
-      setError((err as any).response?.data?.message || 'Error en el registro');
+      setErrors((err as any).response?.data?.errors || {});
       console.log(err);
     } finally {
       setLoading(false);
@@ -59,6 +60,7 @@ const Register: React.FC = () => {
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                 />
+                {errors.nombre && <div className="text-danger">{errors.nombre[0]}</div>}
               </div>
               <div className="mb-3">
                 <label htmlFor="apellidos" className="form-label">Apellidos</label>
@@ -70,6 +72,7 @@ const Register: React.FC = () => {
                   value={apellidos}
                   onChange={(e) => setApellidos(e.target.value)}
                 />
+                {errors.apellidos && <div className="text-danger">{errors.apellidos[0]}</div>}
               </div>
               <div className="mb-3">
                 <label htmlFor="telefono" className="form-label">Teléfono</label>
@@ -81,6 +84,7 @@ const Register: React.FC = () => {
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
                 />
+                {errors.telefono && <div className="text-danger">{errors.telefono[0]}</div>}
               </div>
               <div className="mb-3">
                 <label htmlFor="email" className="form-label">Email</label>
@@ -92,6 +96,7 @@ const Register: React.FC = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
+                {errors.email && <div className="text-danger">{errors.email[0]}</div>}
               </div>
               <div className="mb-3">
                 <label htmlFor="password" className="form-label">Contraseña</label>
@@ -103,6 +108,7 @@ const Register: React.FC = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                {errors.password && <div className="text-danger">{errors.password[0]}</div>}
               </div>
               <div className="mb-3">
                 <label htmlFor="passwordConfirmation" className="form-label">Confirmar Contraseña</label>
@@ -114,8 +120,8 @@ const Register: React.FC = () => {
                   value={passwordConfirmation}
                   onChange={(e) => setPasswordConfirmation(e.target.value)}
                 />
+                {errors.password_confirmation && <div className="text-danger">{errors.password_confirmation[0]}</div>}
               </div>
-              {error && <div className="alert alert-danger">{error}</div>}
               <button type="submit" className="btn btn-primary w-100">Registrarse</button>
               <div className="mt-3">
                 <Link to="/sync/login" className="d-block text-decoration-none text-primary text-center">Iniciar Sesión</Link>
