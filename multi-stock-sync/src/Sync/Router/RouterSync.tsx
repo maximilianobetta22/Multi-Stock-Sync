@@ -6,6 +6,7 @@ import RouterConexiones from "../Views/Conexiones/Router/RouterConexiones";
 import RouterReportes from "../Views/Reportes/Router/RouterReportes";
 import Info from "../Views/Info/Info";
 import HomeSync from "../Views/Home/HomeSync";
+import About from "../Views/About/About";
 import { Login } from "../../Auth/Pages";
 import Register from "../../Auth/Pages/Register";
 import Logout from "../../Auth/Pages/Logout";
@@ -25,6 +26,7 @@ function RouterSync() {
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path="/about" element={<About />} />
         <Route path="/*" element={<Navigate to="/sync/home" />} />
       </Routes>
     </LayoutSync>
