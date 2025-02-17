@@ -41,10 +41,10 @@ const Navbar = () => {
           {user ? (
             <>
               <span className="navbar-text me-3 text-light">{user.nombre} {user.apellidos}</span>
-              <button className="btn btn-outline-light" onClick={handleLogout}>Logout</button>
+              <button className="btn btn-outline-light" onClick={handleLogout}>Cerrar sesión</button>
             </>
           ) : (
-            <Link to="/sync/login" className="btn btn-outline-light">Login</Link>
+            <Link to="/sync/login" className="btn btn-outline-light">Iniciar sesión</Link>
           )}
         </div>
       </div>
