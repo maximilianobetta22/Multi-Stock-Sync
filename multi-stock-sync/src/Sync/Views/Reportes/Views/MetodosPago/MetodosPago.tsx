@@ -280,15 +280,13 @@ const MetodosPago: React.FC = () => {
                         key={3}
                       />
                     </ProgressBar>
-
-                    <div className="botones-exportar mt-4 d-flex justify-content-center">
-                      <button
-                        type="button"
-                        className="btn btn-primary mx-3"
-                        onClick={generatePDF}
-                      >
-                        Exportar a PDF
-                      </button>
+                    <button
+                      type="button"
+                      className="btn btn-success mt-3"
+                      onClick={generatePDF}
+                    >
+                      Exportar a PDF
+                    </button>
 
                       <button className="btn btn-success mx-3" onClick={generateExcel}>
                         Exportar a Excel

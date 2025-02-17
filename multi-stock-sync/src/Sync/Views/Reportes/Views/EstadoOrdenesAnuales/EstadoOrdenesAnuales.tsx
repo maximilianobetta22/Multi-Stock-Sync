@@ -10,15 +10,15 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Card, ProgressBar, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useParams } from 'react-router-dom';
-import styles from './EstadosOrdenes.module.css';
-import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import styles from './EstadoOrdenesAnuales.module.css';
+import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
-const EstadosOrdenes: React.FC = () => {
+const EstadosOrdenesAnual: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
     const [loading, setLoading] = useState(false);
     const [showModal, setShowModal] = useState<boolean>(false);
@@ -27,12 +27,16 @@ const EstadosOrdenes: React.FC = () => {
     const [year, setYear] = useState<string>('alloftimes');
     const [selectedYear, setSelectedYear] = useState<string>('alloftimes');
     const [EstadoOrdenes, setEstadoOrdenesData] = useState({
-        paid: 0,
-        pending: 0,
-        canceled: 0
+        statuses: {
+            paid: 0,
+            pending: 0,
+            cancelled: 0
+        },
+        products: []
     });
-    const [filtro, setFiltro] = useState(""); // Estado del filtro
     
+    const [filtro, setFiltro] = useState(""); // Estado del filtro
+
     const productos = EstadoOrdenes?.data?.products || [];
     
     const productosFiltrados = productos.filter((producto) =>
@@ -47,7 +51,11 @@ const EstadosOrdenes: React.FC = () => {
             const result = await response.json();
     
         if (result.status === 'success') {
-            setEstadoOrdenesData(result.data);
+            setEstadoOrdenesData({
+                statuses: result.data.statuses || { paid: 0, pending: 0, cancelled: 0 },
+                products: result.data.products || []
+            });
+            
         } else {
             console.error('Error en la respuesta de la API:', result.message);
         }
@@ -92,7 +100,7 @@ const EstadosOrdenes: React.FC = () => {
     const total =
         (EstadoOrdenes?.statuses?.paid ?? 0) +
         (EstadoOrdenes?.statuses?.pending ?? 0) +
-        (EstadoOrdenes?.statuses?.canceled ?? 0);
+        (EstadoOrdenes?.statuses?.cancelled ?? 0);
 
     const calculatePercentage = (value: number) => {
         return total > 0 ? ((value / total) * 100).toFixed(1) : '0';
@@ -106,10 +114,10 @@ const EstadosOrdenes: React.FC = () => {
                 data: [
                     EstadoOrdenes?.statuses?.paid ?? 0,
                     EstadoOrdenes?.statuses?.pending ?? 0,
-                    EstadoOrdenes?.statuses?.canceled ?? 0,
+                    EstadoOrdenes?.statuses?.cancelled ?? 0,
                 ],
-                backgroundColor: ['#0d6efd', '#ffc107', '#198754'],
-                borderColor: ['#0b5ed7', '#e0a800', '#157347'],
+                backgroundColor: ['#198754', '#ffc107', '#ff0000'],
+                borderColor: ['#157347', '#e0a800', '#c82333'],
                 borderWidth: 1,
             },
         ],
@@ -160,7 +168,7 @@ const EstadosOrdenes: React.FC = () => {
             body: [
                 ["Pagadas", EstadoOrdenes.statuses.paid, `${calculatePercentage(EstadoOrdenes.statuses.paid)}%`],
                 ["Pendientes", EstadoOrdenes.statuses.pending, `${calculatePercentage(EstadoOrdenes.statuses.pending)}%`],
-                ["Canceladas", EstadoOrdenes.statuses.canceled, `${calculatePercentage(EstadoOrdenes.statuses.canceled)}%`],
+                ["Canceladas", EstadoOrdenes.statuses.cancelled, `${calculatePercentage(EstadoOrdenes.statuses.cancelled)}%`],
         ],
     });
     
@@ -194,7 +202,7 @@ const EstadosOrdenes: React.FC = () => {
         const ws = XLSX.utils.json_to_sheet([
             { Metodo: 'Pagadas', Cantidad: EstadoOrdenes.statuses.paid, Porcentaje: `${calculatePercentage(EstadoOrdenes.statuses.paid)}%` },
             { Metodo: 'Pendientes', Cantidad: EstadoOrdenes.statuses.pending, Porcentaje: `${calculatePercentage(EstadoOrdenes.statuses.pending)}%` },
-            { Metodo: 'Canceladas', Cantidad: EstadoOrdenes.statuses.canceled, Porcentaje: `${calculatePercentage(EstadoOrdenes.statuses.canceled)}%` },
+            { Metodo: 'Canceladas', Cantidad: EstadoOrdenes.statuses.cancelled, Porcentaje: `${calculatePercentage(EstadoOrdenes.statuses.cancelled)}%` },
         ]);
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, 'MetodosPago');
@@ -211,7 +219,7 @@ const EstadosOrdenes: React.FC = () => {
         <>
             <div className={`container ${styles.container}`}>
                 <h1 className={`text-center mb-4`}>Estado De las Ordenes</h1>
-                <h5 className="text-center text-muted mb-5">Distribución de los Estados de las ordenes del cliente</h5>
+                <h5 className="text-center text-muted mb-5">Distribución de los Estados de las ordenes del cliente En todo el Año</h5>
                 <div className="mb-4">
                     <label htmlFor="yearSelect" className="form-label">Seleccione el Año:</label>
                     <select id="yearSelect" className="form-select" value={year} onChange={(e) => setYear(e.target.value)}>
@@ -235,11 +243,11 @@ const EstadosOrdenes: React.FC = () => {
                             </div>
                             </div>
                             <div className="col-md-6">
-                            <h4 className={`text-center mb-3 ${styles.h4}`}>Resumen</h4>
+                            <h4 className={`text-center mb-3 ${styles.h4}`}>Resumen Estado de Ordenes Anual</h4>
                             <ul className="list-group mb-4">
                                 <li className="list-group-item d-flex justify-content-between align-items-center">
                                     Pedidos Pagados
-                                <span className="badge bg-primary rounded-pill">
+                                <span className="badge bg-success rounded-pill">
                                     {calculatePercentage(EstadoOrdenes.statuses.paid)}% ({EstadoOrdenes.statuses.paid})
                                 </span>
                                 </li>
@@ -251,49 +259,49 @@ const EstadosOrdenes: React.FC = () => {
                                 </li>
                                 <li className="list-group-item d-flex justify-content-between align-items-center">
                                     Pedidos Cancelados
-                                    <span className="badge bg-success rounded-pill">
-                                    {calculatePercentage(EstadoOrdenes.statuses.canceled)}% ({EstadoOrdenes.statuses.canceled})
+                                    <span className="badge bg-danger rounded-pill">
+                                    {calculatePercentage(EstadoOrdenes.statuses.cancelled)}% ({EstadoOrdenes.statuses.cancelled})
                                     </span>
                                 </li>
                                     </ul>
                                     <h4 className={`text-center mb-3 ${styles.h4}`}>Distribución</h4>
                                     <ProgressBar className={styles.progressBar}>
-                                        <ProgressBar
-                                            now={parseFloat(calculatePercentage(EstadoOrdenes.statuses.paid))}
-                                            label={
-                                            parseFloat(calculatePercentage(EstadoOrdenes.paid)) > 5
-                                                ? `Dinero (${calculatePercentage(EstadoOrdenes.paid)}%)`
+                                    <ProgressBar
+                                        now={parseFloat(calculatePercentage(EstadoOrdenes.statuses.paid))}
+                                        label={
+                                            parseFloat(calculatePercentage(EstadoOrdenes.statuses.paid)) > 5
+                                                ? `Pagadas (${calculatePercentage(EstadoOrdenes.statuses.paid)}%)`
                                                 : ''
-                                            }
-                                            variant="primary"
-                                            key={1}
-                                        />
-                                        <ProgressBar
-                                            now={parseFloat(calculatePercentage(EstadoOrdenes.statuses.canceled))}
-                                            label={
-                                            parseFloat(calculatePercentage(EstadoOrdenes.pending)) > 5
-                                                ? `Débito (${calculatePercentage(EstadoOrdenes.pending)}%)`
+                                        }
+                                        variant="success"
+                                        key={1}
+                                    />
+                                    <ProgressBar
+                                        now={parseFloat(calculatePercentage(EstadoOrdenes.statuses.pending))}
+                                        label={
+                                            parseFloat(calculatePercentage(EstadoOrdenes.statuses.pending)) > 5
+                                                ? `Pendientes (${calculatePercentage(EstadoOrdenes.statuses.pending)}%)`
                                                 : ''
-                                            }
-                                            variant="warning"
-                                            key={2}
-                                        />
-                                        <ProgressBar
-                                            now={parseFloat(calculatePercentage(EstadoOrdenes.canceled))}
-                                            label={
-                                            parseFloat(calculatePercentage(EstadoOrdenes.canceled)) > 5
-                                                ? `Crédito (${calculatePercentage(EstadoOrdenes.canceled)}%)`
+                                        }
+                                        variant="warning"
+                                        key={2}
+                                    />
+                                    <ProgressBar
+                                        now={parseFloat(calculatePercentage(EstadoOrdenes.statuses.cancelled))}
+                                        label={
+                                            parseFloat(calculatePercentage(EstadoOrdenes.statuses.cancelled)) > 5
+                                                ? `Canceladas (${calculatePercentage(EstadoOrdenes.statuses.cancelled)}%)`
                                                 : ''
-                                                }
-                                                variant="success"
-                                                key={3}
-                                                />
+                                        }
+                                        variant="danger"
+                                        key={3}
+                                    />
                                     </ProgressBar>
                                     <br />
-                                        <button type="button" className="btn btn-success mx-2" onClick={generatePDF}>
+                                        <button type="button" className="btn btn-primary mx-2" onClick={generatePDF}>
                                             Exportar a PDF
                                         </button>
-                                        <button className='btn btn-success mx-2' onClick={generateExcel}>
+                                        <button className='btn btn-primary mx-2' onClick={generateExcel}>
                                             Exportar a Excel
                                         </button>
                                 </div>
@@ -323,36 +331,64 @@ const EstadosOrdenes: React.FC = () => {
                             </button>
                             </Modal.Footer>
                         </Modal>
-                        <div>
-                            <div className="container mt-4">
-                            <h4 className="text-center mb-3">Productos Relacionados</h4>
-
+                        <br />
+                        <div className="container mt-5">
+                        <h4 className="text-center mb-4">Productos Relacionados</h4>
+                        <div className="table-responsive w-80 mx-auto">
                             <table className="table table-striped">
                                 <thead className="thead-dark">
-                                <tr>
-                                    <th scope="col">#</th>
-                                    <th scope="col">Producto</th>
-                                    <th scope="col">Atributos</th>
-                                </tr>
+                                    <tr>
+                                        <th scope="col">ID</th>
+                                        <th scope="col">Producto</th>
+                                        <th scope="col">Categoría</th>
+                                        <th scope="col">Variación ID</th>
+                                        <th scope="col">Seller Custom Field</th>
+                                        <th scope="col">Precio Global</th>
+                                        <th scope="col">Atributos</th>
+                                        <th scope="col">Garantía</th>
+                                        <th scope="col">Estado</th>
+                                    </tr>
                                 </thead>
                                 <tbody>
-                                {EstadoOrdenes.products.map((product, index) => (
-                                    <tr key={product.id}>
-                                    <th scope="row">{index + 1}</th>
-                                    <td>{product.title}</td>
-                                    <td>
-                                        {product.variation_attributes
-                                        .map((attr) => `${attr.name}: ${attr.value_name}`)
-                                        .join(", ")}
-                                    </td>
-                                    </tr>
-                                ))}
+                                    {EstadoOrdenes.products.length > 0 ? (
+                                        EstadoOrdenes.products.map((product, index) => {
+                                            let estado = index < EstadoOrdenes.statuses.paid
+                                                ? "Pagado"
+                                                : index < EstadoOrdenes.statuses.paid + EstadoOrdenes.statuses.pending
+                                                    ? "Pendiente"
+                                                    : "Cancelado";
+
+                                            return (
+                                                <tr key={product.id}>
+                                                    <td>{product.id}</td>
+                                                    <td>{product.title}</td>
+                                                    <td>{product.category_id}</td>
+                                                    <td>{product.variation_id}</td>
+                                                    <td>{product.seller_custom_field || "N/A"}</td>
+                                                    <td>{product.global_price !== null ? `$${product.global_price}` : "N/A"}</td>
+                                                    <td>
+                                                        {product.variation_attributes.map(attr => `${attr.name}: ${attr.value_name}`).join(", ")}
+                                                    </td>
+                                                    <td>{product.warranty}</td>
+                                                    <td>
+                                                        <span className={`badge ${estado === "Pagado" ? "bg-success" : estado === "Pendiente" ? "bg-warning" : "bg-danger"}`}>
+                                                            {estado}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    ) : (
+                                        <tr>
+                                            <td colSpan="9" className="text-center">No hay productos disponibles.</td>
+                                        </tr>
+                                    )}
                                 </tbody>
                             </table>
-                            </div>
                         </div>
+                    </div>
         </>
     );
 };
 
-export default EstadosOrdenes;
+export default EstadosOrdenesAnual;

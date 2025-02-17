@@ -13,7 +13,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from './VentasPorMes.module.css';
-import { LoadingDinamico } from '../../../../../../components/LoadingDinamico/LoadingDinamico';
+import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { useParams } from 'react-router-dom';
 import { Modal, Button, Form, Row, Col, Table } from 'react-bootstrap';
@@ -41,8 +41,10 @@ interface Venta {
 
 const VentasPorMes: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-  const [yearSeleccionado, setYearSeleccionado] = useState<number>(2025);
-  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(1);
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  const [yearSeleccionado, setYearSeleccionado] = useState<number>(currentYear);
+  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(currentMonth);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -101,6 +103,10 @@ const VentasPorMes: React.FC = () => {
 
   const totalVentas = Array.isArray(ventas) ? ventas.reduce((acc, venta) => acc + venta.price * venta.quantity, 0) : 0;
 
+  const formatCLP = (value: number) => {
+    return `$ ${new Intl.NumberFormat('es-CL', { style: 'decimal', minimumFractionDigits: 0 }).format(value)}`;
+  };
+
   const chartData = {
     labels: Array.isArray(ventas) ? ventas.map(venta => venta.title) : [],
     datasets: [
@@ -113,7 +119,7 @@ const VentasPorMes: React.FC = () => {
         datalabels: {
           color: 'white',
           formatter: (value: number) => {
-            return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(value)} CLP`;
+            return formatCLP(value);
           }
         }
       }
@@ -130,7 +136,7 @@ const VentasPorMes: React.FC = () => {
       },
       title: {
         display: true,
-        text: `Ventas Totales Por Mes (${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}): $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`,
+        text: `Ventas Totales Por Mes (${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}): ${formatCLP(totalVentas)}`,
         font: {
           size: 18
         }
@@ -144,7 +150,7 @@ const VentasPorMes: React.FC = () => {
       tooltip: {
         callbacks: {
           label: function (context: any) {
-            return `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(context.raw)} CLP`;
+            return formatCLP(context.raw);
           }
         }
       }
@@ -172,7 +178,7 @@ const VentasPorMes: React.FC = () => {
     }
 
     if (totalVentas !== null) {
-      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
+      doc.text(`Total de Ventas: ${formatCLP(totalVentas)}`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -183,7 +189,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        formatCLP(venta.price)
       ]) : [],
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -219,7 +225,7 @@ const VentasPorMes: React.FC = () => {
     }
 
     if (totalVentas !== null) {
-      doc.text(`Total de Ventas: $ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(totalVentas)} CLP`, 14, 60);
+      doc.text(`Total de Ventas: ${formatCLP(totalVentas)}`, 14, 60);
       doc.setFontSize(12);
       doc.setTextColor(34, 139, 34);
     }
@@ -230,7 +236,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        formatCLP(venta.price)
       ]) : [],
       startY: 70,
       theme: 'grid', // Esto aplica un estilo de cuadrícula
@@ -252,7 +258,7 @@ const VentasPorMes: React.FC = () => {
         venta.order_id.toString(), // Convert ID to string
         venta.title,
         venta.quantity,
-        `$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`
+        formatCLP(venta.price)
       ]) : []
     ];
 
@@ -277,109 +283,113 @@ const VentasPorMes: React.FC = () => {
   return (
     <div className={styles.container}>
       {toastMessage && <ToastComponent message={toastMessage} type={toastType} onClose={() => setToastMessage(null)} />}
-      {!loading && (
-        <section className={`${styles.VentasPorMes} d-flex flex-column align-items-center`}>
-          <div className="w-75 rounded p-3 shadow" style={{ backgroundColor: '#f8f9fa', borderRadius: '15px' }}>
-            <h1 className="text-center">Ventas por Mes</h1>
-            <h5 className="text-center">Usuario: {userName}</h5>
-            <Form className="mb-4">
-              <Row className="d-flex justify-content-center">
-                <Col xs="auto">
-                  <Form.Group controlId="formYear">
-                    <Form.Label>Año</Form.Label>
-                    <Form.Control
-                      as="select"
-                      value={yearSeleccionado}
-                      onChange={(e) => setYearSeleccionado(Number(e.target.value))}
-                      className="w-auto"
-                    >
-                      {[2023, 2024, 2025, 2026].map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
-                <Col xs="auto">
-                  <Form.Group controlId="formMonth">
-                    <Form.Label>Mes</Form.Label>
-                    <Form.Control
-                      as="select"
-                      value={monthSeleccionado}
-                      onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
-                      className="w-auto"
-                    >
-                      {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                        <option key={month} value={month}>
-                          {month.toString().padStart(2, '0')}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Form.Group>
-                </Col>
-              </Row>
-            </Form>
-            <div className="chart-container" style={{ position: 'relative', height: '66vh', width: '100%' }}>
-              <Bar data={chartData} options={options} />
-            </div>
-            <div className="d-flex justify-content-center mt-3">
-              <Button variant="primary" onClick={() => setShowModal(true)} className="mr-2 mx-2">Mostrar Detalles</Button>
-              <Button variant="primary" onClick={generatePDF} className="mr-2 mx-2">Generar Vista Previa PDF</Button>
-              <Button variant="secondary" onClick={generateExcel}>Guardar Reporte Excel</Button>
-            </div>
-          </div>
-        </section>
+      {loading ? (
+      <div className="d-flex justify-content-center align-items-center" style={{ height: '100vh' }}>
+        <LoadingDinamico variant={'container'} />
+      </div>
+      ) : (
+      <section className={`${styles.VentasPorMes} d-flex flex-column align-items-center`}>
+        <div className="w-75 rounded p-3 shadow" style={{ backgroundColor: '#f8f9fa', borderRadius: '15px' }}>
+        <h1 className="text-center">Ventas por Mes</h1>
+        <h5 className="text-center">Usuario: {userName}</h5>
+        <Form className="mb-4">
+          <Row className="d-flex justify-content-center">
+          <Col xs="auto">
+            <Form.Group controlId="formYear">
+            <Form.Label>Año</Form.Label>
+            <Form.Control
+              as="select"
+              value={yearSeleccionado}
+              onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+              className="w-auto"
+            >
+              {[2023, 2024, 2025, 2026].map((year) => (
+              <option key={year} value={year}>
+                {year}
+              </option>
+              ))}
+            </Form.Control>
+            </Form.Group>
+          </Col>
+          <Col xs="auto">
+            <Form.Group controlId="formMonth">
+            <Form.Label>Mes</Form.Label>
+            <Form.Control
+              as="select"
+              value={monthSeleccionado}
+              onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
+              className="w-auto"
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+              <option key={month} value={month}>
+                {month.toString().padStart(2, '0')}
+              </option>
+              ))}
+            </Form.Control>
+            </Form.Group>
+          </Col>
+          </Row>
+        </Form>
+        <div className="chart-container" style={{ position: 'relative', height: '66vh', width: '100%' }}>
+          <Bar data={chartData} options={options} />
+        </div>
+        <div className="d-flex justify-content-center mt-3">
+          <Button variant="primary" onClick={() => setShowModal(true)} className="mr-2 mx-3">Mostrar Detalles</Button>
+          <Button variant="primary" onClick={generatePDF} className="mr-2 mx-3">Generar Vista Previa PDF</Button>
+          <Button variant="secondary" onClick={generateExcel}>Guardar Reporte Excel</Button>
+        </div>
+        </div>
+      </section>
       )}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Detalles de Ventas</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <Table striped bordered hover>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Nombre del Producto</th>
-                <th>Cantidad Vendida</th>
-                <th>Valor del Producto</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Array.isArray(ventas) && ventas.length > 0 ? (
-                ventas.map((venta) => (
-                  <tr key={venta.order_id}>
-                    <td>{venta.order_id}</td>
-                    <td>{venta.title}</td>
-                    <td>{venta.quantity}</td>
-                    <td>{`$ ${new Intl.NumberFormat('en-US', { style: 'decimal', minimumFractionDigits: 0 }).format(venta.price)} CLP`}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="text-muted">No hay ventas disponibles.</td>
-                </tr>
-              )}
-            </tbody>
-          </Table>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={() => setShowModal(false)}>Cerrar</Button>
-        </Modal.Footer>
+      <Modal.Header closeButton>
+        <Modal.Title>Detalles de Ventas</Modal.Title>
+      </Modal.Header>
+      <Modal.Body>
+        <Table striped bordered hover>
+        <thead>
+          <tr>
+          <th>ID</th>
+          <th>Nombre del Producto</th>
+          <th>Cantidad Vendida</th>
+          <th>Valor del Producto</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Array.isArray(ventas) && ventas.length > 0 ? (
+          ventas.map((venta) => (
+            <tr key={venta.order_id}>
+            <td>{venta.order_id}</td>
+            <td>{venta.title}</td>
+            <td>{venta.quantity}</td>
+            <td>{formatCLP(venta.price)}</td>
+            </tr>
+          ))
+          ) : (
+          <tr>
+            <td colSpan={4} className="text-muted">No hay ventas disponibles.</td>
+          </tr>
+          )}
+        </tbody>
+        </Table>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button variant="secondary" onClick={() => setShowModal(false)}>Cerrar</Button>
+      </Modal.Footer>
       </Modal>
       {pdfDataUrl && (
-        <Modal show={true} onHide={() => setPdfDataUrl(null)} size="lg">
-          <Modal.Header closeButton>
-            <Modal.Title>Vista Previa del PDF</Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF"></iframe>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
-            <Button variant="secondary" onClick={() => setPdfDataUrl(null)}>Cerrar</Button>
-          </Modal.Footer>
-        </Modal>
+      <Modal show={true} onHide={() => setPdfDataUrl(null)} size="lg">
+        <Modal.Header closeButton>
+        <Modal.Title>Vista Previa del PDF</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+        <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF"></iframe>
+        </Modal.Body>
+        <Modal.Footer>
+        <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+        <Button variant="secondary" onClick={() => setPdfDataUrl(null)}>Cerrar</Button>
+        </Modal.Footer>
+      </Modal>
       )}
     </div>
   );

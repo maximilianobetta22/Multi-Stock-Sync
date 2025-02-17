@@ -193,7 +193,8 @@ const EstadosOrdenes: React.FC = () => {
         let y = 20;
 
         data.products.forEach((product: any, index: number) => {
-            if (y > pageHeight - 20) {
+            if (y > pageHeight - 30) { // Adjusted to leave space for the footer
+                doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
                 doc.addPage();
                 y = 20;
             }
@@ -225,19 +226,63 @@ const EstadosOrdenes: React.FC = () => {
             y += 6;
         });
 
+        // Add footer to the last page
+        doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+
         const pdfData = doc.output('datauristring');
         setPdfDataUrl(pdfData);
         setShowModal(true);
     };
 
-    function savePDF(): void {
-        if (pdfDataUrl) {
-            const link = document.createElement('a');
-            link.href = pdfDataUrl;
-            link.download = `DetallesProductos_${client_id}_${year}_${month}.pdf`;
-            link.click();
-        }
-    }
+    const savePDF = () => {
+        const doc = new jsPDF();
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(18);
+        doc.text('Detalles de Productos', 10, 10);
+
+        const pageHeight = doc.internal.pageSize.height;
+        let y = 20;
+
+        data.products.forEach((product: any, index: number) => {
+            if (y > pageHeight - 30) { // Adjusted to leave space for the footer
+                doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+                doc.addPage();
+                y = 20;
+            }
+            doc.setFontSize(12);
+            doc.text(`Producto ${index + 1}`, 10, y);
+            y += 6;
+            doc.setFontSize(10);
+            doc.text(`ID: ${product.id}`, 10, y);
+            y += 4;
+            doc.text(`Título: ${product.title}`, 10, y);
+            y += 4;
+            doc.text(`ID de Categoría: ${product.category_id}`, 10, y);
+            y += 4;
+            doc.text(`ID de Variación: ${product.variation_id}`, 10, y);
+            y += 4;
+            doc.text(`Campo Personalizado del Vendedor: ${product.seller_custom_field}`, 10, y);
+            y += 4;
+            doc.text(`Precio Global: ${product.global_price}`, 10, y);
+            y += 4;
+            doc.text(`Peso Neto: ${product.net_weight}`, 10, y);
+            y += 4;
+            doc.text(`Atributos de Variación: ${product.variation_attributes.map((attr: any) => `${attr.name}: ${attr.value_name}`).join(', ')}`, 10, y);
+            y += 4;
+            doc.text(`Garantía: ${product.warranty}`, 10, y);
+            y += 4;
+            doc.text(`Condición: ${product.condition}`, 10, y);
+            y += 4;
+            doc.text(`SKU: ${product.seller_sku}`, 10, y);
+            y += 6;
+        });
+
+        // Add footer to the last page
+        doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+
+        const pdfFilename = `DetallesProductos_${client_id}_${year}_${month}.pdf`;
+        doc.save(pdfFilename);
+    };
 
     function saveDetailsPDF(): void {
         if (detailsPdfDataUrl) {
