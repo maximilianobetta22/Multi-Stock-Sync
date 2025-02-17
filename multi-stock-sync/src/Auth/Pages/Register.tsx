@@ -21,6 +21,8 @@ const Register: React.FC = () => {
   const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] = useState(false);
   const navigate = useNavigate();
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,28 +123,46 @@ const Register: React.FC = () => {
               </div>
               <div className="mb-3">
                 <label htmlFor="password" className="form-label">Contraseña</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  id="password"
-                  placeholder="Tu contraseña"
-                  value={password}
-                  required
-                  onChange={(e) => setPassword(e.target.value)}
-                />
+                <div className="input-group">
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    className="form-control"
+                    id="password"
+                    placeholder="Tu contraseña"
+                    value={password}
+                    required
+                    onChange={(e) => setPassword(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? "Ocultar" : "Mostrar"}
+                  </button>
+                </div>
                 {errors.password && <div className="text-danger">{errors.password[0]}</div>}
               </div>
               <div className="mb-3">
                 <label htmlFor="passwordConfirmation" className="form-label">Confirmar Contraseña</label>
-                <input
-                  type="password"
-                  className="form-control"
-                  id="passwordConfirmation"
-                  placeholder="Confirma tu contraseña"
-                  value={passwordConfirmation}
-                  required
-                  onChange={(e) => setPasswordConfirmation(e.target.value)}
-                />
+                <div className="input-group">
+                  <input
+                    type={showPasswordConfirmation ? "text" : "password"}
+                    className="form-control"
+                    id="passwordConfirmation"
+                    placeholder="Confirma tu contraseña"
+                    value={passwordConfirmation}
+                    required
+                    onChange={(e) => setPasswordConfirmation(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={() => setShowPasswordConfirmation(!showPasswordConfirmation)}
+                  >
+                    {showPasswordConfirmation ? "Ocultar" : "Mostrar"}
+                  </button>
+                </div>
                 {errors.password_confirmation && <div className="text-danger">{errors.password_confirmation[0]}</div>}
               </div>
               <button type="submit" className="btn btn-primary w-100">Registrarse</button>
