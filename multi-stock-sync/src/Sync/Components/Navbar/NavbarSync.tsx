@@ -35,7 +35,10 @@ const Navbar = () => {
               <button className="btn btn-outline-light" onClick={handleLogout}>Cerrar sesión</button>
             </>
           ) : (
-            <Link to="/sync/login" className="btn btn-outline-light">Iniciar sesión</Link>
+            <div>
+              <Link to="/sync/login" className="btn btn-outline-light mx-2">Iniciar sesión</Link>
+              <Link to="/sync/register" className="btn btn-outline-light">Registrarse</Link>
+            </div>
           )}
         </div>
       </div>
