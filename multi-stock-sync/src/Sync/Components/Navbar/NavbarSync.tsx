@@ -1,6 +1,5 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
-import axiosInstance from "../../../axiosConfig";
 import styles from "./NavbarSync.module.css";
 
 interface User {
@@ -19,16 +18,8 @@ const Navbar = () => {
     }
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await axiosInstance.post(`${import.meta.env.VITE_API_URL}/logout`);
-      localStorage.removeItem("user");
-      localStorage.removeItem("token");
-      setUser(null);
-      navigate("/sync/login");
-    } catch (error) {
-      console.error("Error during logout:", error);
-    }
+  const handleLogout = () => {
+    navigate("/sync/logout");
   };
 
   return (
@@ -41,10 +32,13 @@ const Navbar = () => {
           {user ? (
             <>
               <span className="navbar-text me-3 text-light">{user.nombre} {user.apellidos}</span>
-              <button className="btn btn-outline-light" onClick={handleLogout}>Logout</button>
+              <button className="btn btn-outline-light" onClick={handleLogout}>Cerrar sesión</button>
             </>
           ) : (
-            <Link to="/sync/login" className="btn btn-outline-light">Login</Link>
+            <div>
+              <Link to="/sync/login" className="btn btn-outline-light mx-2">Iniciar sesión</Link>
+              <Link to="/sync/register" className="btn btn-outline-light">Registrarse</Link>
+            </div>
           )}
         </div>
       </div>
