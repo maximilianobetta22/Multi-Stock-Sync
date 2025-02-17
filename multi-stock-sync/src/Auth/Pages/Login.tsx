@@ -49,6 +49,7 @@ export const Login: React.FC = () => {
                   id="username"
                   placeholder="Ejemplo: luismiguel@email.com"
                   value={email}
+                  required
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
@@ -60,6 +61,7 @@ export const Login: React.FC = () => {
                   id="password"
                   placeholder="Tu contraseña"
                   value={password}
+                  required
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
