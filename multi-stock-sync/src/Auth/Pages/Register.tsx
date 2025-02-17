@@ -6,8 +6,12 @@ import styles from '../Css/Register.module.css';
 import { LoadingDinamico } from '../../components/LoadingDinamico/LoadingDinamico';
 
 const Register: React.FC = () => {
-  const [username, setUsername] = useState('');
+  const [nombre, setNombre] = useState('');
+  const [apellidos, setApellidos] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [passwordConfirmation, setPasswordConfirmation] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,9 +20,14 @@ const Register: React.FC = () => {
     e.preventDefault();
     setLoading(true);
     try {
-      const response = await axios.post(`${process.env.VITE_API_URL}/register`, { username, password });
-      localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      await axios.post(`${process.env.VITE_API_URL}/users`, {
+        nombre,
+        apellidos,
+        telefono,
+        email,
+        password,
+        password_confirmation: passwordConfirmation
+      });
       navigate('/sync/home');
     } catch (err) {
       setError((err as any).response?.data?.message || 'Error en el registro');
@@ -32,7 +41,7 @@ const Register: React.FC = () => {
     <>
       {loading && <LoadingDinamico variant="container" />}
       {!loading && (
-        <div className={`${styles.registerContainer}`}>
+        <div className={`${styles.registerContainer} mt-5 mb-5`}>
           <div className={`${styles.registerBox__registerContainer}`}>
             <header className={`${styles.header__registerBox}`}>
               <h1 className={`${styles.title__header}`}>Multi-Stock-Sync</h1>
@@ -41,14 +50,47 @@ const Register: React.FC = () => {
             <hr/>
             <form className="form" onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="username" className="form-label">Nombre de Usuario</label>
+                <label htmlFor="nombre" className="form-label">Nombre</label>
                 <input
                   type="text"
                   className="form-control"
-                  id="username"
-                  placeholder="Ejemplo: luismiguel@email.com"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
+                  id="nombre"
+                  placeholder="Ejemplo: Arthur"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="apellidos" className="form-label">Apellidos</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="apellidos"
+                  placeholder="Ejemplo: Morgan 🤠"
+                  value={apellidos}
+                  onChange={(e) => setApellidos(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="telefono" className="form-label">Teléfono</label>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="telefono"
+                  placeholder="Ejemplo: +56999999999"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="email" className="form-label">Email</label>
+                <input
+                  type="email"
+                  className="form-control"
+                  id="email"
+                  placeholder="Ejemplo: thisismyemail@email.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
               <div className="mb-3">
@@ -60,6 +102,17 @@ const Register: React.FC = () => {
                   placeholder="Tu contraseña"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                />
+              </div>
+              <div className="mb-3">
+                <label htmlFor="passwordConfirmation" className="form-label">Confirmar Contraseña</label>
+                <input
+                  type="password"
+                  className="form-control"
+                  id="passwordConfirmation"
+                  placeholder="Confirma tu contraseña"
+                  value={passwordConfirmation}
+                  onChange={(e) => setPasswordConfirmation(e.target.value)}
                 />
               </div>
               {error && <div className="alert alert-danger">{error}</div>}
