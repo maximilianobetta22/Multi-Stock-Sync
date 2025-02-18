@@ -16,7 +16,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
-import axios from 'axios';
+import axiosInstance from '../../../../../axiosConfig';
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 const MetodosPago: React.FC = () => {
@@ -36,7 +36,7 @@ const MetodosPago: React.FC = () => {
 
   const fetchPaymentData = async (selectedYear: string) => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/top-payment-methods/${client_id}?year=${selectedYear}`);
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/top-payment-methods/${client_id}?year=${selectedYear}`);
       const result = response.data;
 
       if (result.status === 'success') {
@@ -53,7 +53,7 @@ const MetodosPago: React.FC = () => {
 
   const fetchUserData = async () => {
     try {
-      const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
       const result = response.data;
 
       if (result.status === 'success') {
