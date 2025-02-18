@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styles from './CrearProducto.module.css';
 
 const CrearProducto: React.FC = () => {
@@ -119,7 +120,6 @@ const CrearProducto: React.FC = () => {
         }
     };
 
-
     return (
         <div className={styles.crearProducto}>
             <h1>Crear Producto</h1>
@@ -185,11 +185,44 @@ const CrearProducto: React.FC = () => {
             <button onClick={crearProducto} className="btn btn-primary">Crear Producto</button>
 
             {categoriaSeleccionada && (
-                <div>
-                    <h3>Producto generado:</h3>
-                    <pre>{JSON.stringify(producto, null, 2)}</pre>
+    <div className="mt-4">
+        <h3>Producto generado:</h3>
+        <div className="card" style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
+            <div className="card-body">
+                {/* Add text-align: left to the container */}
+                <div className="container" style={{ textAlign: 'left', padding: 0, margin: 0 }}>
+                    {/* Ensure the table is aligned to the left */}
+                    <table className="table table-sm table-bordered table-striped w-100" style={{ margin: 0 }}>
+                        <tbody>
+                            <tr>
+                                <th>Categoría</th>
+                                <td>{categorias.find(c => c.id === producto.categoria)?.name}</td>
+                            </tr>
+                            <tr>
+                                <th>Título</th>
+                                <td>{producto.titulo}</td>
+                            </tr>
+                            {Object.keys(producto).map((key) => (
+                                key !== 'titulo' && key !== 'categoria' && (
+                                    <tr key={key}>
+                                        <th>{atributos.find(attr => attr.id === key)?.name || key}</th>
+                                        <td>{atributos.find(attr => attr.id === key)?.values.find((val: any) => val.id === producto[key])?.name || producto[key]}</td>
+                                    </tr>
+                                )
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
-            )}
+            </div>
+        </div>
+    </div>
+)}
+
+            <div className="mt-4">
+                <Link to="/sync/productos/home">
+                    <button className="btn btn-secondary">Volver a HomeProductos</button>
+                </Link>
+            </div>
         </div>
     );
 };

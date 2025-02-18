@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../../../../axiosConfig'; // Importa la configuración de Axios
-import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl } from 'react-bootstrap';
+import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl, Card } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
+import { Link } from 'react-router-dom';
 
 interface Connection {
   client_id: string;
@@ -312,7 +313,36 @@ const HomeProducto = () => {
           <section>
             <Row className="mb-3 mt-3">
               <Col>
-                <h1>Lista de productos</h1>
+                <h1>Productos</h1>
+              </Col>
+            </Row>
+            <Row className="mb-4">
+              <Col md={6}>
+                <Card className="shadow-sm mb-4">
+                  <Card.Body className="text-center">
+                    <Card.Title>Crear Productos</Card.Title>
+                    <Card.Text>Agregar nuevos productos al catálogo.</Card.Text>
+                    <Link to={`/sync/productos/crear?client=${selectedConnection}`}>
+                      <Button variant="primary">Ir a Crear Productos</Button>
+                    </Link>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={6}>
+                <Card className="shadow-sm mb-4">
+                  <Card.Body className="text-center">
+                    <Card.Title>Editar Productos</Card.Title>
+                    <Card.Text>Editar los detalles de los productos existentes.</Card.Text>
+                    <Link to={`/sync/productos/editar?client=${selectedConnection}`}>
+                      <Button variant="primary">Ir a Editar Productos</Button>
+                    </Link>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+            <Row className="mb-3 mt-3">
+              <Col>
+                <h2 className="text-center">Lista de productos</h2>
               </Col>
             </Row>
             <Row className="mb-3">
