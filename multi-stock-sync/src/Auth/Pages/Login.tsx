@@ -1,18 +1,23 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import styles from '../Css/Login.module.css';
 import { LoadingDinamico } from '../../components/LoadingDinamico/LoadingDinamico';
+import { UserContext } from '../../Sync/Context/UserContext';
 
 export const Login: React.FC = () => {
-
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const userContext = useContext(UserContext);
+  if (!userContext) {
+    throw new Error('UserContext must be used within a UserProvider');
+  }
+  const { setUser } = userContext;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -21,6 +26,7 @@ export const Login: React.FC = () => {
       const response = await axios.post(`${process.env.VITE_API_URL}/login`, { email, password });
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
+      setUser(response.data.user);
       navigate('/sync/home');
     } catch (err) {
       setError((err as any).response?.data?.message || 'Credenciales inválidas');
