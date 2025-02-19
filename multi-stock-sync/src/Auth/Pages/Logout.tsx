@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "../../axiosConfig";
+import { LoadingDinamico } from "../../components/LoadingDinamico/LoadingDinamico";
+
 
 const Logout = () => {
   const navigate = useNavigate();
@@ -8,10 +10,10 @@ const Logout = () => {
   useEffect(() => {
     const logout = async () => {
       try {
-        await axios.post(`${import.meta.env.VITE_API_URL}/logout`);
+        await axiosInstance.post(`${import.meta.env.VITE_API_URL}/logout`);
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/sync/login");
       } catch (error) {
         console.error("Error during logout:", error);
       }
@@ -20,7 +22,7 @@ const Logout = () => {
     logout();
   }, [navigate]);
 
-  return null;
+  return <LoadingDinamico  variant="container"/>;
 };
 
 export default Logout;
