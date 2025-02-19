@@ -89,3 +89,10 @@
 22. **REVISAR LOS VIDEOS DE BSALE**
    - ❌ No implementado
    - ✔ Implementado
+23. **Mejorar los visuales en productos**
+     -Agregar un scrollbar dentro de la tabla de productos
+     -Arreglar el ancho de la tabla
+     -Agregar las paginas para recorrer los productos de la tabla
+     - ❌ No implementado
+      - ✔ Implementado
+     
