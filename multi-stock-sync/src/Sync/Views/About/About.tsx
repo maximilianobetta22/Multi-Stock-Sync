@@ -85,6 +85,13 @@ const About: React.FC = () => {
           </div>
         ))}
       </div>
+      <div className="text-center mt-5 mb-5">
+        <p className="text-muted">
+          A todos los miembros presentes y anteriores, gracias por su arduo trabajo y dedicación. 
+          ¡Juntos hemos logrado grandes cosas y seguiremos alcanzando nuevas metas!
+        </p>
+        <strong>-Markus</strong>
+      </div>
     </div>
   );
 };
