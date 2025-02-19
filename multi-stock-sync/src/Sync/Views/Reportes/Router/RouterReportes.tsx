@@ -17,6 +17,7 @@ import CompareMonthMonth from "../Views/CompareMesMes/CompareMonthMonth";
 import CompareYearYear from "../Views/CompareYearYear/CompareYearYear";
 import VentasPorYear from "../Views/VentasPorYear/VentasPorYear";
 import DetalleReembolso from "../Views/DevolucionesReembolsos/DetalleReembolso/DetalleReembolso";
+import Preguntas from "../Views/Preguntas/Preguntas";
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
 
 
@@ -36,6 +37,7 @@ function RouterReportes() {
             <Route path="devoluciones-reembolsos/:client_id/detalle/:refund_id" element={<DetalleReembolso />} />
             <Route path="productos-mas-vendidos/:client_id" element={<ProductosMasVendidos />} />
             <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
+            <Route path="preguntas" element={<Preguntas />} />
             <Route path="ingresos-categoria-producto/:client_id" element={
                 <IngresosProductosProvider>
                     <IngresosCategoriaProducto />
