@@ -6,6 +6,7 @@ import { LoadingDinamico } from '../../../components/LoadingDinamico/LoadingDina
 
 const Info: React.FC = () => {
     const [info, setInfo] = useState<any>(null);
+    const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchInfo = async () => {
@@ -14,6 +15,7 @@ const Info: React.FC = () => {
                 setInfo(response.data);
             } catch (error) {
                 console.error('Error fetching info:', error);
+                setError('Error fetching info. Please try again later.');
             }
         };
 
@@ -22,8 +24,9 @@ const Info: React.FC = () => {
 
     return (
         <>
-            {!info && <LoadingDinamico variant="container" />}
-            <div className={`container ${styles['info-container']}`}>
+            {!info && !error && <LoadingDinamico variant="container" />}
+            {error && <div className="alert alert-danger">{error}</div>}
+            <div className={`container ${styles['info-container']} ${error ? 'd-none' : ''}`}>
                 {info && (
                     <div className="row">
                         <h1 className="mb-4">Información del sistema</h1>
@@ -69,19 +72,18 @@ const Info: React.FC = () => {
                             <div className={`card ${styles['info-card']}`}>
                                 <div className="card-body">
                                     <h5 className={`card-title ${styles['info-card-title']}`}>Uso de memoria</h5>
-                                    <p className={`card-text ${styles['info-card-text']}`}>{info.memory_usage.memory_usage}</p>
-                                    <p className={`card-text ${styles['info-card-text']}`}>Memory Limit: {info.memory_usage.memory_limit}</p>
+                                    <p className={`card-text ${styles['info-card-text']}`}>{info.memory_usage?.memory_usage}</p>
+                                    <p className={`card-text ${styles['info-card-text']}`}>Memory Limit: {info.memory_usage?.memory_limit}</p>
                                 </div>
                             </div>
                             <div className={`card ${styles['info-card']}`}>
                                 <div className="card-body">
                                     <h5 className={`card-title ${styles['info-card-title']}`}>Espacio utilizado</h5>
-                                    <p className={`card-text ${styles['info-card-text']}`}>Total: {info.disk_space.total}</p>
-                                    <p className={`card-text ${styles['info-card-text']}`}>Free: {info.disk_space.free}</p>
+                                    <p className={`card-text ${styles['info-card-text']}`}>Total: {info.disk_space?.total}</p>
+                                    <p className={`card-text ${styles['info-card-text']}`}>Free: {info.disk_space?.free}</p>
                                 </div>
                             </div>
                         </div>
-                        
                     </div>
                 )}
                 <Link to={"/sync/home"} className={`btn btn-primary mt-4 mb-5 ${!info ? 'd-none' : ''}`}>Volver a inicio</Link>

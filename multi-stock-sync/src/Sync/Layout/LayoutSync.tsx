@@ -1,7 +1,7 @@
 import SideBar from '../Components/SideBar/SideBar';
 import Navbar from '../Components/Navbar/NavbarSync';
 import styles from './LayoutSync.module.css';
-
+import { UserProvider } from '../Context/UserContext';
 
 interface LayoutAppProps {
   children: React.ReactNode;
@@ -10,13 +10,15 @@ interface LayoutAppProps {
 function LayoutApp({children}: LayoutAppProps) {
 
   return (
-    <section className={styles.container}>
-      <Navbar/>
-      <SideBar/>
-      <div className={styles.children__container}>
-        {children}
-      </div>
-    </section>
+    <UserProvider>
+      <section className={styles.container}>
+        <Navbar/>
+        <SideBar/>
+        <div className={styles.children__container}>
+          {children}
+        </div>
+      </section>
+    </UserProvider>
   );
 };
 
