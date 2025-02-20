@@ -90,7 +90,7 @@ const HomeReportes: React.FC = () => {
                 onChange={handleConnectionChange}
               >
                 <option value="">Selecciona una conexión</option>
-                {connections.map((connection) => (
+                {connections && connections.map((connection) => (
                   <option key={connection.client_id} value={connection.client_id}>
                     {connection.nickname} ({connection.client_id})
                   </option>
