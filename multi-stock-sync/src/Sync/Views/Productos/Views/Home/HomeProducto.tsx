@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import axiosInstance from '../../../../../axiosConfig'; // Importa la configuración de Axios
-import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl } from 'react-bootstrap';
+
+import { Modal, Button, Form, Table, Container, Row, Col, InputGroup, FormControl, Accordion, Pagination, Card } from 'react-bootstrap';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
+import { Link } from 'react-router-dom';
 
 interface Connection {
   client_id: string;
@@ -31,6 +33,11 @@ interface Product {
   available_quantity: number;
   permalink: string;
   status: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
 }
 
 const statusDictionary: { [key: string]: string } = {
@@ -61,9 +68,10 @@ const HomeProducto = () => {
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [modalContent, setModalContent] = useState<'main' | 'stock' | 'pause'>('main');
   const [searchQuery, setSearchQuery] = useState('');
-  const [limit] = useState(20);
+  const [limit] = useState(35); // Updated limit to 35
   const [offset, setOffset] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [categories, setCategories] = useState<{ [key: string]: string }>({});
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -105,7 +113,7 @@ const HomeProducto = () => {
     fetchProducts(clientId);
   };
 
-  const fetchProducts = async (clientId: string, query: string = '', limit: number = 20, offset: number = 0) => {
+  const fetchProducts = async (clientId: string, query: string = '', limit: number = 35, offset: number = 0) => {
     setLoading(true);
     try {
       const url = query
@@ -116,12 +124,27 @@ const HomeProducto = () => {
       });
       setAllProductos(response.data.data);
       setTotalProducts(response.data.pagination.total);
+      fetchCategories(response.data.data);
     } catch (error) {
       console.error('Error fetching products:', error);
       setToastMessage((error as any).response?.data?.message || 'Error fetching products');
       setToastType('error');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchCategories = async (products: Product[]) => {
+    const categoryIds = Array.from(new Set(products.map(product => product.category_id)));
+    try {
+      const categoriesMap: { [key: string]: string } = {};
+      await Promise.all(categoryIds.map(async (categoryId) => {
+        const response = await axiosInstance.get(`https://api.mercadolibre.com/categories/${categoryId}`);
+        categoriesMap[categoryId] = response.data.name;
+      }));
+      setCategories(categoriesMap);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
     }
   };
 
@@ -135,6 +158,7 @@ const HomeProducto = () => {
     setOffset(newOffset);
     fetchProducts(selectedConnection, searchQuery, limit, newOffset);
   };
+
 
   const handleStockChange = (productId: string, newStock: number) => {
     setStockEdit((prevStock) => ({
@@ -304,6 +328,21 @@ const HomeProducto = () => {
     }
   };
 
+  const categorizeProducts = (products: Product[]) => {
+    const categories: { [key: string]: Product[] } = {};
+    products.forEach((product) => {
+      if (!categories[product.category_id]) {
+        categories[product.category_id] = [];
+      }
+      categories[product.category_id].push(product);
+    });
+    return categories;
+  };
+
+  const categorizedProducts = categorizeProducts(allProductos);
+
+  const totalPages = Math.ceil(totalProducts / limit);
+
   return (
     <>
       {(loadingConnections || loading || isUpdating) && <LoadingDinamico variant="container" />}
@@ -312,7 +351,36 @@ const HomeProducto = () => {
           <section>
             <Row className="mb-3 mt-3">
               <Col>
-                <h1>Lista de productos</h1>
+                <h1>Productos</h1>
+              </Col>
+            </Row>
+            <Row className="mb-4">
+              <Col md={6}>
+                <Card className="shadow-sm mb-4">
+                  <Card.Body className="text-center">
+                    <Card.Title>Crear Productos</Card.Title>
+                    <Card.Text>Agregar nuevos productos al catálogo.</Card.Text>
+                    <Link to={`/sync/productos/crear?client=${selectedConnection}`}>
+                      <Button variant="primary">Ir a Crear Productos</Button>
+                    </Link>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={6}>
+                <Card className="shadow-sm mb-4">
+                  <Card.Body className="text-center">
+                    <Card.Title>Editar Productos</Card.Title>
+                    <Card.Text>Editar los detalles de los productos existentes.</Card.Text>
+                    <Link to={`/sync/productos/editar?client=${selectedConnection}`}>
+                      <Button variant="primary">Ir a Editar Productos</Button>
+                    </Link>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+            <Row className="mb-3 mt-3">
+              <Col>
+                <h2 className="text-center">Lista de productos</h2>
               </Col>
             </Row>
             <Row className="mb-3">
@@ -330,7 +398,7 @@ const HomeProducto = () => {
                 <Form onSubmit={handleSearch}>
                   <InputGroup>
                     <FormControl
-                      placeholder="Buscar producto"
+                      placeholder="Buscar producto por ID o nombre"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                     />
@@ -342,119 +410,112 @@ const HomeProducto = () => {
             {!selectedConnection ? (
               <p>Por favor, seleccione una conexión para ver los productos.</p>
             ) : (
-              <>
-                <div className="table-container">
-                  <Table striped bordered hover>
-                    <thead>
-                      <tr>
-                        <th className='table_header'>Imágen</th>
-                        <th className='table_header'>ID MLC</th>
-                        <th className='table_header'>Título</th>
-                        <th className='table_header'>Código categoría</th>
-                        <th className='table_header'>Precio CLP</th>
-                        <th className='table_header'>Stock MercadoLibre</th>
-                        <th className='table_header'>Bodega asignada</th>
-                        <th className='table_header'>Stock Bodega</th>
-                        <th className='table_header'>Status</th>
-                        <th className='table_header'>Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {allProductos.length > 0 ? (
-                        allProductos.map((producto) => (
-                          <tr key={producto.id}>
-                            <td className="text-center"><img src={producto.thumbnail} className='rounded' alt="IMG producto" style={{ maxWidth: '100px', height: 'auto' }} /></td>
-                            <td>{producto.id}</td>
-                            <td>{producto.title}</td>
-                            <td>{producto.category_id}</td>
-                            <td>{formatPriceCLP(producto.price)}</td>
-                            <td>
-                              {producto.available_quantity}
-                              {isEditing[producto.id] && (
-                                <>
-                                  <FormControl
-                                    type="number"
-                                    value={stockEdit[producto.id] || producto.available_quantity}
-                                    onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
-                                    min="0"
-                                    className="d-inline-block w-50"
-                                  />
-                                  <Button
-                                    variant="success"
-                                    className="ms-2"
-                                    onClick={async () => {
-                                      setAllProductos((prevProductos) =>
-                                        prevProductos.map((p) =>
-                                          p.id === producto.id
-                                            ? { ...p, available_quantity: stockEdit[producto.id] }
-                                            : p
-                                        )
-                                      );
-                                      await updateStock(producto.id, stockEdit[producto.id]);
-                                      fetchProducts(selectedConnection, searchQuery, limit, offset);
-                                      setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
-                                    }}
-                                  >
-                                    Guardar
+              <Accordion defaultActiveKey="0">
+                {Object.keys(categorizedProducts).map((categoryId, index) => (
+                  <Accordion.Item eventKey={index.toString()} key={categoryId}>
+                    <Accordion.Header>
+                      {categories[categoryId] || categoryId} (Cantidad: {categorizedProducts[categoryId].length})
+                    </Accordion.Header>
+                    <Accordion.Body>
+                      <div className="table-container">
+                        <Table striped bordered hover>
+                          <thead>
+                            <tr>
+                              <th className='table_header'>Imágen</th>
+                              <th className='table_header'>ID MLC</th>
+                              <th className='table_header'>Título</th>
+                              <th className='table_header'>Código categoría</th>
+                              <th className='table_header'>Precio CLP</th>
+                              <th className='table_header'>Stock MercadoLibre</th>
+                              <th className='table_header'>Bodega asignada</th>
+                              <th className='table_header'>Stock Bodega</th>
+                              <th className='table_header'>Status</th>
+                              <th className='table_header'>Acciones</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {categorizedProducts[categoryId].map((producto) => (
+                              <tr key={producto.id}>
+                                <td className="text-center"><img src={producto.thumbnail} className='rounded' alt="IMG producto" style={{ maxWidth: '100px', height: 'auto' }} /></td>
+                                <td>{producto.id}</td>
+                                <td>{producto.title}</td>
+                                <td>{producto.category_id}</td>
+                                <td>{formatPriceCLP(producto.price)}</td>
+                                <td>
+                                  {producto.available_quantity}
+                                  {isEditing[producto.id] && (
+                                    <>
+                                      <FormControl
+                                        type="number"
+                                        value={stockEdit[producto.id] || producto.available_quantity}
+                                        onChange={(e) => handleStockChange(producto.id, parseInt(e.target.value))}
+                                        min="0"
+                                        className="d-inline-block w-50"
+                                      />
+                                      <Button
+                                        variant="success"
+                                        className="ms-2"
+                                        onClick={async () => {
+                                          setAllProductos((prevProductos) =>
+                                            prevProductos.map((p) =>
+                                              p.id === producto.id
+                                                ? { ...p, available_quantity: stockEdit[producto.id] }
+                                                : p
+                                            )
+                                          );
+                                          await updateStock(producto.id, stockEdit[producto.id]);
+                                          fetchProducts(selectedConnection, searchQuery, limit, offset);
+                                          setIsEditing((prev) => ({ ...prev, [producto.id]: false }));
+                                        }}
+                                      >
+                                        Guardar
+                                      </Button>
+                                    </>
+                                  )}
+                                </td>
+                                <td>no especificada</td>
+                                <td>no especificado</td>
+                                <td>{translateStatus(producto.status)}</td>
+                                <td>
+                                  <Button variant="primary" onClick={() => openModal(producto)}>
+                                    Acciones
                                   </Button>
-                                </>
-                              )}
-                            </td>
-                            <td>no especificada</td>
-                            <td>no especificado</td>
-                            <td>{translateStatus(producto.status)}</td>
-                            <td>
-                              <Button variant="primary" onClick={() => openModal(producto)}>
-                                Acciones
-                              </Button>
-                            </td>
-                          </tr>
-                        ))
-                      ) : (
-                        <tr>
-                          <td colSpan={10} className="text-muted">No hay productos disponibles.</td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </Table>
-                </div>
-                <Row className="mt-3">
-                  <Col>
-                    <Button
-                      variant="secondary"
-                      onClick={() => handlePageChange(offset - limit)}
-                      disabled={offset === 0}
-                    >
-                      Anterior
-                    </Button>
-                  </Col>
-                  <Col className="text-end">
-                    <Button
-                      variant="secondary"
-                      onClick={() => handlePageChange(offset + limit)}
-                      disabled={offset + limit >= totalProducts}
-                    >
-                      Siguiente
-                    </Button>
-                  </Col>
-                </Row>
-              </>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </Table>
+                      </div>
+                    </Accordion.Body>
+                  </Accordion.Item>
+                ))}
+              </Accordion>
             )}
+            <Row className="mt-3">
+              <Col>
+                <Button
+                  variant="secondary"
+                  onClick={() => handlePageChange(offset - limit)}
+                  disabled={offset === 0}
+                >
+                  Anterior
+                </Button>
+              </Col>
+              <Col className="text-center">
+                <Pagination>
+                  <Pagination.Prev
+                    onClick={() => handlePageChange(offset - limit)}
+                    disabled={offset === 0}
+                  />
+                  <Pagination.Next
+                    onClick={() => handlePageChange(offset + limit)}
+                    disabled={offset + limit >= totalProducts}
+                  />
+                </Pagination>
+              </Col>
+            </Row>
           </section>
         )}
-        <Modal show={modalIsOpen} onHide={closeModal}>
-          <Modal.Header closeButton>
-            <Modal.Title>Acciones para <strong>{currentProduct?.title}</strong> </Modal.Title>
-          </Modal.Header>
-          <Modal.Body>
-            {renderModalContent()}
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="secondary" onClick={closeModal}>
-              Cerrar
-            </Button>
-          </Modal.Footer>
-        </Modal>
       </Container>
     </>
   );
