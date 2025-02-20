@@ -13,22 +13,22 @@ interface Review {
 }
 
 const OpinionesClientes: React.FC = () => {
-  const { client_id, product_id } = useParams<{ client_id: string; product_id: string }>();
+  const { product_id } = useParams<{ product_id: string }>();
   const [opiniones, setOpiniones] = useState<Review[]>([]);
   const [ratingAverage, setRatingAverage] = useState<number>(0);
 
+  console.log("Parámetros recibidos:", { product_id }); // Depuración
+
   useEffect(() => {
-    if (!client_id || !product_id) {
-      console.error('client_id o product_id no están disponibles');
+    if (!product_id) {
+      console.warn('El product_id no está disponible aún');
       return;
     }
 
     const fetchOpiniones = async () => {
       try {
-        const response = await axios.get(
-          `/mercadolibre/products/reviews/${product_id}?client_id=${client_id}`
-        );
-
+        const response = await axios.get(`/mercadolibre/products/reviews/${product_id}`);
+        
         const data = response.data?.data;
         if (data && Array.isArray(data.reviews)) {
           const formattedOpinions = data.reviews.map((review: any, index: number) => ({
@@ -49,7 +49,7 @@ const OpinionesClientes: React.FC = () => {
     };
 
     fetchOpiniones();
-  }, [client_id, product_id]);
+  }, [product_id]);
 
   return (
     <div className={styles.container}>
