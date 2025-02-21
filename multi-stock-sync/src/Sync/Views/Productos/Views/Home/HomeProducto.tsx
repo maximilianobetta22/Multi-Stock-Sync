@@ -1,231 +1,398 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import styles from './CrearProducto.module.css';
+import { useEffect, useState } from 'react';
+import axiosInstance from '../../../../../axiosConfig'; // Importa la configuración de Axios
+import { Container, Row, Col, Pagination, Button } from 'react-bootstrap';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
+import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
+import ProductTable from './ProductTable';
+import ProductModal from './ProductModal';
+import SearchBar from './SearchBar';
+import ConnectionDropdown from './ConnectionDropdown';
 
-const CrearProducto: React.FC = () => {
-    const [titulo, setTitulo] = useState('');
-    const [categorias, setCategorias] = useState<{ id: string, name: string }[]>([]);
-    const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
-    const [atributos, setAtributos] = useState<any[]>([]);
-    const [producto, setProducto] = useState<any>({});
+interface Connection {
+  client_id: string;
+  client_secret: string;
+  access_token: string;
+  refresh_token: string;
+  expires_at: string;
+  nickname: string;
+  email: string;
+  profile_image: string;
+  created_at: string;
+  updated_at: string;
+}
 
-    const handleTituloChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTitulo(e.target.value);
-    };
+interface Product {
+  id: string;
+  thumbnail: string;
+  site_id: string;
+  title: string;
+  seller_id: number;
+  category_id: string;
+  user_product_id: string;
+  price: number;
+  base_price: number;
+  available_quantity: number;
+  permalink: string;
+  status: string;
+}
 
-    const buscarCategorias = async () => {
-        if (!titulo.trim()) return alert('Por favor, ingresa un título.');
-
-        try {
-            const SITE_ID = 'MLC';
-            const url = `https://api.mercadolibre.com/sites/${SITE_ID}/domain_discovery/search?q=${encodeURIComponent(titulo)}`;
-            console.log('Buscando categorías con URL:', url);
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data && Array.isArray(data) && data.length > 0) {
-                setCategorias(data.map((item: any) => ({
-                    id: item.category_id,
-                    name: item.category_name,
-                })));
-                console.log('Categorías encontradas:', data);
-            } else {
-                setCategorias([]);
-                alert('No se encontraron categorías relacionadas.');
-            }
-        } catch (error) {
-            console.error('Error al buscar categorías:', error);
-            alert('Hubo un error al buscar categorías.');
-        }
-    };
-
-    const obtenerAtributosCategoria = async (categoria: string) => {
-        try {
-            console.log('Obteniendo atributos para la categoría:', categoria);
-            const url = `https://api.mercadolibre.com/categories/${categoria}/attributes`;
-            console.log('Llamando a la URL de atributos:', url);
-            const response = await fetch(url);
-            const data = await response.json();
-
-            if (data && Array.isArray(data) && data.length > 0) {
-                setAtributos(data.filter((attr: any) => attr.tags?.required));
-                console.log('Atributos obligatorios encontrados:', data);
-            } else {
-                setAtributos([]);
-                alert('No se encontraron atributos obligatorios para esta categoría.');
-            }
-        } catch (error) {
-            console.error('Error al obtener atributos de la categoría:', error);
-            alert('Hubo un error al obtener los atributos de la categoría.');
-        }
-    };
-
-    const handleCategoriaSeleccionada = (categoria: string) => {
-        console.log('Categoría seleccionada:', categoria);
-        setCategoriaSeleccionada(categoria);
-        setProducto({ titulo, categoria });
-        obtenerAtributosCategoria(categoria);
-    };
-
-    const handleAtributoChange = (id: string, value: string) => {
-        setProducto((prevProducto: any) => ({
-            ...prevProducto,
-            [id]: value,
-        }));
-    };
-
-    const crearProducto = async () => {
-        try {
-            const url = `https://api.mercadolibre.com/items`;
-            console.log('Enviando producto a:', url);
-
-            // Example payload with product data
-            const payload = {
-                title: producto.nombre || "Sin título",
-                category_id: categoriaSeleccionada,
-                price: producto.precio || 0,
-                currency_id: "CLP",
-                available_quantity: producto.cantidad || 1,
-                buying_mode: "buy_it_now",
-                listing_type_id: "gold_special",
-                condition: producto.condition || "new",
-                description: {
-                    plain_text: producto.descripcion || "Sin descripción",
-                },
-                pictures: [
-                    { source: "https://example.com/image1.jpg" }, // Add image pictures
-                ],
-            };
-
-            const response = await fetch(url, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer YOUR_ACCESS_TOKEN`, // Use your access token
-                },
-                body: JSON.stringify(payload),
-            });
-
-            const data = await response.json();
-            console.log("Respuesta al crear producto:", data);
-
-            if (response.ok) {
-                alert("Producto creado exitosamente.");
-            } else {
-                alert("Error al crear el producto: " + data.message);
-            }
-        } catch (error) {
-            console.error("Error al crear el producto:", error);
-            alert("Hubo un error al intentar crear el producto.");
-        }
-    };
-
-    return (
-        <div className={styles.crearProducto}>
-            <h1>Crear Producto</h1>
-
-            <div className="mb-3">
-                <input
-                    type="text"
-                    value={titulo}
-                    onChange={handleTituloChange}
-                    placeholder="Ingresa el título del producto"
-                    className="form-control"
-                />
-                <button onClick={buscarCategorias} className="btn btn-primary mt-2">Buscar categorías</button>
-            </div>
-
-            {categorias.length > 0 && (
-                <div>
-                    <h2>Categorías sugeridas:</h2>
-                    <ul>
-                        {categorias.map((categoria) => (
-                            <li key={categoria.id}>
-                                <button onClick={() => handleCategoriaSeleccionada(categoria.id)} className="btn btn-success">
-                                    {categoria.name}
-                                </button>
-                            </li>
-                        ))}
-                    </ul>
-                </div>
-            )}
-
-            {atributos.length > 0 && (
-                <div>
-                    <h2>Atributos obligatorios para la categoría seleccionada</h2>
-                    <form>
-                        {atributos.map((atributo) => (
-                            <div key={atributo.id} className="mb-3">
-                                <label>{atributo.name}</label>
-                                {atributo.values && atributo.values.length > 0 ? (
-                                    <select
-                                        onChange={(e) => handleAtributoChange(atributo.id, e.target.value)}
-                                        className="form-select"
-                                    >
-                                        <option value="">Seleccione una opción</option>
-                                        {atributo.values.map((value: any) => (
-                                            <option key={value.id} value={value.id}>
-                                                {value.name}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : (
-                                    <input
-                                        type="text"
-                                        onChange={(e) => handleAtributoChange(atributo.id, e.target.value)}
-                                        className="form-control"
-                                    />
-                                )}
-                            </div>
-                        ))}
-                    </form>
-                </div>
-            )}
-
-            <button onClick={crearProducto} className="btn btn-primary">Crear Producto</button>
-
-            {categoriaSeleccionada && (
-                <section className="mt-4">
-                    <header>
-                        <h3>Producto generado:</h3>
-                    </header>
-                    <div className="card" style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
-                        <div className="card-body">
-                            <div className="container" style={{ padding: '1rem' }}>
-                                <table className="table table-sm table-bordered table-striped" style={{ width: '100%', margin: '0' }}>
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Categoría</th>
-                                            <th scope="col">Detalles</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>{categorias.find(c => c.id === producto.categoria)?.name}</td>
-                                            <td>{producto.titulo}</td>
-                                        </tr>
-                                        {Object.keys(producto).map((key) => (
-                                            key !== 'titulo' && key !== 'categoria' && (
-                                                <tr key={key}>
-                                                    <th scope="row">{atributos.find(attr => attr.id === key)?.name || key}</th>
-                                                    <td>{atributos.find(attr => attr.id === key)?.values.find((val: any) => val.id === producto[key])?.name || producto[key]}</td>
-                                                </tr>
-                                            )
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            )}
-            <div className="mt-4">
-                <Link to="/sync/productos/home">
-                    <button className="btn btn-secondary">Volver a HomeProductos</button>
-                </Link>
-            </div>
-        </div>
-    );
+const statusDictionary: { [key: string]: string } = {
+  active: 'Activo',
+  paused: 'Pausado',
+  closed: 'Cerrado',
+  under_review: 'En revisión',
+  inactive: 'Inactivo',
+  payment_required: 'Pago requerido',
+  not_yet_active: 'Aún no activo',
+  deleted: 'Eliminado',
 };
 
-export default CrearProducto;
+const MySwal = withReactContent(Swal);
+
+const HomeProducto = () => {
+  const [connections, setConnections] = useState<Connection[]>([]);
+  const [selectedConnection, setSelectedConnection] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [allProductos, setAllProductos] = useState<Product[]>([]);
+  const [loadingConnections, setLoadingConnections] = useState(true);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastType, setToastType] = useState<'success' | 'warning' | 'error'>('error');
+  const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [modalIsOpen, setModalIsOpen] = useState(false);
+  const [isEditing, setIsEditing] = useState<{ [key: string]: boolean }>({});
+  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
+  const [modalContent, setModalContent] = useState<'main' | 'stock' | 'pause'>('main');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
+  const [limit] = useState(35); // Updated limit to 35
+  const [offset, setOffset] = useState(0);
+  const [totalProducts, setTotalProducts] = useState(0);
+  const [categories, setCategories] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    const fetchConnections = async () => {
+      try {
+        const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`);
+        setConnections(response.data.data);
+      } catch (error) {
+        console.error('Error fetching connections:', error);
+        setToastMessage((error as any).response?.data?.message || 'Error fetching connections');
+        setToastType('error');
+      } finally {
+        setLoadingConnections(false);
+      }
+    };
+
+    fetchConnections();
+  }, []);
+
+  useEffect(() => {
+    if (toastMessage) {
+      MySwal.fire({
+        icon: toastType,
+        title: toastMessage,
+        showConfirmButton: false,
+        timer: 3000
+      }).then(() => setToastMessage(null));
+    }
+  }, [toastMessage]);
+
+  const handleConnectionChange = async (clientId: string) => {
+    setSelectedConnection(clientId);
+    setAllProductos([]);
+    setCategories({});
+    setSearchQuery('');
+    setSelectedCategory('');
+    setOffset(0);
+
+    if (clientId === '') {
+      return;
+    }
+
+    fetchProducts(clientId);
+  };
+
+  const fetchProducts = async (clientId: string, query: string = '', limit: number = 35, offset: number = 0, category: string = '') => {
+    setLoading(true);
+    try {
+      const url = query
+        ? `${process.env.VITE_API_URL}/mercadolibre/products/search/${clientId}`
+        : `${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`;
+      const response = await axiosInstance.get(url, {
+        params: { q: query, limit, offset, category }
+      });
+      setAllProductos(response.data.data);
+      setTotalProducts(response.data.pagination.total);
+      fetchCategories(response.data.data);
+    } catch (error) {
+      console.error('Error fetching products:', error);
+      setToastMessage((error as any).response?.data?.message || 'Error fetching products');
+      setToastType('error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchCategories = async (products: Product[]) => {
+    const categoryIds = Array.from(new Set(products.map(product => product.category_id)));
+    try {
+      const categoriesMap: { [key: string]: string } = {};
+      await Promise.all(categoryIds.map(async (categoryId) => {
+        const response = await axiosInstance.get(`https://api.mercadolibre.com/categories/${categoryId}`);
+        categoriesMap[categoryId] = response.data.name;
+      }));
+      setCategories(categoriesMap);
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+    }
+  };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    setOffset(0);
+    fetchProducts(selectedConnection, query, limit, 0);
+  };
+
+  const handleCategoryChange = (category: string) => {
+    setSelectedCategory(category);
+  };
+
+  const handlePageChange = (newOffset: number) => {
+    setOffset(newOffset);
+    fetchProducts(selectedConnection, searchQuery, limit, newOffset);
+  };
+
+  const handleStockChange = (productId: string, newStock: number) => {
+    setStockEdit((prevStock) => ({
+      ...prevStock,
+      [productId]: newStock,
+    }));
+  };
+
+  const updateStock = async (productId: string, newStock: number, pause: boolean = false) => {
+    setIsUpdating(true);
+    try {
+      const selectedConnectionData = connections.find(
+        (connection) => connection.client_id === selectedConnection
+      );
+
+      if (!selectedConnectionData) {
+        setToastMessage('Conexión no encontrada');
+        setToastType('error');
+        return;
+      }
+
+      const ACCESS_TOKEN = selectedConnectionData.access_token; 
+      const ITEM_ID = productId;
+
+      const response = await axiosInstance.put(
+        `https://api.mercadolibre.com/items/${ITEM_ID}`,
+        pause ? { status: 'paused' } : { available_quantity: newStock },
+        {
+          headers: {
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      const successMessage = pause
+        ? 'Publicación pausada exitosamente.'
+        : 'Stock actualizado correctamente';
+      setToastMessage(successMessage);
+      setToastType('success');
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error updating stock:', error);
+      setToastMessage('Error al actualizar el stock');
+      setToastType('error');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const updateStatus = async (productId: string, newStatus: string) => {
+    setIsUpdating(true);
+    try {
+      const selectedConnectionData = connections.find(
+        (connection) => connection.client_id === selectedConnection
+      );
+
+      if (!selectedConnectionData) {
+        setToastMessage('Conexión no encontrada');
+        setToastType('error');
+        return;
+      }
+
+      const ACCESS_TOKEN = selectedConnectionData.access_token; 
+      const ITEM_ID = productId;
+
+      const response = await axiosInstance.put(
+        `https://api.mercadolibre.com/items/${ITEM_ID}`,
+        { status: newStatus },
+        {
+          headers: {
+            Authorization: `Bearer ${ACCESS_TOKEN}`,
+            'Content-Type': 'application/json',
+            Accept: 'application/json',
+          },
+        }
+      );
+
+      const successMessage = newStatus === 'paused'
+        ? 'Publicación pausada exitosamente.'
+        : 'Publicación reanudada exitosamente.';
+      setToastMessage(successMessage);
+      setToastType('success');
+      console.log(response.data);
+    } catch (error) {
+      console.error('Error updating status:', error);
+      setToastMessage('Error al actualizar el estado');
+      setToastType('error');
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const openModal = (product: Product) => {
+    setCurrentProduct(product);
+    setModalContent('main');
+    setModalIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setModalIsOpen(false);
+    setCurrentProduct(null);
+  };
+
+  const formatPriceCLP = (price: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price);
+  };
+
+  const translateStatus = (status: string) => {
+    return statusDictionary[status] || status;
+  };
+
+  const categorizeProducts = (products: Product[]) => {
+    const categories: { [key: string]: Product[] } = {};
+    products.forEach((product) => {
+      if (!categories[product.category_id]) {
+        categories[product.category_id] = [];
+      }
+      categories[product.category_id].push(product);
+    });
+    return categories;
+  };
+
+  const filterResults = (category: string) => {
+    setSelectedCategory(category);
+    setOffset(0);
+    fetchProducts(selectedConnection, searchQuery, limit, 0, category);
+  };
+
+  const categorizedProducts = categorizeProducts(allProductos);
+
+  const totalPages = Math.ceil(totalProducts / limit);
+  const currentPage = Math.floor(offset / limit);
+  const maxPageNumbersToShow = 5;
+  const startPage = Math.max(0, currentPage - Math.floor(maxPageNumbersToShow / 2));
+  const endPage = Math.min(totalPages, startPage + maxPageNumbersToShow);
+
+  return (
+    <>
+      {(loadingConnections || loading || isUpdating) && <LoadingDinamico variant="container" />}
+      <Container>
+        {!loadingConnections && !loading && !isUpdating && (
+          <section>
+            <Row className="mb-3 mt-3">
+              <Col>
+                <h1>Productos</h1>
+              </Col>
+            </Row>
+            <Row className="mb-3">
+              <Col md={4}>
+                <ConnectionDropdown
+                  connections={connections}
+                  selectedConnection={selectedConnection}
+                  onChange={handleConnectionChange}
+                />
+              </Col>
+              <Col md={4}>
+                <SearchBar
+                  searchQuery={searchQuery}
+                  onSearch={handleSearch}
+                />
+              </Col>
+            </Row>
+            {!selectedConnection ? (
+              <p>Por favor, seleccione una conexión para ver los productos.</p>
+            ) : (
+              <ProductTable
+                categorizedProducts={categorizedProducts}
+                categories={categories}
+                isEditing={isEditing}
+                stockEdit={stockEdit}
+                onStockChange={handleStockChange}
+                onUpdateStock={updateStock}
+                onOpenModal={openModal}
+                formatPriceCLP={formatPriceCLP}
+                translateStatus={translateStatus}
+              />
+            )}
+            <Row className="mt-3">
+              <Col>
+                <Button
+                  variant="secondary"
+                  onClick={() => handlePageChange(offset - limit)}
+                  disabled={offset === 0}
+                >
+                  Anterior
+                </Button>
+              </Col>
+              <Col className="text-center">
+                <Pagination>
+                  {Array.from({ length: endPage - startPage }, (_, index) => (
+                    <Pagination.Item
+                      key={startPage + index}
+                      active={startPage + index === currentPage}
+                      onClick={() => handlePageChange((startPage + index) * limit)}
+                    >
+                      {startPage + index + 1}
+                    </Pagination.Item>
+                  ))}
+                </Pagination>
+              </Col>
+              <Col className="text-end">
+                <Button
+                  variant="secondary"
+                  onClick={() => handlePageChange(offset + limit)}
+                  disabled={offset + limit >= totalProducts}
+                >
+                  Siguiente
+                </Button>
+              </Col>
+            </Row>
+          </section>
+        )}
+      </Container>
+
+      <ProductModal
+        show={modalIsOpen}
+        onHide={closeModal}
+        product={currentProduct}
+        modalContent={modalContent}
+        onUpdateStock={updateStock}
+        onUpdateStatus={updateStatus}
+        onStockChange={handleStockChange}
+        stockEdit={stockEdit}
+        fetchProducts={() => fetchProducts(selectedConnection, searchQuery, limit, offset)}
+        setModalContent={setModalContent}
+      />
+    </>
+  );
+};
+
+export default HomeProducto;
