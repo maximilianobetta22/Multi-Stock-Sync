@@ -23,18 +23,18 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearch }) => {
   };
 
   return (
-    <Form className="form-inline" onSubmit={handleSubmit}>
-      <Form.Control
-        type="text"
-        placeholder="Buscar productos"
-        value={query}
-        onChange={handleInputChange}
-        className="mr-sm-2"
-      />
-      <Button variant="outline-success" onClick={handleSearch}>
-        Buscar
-      </Button>
-    </Form>
+    <Form className="d-flex gap-2" onSubmit={handleSubmit}>
+    <Form.Control
+      type="text"
+      placeholder="Buscar productos"
+      value={query}
+      onChange={handleInputChange}        
+    />
+    <Button variant="outline-success" onClick={handleSearch}>
+      Buscar
+    </Button>
+  </Form>
+  
   );
 };
 

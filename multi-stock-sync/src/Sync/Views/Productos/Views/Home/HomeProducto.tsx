@@ -319,6 +319,8 @@ const HomeProducto = () => {
                   selectedConnection={selectedConnection}
                   onChange={handleConnectionChange}
                 />
+                <br />
+                <p>Por favor, seleccione una conexión para ver los productos.</p>
               </Col>
               <Col md={4}>
                 <SearchBar
@@ -327,9 +329,11 @@ const HomeProducto = () => {
                 />
               </Col>
             </Row>
-            {!selectedConnection ? (
-              <p>Por favor, seleccione una conexión para ver los productos.</p>
-            ) : (
+            {!selectedConnection && (
+              <Row className="mb-3">              
+            </Row>
+            )}
+            {selectedConnection && (
               <ProductTable
                 categorizedProducts={categorizedProducts}
                 categories={categories}
