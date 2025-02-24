@@ -8,6 +8,7 @@ import ProductTable from './ProductTable';
 import ProductModal from './ProductModal';
 import SearchBar from './SearchBar';
 import ConnectionDropdown from './ConnectionDropdown';
+import AccionesButton from './AccionesButton'; // Import the AccionesButton component
 
 interface Connection {
   client_id: string;
@@ -311,6 +312,12 @@ const HomeProducto = () => {
               <Col>
                 <h1>Productos</h1>
               </Col>
+              <Col className="text-end">
+                <AccionesButton 
+                  productId={currentProduct?.id || ''} 
+                  onUpdateStatus={updateStatus} 
+                /> {/* Add the AccionesButton component */}
+              </Col>
             </Row>
             <Row className="mb-3">
               <Col md={4}>
@@ -326,6 +333,7 @@ const HomeProducto = () => {
                 <SearchBar
                   searchQuery={searchQuery}
                   onSearch={handleSearch}
+                  suggestions={[]} // Pass suggestions if available
                 />
               </Col>
             </Row>
@@ -344,6 +352,7 @@ const HomeProducto = () => {
                 onOpenModal={openModal}
                 formatPriceCLP={formatPriceCLP}
                 translateStatus={translateStatus}
+                onUpdateStatus={updateStatus} // Pass the onUpdateStatus function
               />
             )}
             <Row className="mt-3">

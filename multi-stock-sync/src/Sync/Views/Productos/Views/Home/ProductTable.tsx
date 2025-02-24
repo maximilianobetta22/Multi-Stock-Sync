@@ -1,6 +1,7 @@
 import React from "react";
 import { Accordion, Table, Button, FormControl } from "react-bootstrap";
 import { motion } from "framer-motion";
+import ProductActionsDropdown from "./ProductActionsDropdown";
 
 interface Product {
   id: string;
@@ -27,6 +28,7 @@ interface ProductTableProps {
   onOpenModal: (product: Product) => void;
   formatPriceCLP: (price: number) => string;
   translateStatus: (status: string) => string;
+  onUpdateStatus: (productId: string, newStatus: string) => void;
 }
 
 const ProductTable: React.FC<ProductTableProps> = ({
@@ -39,6 +41,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
   onOpenModal,
   formatPriceCLP,
   translateStatus,
+  onUpdateStatus,
 }) => {
   return (
     <Accordion defaultActiveKey="0">
@@ -49,15 +52,13 @@ const ProductTable: React.FC<ProductTableProps> = ({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
           >
-            <motion.div
-              whileHover={{ scale: 1.02, backgroundColor: "#f8f9fa" }}
-              transition={{ type: "spring", stiffness: 300 }}
+            <div
               style={{ border: '1px solid #dee2e6', borderRadius: '5px' }}
             >
               <Accordion.Header>
                 {categories[categoryId] || categoryId} (Cantidad: {categorizedProducts[categoryId].length})
               </Accordion.Header>
-            </motion.div>
+            </div>
             <Accordion.Body>
               <div className="table-container">
                 <Table striped bordered hover responsive>
@@ -79,7 +80,6 @@ const ProductTable: React.FC<ProductTableProps> = ({
                     {categorizedProducts[categoryId].map((producto) => (
                       <motion.tr
                         key={producto.id}
-                        whileHover={{ scale: 1.02, backgroundColor: "#f8f9fa" }}
                         transition={{ type: "spring", stiffness: 300 }}
                       >
                         <td className="text-center">
@@ -123,14 +123,10 @@ const ProductTable: React.FC<ProductTableProps> = ({
                         <td>no especificado</td>
                         <td>{translateStatus(producto.status)}</td>
                         <td>
-                          <motion.button
-                            className="btn btn-primary"
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => onOpenModal(producto)}
-                          >
-                            Acciones
-                          </motion.button>
+                          <ProductActionsDropdown
+                            productId={producto.id}
+                            onUpdateStatus={onUpdateStatus}
+                          />
                         </td>
                       </motion.tr>
                     ))}
