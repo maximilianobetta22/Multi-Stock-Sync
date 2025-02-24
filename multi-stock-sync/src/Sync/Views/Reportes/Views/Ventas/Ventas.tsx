@@ -1,7 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import axiosInstance from '../../../../../axiosConfig';
-import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
-import { Bar } from 'react-chartjs-2';
+import React, { useState, useEffect, useCallback } from "react";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -10,164 +8,194 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
+import { useParams } from "react-router-dom";
+import axiosInstance from "../../../../../axiosConfig";
+import 'bootstrap/dist/css/bootstrap.min.css';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { addDays, startOfWeek, endOfWeek } from "date-fns";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
-
-// Función para obtener los años disponibles
-const obtenerAnios = () => {
-  const anioActual = new Date().getFullYear();
-  return Array.from({ length: 10 }, (_, i) => anioActual - i);
-};
-
-// Función para determinar si un año es bisiesto
-const esBisiesto = (anio: number) => {
-  return (anio % 4 === 0 && anio % 100 !== 0) || anio % 400 === 0;
-};
-
-// Función para obtener la cantidad de días según el mes y el año
-const obtenerDiasDelMes = (mes: number, anio: number) => {
-  const diasPorMes: { [key: number]: number } = {
-    1: 31, 2: esBisiesto(anio) ? 29 : 28, 3: 31, 4: 30,
-    5: 31, 6: 30, 7: 31, 8: 31, 9: 30, 10: 31, 11: 30, 12: 31
-  };
-  return diasPorMes[mes];
-};
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartDataLabels
+);
 
 const DetalleVentas: React.FC = () => {
-  const [filtro, setFiltro] = useState<string>('dia');
-  const [anio, setAnio] = useState<number>(new Date().getFullYear());
-  const [mes, setMes] = useState<number>(new Date().getMonth() + 1);
-  const [dia, setDia] = useState<number>(new Date().getDate());
-  const [ventasTotales, setVentasTotales] = useState<number>(0);
-  const [unidadesVendidas, setUnidadesVendidas] = useState<number>(0);
-  const [chartData, setChartData] = useState<any>({
-    labels: [],
-    datasets: [],
-  });
+  const { client_id } = useParams<{ client_id: string }>();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
+  const [yearSeleccionado, setYearSeleccionado] = useState<number>(new Date().getFullYear());
+  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(new Date().getMonth() + 1);
+  const [ventas, setVentas] = useState<any[]>([]);
 
-  useEffect(() => {
-    // Ajustar día si el mes cambia y el día actual no es válido en el nuevo mes
-    const maxDias = obtenerDiasDelMes(mes, anio);
-    if (dia > maxDias) setDia(maxDias);
-  }, [mes, anio]);
+  // Estados para mostrar/ocultar filtros
+  const [mostrarFiltroAño, setMostrarFiltroAño] = useState<boolean>(false);
+  const [mostrarFiltroMes, setMostrarFiltroMes] = useState<boolean>(false);
+  const [mostrarFiltroSemana, setMostrarFiltroSemana] = useState<boolean>(false);
+  const [mostrarFiltroDia, setMostrarFiltroDia] = useState<boolean>(false);
 
-  const fetchDetalleVentas = async () => {
-    setLoading(true);
-    setError(null);
+  // Estado para el filtro de semana con calendario
+  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(new Date());
+
+  // Obtener datos del usuario
+  const fetchUserData = useCallback(async () => {
+    if (!client_id) return;
     try {
-      const params: any = { filtro, anio };
-      if (filtro === 'dia') params.dia = dia;
-      if (filtro !== 'anio') params.mes = mes;
-
-      const response = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/detalle-ventas`,
-        { params }
-      );
-      const result = response.data;
-
-      setVentasTotales(result.ventasTotales);
-      setUnidadesVendidas(result.unidadesVendidas);
-      setChartData({
-        labels: result.productos.map((prod: any) => prod.nombre),
-        datasets: [
-          {
-            label: 'Ventas Totales',
-            data: result.productos.map((prod: any) => prod.total),
-            backgroundColor: 'rgba(75, 192, 192, 0.6)',
-            borderColor: 'rgba(75, 192, 192, 1)',
-            borderWidth: 2,
-          },
-          {
-            label: 'Unidades Vendidas',
-            data: result.productos.map((prod: any) => prod.unidades),
-            backgroundColor: 'rgba(153, 102, 255, 0.6)',
-            borderColor: 'rgba(153, 102, 255, 1)',
-            borderWidth: 2,
-          },
-        ],
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      setUserData({
+        nickname: response.data.data.nickname,
+        profile_image: response.data.data.profile_image,
       });
     } catch (error) {
-      setError('Error al obtener los detalles de ventas. Intenta nuevamente.');
+      console.error("Error al obtener los datos del usuario:", error);
+      setError("Hubo un problema al cargar los datos del usuario.");
     } finally {
       setLoading(false);
     }
-  };
+  }, [client_id]);
+
+  // Obtener ventas del mes seleccionado
+  const fetchVentas = useCallback(async () => {
+    if (!client_id) return;
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, {
+        params: {
+          year: yearSeleccionado,
+          month: monthSeleccionado.toString().padStart(2, '0')
+        }
+      });
+
+      const ventasData = response.data.data?.[`${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}`]?.orders?.flatMap((order: any) =>
+        order.sold_products.map((product: any) => ({
+          order_id: product.order_id,
+          order_date: product.order_date,
+          title: product.title,
+          quantity: product.quantity,
+          price: product.price
+        }))
+      ) || [];
+
+      setVentas(ventasData);
+    } catch (error) {
+      console.error('Error al obtener datos de ventas:', error);
+      setError("Hubo un problema al obtener los datos de ventas.");
+      setVentas([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [client_id, yearSeleccionado, monthSeleccionado]);
 
   useEffect(() => {
-    fetchDetalleVentas();
-  }, [filtro, dia, mes, anio]);
-  
+    fetchUserData();
+    fetchVentas();
+  }, [fetchUserData, fetchVentas]);
+
+  if (loading) return <div>Cargando...</div>;
+  if (error) return <div>{error}</div>;
 
   return (
-    <div>
-      <h2>Detalle de Ventas</h2>
+    <div className="container mt-4">
+      <h1>Detalle de Ventas</h1>
+      {userData && (
+        <div style={{ textAlign: "center" }}>
+          <h3>Usuario: {userData.nickname}</h3>
+          <img
+            src={userData.profile_image}
+            alt="Profile"
+            style={{ width: "100px", height: "100px", borderRadius: "50%" }}
+          />
+        </div>
+      )}
 
-      {/* Selección de Filtros */}
-      <div className="form-group">
-        <label>Seleccionar Filtro:</label>
-        <select value={filtro} onChange={(e) => setFiltro(e.target.value)} className="form-control">
-          <option value="dia">Día</option>
-          <option value="semana">Semana</option>
-          <option value="mes">Mes</option>
-          <option value="anio">Año</option>
-        </select>
+      <div className="row">
+        {/* Filtros en la columna izquierda */}
+        <div className="col-md-3 d-flex flex-column">
+          <button className="btn btn-primary mb-2">Agregar Calendario Comparativo</button>
+
+          {/* Filtro Año */}
+          <button 
+            className="btn btn-secondary mb-2"
+            onClick={() => setMostrarFiltroAño(!mostrarFiltroAño)}
+          >
+            {mostrarFiltroAño ? "Ocultar Filtro por Año" : "Filtrar por Año"}
+          </button>
+          {mostrarFiltroAño && (
+            <select className="form-select mb-2" value={yearSeleccionado} onChange={(e) => setYearSeleccionado(Number(e.target.value))}>
+              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                <option key={year} value={year}>{year}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Filtro Mes */}
+          <button 
+            className="btn btn-secondary mb-2"
+            onClick={() => setMostrarFiltroMes(!mostrarFiltroMes)}
+          >
+            {mostrarFiltroMes ? "Ocultar Filtro por Mes" : "Filtrar por Mes"}
+          </button>
+          {mostrarFiltroMes && (
+            <select className="form-select mb-2" value={monthSeleccionado} onChange={(e) => setMonthSeleccionado(Number(e.target.value))}>
+              {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                <option key={month} value={month}>{month}</option>
+              ))}
+            </select>
+          )}
+
+          {/* Filtro Semana con Calendario */}
+          <button className="btn btn-secondary mb-2" onClick={() => setMostrarFiltroSemana(!mostrarFiltroSemana)}>
+            {mostrarFiltroSemana ? "Ocultar Filtro por Semana" : "Filtrar por Semana"}
+          </button>
+          {mostrarFiltroSemana && (
+            <DatePicker
+              selected={fechaSeleccionada}
+              onChange={(date: Date | null) => setFechaSeleccionada(date)}
+              dateFormat="yyyy-MM-dd"
+              showWeekNumbers
+              highlightDates={[startOfWeek(new Date()), endOfWeek(new Date())]}
+              className="form-control mb-2"
+            />
+          )}
+
+          {/* Filtro Día */}
+          <button className="btn btn-secondary mb-2" onClick={() => setMostrarFiltroDia(!mostrarFiltroDia)}>
+            {mostrarFiltroDia ? "Ocultar Filtro por Día" : "Filtrar por Día"}
+          </button>
+          {mostrarFiltroDia && (
+            <input type="date" className="form-control mb-2" />
+          )}
+        </div>
+
+        {/* Gráfico de Ventas */}
+        <div className="col-md-9">
+          <h2>Ventas</h2>
+          <Bar
+            data={{
+              labels: ventas.map((v) => v.title),
+              datasets: [
+                {
+                  label: "Ingresos",
+                  data: ventas.map((v) => v.price * v.quantity),
+                  backgroundColor: "rgba(75, 192, 192, 0.6)",
+                },
+              ],
+            }}
+            options={{ responsive: true }}
+          />
+        </div>
       </div>
-
-      {/* Selección de Día (solo si el filtro es "día") */}
-      {filtro === 'dia' && (
-        <div className="form-group">
-          <label>Seleccionar Día:</label>
-          <select value={dia} onChange={(e) => setDia(Number(e.target.value))} className="form-control">
-            {Array.from({ length: obtenerDiasDelMes(mes, anio) }, (_, i) => i + 1).map((d) => (
-              <option key={d} value={d}>{d}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Selección de Mes (para día y mes) */}
-      {filtro !== 'anio' && (
-        <div className="form-group">
-          <label>Seleccionar Mes:</label>
-          <select value={mes} onChange={(e) => setMes(Number(e.target.value))} className="form-control">
-            {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {/* Selección de Año (para todos los filtros) */}
-      <div className="form-group">
-        <label>Seleccionar Año:</label>
-        <select value={anio} onChange={(e) => setAnio(Number(e.target.value))} className="form-control">
-          {obtenerAnios().map((a) => (
-            <option key={a} value={a}>{a}</option>
-          ))}
-        </select>
-      </div>
-
-
-      {loading ? (
-        <LoadingDinamico variant="container" />
-      ) : error ? (
-        <p className="text-danger">{error}</p>
-      ) : (
-        <div>
-          <div className="ventas-resumen">
-            <h3>Ventas Totales: {new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(ventasTotales)}</h3>
-            <h3>Unidades Vendidas: {unidadesVendidas}</h3>
-          </div>
-
-          
-          <div style={{ width: "600px", height: "400px", marginTop: "2rem" }}>
-            <Bar data={chartData} options={{ responsive: true, maintainAspectRatio: false }} />
-          </div>
-        </div>
-      )}
     </div>
   );
 };
