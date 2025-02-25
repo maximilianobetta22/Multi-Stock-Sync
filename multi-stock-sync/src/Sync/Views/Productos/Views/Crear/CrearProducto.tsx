@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import styles from './CrearProducto.module.css';
 
 const CrearProducto: React.FC = () => {
@@ -77,7 +78,7 @@ const CrearProducto: React.FC = () => {
         try {
             const url = `https://api.mercadolibre.com/items`;
             console.log('Enviando producto a:', url);
-            
+
             // Example payload with product data
             const payload = {
                 title: producto.nombre || "Sin título",
@@ -95,7 +96,7 @@ const CrearProducto: React.FC = () => {
                     { source: "https://example.com/image1.jpg" }, // Add image pictures
                 ],
             };
-    
+
             const response = await fetch(url, {
                 method: "POST",
                 headers: {
@@ -104,10 +105,10 @@ const CrearProducto: React.FC = () => {
                 },
                 body: JSON.stringify(payload),
             });
-    
+
             const data = await response.json();
             console.log("Respuesta al crear producto:", data);
-    
+
             if (response.ok) {
                 alert("Producto creado exitosamente.");
             } else {
@@ -118,7 +119,6 @@ const CrearProducto: React.FC = () => {
             alert("Hubo un error al intentar crear el producto.");
         }
     };
-
 
     return (
         <div className={styles.crearProducto}>
@@ -185,11 +185,45 @@ const CrearProducto: React.FC = () => {
             <button onClick={crearProducto} className="btn btn-primary">Crear Producto</button>
 
             {categoriaSeleccionada && (
-                <div>
-                    <h3>Producto generado:</h3>
-                    <pre>{JSON.stringify(producto, null, 2)}</pre>
-                </div>
+                <section className="mt-4">
+                    <header>
+                        <h3>Producto generado:</h3>
+                    </header>
+                    <div className="card" style={{ boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)', borderRadius: '8px' }}>
+                        <div className="card-body">
+                            <div className="container" style={{ padding: '1rem' }}>
+                                <table className="table table-sm table-bordered table-striped" style={{ width: '100%', margin: '0' }}>
+                                    <thead>
+                                        <tr>
+                                            <th scope="col">Categoría</th>
+                                            <th scope="col">Detalles</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>{categorias.find(c => c.id === producto.categoria)?.name}</td>
+                                            <td>{producto.titulo}</td>
+                                        </tr>
+                                        {Object.keys(producto).map((key) => (
+                                            key !== 'titulo' && key !== 'categoria' && (
+                                                <tr key={key}>
+                                                    <th scope="row">{atributos.find(attr => attr.id === key)?.name || key}</th>
+                                                    <td>{atributos.find(attr => attr.id === key)?.values.find((val: any) => val.id === producto[key])?.name || producto[key]}</td>
+                                                </tr>
+                                            )
+                                        ))}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </section>
             )}
+            <div className="mt-4">
+                <Link to="/sync/productos/home">
+                    <button className="btn btn-secondary">Volver a HomeProductos</button>
+                </Link>
+            </div>
         </div>
     );
 };
