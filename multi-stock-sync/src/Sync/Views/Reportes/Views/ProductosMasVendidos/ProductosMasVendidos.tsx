@@ -14,8 +14,7 @@ const Productos: React.FC = () => {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     const [selectedMonth, setSelectedMonth] = useState<string>('2024-10');
-    const [currentPage, setCurrentPage] = useState<number>(1);
-    const itemsPerPage = 10; 
+    const itemsPerPage = 3; 
     const chartRef = useRef<HTMLDivElement | null>(null);
     const pdfRef = useRef<jsPDF | null>(null);
     const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
@@ -35,6 +34,7 @@ const Productos: React.FC = () => {
                 const data = response.data;
                 if (data.status === 'success') {
                     setProductos(data.data);
+                    console.log(data)
                 } else {
                     setError('No se pudieron obtener los productos');
                 }
@@ -47,10 +47,15 @@ const Productos: React.FC = () => {
         fetchProductos();
     }, [client_id, selectedMonth]);
 
+    const [currentPage, setCurrentPage] = useState<number>(1);
     const indexOfLastProduct = currentPage * itemsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
     const currentProducts = productos.slice(indexOfFirstProduct, indexOfLastProduct);
 
+    // Calcular el total de páginas
+    const totalPages = Math.ceil(productos.length / itemsPerPage);
+
+    // Función para manejar la paginación
     const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
     const handleGraphItemsChange = (value: number) => (value);
 
@@ -141,6 +146,9 @@ const Productos: React.FC = () => {
         }
     };
 
+    const bestSellingProduct = productos.length > 0 ? productos[0] : null; // Suponiendo que el primer producto es el más vendido
+    const leastSellingProduct = productos.length > 0 ? productos[productos.length - 1] : null; // Suponiendo que el último producto es el menos vendido
+
     return (
         <div className="container mt-4">
             <h1 className="text-center mb-4">Reporte de Productos</h1>
@@ -155,34 +163,44 @@ const Productos: React.FC = () => {
                 </div>
 
                 {/* Columna derecha con las tarjetas */}
-                <div className="col-md-4">
-                    <div className="card shadow-sm mb-3">
-                        <div className="card-body">
-                            <h5 className="card-title">Producto Más Vendido</h5>
-                            {mostSold ? (
-                                <>
-                                    <h6 className="card-subtitle mb-2 text-muted">{mostSold.title}</h6>
-                                    <p className="card-text">Cantidad: {mostSold.quantity}</p>
-                                    <p className="card-text">Total: {currencyFormat.format(mostSold.total_amount)}</p> {/* Formato CLP */}
-                                </>
-                            ) : (
-                                <p className="card-text">No hay datos disponibles.</p>
-                            )}
-                        </div>
+                <div className="card shadow-sm mb-3">
+                    <div className="card-body">
+                        {bestSellingProduct ? (
+                            <div className="col-md-4 mb-3"> {/* Ajusta el tamaño de las columnas según tu diseño */}
+                                <div className="card shadow-sm">
+                                    <div className="card-body">
+                                        <h5 className="card-title">{bestSellingProduct.title || "Sin título"}</h5>
+                                        <p className="card-text">Cantidad: {bestSellingProduct.quantity ?? "No disponible"}</p>
+                                        <p className="card-text">Total: ${bestSellingProduct.total_amount ?? "No disponible"}</p>
+                                        <p className="card-text">Variante: {bestSellingProduct.variation_id || "N/A"}</p>
+                                        <p className="card-text">Talla: {bestSellingProduct.size || "N/A"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <p>No hay datos disponibles para el producto más vendido.</p>
+                        )}
                     </div>
-                    <div className="card shadow-sm">
-                        <div className="card-body">
-                            <h5 className="card-title">Producto Menos Vendido</h5>
-                            {leastSold ? (
-                                <>
-                                    <h6 className="card-subtitle mb-2 text-muted">{leastSold.title}</h6>
-                                    <p className="card-text">Cantidad: {leastSold.quantity}</p>
-                                    <p className="card-text">Total: {currencyFormat.format(leastSold.total_amount)}</p> {/* Formato CLP */}
-                                </>
-                            ) : (
-                                <p className="card-text">No hay datos disponibles.</p>
-                            )}
-                        </div>
+                </div>
+
+                {/* Tarjeta para el Producto Menos Vendido */}
+                <div className="card shadow-sm mb-3">
+                    <div className="card-body">
+                        {leastSellingProduct ? (
+                            <div className="col-md-4 mb-3"> {/* Ajusta el tamaño de las columnas según tu diseño */}
+                                <div className="card shadow-sm">
+                                    <div className="card-body">
+                                        <h5 className="card-title">{leastSellingProduct.title || "Sin título"}</h5>
+                                        <p className="card-text">Cantidad: {leastSellingProduct.quantity ?? "No disponible"}</p>
+                                        <p className="card-text">Total: ${leastSellingProduct.total_amount ?? "No disponible"}</p>
+                                        <p className="card-text">Variante: {leastSellingProduct.variation_id || "N/A"}</p>
+                                        <p className="card-text">Talla: {leastSellingProduct.size || "N/A"}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <p>No hay datos disponibles para el producto menos vendido.</p>
+                        )}
                     </div>
                 </div>
             </div>
@@ -213,6 +231,9 @@ const Productos: React.FC = () => {
                             <th>Título</th>
                             <th>Cantidad</th>
                             <th>Total</th>
+                            <th>Variante</th>
+                            <th>Talla</th>
+                            <th>Ver Reseña</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -220,7 +241,17 @@ const Productos: React.FC = () => {
                             <tr key={index}>
                                 <td>{producto.title}</td>
                                 <td>{producto.quantity}</td>
-                                <td>{currencyFormat.format(producto.total_amount)}</td> {/* Formato CLP */}
+                                <td>{currencyFormat.format(producto.total_amount)}</td>
+                                <td>{producto.variation_id}</td>
+                                <td>{producto.size}</td>
+                                <td>
+                                    <button 
+                                        className="btn btn-primary"
+                                        onClick={() => verReseña(producto)}
+                                    >
+                                        Ver Reseña
+                                    </button>
+                                </td>
                             </tr>
                         ))}
                     </tbody>
@@ -228,13 +259,38 @@ const Productos: React.FC = () => {
 
                 {/* Paginación */}
                 <div className="d-flex justify-content-between">
-                    <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="btn btn-primary">
-                        Anterior
-                    </button>
-                    <span>Página {currentPage}</span>
-                    <button onClick={() => paginate(currentPage + 1)} disabled={indexOfLastProduct >= productos.length} className="btn btn-primary">
-                        Siguiente
-                    </button>
+                    <div>
+                        {/* Controles de paginación */}
+                        <div className="d-flex justify-content-between">
+                            <button 
+                                onClick={() => paginate(currentPage - 1)} 
+                                disabled={currentPage === 1} 
+                                className="btn btn-primary"
+                            >
+                                Anterior
+                            </button>
+                            <div className="pagination">
+                            {Array.from({ length: totalPages }, (_, index) => (
+                                <button
+                                    key={index + 1}
+                                    onClick={() => paginate(index + 1)}
+                                    className={`btn ${currentPage === index + 1 ? 'btn-primary' : 'btn-secondary'}`}
+                                    style={{ margin: '0 10px' }}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                            </div>
+                            {/*<span>Página {currentPage} de {totalPages}</span>*/}
+                            <button 
+                                onClick={() => paginate(currentPage + 1)} 
+                                disabled={currentPage === totalPages} 
+                                className="btn btn-primary"
+                            >
+                                Siguiente
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
