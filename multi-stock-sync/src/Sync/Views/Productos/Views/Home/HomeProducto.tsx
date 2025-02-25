@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../../../axiosConfig'; // Importa la configuración de Axios
 import { Container, Row, Col, Pagination, Button } from 'react-bootstrap';
 import Swal from 'sweetalert2';
@@ -8,7 +9,6 @@ import ProductTable from './ProductTable';
 import ProductModal from './ProductModal';
 import SearchBar from './SearchBar';
 import ConnectionDropdown from './ConnectionDropdown';
-import AccionesButton from './AccionesButton'; // Import the AccionesButton component
 
 interface Connection {
   client_id: string;
@@ -52,6 +52,7 @@ const statusDictionary: { [key: string]: string } = {
 const MySwal = withReactContent(Swal);
 
 const HomeProducto = () => {
+  const navigate = useNavigate();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState('');
   const [loading, setLoading] = useState(false);
@@ -71,6 +72,7 @@ const HomeProducto = () => {
   const [offset, setOffset] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
   const [categories, setCategories] = useState<{ [key: string]: string }>({});
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Add selectedProduct state
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -311,13 +313,7 @@ const HomeProducto = () => {
             <Row className="mb-3 mt-3">
               <Col>
                 <h1>Productos</h1>
-              </Col>
-              <Col className="text-end">
-                <AccionesButton 
-                  productId={currentProduct?.id || ''} 
-                  onUpdateStatus={updateStatus} 
-                /> {/* Add the AccionesButton component */}
-              </Col>
+              </Col>               
             </Row>
             <Row className="mb-3">
               <Col md={4}>
@@ -336,6 +332,23 @@ const HomeProducto = () => {
                   suggestions={[]} // Pass suggestions if available
                 />
               </Col>
+              <Col md={4} className="d-flex align-items-center">
+                <Button
+                  variant="primary"
+                  onClick={() => {
+                    if (selectedConnection) {
+                      navigate(`/sync/productos/editar/${selectedConnection}`);
+                    } else {
+                      alert('Seleccione una conexión para editar productos');
+                    }
+                  }}
+                >
+                  Editar
+                </Button>
+                <Button variant="success" className="ms-2" onClick={() => navigate('/sync/productos/crear')}>
+                  Crear
+                </Button>
+              </Col>
             </Row>
             {!selectedConnection && (
               <Row className="mb-3">              
@@ -352,7 +365,8 @@ const HomeProducto = () => {
                 onOpenModal={openModal}
                 formatPriceCLP={formatPriceCLP}
                 translateStatus={translateStatus}
-                onUpdateStatus={updateStatus} // Pass the onUpdateStatus function
+                onUpdateStatus={updateStatus}
+                onSelectProduct={setSelectedProduct} // Pass setSelectedProduct to ProductTable
               />
             )}
             <Row className="mt-3">

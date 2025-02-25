@@ -1,6 +1,5 @@
 import React from 'react';
 import { Dropdown } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
 
 interface ProductActionsDropdownProps {
   productId: string;
@@ -19,12 +18,6 @@ const ProductActionsDropdown: React.FC<ProductActionsDropdownProps> = ({ product
       </Dropdown.Toggle>
 
       <Dropdown.Menu>
-        <Dropdown.Item as={Link} to={`/sync/productos/editar/${productId}`}>
-          Editar Producto
-        </Dropdown.Item>
-        <Dropdown.Item as={Link} to="/sync/productos/crear">
-          Crear Producto
-        </Dropdown.Item>
         <Dropdown.Divider />
         <Dropdown.Item onClick={() => handleStatusChange('active')}>
           Activar Producto

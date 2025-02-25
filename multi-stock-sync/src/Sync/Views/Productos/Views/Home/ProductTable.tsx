@@ -29,6 +29,7 @@ interface ProductTableProps {
   formatPriceCLP: (price: number) => string;
   translateStatus: (status: string) => string;
   onUpdateStatus: (productId: string, newStatus: string) => void;
+  onSelectProduct: (product: Product) => void; // Add this prop
 }
 
 const ProductTable: React.FC<ProductTableProps> = ({
@@ -42,6 +43,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
   formatPriceCLP,
   translateStatus,
   onUpdateStatus,
+  onSelectProduct, // Destructure the new prop
 }) => {
   return (
     <Accordion defaultActiveKey="0">
@@ -81,6 +83,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
                       <motion.tr
                         key={producto.id}
                         transition={{ type: "spring", stiffness: 300 }}
+                        onClick={() => onSelectProduct(producto)} // Add onClick to select product
+                        style={{ cursor: 'pointer' }} // Add cursor pointer for better UX
                       >
                         <td className="text-center">
                           <motion.img
