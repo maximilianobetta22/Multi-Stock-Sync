@@ -180,7 +180,6 @@ const DetalleVentas: React.FC = () => {
 
         {/* Gráfico de Ventas */}
         <div className="col-md-9">
-          <h2>Ventas</h2>
           <Bar
             data={{
               labels: ventas.map((v) => v.title),
