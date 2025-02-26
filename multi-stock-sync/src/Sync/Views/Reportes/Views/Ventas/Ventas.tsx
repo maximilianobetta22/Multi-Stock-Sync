@@ -35,7 +35,9 @@ const DetalleVentas: React.FC = () => {
   const [yearSeleccionado, setYearSeleccionado] = useState<number>(new Date().getFullYear());
   const [monthSeleccionado, setMonthSeleccionado] = useState<number>(new Date().getMonth() + 1);
   const [ventas, setVentas] = useState<any[]>([]);
+  const [ventasComparacion, setVentasComparacion] = useState<any[]>([]);
 
+  const [yearComparacion, setYearComparacion] = useState<number | null>(null);
   // Estados para mostrar/ocultar filtros
   const [mostrarFiltroAño, setMostrarFiltroAño] = useState<boolean>(false);
   const [mostrarFiltroMes, setMostrarFiltroMes] = useState<boolean>(false);
@@ -97,6 +99,36 @@ const DetalleVentas: React.FC = () => {
     }
   }, [client_id, yearSeleccionado, monthSeleccionado]);
 
+  const fetchVentasComparacion = useCallback(async () => {
+    if (!client_id || !yearComparacion) return;
+    try {
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, {
+        params: {
+          year: yearComparacion,
+          month: monthSeleccionado.toString().padStart(2, '0')
+        }
+      });
+
+      const ventasComparacionData = response.data.data?.[`${yearComparacion}-${monthSeleccionado.toString().padStart(2, '0')}`]?.orders?.flatMap((order: any) =>
+        order.sold_products.map((product: any) => ({
+          title: product.title,
+          quantity: product.quantity,
+          price: product.price
+        }))
+      ) || [];
+
+      setVentasComparacion(ventasComparacionData);
+    } catch (error) {
+      console.error('Error al obtener datos de ventas del año comparativo:', error);
+    }
+  }, [client_id, yearComparacion, monthSeleccionado]);
+
+  useEffect(() => {
+    if (yearComparacion) {
+      fetchVentasComparacion();
+    }
+  }, [fetchVentasComparacion, yearComparacion]);
+
   useEffect(() => {
     fetchUserData();
     fetchVentas();
@@ -104,6 +136,37 @@ const DetalleVentas: React.FC = () => {
 
   if (loading) return <div>Cargando...</div>;
   if (error) return <div>{error}</div>;
+
+  const datasets = [
+    {
+      label: `Ingresos ${yearSeleccionado}`,
+      data: ventas.map((v) => v.price * v.quantity),
+      backgroundColor: "rgba(75, 192, 192, 0.6)",
+    },
+  ];
+
+  if (yearComparacion && ventasComparacion.length > 0) {
+    datasets.push({
+      label: `Ingresos ${yearComparacion}`,
+      data: ventas.map((_, index) =>
+        ventasComparacion[index]?.price * ventasComparacion[index]?.quantity || 0
+      ),
+      backgroundColor: "rgba(192, 75, 75, 0.6)",
+    });
+  }
+  const totalIngresos = (ventas: any[]) =>
+    ventas.reduce((acc, v) => acc + v.price * v.quantity, 0);
+
+  const ingresosAñoSeleccionado = totalIngresos(ventas);
+  const ingresosAñoComparacion = totalIngresos(ventasComparacion);
+
+
+  const diferenciaPorcentaje = yearComparacion
+    ? ((ingresosAñoSeleccionado - ingresosAñoComparacion) / ingresosAñoComparacion) * 100
+    : 0;
+
+  // Ahora datasets siempre tendrá una estructura válida.
+
 
   return (
     <div className="container mt-4">
@@ -120,12 +183,9 @@ const DetalleVentas: React.FC = () => {
       )}
 
       <div className="row">
-        {/* Filtros en la columna izquierda */}
         <div className="col-md-3 d-flex flex-column">
-          <button className="btn btn-primary mb-2">Agregar Calendario Comparativo</button>
-
           {/* Filtro Año */}
-          <button 
+          <button
             className="btn btn-secondary mb-2"
             onClick={() => setMostrarFiltroAño(!mostrarFiltroAño)}
           >
@@ -140,7 +200,7 @@ const DetalleVentas: React.FC = () => {
           )}
 
           {/* Filtro Mes */}
-          <button 
+          <button
             className="btn btn-secondary mb-2"
             onClick={() => setMostrarFiltroMes(!mostrarFiltroMes)}
           >
@@ -154,28 +214,6 @@ const DetalleVentas: React.FC = () => {
             </select>
           )}
 
-          {/* Filtro Semana con Calendario */}
-          <button className="btn btn-secondary mb-2" onClick={() => setMostrarFiltroSemana(!mostrarFiltroSemana)}>
-            {mostrarFiltroSemana ? "Ocultar Filtro por Semana" : "Filtrar por Semana"}
-          </button>
-          {mostrarFiltroSemana && (
-            <DatePicker
-              selected={fechaSeleccionada}
-              onChange={(date: Date | null) => setFechaSeleccionada(date)}
-              dateFormat="yyyy-MM-dd"
-              showWeekNumbers
-              highlightDates={[startOfWeek(new Date()), endOfWeek(new Date())]}
-              className="form-control mb-2"
-            />
-          )}
-
-          {/* Filtro Día */}
-          <button className="btn btn-secondary mb-2" onClick={() => setMostrarFiltroDia(!mostrarFiltroDia)}>
-            {mostrarFiltroDia ? "Ocultar Filtro por Día" : "Filtrar por Día"}
-          </button>
-          {mostrarFiltroDia && (
-            <input type="date" className="form-control mb-2" />
-          )}
         </div>
 
         {/* Gráfico de Ventas */}
@@ -183,17 +221,39 @@ const DetalleVentas: React.FC = () => {
           <Bar
             data={{
               labels: ventas.map((v) => v.title),
-              datasets: [
-                {
-                  label: "Ingresos",
-                  data: ventas.map((v) => v.price * v.quantity),
-                  backgroundColor: "rgba(75, 192, 192, 0.6)",
-                },
-              ],
+              datasets: datasets,
             }}
             options={{ responsive: true }}
-          />
+          />;
+
         </div>
+        <button
+          className="btn btn-secondary mb-2"
+          onClick={() => setYearComparacion(yearComparacion ? null : new Date().getFullYear() - 1)}
+        >
+          {yearComparacion ? "Ocultar Comparación Año a Año" : "Comparar con Año Anterior"}
+        </button>
+
+        {yearComparacion && (
+          <select className="form-select mt-2" value={yearComparacion} onChange={(e) => setYearComparacion(Number(e.target.value))}>
+            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
+              <option key={year} value={year}>{year}</option>
+            ))}
+          </select>
+        )}
+
+        <div className="col-md-3">
+          <h4>Ingresos {yearSeleccionado}: ${ingresosAñoSeleccionado.toFixed(2)}</h4>
+          {yearComparacion && (
+            <>
+              <h4>Ingresos {yearComparacion}: ${ingresosAñoComparacion.toFixed(2)}</h4>
+              <h4>
+                Diferencia: {diferenciaPorcentaje.toFixed(0)}%
+              </h4>
+            </>
+          )}
+        </div>
+
       </div>
     </div>
   );
