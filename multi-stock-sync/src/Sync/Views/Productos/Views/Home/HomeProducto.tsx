@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../../../axiosConfig'; // Importa la configuración de Axios
 import { Container, Row, Col, Pagination, Button } from 'react-bootstrap';
 import Swal from 'sweetalert2';
@@ -37,6 +38,19 @@ interface Product {
   status: string;
 }
 
+interface ProductModalProps {
+  show: boolean;
+  onHide: () => void;
+  product: Product | null;
+  modalContent: 'main' | 'stock' | 'pause';
+  onUpdateStock: (productId: string, newStock: number, pause?: boolean) => Promise<void>;
+  onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
+  onStockChange: (productId: string, newStock: number) => void;
+  stockEdit: { [key: string]: number };
+  fetchProducts: () => void;
+  setModalContent: React.Dispatch<React.SetStateAction<'main' | 'stock' | 'pause'>>;
+}
+
 const statusDictionary: { [key: string]: string } = {
   active: 'Activo',
   paused: 'Pausado',
@@ -50,7 +64,11 @@ const statusDictionary: { [key: string]: string } = {
 
 const MySwal = withReactContent(Swal);
 
+/**
+ * HomeProducto component is the main component for managing and displaying products.
+ */
 const HomeProducto = () => {
+  const navigate = useNavigate();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState('');
   const [loading, setLoading] = useState(false);
@@ -70,6 +88,7 @@ const HomeProducto = () => {
   const [offset, setOffset] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
   const [categories, setCategories] = useState<{ [key: string]: string }>({});
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Add selectedProduct state
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -257,6 +276,8 @@ const HomeProducto = () => {
     }
   };
 
+  
+
   const openModal = (product: Product) => {
     setCurrentProduct(product);
     setModalContent('main');
@@ -293,6 +314,11 @@ const HomeProducto = () => {
     fetchProducts(selectedConnection, searchQuery, limit, 0, category);
   };
 
+  const onSelectSuggestion = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    fetchProducts(selectedConnection, suggestion, limit, 0);
+  };
+
   const categorizedProducts = categorizeProducts(allProductos);
 
   const totalPages = Math.ceil(totalProducts / limit);
@@ -305,95 +331,117 @@ const HomeProducto = () => {
     <>
       {(loadingConnections || loading || isUpdating) && <LoadingDinamico variant="container" />}
       <Container>
-        {!loadingConnections && !loading && !isUpdating && (
-          <section>
-            <Row className="mb-3 mt-3">
-              <Col>
-                <h1>Productos</h1>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col md={4}>
-                <ConnectionDropdown
-                  connections={connections}
-                  selectedConnection={selectedConnection}
-                  onChange={handleConnectionChange}
-                />
-                <br />
-                <p>Por favor, seleccione una conexión para ver los productos.</p>
-              </Col>
-              <Col md={4}>
-                <SearchBar
-                  searchQuery={searchQuery}
-                  onSearch={handleSearch}
-                />
-              </Col>
-            </Row>
-            {!selectedConnection && (
-              <Row className="mb-3">              
-            </Row>
-            )}
-            {selectedConnection && (
-              <ProductTable
-                categorizedProducts={categorizedProducts}
-                categories={categories}
-                isEditing={isEditing}
-                stockEdit={stockEdit}
-                onStockChange={handleStockChange}
-                onUpdateStock={updateStock}
-                onOpenModal={openModal}
-                formatPriceCLP={formatPriceCLP}
-                translateStatus={translateStatus}
-              />
-            )}
-            <Row className="mt-3">
-              <Col>
-                <Button
-                  variant="secondary"
-                  onClick={() => handlePageChange(offset - limit)}
-                  disabled={offset === 0}
-                >
-                  Anterior
-                </Button>
-              </Col>
-              <Col className="text-center">
-                <Pagination>
-                  {Array.from({ length: endPage - startPage }, (_, index) => (
-                    <Pagination.Item
-                      key={startPage + index}
-                      active={startPage + index === currentPage}
-                      onClick={() => handlePageChange((startPage + index) * limit)}
-                    >
-                      {startPage + index + 1}
-                    </Pagination.Item>
-                  ))}
-                </Pagination>
-              </Col>
-              <Col className="text-end">
-                <Button
-                  variant="secondary"
-                  onClick={() => handlePageChange(offset + limit)}
-                  disabled={offset + limit >= totalProducts}
-                >
-                  Siguiente
-                </Button>
-              </Col>
-            </Row>
-          </section>
+      {!loadingConnections && !loading && !isUpdating && (
+        <section>
+        <Row className="mb-3 mt-3">
+          <Col>
+          <h1>Productos</h1>
+          </Col>               
+        </Row>
+        <Row className="mb-3">
+          <Col md={4}>
+          <ConnectionDropdown
+            connections={connections}
+            selectedConnection={selectedConnection}
+            onChange={handleConnectionChange}
+          />
+          <br />
+          <p>Por favor, seleccione una conexión para ver los productos.</p>
+          </Col>
+          <Col md={4}>
+          <SearchBar
+            searchQuery={searchQuery}
+            onSearch={handleSearch}
+            suggestions={[]} // Pass suggestions if available
+            onSelectSuggestion={onSelectSuggestion} // Add onSelectSuggestion handler
+          />
+          </Col>
+          <Col md={4} className="d-flex align-items-center">
+          <Button
+            variant="primary"
+            onClick={() => {
+            if (selectedConnection) {
+              navigate(`/sync/productos/editar/${selectedConnection}`);
+            } else {
+              alert('Seleccione una conexión para editar productos');
+            }
+            }}
+          >
+            Editar
+          </Button>
+          <Button variant="success" className="ms-2" onClick={() => navigate('/sync/productos/crear')}>
+            Crear
+          </Button>
+          </Col>
+        </Row>
+        {!selectedConnection && (
+          <Row className="mb-3">              
+        </Row>
         )}
+        {selectedConnection && (
+          <ProductTable
+          categorizedProducts={categorizedProducts}
+          categories={categories}
+          isEditing={isEditing}
+          stockEdit={stockEdit}
+          onStockChange={handleStockChange}
+          onUpdateStock={updateStock}
+          onOpenModal={openModal}
+          formatPriceCLP={formatPriceCLP}
+          translateStatus={translateStatus}
+          onUpdateStatus={updateStatus}
+          onSelectProduct={setSelectedProduct} // Pass setSelectedProduct to ProductTable
+          onEditProduct={(product) => console.log('Edit product', product)} // Add onEditProduct handler
+          />
+        )}
+        <Row className="mt-3">
+          <Col>
+          <Button
+            variant="secondary"
+            onClick={() => handlePageChange(offset - limit)}
+            disabled={offset === 0}
+          >
+            Anterior
+          </Button>
+          </Col>
+          <Col className="text-center">
+          <Pagination>
+            {Array.from({ length: endPage - startPage }, (_, index) => (
+            <Pagination.Item
+              key={startPage + index}
+              active={startPage + index === currentPage}
+              onClick={() => handlePageChange((startPage + index) * limit)}
+            >
+              {startPage + index + 1}
+            </Pagination.Item>
+            ))}
+          </Pagination>
+          </Col>
+          <Col className="text-end">
+          <Button
+            variant="secondary"
+            onClick={() => handlePageChange(offset + limit)}
+            disabled={offset + limit >= totalProducts}
+          >
+            Siguiente
+          </Button>
+          </Col>
+        </Row>
+        </section>
+      )}
       </Container>
 
       <ProductModal
-        show={modalIsOpen}
-        onHide={closeModal}
-        product={currentProduct}
-        modalContent={modalContent}
-        onUpdateStock={updateStock}
-        onUpdateStatus={updateStatus}
-        onStockChange={handleStockChange}
-        stockEdit={stockEdit}
-        fetchProducts={() => fetchProducts(selectedConnection, searchQuery, limit, offset)}
-        setModalContent={setModalContent}
+      show={modalIsOpen}
+      onHide={closeModal}
+      product={currentProduct}
+      modalContent={modalContent}
+      onUpdateStock={updateStock}
+      onUpdateStatus={updateStatus}
+      onStockChange={handleStockChange}
+      stockEdit={stockEdit}
+      fetchProducts={() => fetchProducts(selectedConnection, searchQuery, limit, offset)}
+      setModalContent={setModalContent}
       />
     </>
   );
