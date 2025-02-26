@@ -7,8 +7,6 @@ import autoTable from 'jspdf-autotable';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as XLSX from 'xlsx';
 import axiosInstance from '../../../../../axiosConfig';
-import ResenaProducto from './ProductosResena';
-
 
 const Productos: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
@@ -25,21 +23,6 @@ const Productos: React.FC = () => {
         style: 'currency',
         currency: 'CLP',
     });
-
-    const [showResena, setShowResena] = useState(false);
-    const [selectedClientId, setSelectedClientId] = useState(null);
-    const [selectedProductId, setSelectedProductId] = useState(null);
-
-    const handleShowResena = (clientId, productId) => {
-        setSelectedClientId(clientId);
-        setSelectedProductId(productId);
-        setShowResena(true);
-    };
-
-    const handleCloseResena = () => {
-        setShowResena(false);
-    };
-
 
     useEffect(() => {
         const fetchProductos = async () => {
@@ -273,7 +256,6 @@ const Productos: React.FC = () => {
                                 <td>
                                     <button 
                                         className="btn btn-primary"
-                                        onClick={() => handleShowResena(producto.clientId, producto.variation_id)}
                                     >
                                         Ver Reseña
                                     </button>
@@ -361,13 +343,6 @@ const Productos: React.FC = () => {
                     <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
                 </Modal.Footer>
             </Modal>
-            {showResena && (
-                <ResenaProducto 
-                    clientId={selectedClientId} 
-                    productId={selectedProductId} 
-                    onClose={handleCloseResena} 
-                />
-            )}
         </div>
     );
 };
