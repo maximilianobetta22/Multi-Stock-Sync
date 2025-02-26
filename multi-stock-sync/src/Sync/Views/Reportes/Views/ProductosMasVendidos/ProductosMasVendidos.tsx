@@ -7,6 +7,8 @@ import autoTable from 'jspdf-autotable';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as XLSX from 'xlsx';
 import axiosInstance from '../../../../../axiosConfig';
+import ResenaProducto from './ProductosResena';
+
 
 const Productos: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
@@ -23,6 +25,21 @@ const Productos: React.FC = () => {
         style: 'currency',
         currency: 'CLP',
     });
+
+    const [showResena, setShowResena] = useState(false);
+    const [selectedClientId, setSelectedClientId] = useState(null);
+    const [selectedProductId, setSelectedProductId] = useState(null);
+
+    const handleShowResena = (clientId, productId) => {
+        setSelectedClientId(clientId);
+        setSelectedProductId(productId);
+        setShowResena(true);
+    };
+
+    const handleCloseResena = () => {
+        setShowResena(false);
+    };
+
 
     useEffect(() => {
         const fetchProductos = async () => {
@@ -80,6 +97,14 @@ const Productos: React.FC = () => {
     const chartOptions = {
         responsive: true,
         plugins: {
+            legend: {
+                position: 'right', // Mueve la leyenda a la derecha
+                align: 'center', // Alinea al centro verticalmente
+                labels: {
+                    boxWidth: 20, // Tamaño del cuadro de color en la leyenda
+                    padding: 15, // Espaciado entre elementos
+                },
+            },
             tooltip: {
                 callbacks: {
                     label: (context: any) => {
@@ -190,6 +215,7 @@ const Productos: React.FC = () => {
                             <div className="col-md-4 mb-3"> {/* Ajusta el tamaño de las columnas según tu diseño */}
                                 <div className="card shadow-sm">
                                     <div className="card-body">
+                                        <p>hola: {client_id}</p>
                                         <h5 className="card-title">{leastSellingProduct.title || "Sin título"}</h5>
                                         <p className="card-text">Cantidad: {leastSellingProduct.quantity ?? "No disponible"}</p>
                                         <p className="card-text">Total: ${leastSellingProduct.total_amount ?? "No disponible"}</p>
@@ -247,7 +273,7 @@ const Productos: React.FC = () => {
                                 <td>
                                     <button 
                                         className="btn btn-primary"
-                                        onClick={() => verReseña(producto)}
+                                        onClick={() => handleShowResena(producto.clientId, producto.variation_id)}
                                     >
                                         Ver Reseña
                                     </button>
@@ -335,6 +361,13 @@ const Productos: React.FC = () => {
                     <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
                 </Modal.Footer>
             </Modal>
+            {showResena && (
+                <ResenaProducto 
+                    clientId={selectedClientId} 
+                    productId={selectedProductId} 
+                    onClose={handleCloseResena} 
+                />
+            )}
         </div>
     );
 };
