@@ -244,7 +244,6 @@ const Productos: React.FC = () => {
                             <th>Total</th>
                             <th>Variante</th>
                             <th>Talla</th>
-                            <th>Ver Reseña</th>
                         </tr>
                     </thead>
                     <tbody>
