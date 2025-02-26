@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Accordion, Table, Button, FormControl } from "react-bootstrap";
 import { motion } from "framer-motion";
 import ProductActionsDropdown from "./ProductActionsDropdown";
@@ -29,7 +29,8 @@ interface ProductTableProps {
   formatPriceCLP: (price: number) => string;
   translateStatus: (status: string) => string;
   onUpdateStatus: (productId: string, newStatus: string) => void;
-  onSelectProduct: (product: Product) => void; // Add this prop
+  onSelectProduct: (product: Product) => void;
+  onEditProduct: (product: Product) => void; // Add this prop
 }
 
 const ProductTable: React.FC<ProductTableProps> = ({
@@ -43,8 +44,21 @@ const ProductTable: React.FC<ProductTableProps> = ({
   formatPriceCLP,
   translateStatus,
   onUpdateStatus,
-  onSelectProduct, // Destructure the new prop
+  onSelectProduct,
+  onEditProduct, // Destructure the new prop
 }) => {
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
+  const handleEditClick = (productId: string) => {
+    setEditingProductId(productId);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, productId: string) => {
+    const { name, value } = e.target as HTMLInputElement;
+    const product = categorizedProducts[Object.keys(categorizedProducts).find(categoryId => categorizedProducts[categoryId].some(p => p.id === productId))!].find(p => p.id === productId)!;
+    onEditProduct({ ...product, [name]: value });
+  };
+
   return (
     <Accordion defaultActiveKey="0">
       {Object.keys(categorizedProducts).map((categoryId, index) => (
@@ -83,8 +97,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
                       <motion.tr
                         key={producto.id}
                         transition={{ type: "spring", stiffness: 300 }}
-                        onClick={() => onSelectProduct(producto)} // Add onClick to select product
-                        style={{ cursor: 'pointer' }} // Add cursor pointer for better UX
+                        onClick={() => onSelectProduct(producto)}
+                        style={{ cursor: 'pointer' }}
                       >
                         <td className="text-center">
                           <motion.img
@@ -96,40 +110,39 @@ const ProductTable: React.FC<ProductTableProps> = ({
                           />
                         </td>
                         <td>{producto.id}</td>
-                        <td>{producto.title}</td>
-                        <td>{producto.category_id}</td>
-                        <td>{formatPriceCLP(producto.price)}</td>
                         <td>
-                          {producto.available_quantity}
-                          {isEditing[producto.id] && (
-                            <>
-                              <FormControl
-                                type="number"
-                                value={stockEdit[producto.id] || producto.available_quantity}
-                                onChange={(e) => onStockChange(producto.id, parseInt(e.target.value))}
-                                min="0"
-                                className="d-inline-block w-50"
-                              />
-                              <motion.button
-                                className="btn btn-success ms-2"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={async () => {
-                                  await onUpdateStock(producto.id, stockEdit[producto.id]);
-                                }}
-                              >
-                                Guardar
-                              </motion.button>
-                            </>
+                          {editingProductId === producto.id ? (
+                            <FormControl
+                              type="text"
+                              name="title"
+                              value={producto.title}
+                              onChange={(e) => handleInputChange(e, producto.id)}
+                            />
+                          ) : (
+                            producto.title
                           )}
                         </td>
+                        <td>{producto.category_id}</td>
+                        <td>
+                          {editingProductId === producto.id ? (
+                            <FormControl
+                              type="number"
+                              name="price"
+                              value={producto.price}
+                              onChange={(e) => handleInputChange(e, producto.id)}
+                            />
+                          ) : (
+                            formatPriceCLP(producto.price)
+                          )}
+                        </td>
+                        <td>{producto.available_quantity}</td>
                         <td>no especificada</td>
                         <td>no especificado</td>
                         <td>{translateStatus(producto.status)}</td>
                         <td>
                           <ProductActionsDropdown
                             productId={producto.id}
-                            onUpdateStatus={onUpdateStatus}
+                            onEdit={handleEditClick}
                           />
                         </td>
                       </motion.tr>

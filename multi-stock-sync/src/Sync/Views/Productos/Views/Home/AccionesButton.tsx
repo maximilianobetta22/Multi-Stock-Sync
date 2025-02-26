@@ -4,9 +4,16 @@ import { Link } from 'react-router-dom';
 
 interface ProductActionsDropdownProps {
   productId: string;
-  onUpdateStatus: (productId: string, newStatus: string) => void;
+  onUpdateStatus: (productId: string, status: string) => void;
 }
 
+/**
+ * ProductActionsDropdown component provides a dropdown menu for product actions.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.productId - ID of the product
+ * @param {function} props.onUpdateStatus - Function to update product status
+ */
 const ProductActionsDropdown: React.FC<ProductActionsDropdownProps> = ({ productId, onUpdateStatus }) => {
   return (
     <Dropdown>

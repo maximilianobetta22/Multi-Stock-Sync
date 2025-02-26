@@ -5,9 +5,19 @@ interface SearchBarProps {
   searchQuery: string;
   onSearch: (query: string) => void;
   suggestions: string[];
+  onSelectSuggestion: (suggestion: string) => void;
 }
 
-const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearch, suggestions }) => {
+/**
+ * SearchBar component allows users to input a search query and displays suggestions.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.searchQuery - Initial search query
+ * @param {function} props.onSearch - Function to handle search action
+ * @param {string[]} props.suggestions - List of suggestions to display
+ * @param {function} props.onSelectSuggestion - Function to handle suggestion selection
+ */
+const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearch, suggestions, onSelectSuggestion }) => {
   const [query, setQuery] = useState(searchQuery);
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -27,6 +37,7 @@ const SearchBar: React.FC<SearchBarProps> = ({ searchQuery, onSearch, suggestion
     setQuery(suggestion);
     setFilteredSuggestions([]);
     setShowSuggestions(false);
+    onSelectSuggestion(suggestion);
   };
 
   const handleSearch = () => {

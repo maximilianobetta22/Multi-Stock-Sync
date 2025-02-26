@@ -3,28 +3,25 @@ import { Dropdown } from 'react-bootstrap';
 
 interface ProductActionsDropdownProps {
   productId: string;
-  onUpdateStatus: (productId: string, newStatus: string) => void;
+  onEdit: (productId: string) => void;
 }
 
-const ProductActionsDropdown: React.FC<ProductActionsDropdownProps> = ({ productId, onUpdateStatus }) => {
-  const handleStatusChange = (newStatus: string) => {
-    onUpdateStatus(productId, newStatus);
-  };
-
+/**
+ * ProductActionsDropdown component provides a dropdown menu for product actions.
+ * 
+ * @param {Object} props - Component props
+ * @param {string} props.productId - ID of the product
+ * @param {function} props.onEdit - Function to edit product
+ */
+const ProductActionsDropdown: React.FC<ProductActionsDropdownProps> = ({ productId, onEdit }) => {
   return (
     <Dropdown>
       <Dropdown.Toggle variant="secondary" id="dropdown-basic">
-        &#x22EE; {/* Unicode character for vertical ellipsis (three dots) */}
+        Acciones
       </Dropdown.Toggle>
 
       <Dropdown.Menu>
-        <Dropdown.Divider />
-        <Dropdown.Item onClick={() => handleStatusChange('active')}>
-          Activar Producto
-        </Dropdown.Item>
-        <Dropdown.Item onClick={() => handleStatusChange('paused')}>
-          Pausar Producto
-        </Dropdown.Item>
+        <Dropdown.Item onClick={() => onEdit(productId)}>EDITAR</Dropdown.Item>
       </Dropdown.Menu>
     </Dropdown>
   );

@@ -16,15 +16,13 @@ const EditarProducto: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
 
   useEffect(() => {
-    if (searchQuery) {
-      fetchProducts();
-    }
+    fetchProducts();
   }, [searchQuery]);
 
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/products/search/${id}`, {
+      const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/products/${id}`, {
         params: { q: searchQuery },
         headers: {
           'Accept': 'application/json',
@@ -48,12 +46,12 @@ const EditarProducto: React.FC = () => {
     setSelectedProduct(product);
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setSelectedProduct((prevProduct: any) => ({
-      ...prevProduct,
-      [name]: value,
-    }));
+  const handleEditProduct = (updatedProduct: any) => {
+    setProducts((prevProducts) =>
+      prevProducts.map((product) =>
+        product.id === updatedProduct.id ? updatedProduct : product
+      )
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -78,11 +76,22 @@ const EditarProducto: React.FC = () => {
   return (
     <Container>
       <h1>Editar Producto</h1>
-    <Button variant="secondary" onClick={() => navigate('/sync/productos/home', { state: location.state })}>
-      Back
-    </Button>
-    <div style={{ marginBottom: '20px' }}></div>
-      <SearchBar searchQuery={searchQuery} onSearch={handleSearch} suggestions={[]} />
+      <Row className="mb-3">
+        <Col>
+          <Button variant="secondary" onClick={() => navigate('/sync/productos/home', { state: location.state })}>
+            Back
+          </Button>
+        </Col>
+        <Col className="text-end">
+          <Button variant="primary" onClick={() => navigate(`/sync/productos/editar/${id}`)}>
+            Editar
+          </Button>
+          <Button variant="success" className="ms-2" onClick={() => navigate('/sync/productos/crear')}>
+            Crear
+          </Button>
+        </Col>
+      </Row>
+      <SearchBar searchQuery={searchQuery} onSearch={handleSearch} suggestions={[]} onSelectSuggestion={() => {}} />
       {loading && <div>Loading...</div>}
       {products.length > 0 && (
         <ProductTable
@@ -91,12 +100,16 @@ const EditarProducto: React.FC = () => {
           isEditing={{}}
           stockEdit={{}}
           onStockChange={() => {}}
-          onUpdateStock={() => {}}
+          onUpdateStock={async (id: string, value: number) => {
+            // Implement the logic to update stock here
+            return Promise.resolve();
+          }}
           onOpenModal={() => {}}
-          formatPriceCLP={(price) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price)}
-          translateStatus={(status) => status}
+          formatPriceCLP={(price: number) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price)}
+          translateStatus={(status: string) => status}
           onUpdateStatus={() => {}}
           onSelectProduct={handleProductSelect}
+          onEditProduct={handleEditProduct} // Pass handleEditProduct to ProductTable
         />
       )}
       {selectedProduct && (
@@ -110,7 +123,7 @@ const EditarProducto: React.FC = () => {
                 type="text"
                 name="title"
                 value={selectedProduct.title}
-                onChange={handleChange}
+                onChange={(e) => handleEditProduct({ ...selectedProduct, title: e.target.value })}
               />
             </Col>
           </Form.Group>
@@ -123,7 +136,7 @@ const EditarProducto: React.FC = () => {
                 type="number"
                 name="price"
                 value={selectedProduct.price}
-                onChange={handleChange}
+                onChange={(e) => handleEditProduct({ ...selectedProduct, price: e.target.value })}
               />
             </Col>
           </Form.Group>
@@ -136,7 +149,7 @@ const EditarProducto: React.FC = () => {
                 as="textarea"
                 name="description"
                 value={selectedProduct.description}
-                onChange={handleChange}
+                onChange={(e) => handleEditProduct({ ...selectedProduct, description: e.target.value })}
               />
             </Col>
           </Form.Group>

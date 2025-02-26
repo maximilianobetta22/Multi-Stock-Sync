@@ -1,6 +1,14 @@
 import React from 'react';
 import { Form } from 'react-bootstrap';
 
+/**
+ * ConnectionDropdown component provides a dropdown menu to select a connection.
+ * 
+ * @param {Object} props - Component props
+ * @param {Object[]} props.connections - List of connections
+ * @param {string} props.selectedConnection - Currently selected connection ID
+ * @param {function} props.onChange - Function to handle connection change
+ */
 interface ConnectionDropdownProps {
   connections: { client_id: string; nickname: string }[];
   selectedConnection: string;
