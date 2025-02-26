@@ -7,6 +7,7 @@ import autoTable from 'jspdf-autotable';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import * as XLSX from 'xlsx';
 import axiosInstance from '../../../../../axiosConfig';
+import { Link } from 'react-router-dom';
 
 const Productos: React.FC = () => {
     const { client_id } = useParams<{ client_id: string }>();
@@ -23,7 +24,7 @@ const Productos: React.FC = () => {
         style: 'currency',
         currency: 'CLP',
     });
-
+    
     useEffect(() => {
         const fetchProductos = async () => {
             try {
@@ -237,34 +238,28 @@ const Productos: React.FC = () => {
                 <table className="table table-striped table-bordered">
                     <thead>
                         <tr>
+                            <th>ID Producto</th>
                             <th>Título</th>
                             <th>Cantidad</th>
                             <th>Total</th>
                             <th>Variante</th>
                             <th>Talla</th>
-                            <th>Ver Reseña</th>
                         </tr>
                     </thead>
                     <tbody>
                         {currentProducts.map((producto, index) => (
                             <tr key={index}>
+                                <td>{producto.id}</td>
                                 <td>{producto.title}</td>
                                 <td>{producto.quantity}</td>
                                 <td>{currencyFormat.format(producto.total_amount)}</td>
                                 <td>{producto.variation_id}</td>
                                 <td>{producto.size}</td>
-                                <td>
-                                    <button 
-                                        className="btn btn-primary"
-                                    >
-                                        Ver Reseña
-                                    </button>
-                                </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
-
+                
                 {/* Paginación */}
                 <div className="d-flex justify-content-between">
                     <div>
@@ -343,6 +338,8 @@ const Productos: React.FC = () => {
                     <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
                 </Modal.Footer>
             </Modal>
+            <Link to="/sync/home" className='btn btn-primary mb-5 mx-2'>Volver a inicio</Link>
+            <Link to="/sync/reportes/home" className='btn btn-primary mb-5 mx-2'>Volver a Menú de Reportes</Link>
         </div>
     );
 };
