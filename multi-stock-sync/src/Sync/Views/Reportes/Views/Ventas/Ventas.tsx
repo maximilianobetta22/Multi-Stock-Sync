@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Table, Button, Form, Row, Col } from "react-bootstrap";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -11,11 +12,11 @@ import {
 } from "chart.js";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../../axiosConfig";
-import 'bootstrap/dist/css/bootstrap.min.css';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-import DatePicker from "react-datepicker";
-import "react-datepicker/dist/react-datepicker.css";
-import { addDays, startOfWeek, endOfWeek } from "date-fns";
+import "bootstrap/dist/css/bootstrap.min.css";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+import styles from "./Ventas.module.css";
 
 ChartJS.register(
   CategoryScale,
@@ -27,150 +28,118 @@ ChartJS.register(
   ChartDataLabels
 );
 
-const DetalleVentas: React.FC = () => {
+interface Venta {
+  order_id: number;
+  order_date: string;
+  title: string;
+  quantity: number;
+  price: number;
+}
+
+const DetallesDeVentas: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth() + 1;
+  const [yearSeleccionado, setYearSeleccionado] = useState<number>(currentYear);
+  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(currentMonth);
+  const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const [yearComparacion1, setYearComparacion1] = useState<number>(currentYear - 1);
+  const [yearComparacion2, setYearComparacion2] = useState<number>(currentYear);
+  const [filtroActivo, setFiltroActivo] = useState<'mes' | 'año' | 'comparacion' | null>(null);
+
+
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
-  const [yearSeleccionado, setYearSeleccionado] = useState<number>(new Date().getFullYear());
-  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(new Date().getMonth() + 1);
-  const [ventas, setVentas] = useState<any[]>([]);
-  const [ventasComparacion, setVentasComparacion] = useState<any[]>([]);
+  const [ventasComparacion, setVentasComparacion] = useState<Venta[]>([]);
 
-  const [yearComparacion, setYearComparacion] = useState<number | null>(null);
-  // Estados para mostrar/ocultar filtros
-  const [mostrarFiltroAño, setMostrarFiltroAño] = useState<boolean>(false);
-  const [mostrarFiltroMes, setMostrarFiltroMes] = useState<boolean>(false);
-  const [mostrarFiltroSemana, setMostrarFiltroSemana] = useState<boolean>(false);
-  const [mostrarFiltroDia, setMostrarFiltroDia] = useState<boolean>(false);
+  const totalIngresos = ventas.reduce((total, venta) => total + venta.price * venta.quantity, 0);
 
-  // Estado para el filtro de semana con calendario
-  const [fechaSeleccionada, setFechaSeleccionada] = useState<Date | null>(new Date());
 
-  // Obtener datos del usuario
-  const fetchUserData = useCallback(async () => {
-    if (!client_id) return;
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-      setUserData({
-        nickname: response.data.data.nickname,
-        profile_image: response.data.data.profile_image,
-      });
-    } catch (error) {
-      console.error("Error al obtener los datos del usuario:", error);
-      setError("Hubo un problema al cargar los datos del usuario.");
-    } finally {
-      setLoading(false);
-    }
-  }, [client_id]);
 
-  // Obtener ventas del mes seleccionado
   const fetchVentas = useCallback(async () => {
     if (!client_id) return;
+    setLoading(true);
     try {
-      setLoading(true);
-      setError(null);
-      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, {
-        params: {
-          year: yearSeleccionado,
-          month: monthSeleccionado.toString().padStart(2, '0')
-        }
-      });
+      const params = {
+        year: yearSeleccionado,
+        month: monthSeleccionado.toString().padStart(2, "0"),
+      };
+      const response = await axiosInstance.get(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`,
+        { params }
+      );
 
-      const ventasData = response.data.data?.[`${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}`]?.orders?.flatMap((order: any) =>
-        order.sold_products.map((product: any) => ({
-          order_id: product.order_id,
-          order_date: product.order_date,
-          title: product.title,
-          quantity: product.quantity,
-          price: product.price
-        }))
-      ) || [];
+      const ventasData =
+        response.data.data[`${yearSeleccionado}-${params.month}`]?.orders.flatMap((order: any) =>
+          order.sold_products.map((product: any) => ({
+            order_id: product.order_id,
+            order_date: product.order_date,
+            title: product.title,
+            quantity: product.quantity,
+            price: product.price,
+          }))
+        ) || [];
 
       setVentas(ventasData);
     } catch (error) {
-      console.error('Error al obtener datos de ventas:', error);
-      setError("Hubo un problema al obtener los datos de ventas.");
+      console.error("Error fetching sales data:", error);
       setVentas([]);
+      setToastMessage("Error al obtener los datos");
     } finally {
       setLoading(false);
     }
   }, [client_id, yearSeleccionado, monthSeleccionado]);
 
-  const fetchVentasComparacion = useCallback(async () => {
-    if (!client_id || !yearComparacion) return;
+  useEffect(() => {
+    fetchVentas();
+  }, [fetchVentas]);
+
+  const chartData = {
+    labels: ventas.map((venta) => venta.title), // Usar la fecha de la venta como etiquetas
+    datasets: [
+      {
+        label: 'Ventas por Orden',
+        data: ventas.map((venta) => venta.price), // Usar el precio como dato del gráfico
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      },
+    ],
+  };
+
+
+  const fetchUserData = useCallback(async () => {
+    if (!client_id) return;
     try {
-      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, {
-        params: {
-          year: yearComparacion,
-          month: monthSeleccionado.toString().padStart(2, '0')
-        }
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+
+      setUserData({
+        nickname: response.data.data.nickname,
+        profile_image: response.data.data.profile_image,
       });
 
-      const ventasComparacionData = response.data.data?.[`${yearComparacion}-${monthSeleccionado.toString().padStart(2, '0')}`]?.orders?.flatMap((order: any) =>
-        order.sold_products.map((product: any) => ({
-          title: product.title,
-          quantity: product.quantity,
-          price: product.price
-        }))
-      ) || [];
-
-      setVentasComparacion(ventasComparacionData);
     } catch (error) {
-      console.error('Error al obtener datos de ventas del año comparativo:', error);
+      console.error("Error al obtener los datos del usuario:", error);
     }
-  }, [client_id, yearComparacion, monthSeleccionado]);
-
-  useEffect(() => {
-    if (yearComparacion) {
-      fetchVentasComparacion();
-    }
-  }, [fetchVentasComparacion, yearComparacion]);
+  }, [client_id]);
 
   useEffect(() => {
     fetchUserData();
+  }, [fetchUserData]);
+
+  useEffect(() => {
     fetchVentas();
-  }, [fetchUserData, fetchVentas]);
-
-  if (loading) return <div>Cargando...</div>;
-  if (error) return <div>{error}</div>;
-
-  const datasets = [
-    {
-      label: `Ingresos ${yearSeleccionado}`,
-      data: ventas.map((v) => v.price * v.quantity),
-      backgroundColor: "rgba(75, 192, 192, 0.6)",
-    },
-  ];
-
-  if (yearComparacion && ventasComparacion.length > 0) {
-    datasets.push({
-      label: `Ingresos ${yearComparacion}`,
-      data: ventas.map((_, index) =>
-        ventasComparacion[index]?.price * ventasComparacion[index]?.quantity || 0
-      ),
-      backgroundColor: "rgba(192, 75, 75, 0.6)",
-    });
-  }
-  const totalIngresos = (ventas: any[]) =>
-    ventas.reduce((acc, v) => acc + v.price * v.quantity, 0);
-
-  const ingresosAñoSeleccionado = totalIngresos(ventas);
-  const ingresosAñoComparacion = totalIngresos(ventasComparacion);
-
-
-  const diferenciaPorcentaje = yearComparacion
-    ? ((ingresosAñoSeleccionado - ingresosAñoComparacion) / ingresosAñoComparacion) * 100
-    : 0;
-
-  // Ahora datasets siempre tendrá una estructura válida.
-
+  }, [fetchVentas]);
 
   return (
     <div className="container mt-4">
-      <h1>Detalle de Ventas</h1>
+      {toastMessage && (
+        <ToastComponent message={toastMessage} type="danger" onClose={() => setToastMessage(null)} />
+      )}
+      <h1 className="text-center mb-4">Detalles de Ventas</h1>
+
       {userData && (
         <div style={{ textAlign: "center" }}>
           <h3>Usuario: {userData.nickname}</h3>
@@ -181,82 +150,196 @@ const DetalleVentas: React.FC = () => {
           />
         </div>
       )}
+      <br />
+      <Form className="mb-4">
+        <Row className="d-flex justify-content-center">
+          {/* Filtro por mes */}
+          <Col xs="auto" className="mb-3">
+            <Button
+              variant={filtroActivo === 'mes' ? 'primary' : 'outline-primary'}
+              onClick={() => setFiltroActivo(filtroActivo === 'mes' ? null : 'mes')}
+              disabled={filtroActivo === 'año' || filtroActivo === 'comparacion'}
+              className="w-100"
+            >
+              Filtrar por Mes
+            </Button>
+            {filtroActivo === 'mes' && (
+              <div className="mt-2">
+                <Form.Control
+                  as="select"
+                  value={monthSeleccionado}
+                  onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
+                  className="mb-2"
+                >
+                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                    <option key={month} value={month}>
+                      {month.toString().padStart(2, '0')}
+                    </option>
+                  ))}
+                </Form.Control>
+                <Form.Control
+                  as="select"
+                  value={yearSeleccionado}
+                  onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+                >
+                  {[2023, 2024, 2025, 2026].map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </Form.Control>
+              </div>
+            )}
+          </Col>
 
-      <div className="row">
-        <div className="col-md-3 d-flex flex-column">
-          {/* Filtro Año */}
-          <button
-            className="btn btn-secondary mb-2"
-            onClick={() => setMostrarFiltroAño(!mostrarFiltroAño)}
-          >
-            {mostrarFiltroAño ? "Ocultar Filtro por Año" : "Filtrar por Año"}
-          </button>
-          {mostrarFiltroAño && (
-            <select className="form-select mb-2" value={yearSeleccionado} onChange={(e) => setYearSeleccionado(Number(e.target.value))}>
-              {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
-                <option key={year} value={year}>{year}</option>
-              ))}
-            </select>
-          )}
+          {/* Filtro por año */}
+          <Col xs="auto" className="mb-3">
+            <Button
+              variant={filtroActivo === 'año' ? 'primary' : 'outline-primary'}
+              onClick={() => setFiltroActivo(filtroActivo === 'año' ? null : 'año')}
+              disabled={filtroActivo === 'mes' || filtroActivo === 'comparacion'}
+              className="w-100"
+            >
+              Filtrar por Año
+            </Button>
+            {filtroActivo === 'año' && (
+              <div className="mt-2">
+                <Form.Control
+                  as="select"
+                  value={yearSeleccionado}
+                  onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+                >
+                  {[2023, 2024, 2025, 2026].map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </Form.Control>
+              </div>
+            )}
+          </Col>
 
-          {/* Filtro Mes */}
-          <button
-            className="btn btn-secondary mb-2"
-            onClick={() => setMostrarFiltroMes(!mostrarFiltroMes)}
-          >
-            {mostrarFiltroMes ? "Ocultar Filtro por Mes" : "Filtrar por Mes"}
-          </button>
-          {mostrarFiltroMes && (
-            <select className="form-select mb-2" value={monthSeleccionado} onChange={(e) => setMonthSeleccionado(Number(e.target.value))}>
-              {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
-                <option key={month} value={month}>{month}</option>
-              ))}
-            </select>
-          )}
+          {/* Filtro de comparación */}
+          <Col xs="auto" className="mb-3">
+            <Button
+              variant={filtroActivo === 'comparacion' ? 'primary' : 'outline-primary'}
+              onClick={() => setFiltroActivo(filtroActivo === 'comparacion' ? null : 'comparacion')}
+              disabled={filtroActivo === 'mes' || filtroActivo === 'año'}
+              className="w-100"
+            >
+              Comparar Año a Año
+            </Button>
+            {filtroActivo === 'comparacion' && (
+              <div className="mt-2">
+                <Form.Control
+                  as="select"
+                  value={yearComparacion1}
+                  onChange={(e) => setYearComparacion1(Number(e.target.value))}
+                  className="mb-2"
+                >
+                  {[2023, 2024, 2025, 2026].map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </Form.Control>
+                <Form.Control
+                  as="select"
+                  value={yearComparacion2}
+                  onChange={(e) => setYearComparacion2(Number(e.target.value))}
+                >
+                  {[2023, 2024, 2025, 2026].map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))}
+                </Form.Control>
+              </div>
+            )}
+          </Col>
+        </Row>
+      </Form>
 
-        </div>
 
-        {/* Gráfico de Ventas */}
-        <div className="col-md-9">
+      <Row className="d-flex justify-content-center mt-3">
+        <Col xs="auto">
+          <Button variant="success" onClick={fetchVentas}>
+            Consultar Datos
+          </Button>
+        </Col>
+      </Row>
+      <br />
+
+
+      {/* Mostrar gráfico encima de la tabla */}
+      {ventas.length > 0 && !loading && (
+        <div className="mb-4">
           <Bar
-            data={{
-              labels: ventas.map((v) => v.title),
-              datasets: datasets,
+            data={chartData}
+            options={{
+              responsive: true,
+              plugins: {
+                title: {
+                  display: true,
+                  text: 'Ventas por Orden',
+                  font: {
+                    size: 18,
+                    weight: 'bold',
+                  },
+                },
+                legend: {
+                  position: 'top',
+                },
+              },
             }}
-            options={{ responsive: true }}
-          />;
-
+          />
         </div>
-        <button
-          className="btn btn-secondary mb-2"
-          onClick={() => setYearComparacion(yearComparacion ? null : new Date().getFullYear() - 1)}
-        >
-          {yearComparacion ? "Ocultar Comparación Año a Año" : "Comparar con Año Anterior"}
-        </button>
+      )}
 
-        {yearComparacion && (
-          <select className="form-select mt-2" value={yearComparacion} onChange={(e) => setYearComparacion(Number(e.target.value))}>
-            {Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i).map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-        )}
+      {/* Mostrar tabla con los datos de ventas */}
+      {loading ? (
+        <LoadingDinamico variant="container" />
+      ) : (
+        <Table striped bordered hover responsive className="mt-4">
+          <thead className="table-dark">
+            <tr>
+              <th>ID Orden</th>
+              <th>Fecha</th>
+              <th>Producto</th>
+              <th>Cantidad</th>
+              <th>Precio</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ventas.length > 0 ? (
+              ventas.map((venta, index) => (
+                <tr key={index}>
+                  <td>{venta.order_id}</td>
+                  <td>{venta.order_date}</td>
+                  <td>{venta.title}</td>
+                  <td>{venta.quantity}</td>
+                  <td>${venta.price.toLocaleString('es-CL')}</td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} className="text-center">
+                  No hay datos disponibles
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+      )}
 
-        <div className="col-md-3">
-          <h4>Ingresos {yearSeleccionado}: ${ingresosAñoSeleccionado.toFixed(2)}</h4>
-          {yearComparacion && (
-            <>
-              <h4>Ingresos {yearComparacion}: ${ingresosAñoComparacion.toFixed(2)}</h4>
-              <h4>
-                Diferencia: {diferenciaPorcentaje.toFixed(0)}%
-              </h4>
-            </>
-          )}
-        </div>
 
-      </div>
+      <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
+
+
+
     </div>
   );
+
 };
 
-export default DetalleVentas;
+export default DetallesDeVentas;
