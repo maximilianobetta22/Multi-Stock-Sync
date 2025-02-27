@@ -14,8 +14,9 @@ const Productos: React.FC = () => {
     const [productos, setProductos] = useState<any[]>([]);
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
-    const [selectedMonth, setSelectedMonth] = useState<string>('2024-10');
-    const itemsPerPage = 3; 
+    const [selectedMonth, setSelectedMonth] = useState<string>();
+    const itemsPerPage = 1;
+    const maxPageButtons = 10;  
     const chartRef = useRef<HTMLDivElement | null>(null);
     const pdfRef = useRef<jsPDF | null>(null);
     const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
@@ -48,7 +49,34 @@ const Productos: React.FC = () => {
         fetchProductos();
     }, [client_id, selectedMonth]);
 
+    {/* Quiten los corchetes por si quieren probar el compaginar de la pagina de la tabla esto duplica los datos que se traen
+    useEffect(() => {
+        const fetchProductos = async () => {
+            try {
+                const [year, month] = selectedMonth.split('-');
+                const response = await axiosInstance.get(
+                    `${import.meta.env.VITE_API_URL}/mercadolibre/top-selling-products/${client_id}?year=${year}&month=${month}`
+                );
+                const data = response.data;
+                if (data.status === 'success') {
+                    // 🔹 Duplicar los datos para probar la paginación
+                    const duplicatedData = [...data.data, ...data.data, ...data.data, ...data.data]; // Ajusta la cantidad de duplicaciones según necesites
+                    setProductos(duplicatedData);
+                    console.log(duplicatedData);
+                } else {
+                    setError('No se pudieron obtener los productos');
+                }
+            } catch (error) {
+                setError('Error al hacer la solicitud');
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProductos();
+    }, [client_id, selectedMonth]); */}
+
     const [currentPage, setCurrentPage] = useState<number>(1);
+
     const indexOfLastProduct = currentPage * itemsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - itemsPerPage;
     const currentProducts = productos.slice(indexOfFirstProduct, indexOfLastProduct);
@@ -57,7 +85,45 @@ const Productos: React.FC = () => {
     const totalPages = Math.ceil(productos.length / itemsPerPage);
 
     // Función para manejar la paginación
-    const paginate = (pageNumber: number) => setCurrentPage(pageNumber);
+    const paginate = (pageNumber) => {
+        if (pageNumber >= 1 && pageNumber <= totalPages) {
+            setCurrentPage(pageNumber);
+        }
+    };
+    const renderPaginationButtons = () => {
+        let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
+        let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
+    
+        if (endPage - startPage < maxPageButtons - 1) {
+            startPage = Math.max(1, endPage - maxPageButtons + 1);
+        }
+    
+        let pages = [];
+        if (startPage > 1) pages.push(1);
+        if (startPage > 2) pages.push("...");
+    
+        for (let i = startPage; i <= endPage; i++) {
+            pages.push(i);
+        }
+    
+        if (endPage < totalPages - 1) pages.push("...");
+        if (endPage < totalPages) pages.push(totalPages);
+    
+        return pages.map((page, index) =>
+            page === "..." ? (
+                <span key={index} className="pagination-dots">...</span>
+            ) : (
+                <button
+                    key={index}
+                    onClick={() => paginate(page)}
+                    className={`btn ${currentPage === page ? 'btn-primary' : 'btn-secondary'} btn-sm mx-1`}
+                >
+                    {page}
+                </button>
+            )
+        );
+    };
+
     const handleGraphItemsChange = (value: number) => (value);
 
     const chartData = {
@@ -155,8 +221,9 @@ const Productos: React.FC = () => {
         }
     };
 
-    const bestSellingProduct = productos.length > 0 ? productos[0] : null; // Suponiendo que el primer producto es el más vendido
-    const leastSellingProduct = productos.length > 0 ? productos[productos.length - 1] : null; // Suponiendo que el último producto es el menos vendido
+    const sortedProducts = [...productos].sort((a, b) => b.total_amount - a.total_amount);
+    const bestSellingProduct = sortedProducts.length > 0 ? sortedProducts[0] : null;
+    const leastSellingProduct = sortedProducts.length > 0 ? sortedProducts[sortedProducts.length - 1] : null;
 
     return (
         <div className="container mt-4">
@@ -268,27 +335,18 @@ const Productos: React.FC = () => {
                             <button 
                                 onClick={() => paginate(currentPage - 1)} 
                                 disabled={currentPage === 1} 
-                                className="btn btn-primary"
+                                className="btn btn-primary btn-sm"
                             >
                                 Anterior
                             </button>
-                            <div className="pagination">
-                            {Array.from({ length: totalPages }, (_, index) => (
-                                <button
-                                    key={index + 1}
-                                    onClick={() => paginate(index + 1)}
-                                    className={`btn ${currentPage === index + 1 ? 'btn-primary' : 'btn-secondary'}`}
-                                    style={{ margin: '0 10px' }}
-                                >
-                                    {index + 1}
-                                </button>
-                            ))}
+                            <div className="pagination d-flex align-items-center">
+                                {renderPaginationButtons()}
                             </div>
                             {/*<span>Página {currentPage} de {totalPages}</span>*/}
                             <button 
                                 onClick={() => paginate(currentPage + 1)} 
                                 disabled={currentPage === totalPages} 
-                                className="btn btn-primary"
+                                className="btn btn-primary btn-sm"
                             >
                                 Siguiente
                             </button>
