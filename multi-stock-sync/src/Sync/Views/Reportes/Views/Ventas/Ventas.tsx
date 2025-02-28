@@ -45,19 +45,17 @@ const DetallesDeVentas: React.FC = () => {
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  const [yearComparacion1, setYearComparacion1] = useState<number>(currentYear - 1);
-  const [yearComparacion2, setYearComparacion2] = useState<number>(currentYear);
   const [filtroActivo, setFiltroActivo] = useState<'mes' | 'año' | 'comparacion' | null>(null);
-
-
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
-  const [ventasComparacion, setVentasComparacion] = useState<Venta[]>([]);
-
   const totalIngresos = ventas.reduce((total, venta) => total + venta.price * venta.quantity, 0);
-
-
-
+  const [selectedYear, setSelectedYear] = useState<string>('2025');
+  const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+  const [year1, setYear1] = useState('');
+  const [year2, setYear2] = useState('');
+  const [result, setResult] = useState<any>(null);
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+  };
   const fetchVentas = useCallback(async () => {
     if (!client_id) return;
     setLoading(true);
@@ -133,6 +131,29 @@ const DetallesDeVentas: React.FC = () => {
     fetchVentas();
   }, [fetchVentas]);
 
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-annual-sales-data/${client_id}`, {
+        params: { year1, year2 }
+      });
+      console.log('Comparison response:', response.data);
+      setResult(response.data);
+    } catch (error) {
+      console.error('Error fetching comparison data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
+  const handleDropdownChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      setter(e.target.value);
+    };
+
   return (
     <div className="container mt-4">
       {toastMessage && (
@@ -151,8 +172,12 @@ const DetallesDeVentas: React.FC = () => {
         </div>
       )}
       <br />
+
       <Form className="mb-4">
         <Row className="d-flex justify-content-center">
+
+
+
           {/* Filtro por mes */}
           <Col xs="auto" className="mb-3">
             <Button
@@ -165,59 +190,85 @@ const DetallesDeVentas: React.FC = () => {
             </Button>
             {filtroActivo === 'mes' && (
               <div className="mt-2">
-                <Form.Control
-                  as="select"
-                  value={monthSeleccionado}
-                  onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
-                  className="mb-2"
-                >
-                  {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                    <option key={month} value={month}>
-                      {month.toString().padStart(2, '0')}
-                    </option>
-                  ))}
-                </Form.Control>
-                <Form.Control
-                  as="select"
-                  value={yearSeleccionado}
-                  onChange={(e) => setYearSeleccionado(Number(e.target.value))}
-                >
-                  {[2023, 2024, 2025, 2026].map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </Form.Control>
+                <Form className="mb-4">
+                  <Row className="d-flex justify-content-center">
+                    <Col xs="auto">
+                      <Form.Group controlId="formYear">
+                        <Form.Label>Año</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={yearSeleccionado}
+                          onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+                          className="w-auto"
+                        >
+                          {[2023, 2024, 2025, 2026].map((year) => (
+                            <option key={year} value={year}>
+                              {year}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                    <Col xs="auto">
+                      <Form.Group controlId="formMonth">
+                        <Form.Label>Mes</Form.Label>
+                        <Form.Control
+                          as="select"
+                          value={monthSeleccionado}
+                          onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
+                          className="w-auto"
+                        >
+                          {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
+                            <option key={month} value={month}>
+                              {month.toString().padStart(2, '0')}
+                            </option>
+                          ))}
+                        </Form.Control>
+                      </Form.Group>
+                    </Col>
+                  </Row>
+                </Form>
               </div>
             )}
           </Col>
 
+
+
+
+
+
+
           {/* Filtro por año */}
           <Col xs="auto" className="mb-3">
             <Button
-              variant={filtroActivo === 'año' ? 'primary' : 'outline-primary'}
-              onClick={() => setFiltroActivo(filtroActivo === 'año' ? null : 'año')}
-              disabled={filtroActivo === 'mes' || filtroActivo === 'comparacion'}
+              variant={filtroActivo === "año" ? "primary" : "outline-primary"}
+              onClick={() => setFiltroActivo(filtroActivo === "año" ? null : "año")}
+              disabled={filtroActivo === "mes" || filtroActivo === "comparacion"}
               className="w-100"
             >
               Filtrar por Año
             </Button>
-            {filtroActivo === 'año' && (
+            {filtroActivo === "año" && (
               <div className="mt-2">
-                <Form.Control
-                  as="select"
-                  value={yearSeleccionado}
-                  onChange={(e) => setYearSeleccionado(Number(e.target.value))}
-                >
-                  {[2023, 2024, 2025, 2026].map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </Form.Control>
+                <Form.Group controlId="formYear" className="d-flex flex-column align-items-center">
+                  <Form.Label >Año</Form.Label>
+                  <Form.Control
+                    as="select"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                    className="w-auto"
+                  >
+                    {years.map((year) => (
+                      <option key={year} value={year}>
+                        {year}
+                      </option>
+                    ))}
+                  </Form.Control>
+                </Form.Group>
               </div>
             )}
           </Col>
+
 
           {/* Filtro de comparación */}
           <Col xs="auto" className="mb-3">
@@ -231,34 +282,49 @@ const DetallesDeVentas: React.FC = () => {
             </Button>
             {filtroActivo === 'comparacion' && (
               <div className="mt-2">
-                <Form.Control
-                  as="select"
-                  value={yearComparacion1}
-                  onChange={(e) => setYearComparacion1(Number(e.target.value))}
-                  className="mb-2"
-                >
-                  {[2023, 2024, 2025, 2026].map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </Form.Control>
-                <Form.Control
-                  as="select"
-                  value={yearComparacion2}
-                  onChange={(e) => setYearComparacion2(Number(e.target.value))}
-                >
-                  {[2023, 2024, 2025, 2026].map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))}
-                </Form.Control>
+                <form onSubmit={handleSubmit}>
+                  <div className="form-group">
+                    <label>Año 1</label>
+                    <select className="form-control" value={year1} onChange={handleDropdownChange(setYear1)} required>
+                      <option value="">Seleccione un año</option>
+                      {years.map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Año 2</label>
+                    <select className="form-control" value={year2} onChange={handleDropdownChange(setYear2)} required>
+                      <option value="">Seleccione un año</option>
+                      {years.map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                </form>
               </div>
             )}
           </Col>
         </Row>
       </Form>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
       <Row className="d-flex justify-content-center mt-3">
@@ -334,8 +400,6 @@ const DetallesDeVentas: React.FC = () => {
 
 
       <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
-
-
 
     </div>
   );
