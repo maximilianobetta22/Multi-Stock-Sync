@@ -156,6 +156,7 @@ const DetallesDeVentas: React.FC = () => {
 
   return (
     <div className="container mt-4">
+
       {toastMessage && (
         <ToastComponent message={toastMessage} type="danger" onClose={() => setToastMessage(null)} />
       )}
@@ -175,9 +176,6 @@ const DetallesDeVentas: React.FC = () => {
 
       <Form className="mb-4">
         <Row className="d-flex justify-content-center">
-
-
-
           {/* Filtro por mes */}
           <Col xs="auto" className="mb-3">
             <Button
@@ -232,12 +230,6 @@ const DetallesDeVentas: React.FC = () => {
             )}
           </Col>
 
-
-
-
-
-
-
           {/* Filtro por año */}
           <Col xs="auto" className="mb-3">
             <Button
@@ -268,7 +260,6 @@ const DetallesDeVentas: React.FC = () => {
               </div>
             )}
           </Col>
-
 
           {/* Filtro de comparación */}
           <Col xs="auto" className="mb-3">
@@ -308,25 +299,6 @@ const DetallesDeVentas: React.FC = () => {
           </Col>
         </Row>
       </Form>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
       <Row className="d-flex justify-content-center mt-3">
         <Col xs="auto">
           <Button variant="success" onClick={fetchVentas}>
@@ -334,11 +306,8 @@ const DetallesDeVentas: React.FC = () => {
           </Button>
         </Col>
       </Row>
-      <br />
-
-
-      {/* Mostrar gráfico encima de la tabla */}
-      {ventas.length > 0 && !loading && (
+      {/* Mostrar gráfico solo si el filtro activo es "mes" o "año" */}
+      {ventas.length > 0 && !loading && (filtroActivo === "mes" || filtroActivo === "año") && (
         <div className="mb-4">
           <Bar
             data={chartData}
@@ -347,62 +316,84 @@ const DetallesDeVentas: React.FC = () => {
               plugins: {
                 title: {
                   display: true,
-                  text: 'Ventas por Orden',
-                  font: {
-                    size: 18,
-                    weight: 'bold',
-                  },
+                  text: "Ventas por Orden",
+                  font: { size: 18, weight: "bold" },
                 },
-                legend: {
-                  position: 'top',
-                },
+                legend: { position: "top" },
               },
             }}
           />
         </div>
       )}
 
-      {/* Mostrar tabla con los datos de ventas */}
+      {/* Mostrar tabla solo si hay un filtro activo */}
       {loading ? (
         <LoadingDinamico variant="container" />
-      ) : (
-        <Table striped bordered hover responsive className="mt-4">
-          <thead className="table-dark">
-            <tr>
-              <th>ID Orden</th>
-              <th>Fecha</th>
-              <th>Producto</th>
-              <th>Cantidad</th>
-              <th>Precio</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ventas.length > 0 ? (
-              ventas.map((venta, index) => (
-                <tr key={index}>
-                  <td>{venta.order_id}</td>
-                  <td>{venta.order_date}</td>
-                  <td>{venta.title}</td>
-                  <td>{venta.quantity}</td>
-                  <td>${venta.price.toLocaleString('es-CL')}</td>
-                </tr>
-              ))
+      ) : filtroActivo && (
+        <>
+          {filtroActivo === "comparacion" ? (
+            result ? (
+              <Table striped bordered hover responsive className="mt-4">
+                <thead className="table-dark">
+                  <tr>
+                    <th>Año</th>
+                    <th>Total de Ventas</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>{year1}</td>
+                    <td>{formatCurrency(result[year1])}</td>
+                  </tr>
+                  <tr>
+                    <td>{year2}</td>
+                    <td>{formatCurrency(result[year2])}</td>
+                  </tr>
+                </tbody>
+              </Table>
             ) : (
-              <tr>
-                <td colSpan={5} className="text-center">
-                  No hay datos disponibles
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </Table>
+              <p className="text-center">No hay datos de comparación disponibles</p>
+            )
+          ) : (
+            <Table striped bordered hover responsive className="mt-4">
+              <thead className="table-dark">
+                <tr>
+                  <th>ID Orden</th>
+                  <th>Fecha</th>
+                  <th>Producto</th>
+                  <th>Cantidad</th>
+                  <th>Precio</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ventas.length > 0 ? (
+                  ventas.map((venta, index) => (
+                    <tr key={index}>
+                      <td>{venta.order_id}</td>
+                      <td>{venta.order_date}</td>
+                      <td>{venta.title}</td>
+                      <td>{venta.quantity}</td>
+                      <td>{formatCurrency(venta.price)}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={5} className="text-center">
+                      No hay datos disponibles
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </Table>
+          )}
+
+          {/* Mostrar total de ingresos si hay filtro activo */}
+          <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
+        </>
       )}
-
-
-      <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
-
     </div>
   );
+
 
 };
 
