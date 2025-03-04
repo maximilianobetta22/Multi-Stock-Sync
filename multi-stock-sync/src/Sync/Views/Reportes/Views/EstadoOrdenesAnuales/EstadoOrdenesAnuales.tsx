@@ -9,7 +9,7 @@ import {
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Card, ProgressBar, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import { useParams } from 'react-router-dom';
+import { data, useParams } from 'react-router-dom';
 import styles from './EstadoOrdenesAnuales.module.css';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import { jsPDF } from 'jspdf';
@@ -71,6 +71,7 @@ const EstadosOrdenesAnual: React.FC = () => {
                     statuses: result.data.statuses || { paid: 0, pending: 0, cancelled: 0 },
                     products: result.data.products || []
                 });
+                console.log(EstadoOrdenes)
             } else {
                 console.error('Error en la respuesta de la API:', result.message);
             }
@@ -91,6 +92,7 @@ const EstadosOrdenesAnual: React.FC = () => {
                     creation_date: result.data.creation_date || 'N/A',
                     request_date: result.data.request_date || 'N/A',
                 });
+                
             } else {
                 console.error('Error en la respuesta de la API:', result.message);
             }
