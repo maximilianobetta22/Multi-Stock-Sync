@@ -1,10 +1,14 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Accordion, Table, Container, Alert, Button, Form, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert, Spinner, Modal, Button, Pagination } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faStar, faComment } from '@fortawesome/free-solid-svg-icons';
-import styles from './OpinionesClients.module.css';
+import { faStar, faComments, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import styles from './DashboardReviews.module.css';
+
+interface Client {
+  client_id: string;
+  nickname: string;
+}
 
 interface Review {
   id: number;
@@ -18,334 +22,267 @@ interface Product {
   title: string;
   price: number;
   available_quantity: number;
-  category_id: string;
-  reviews?: Review[];
+  totalReviews?: number;
   ratingAverage?: number;
-  ratingLevels?: {
-    one_star: number;
-    two_star: number;
-    three_star: number;
-    four_star: number;
-    five_star: number;
-  };
+  reviews?: Review[];
 }
 
-interface Connection {
-  client_id: string;
-  nickname: string;
-}
-
-const OpinionesClientes: React.FC = () => {
-  const { client_id } = useParams<{ client_id: string }>();
-  const navigate = useNavigate();
+const DashboardReviews = () => {
   const [products, setProducts] = useState<Product[]>([]);
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [selectedClient, setSelectedClient] = useState<string>('');
+  const [clients, setClients] = useState<Client[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [clientName, setClientName] = useState<string>('');
-  const [categories, setCategories] = useState<{ [key: string]: string }>({});
-  const [connections, setConnections] = useState<Connection[]>([]);
-  const [selectedConnection, setSelectedConnection] = useState<string>(client_id || '');
+  const [showModal, setShowModal] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [productsPerPage] = useState<number>(10);
-  const [reviewsPerPage] = useState<number>(5);
   const [totalProducts, setTotalProducts] = useState<number>(0);
 
   useEffect(() => {
-    fetchConnections();
+    fetchClients();
   }, []);
 
   useEffect(() => {
-    if (selectedConnection) {
-      fetchClientNameAndProducts(selectedConnection);
+    if (selectedClient) {
+      fetchProducts(selectedClient, currentPage);
     }
-  }, [selectedConnection]);
+  }, [selectedClient, currentPage]);
 
-  const fetchConnections = async () => {
+  const fetchClients = async () => {
     setLoading(true);
     try {
-      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Ensure the token is stored in localStorage
-        },
-      });
-      const connectionsData = response.data.data;
-      setConnections(connectionsData);
-      if (!selectedConnection && connectionsData.length > 0) {
-        setSelectedConnection(connectionsData[0].client_id);
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Authorization token is missing');
       }
+      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      console.log('Fetched clients:', response.data.data); // Debugging log
+      setClients(response.data.data);
     } catch (error) {
-      console.error('Error al obtener las conexiones:', error);
-      setError('Error al obtener las conexiones. Por favor, inténtelo de nuevo más tarde.');
+      console.error('Error fetching clients:', error); // Debugging log
+      if (axios.isAxiosError(error) && error.response) {
+        console.error('Error response data:', error.response.data); // Debugging log
+        console.error('Error response status:', error.response.status); // Debugging log
+        console.error('Error response headers:', error.response.headers); // Debugging log
+      }
+      setError('Error fetching clients. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchClientNameAndProducts = async (clientId: string) => {
+  const fetchProducts = async (clientId: string, page: number) => {
     setLoading(true);
     try {
-      console.log(`Fetching client name and products for client ID: ${clientId}`);
-      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Ensure the token is stored in localStorage
-        },
+      const limit = 35;
+      const offset = (page - 1) * limit;
+      
+      // Fetch products first
+      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        params: { limit, offset },
       });
-      const connections = response.data.data;
-      console.log('Connections data:', connections);
-      const connection = connections.find((conn: Connection) => conn.client_id === clientId);
-      if (connection) {
-        setClientName(connection.nickname);
-        fetchProducts(clientId);
-      } else {
-        console.error('No se encontró una conexión válida para el client_id proporcionado');
-        setError('No se encontró una conexión válida para el client_id proporcionado');
-      }
-    } catch (error) {
-      console.error('Error al obtener las conexiones:', error);
-      setError('Error al obtener las conexiones. Por favor, inténtelo de nuevo más tarde.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchProducts = async (clientId: string, query: string = '', limit: number = 35, offset: number = 0, category: string = '') => {
-    setLoading(true);
-    try {
-      const url = query
-        ? `${process.env.VITE_API_URL}/mercadolibre/products/search/${clientId}`
-        : `${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`;
-      const response = await axios.get(url, {
-        params: { q: query, limit, offset, category },
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Ensure the token is stored in localStorage
-        },
-      });
-      console.log('API response:', response);
-      const data = response.data?.data;
-      console.log('Products data:', data);
-      if (data && Array.isArray(data)) {
-        const formattedProducts = data.map((product: any) => ({
-          id: product.id,
-          title: product.title,
-          price: product.price,
-          available_quantity: product.available_quantity,
-          category_id: product.category_id,
-        }));
-        setProducts((prevProducts) => [...prevProducts, ...formattedProducts]);
-        if (response.data.paging) {
-          setTotalProducts(response.data.paging.total);
+  
+      const productsData = response.data.data;
+      const total = response.data.paging?.total || 0;
+      console.log('Fetched products:', productsData); // Debugging log
+      console.log('Total products:', total); // Debugging log
+  
+      // Fetch reviews for each product individually
+      const productsWithReviews = await Promise.all(productsData.map(async (product: Product) => {
+        try {
+          // Fetch reviews for this product with pagination
+          const productReviews = await fetchAllReviews(clientId, product.id);
+          const ratingAverage = productReviews.length > 0
+            ? productReviews.reduce((sum: number, review: Review) => sum + review.rating, 0) / productReviews.length
+            : 0;
+  
+          // Return product with reviews and average rating
+          return { ...product, reviews: productReviews, ratingAverage };
+        } catch (error) {
+          console.error(`Error fetching reviews for product ${product.id}:`, error);
+          return { ...product, reviews: [], ratingAverage: 0 };
         }
-        fetchCategories(formattedProducts);
-      } else {
-        console.error('La respuesta de la API no contiene productos válidos');
-        setError('La respuesta de la API no contiene productos válidos');
-      }
-    } catch (error) {
-      console.error('Error al obtener productos:', error);
-      setError('Error al obtener productos. Por favor, inténtelo de nuevo más tarde.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async (products: Product[]) => {
-    const categoryIds = Array.from(new Set(products.map(product => product.category_id)));
-    try {
-      const categoriesMap: { [key: string]: string } = {};
-      await Promise.all(categoryIds.map(async (categoryId) => {
-        const response = await axios.get(`https://api.mercadolibre.com/categories/${categoryId}`);
-        categoriesMap[categoryId] = response.data.name;
       }));
-      setCategories(categoriesMap);
+  
+      setProducts(productsWithReviews);
+      setTotalProducts(total);
     } catch (error) {
-      console.error('Error al obtener categorías:', error);
-    }
-  };
-
-  const fetchReviews = async (clientId: string, productId: string) => {
-    setLoading(true);
-    try {
-      console.log(`Fetching reviews for client ID: ${clientId}, product ID: ${productId}`);
-      const response = await axios.get(`${process.env.VITE_API_URL}/reviews/${clientId}/${productId}`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`, // Ensure the token is stored in localStorage
-        },
-      });
-      console.log('API response:', response);
-      const data = response.data?.data;
-      console.log('Reviews data:', data);
-      if (data) {
-        const reviews = data.reviews.map((review: any) => ({
-          id: review.id,
-          product_id: productId,
-          comment: review.content || 'Sin comentario',
-          rating: review.rate || 0,
-        }));
-        console.log('Formatted reviews:', reviews);
-        setProducts((prevProducts) =>
-          prevProducts.map((product) =>
-            product.id === productId
-              ? {
-                  ...product,
-                  reviews,
-                  ratingAverage: data.rating_average,
-                  ratingLevels: data.rating_levels,
-                }
-              : product
-          )
-        );
-        console.log('Updated products with reviews:', products);
-      } else {
-        console.error('La respuesta de la API no contiene opiniones válidas');
-        setError('La respuesta de la API no contiene opiniones válidas');
-      }
-    } catch (error) {
-      console.error('Error al obtener opiniones:', error);
-      setError('Error al obtener opiniones. Por favor, inténtelo de nuevo más tarde.');
+      console.error('Error fetching products:', error);
+      setError(error instanceof Error ? `Error fetching products: ${error.message}` : 'Error fetching products');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleProductClick = (product: Product) => {
-    console.log('Product clicked:', product);
-    setSelectedProduct(product);
-    if (!product.reviews) {
-      fetchReviews(selectedConnection, product.id);
+  const fetchAllReviews = async (clientId: string, productId: string): Promise<Review[]> => {
+    let allReviews: Review[] = [];
+    let offset = 0;
+    const limit = 5;
+    let totalReviews = 0;
+
+    try {
+      do {
+        const response = await axios.get(`${process.env.VITE_API_URL}/reviews/${clientId}/${productId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params: { limit, offset },
+        });
+
+        const reviewsData = response.data.data.reviews || [];
+        totalReviews = response.data.data.paging.total || 0;
+        allReviews = [...allReviews, ...reviewsData];
+        offset += limit;
+      } while (allReviews.length < totalReviews);
+    } catch (error) {
+      console.error(`Error fetching reviews for product ${productId}:`, error);
     }
+
+    return allReviews.map((review: any) => ({
+      id: review.id,
+      product_id: productId,
+      comment: review.content || 'Sin comentario',
+      rating: review.rate || 0,
+    }));
   };
 
-  const handleConnectionChange = (event: React.ChangeEvent<any>) => {
-    setSelectedConnection((event.target as HTMLSelectElement).value);
+  const handleCardClick = (product: Product) => {
+    console.log('Product clicked:', product); // Debugging log
+    setSelectedProduct(product);
+    setShowModal(true);
   };
 
-  const handleBackClick = () => {
-    navigate('/home-reportes');
+  const handleCloseModal = () => {
+    setShowModal(false);
+    setSelectedProduct(null);
   };
 
-  const loadMoreProducts = () => {
-    fetchProducts(selectedConnection, '', 35, products.length);
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
   };
 
-  const indexOfLastProduct = currentPage * productsPerPage;
-  const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
-  const currentProducts = products.slice(indexOfFirstProduct, indexOfLastProduct);
-
-  const indexOfLastReview = currentPage * reviewsPerPage;
-  const indexOfFirstReview = indexOfLastReview - reviewsPerPage;
-  const currentReviews = selectedProduct?.reviews?.slice(indexOfFirstReview, indexOfLastReview) || [];
-
-  const paginateProducts = (pageNumber: number) => setCurrentPage(pageNumber);
-  const paginateReviews = (pageNumber: number) => setCurrentPage(pageNumber);
+  const renderPagination = () => {
+    const totalPages = Math.ceil(totalProducts / 35);
+    const items = [];
+    for (let number = 1; number <= totalPages; number++) {
+      items.push(
+        <Pagination.Item key={number} active={number === currentPage} onClick={() => handlePageChange(number)}>
+          {number}
+        </Pagination.Item>
+      );
+    }
+    return <Pagination>{items}</Pagination>;
+  };
 
   return (
-    <Container className={styles.container}>
-      <h1 className={styles.title}>Opiniones de Clientes</h1>
-      <Button variant="secondary" onClick={handleBackClick} className="mb-3">
-        Volver a HomeReportes
-      </Button>
-      <Form.Group controlId="connectionSelect" className="mb-3">
-        <Form.Label>Seleccionar Conexión</Form.Label>
-        <Form.Control as="select" value={selectedConnection} onChange={handleConnectionChange}>
-          {connections.map((connection) => (
-            <option key={connection.client_id} value={connection.client_id}>
-              {connection.nickname}
-            </option>
+    <Container fluid className={styles.container}>
+      <Row>
+        {/* Sidebar */}
+        <Col md={3} className={styles.sidebar}>
+          <h4>Select Client</h4>
+          {clients.map(client => (
+            <Card key={client.client_id} className={styles.clientCard} onClick={() => setSelectedClient(client.client_id)}>
+              <Card.Body>
+                <Card.Title>{client.nickname}</Card.Title>
+              </Card.Body>
+            </Card>
           ))}
-        </Form.Control>
-      </Form.Group>
-      <h2 className={styles.clientName}>Cliente: {clientName}</h2>
-      {loading && <div>Loading...</div>}
-      {error && <Alert variant="danger">{error}</Alert>}
-      {products.length > 0 ? (
-        <>
-          <Accordion defaultActiveKey="0">
-            {currentProducts.map((product, index) => (
-              <Accordion.Item eventKey={index.toString()} key={product.id}>
-                <Accordion.Header onClick={() => handleProductClick(product)}>
-                  <div className="d-flex justify-content-between w-100">
-                    <span>{product.title} - ${product.price} (Categoría: {categories[product.category_id]})</span>
-                    <FontAwesomeIcon icon={faComment} size="2x" className={styles.noReviewsIcon} />
-                  </div>
-                </Accordion.Header>
-                <Accordion.Body>
-                  <p>Cantidad Disponible: {product.available_quantity}</p>
-                  <h4>Reseñas:</h4>
-                  {selectedProduct?.id === product.id && selectedProduct.reviews ? (
-                    selectedProduct.reviews.length > 0 ? (
-                      <>
-                        <Table striped bordered hover responsive>
-                          <thead>
-                            <tr>
-                              <th><strong>Comentario</strong></th>
-                              <th><strong>Estrellas</strong></th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {currentReviews.map((review) => (
-                              <tr key={review.id}>
-                                <td>{review.comment}</td>
-                                <td>
-                                  {[...Array(5)].map((_, index) => (
-                                    <FontAwesomeIcon
-                                      key={index}
-                                      icon={faStar}
-                                      color={index < review.rating ? 'gold' : 'gray'}
-                                      className="text-xl"
-                                    />
-                                  ))}
-                                </td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </Table>
-                        <div className="d-flex justify-content-between">
-                          <Pagination>
-                            {Array.from({ length: Math.ceil(selectedProduct.reviews.length / reviewsPerPage) }, (_, index) => (
-                              <Pagination.Item key={index + 1} active={index + 1 === currentPage} onClick={() => paginateReviews(index + 1)}>
-                                {index + 1}
-                              </Pagination.Item>
-                            ))}
-                          </Pagination>
-                          <div className="text-end">
-                            <strong>Puntuación promedio del producto: {selectedProduct.ratingAverage?.toFixed(1)}</strong>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <p>No hay reseñas disponibles.</p>
-                        <div className="text-end">
-                          <strong>Puntuación promedio del producto: {selectedProduct.ratingAverage?.toFixed(1)}</strong>
-                        </div>
-                      </>
-                    )
-                  ) : (
-                    <p>Cargando reseñas...</p>
-                  )}
-                </Accordion.Body>
-              </Accordion.Item>
+        </Col>
+        
+        {/* Main Panel */}
+        <Col md={9}>
+          <h2>Product Reviews Dashboard</h2>
+          {loading && <Spinner animation="border" />}
+          {error && <Alert variant="danger">{error}</Alert>}
+          
+          {/* Summary Cards */}
+          <Row className={styles.summaryRow}>
+            <Col md={4}>
+              <Card className={styles.summaryCard}>
+                <Card.Body>
+                  <FontAwesomeIcon icon={faShoppingCart} size="2x" />
+                  <h5>Total Products</h5>
+                  <p>{products.length}</p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className={styles.summaryCard}>
+                <Card.Body>
+                  <FontAwesomeIcon icon={faComments} size="2x" />
+                  <h5>Total Reviews</h5>
+                  <p>{products.reduce((sum, p) => sum + (p.reviews?.length || 0), 0)}</p>
+                </Card.Body>
+              </Card>
+            </Col>
+            <Col md={4}>
+              <Card className={styles.summaryCard}>
+                <Card.Body>
+                  <FontAwesomeIcon icon={faStar} size="2x" />
+                  <h5>Avg. Rating</h5>
+                  <p>{(products.reduce((sum, p) => sum + (p.ratingAverage || 0), 0) / products.length).toFixed(1)}</p>
+                </Card.Body>
+              </Card>
+            </Col>
+          </Row>
+          
+          {/* Product List */}
+          <Row>
+            {products.map(product => (
+              <Col md={4} key={product.id}>
+                <Card className={styles.productCard} onClick={() => handleCardClick(product)}>
+                  <Card.Body>
+                    <Card.Title>{product.title}</Card.Title>
+                    <Card.Text>Price: ${product.price}</Card.Text>
+                    <Card.Text>Stock: {product.available_quantity}</Card.Text>
+                    <Card.Text>
+                      Rating:
+                      {[...Array(5)].map((_, index) => (
+                        <FontAwesomeIcon key={index} icon={faStar} color={index < (product.ratingAverage || 0) ? 'gold' : 'gray'} />
+                      ))}
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
             ))}
-          </Accordion>
-          {products.length < totalProducts && (
-            <Button variant="primary" onClick={loadMoreProducts} className="mt-3">
-              Cargar más productos
-            </Button>
+          </Row>
+          <Row className="mt-3">
+            <Col>
+              {renderPagination()}
+            </Col>
+          </Row>
+        </Col>
+      </Row>
+
+      {/* Reviews Modal */}
+      <Modal show={showModal} onHide={handleCloseModal}>
+        <Modal.Header closeButton>
+          <Modal.Title>Product Reviews</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {selectedProduct?.reviews?.length ? (
+            selectedProduct.reviews.map(review => (
+              <div key={review.id}>
+                <p><strong>Comment:</strong> {review.comment}</p>
+                <p><strong>Rating:</strong> {[...Array(5)].map((_, index) => (
+                  <FontAwesomeIcon key={index} icon={faStar} color={index < review.rating ? 'gold' : 'gray'} />
+                ))}</p>
+                <hr />
+              </div>
+            ))
+          ) : (
+            <p>No reviews available for this product.</p>
           )}
-          <Pagination className="mt-3">
-            {Array.from({ length: Math.ceil(products.length / productsPerPage) }, (_, index) => (
-              <Pagination.Item key={index + 1} active={index + 1 === currentPage} onClick={() => paginateProducts(index + 1)}>
-                {index + 1}
-              </Pagination.Item>
-            ))}
-          </Pagination>
-        </>
-      ) : (
-        <p>No hay productos disponibles.</p>
-      )}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleCloseModal}>
+            Close
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
 
-export default OpinionesClientes;
+export default DashboardReviews;
