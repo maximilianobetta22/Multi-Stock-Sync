@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { Table, Button, Form, Row, Col } from "react-bootstrap";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Table, Button, Form, Row, Col, Modal } from "react-bootstrap";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -17,6 +17,10 @@ import ChartDataLabels from "chartjs-plugin-datalabels";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
 import styles from "./Ventas.module.css";
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import * as XLSX from 'xlsx';
+import { saveAs } from 'file-saver';
 
 ChartJS.register(
   CategoryScale,
@@ -47,39 +51,35 @@ const DetallesDeVentas: React.FC = () => {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [filtroActivo, setFiltroActivo] = useState<'mes' | 'año' | 'comparacion' | null>(null);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
-  const totalIngresos = ventas.reduce((total, venta) => total + venta.price * venta.quantity, 0);
-  const [selectedYear, setSelectedYear] = useState<string>('2025');
-  const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
-  const [year1, setYear1] = useState('');
-  const [year2, setYear2] = useState('');
+  const [year1, setYear1] = useState<string>('');
+  const [year2, setYear2] = useState<string>('');
   const [result, setResult] = useState<any>(null);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
+  const [showModal, setShowModal] = useState<boolean>(false);
+
+  const years = useMemo(() => Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString()), []);
+
+  const totalIngresos = useMemo(() => ventas.reduce((total, venta) => total + venta.price * venta.quantity, 0), [ventas]);
+
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
   };
+
   const fetchVentas = useCallback(async () => {
     if (!client_id) return;
     setLoading(true);
     try {
-      const params = {
-        year: yearSeleccionado,
-        month: monthSeleccionado.toString().padStart(2, "0"),
-      };
-      const response = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`,
-        { params }
-      );
-
-      const ventasData =
-        response.data.data[`${yearSeleccionado}-${params.month}`]?.orders.flatMap((order: any) =>
-          order.sold_products.map((product: any) => ({
-            order_id: product.order_id,
-            order_date: product.order_date,
-            title: product.title,
-            quantity: product.quantity,
-            price: product.price,
-          }))
-        ) || [];
-
+      const params = { year: yearSeleccionado, month: monthSeleccionado.toString().padStart(2, "0") };
+      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, { params });
+      const ventasData = response.data.data[`${yearSeleccionado}-${params.month}`]?.orders.flatMap((order: any) =>
+        order.sold_products.map((product: any) => ({
+          order_id: product.order_id,
+          order_date: product.order_date,
+          title: product.title,
+          quantity: product.quantity,
+          price: product.price,
+        }))
+      ) || [];
       setVentas(ventasData);
     } catch (error) {
       console.error("Error fetching sales data:", error);
@@ -91,33 +91,19 @@ const DetallesDeVentas: React.FC = () => {
   }, [client_id, yearSeleccionado, monthSeleccionado]);
 
   useEffect(() => {
-    fetchVentas();
-  }, [fetchVentas]);
-
-  const chartData = {
-    labels: ventas.map((venta) => venta.title), // Usar la fecha de la venta como etiquetas
-    datasets: [
-      {
-        label: 'Ventas por Orden',
-        data: ventas.map((venta) => venta.price), // Usar el precio como dato del gráfico
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
-  };
-
+    if (filtroActivo === 'mes' || filtroActivo === 'año') {
+      fetchVentas();
+    }
+  }, [fetchVentas, filtroActivo]);
 
   const fetchUserData = useCallback(async () => {
     if (!client_id) return;
     try {
       const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-
       setUserData({
         nickname: response.data.data.nickname,
         profile_image: response.data.data.profile_image,
       });
-
     } catch (error) {
       console.error("Error al obtener los datos del usuario:", error);
     }
@@ -127,10 +113,9 @@ const DetallesDeVentas: React.FC = () => {
     fetchUserData();
   }, [fetchUserData]);
 
-  useEffect(() => {
-    fetchVentas();
-  }, [fetchVentas]);
-
+  const handleDropdownChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setter(e.target.value);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -139,29 +124,161 @@ const DetallesDeVentas: React.FC = () => {
       const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-annual-sales-data/${client_id}`, {
         params: { year1, year2 }
       });
-      console.log('Comparison response:', response.data);
       setResult(response.data);
     } catch (error) {
-      console.error('Error fetching comparison data:', error);
+      console.error(error);
+      setToastMessage("Error al comparar los años");
     } finally {
       setLoading(false);
     }
   };
 
+  const generatePDF = () => {
+    const doc = new jsPDF();
+    doc.setFillColor(0, 121, 191);
+    doc.rect(0, 0, 210, 30, "F");
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Reporte de Ventas", 14, 20);
 
-  const handleDropdownChange = (setter: React.Dispatch<React.SetStateAction<string>>) =>
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
-      setter(e.target.value);
-    };
+    doc.setFontSize(12);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Cliente: ${userData?.nickname}`, 14, 40);
+
+    if (filtroActivo === 'comparacion' && result) {
+      const { year1: yearData1, year2: yearData2, difference, percentage_change } = result.data;
+      doc.text(`Comparación entre ${yearData1.year} y ${yearData2.year}`, 14, 50);
+
+      doc.setFontSize(14);
+      doc.text(`${yearData1.year}`, 105, 70, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text(`Total Ventas: ${formatCurrency(yearData1.total_sales)}`, 105, 80, { align: 'center' });
+
+      autoTable(doc, {
+        head: [["Producto", "Cantidad", "Precio"]],
+        body: yearData1.sold_products.map((product: any) => [
+          product.title,
+          product.quantity,
+          formatCurrency(product.price),
+        ]),
+        startY: 90,
+        theme: 'grid',
+        margin: { bottom: 10 }
+      });
+
+      doc.setFontSize(14);
+      doc.text(`${yearData2.year}`, 105, (doc as any).lastAutoTable.finalY + 20, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text(`Total Ventas: ${formatCurrency(yearData2.total_sales)}`, 105, (doc as any).lastAutoTable.finalY + 30, { align: 'center' });
+
+      autoTable(doc, {
+        head: [["Producto", "Cantidad", "Precio"]],
+        body: yearData2.sold_products.map((product: any) => [
+          product.title,
+          product.quantity,
+          formatCurrency(product.price),
+        ]),
+        startY: (doc as any).lastAutoTable.finalY + 40,
+        theme: 'grid',
+        margin: { bottom: 10 }
+      });
+      doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, (doc as any).lastAutoTable.finalY + 30);
+      doc.setTextColor(percentage_change > 0 ? 'green' : 'red');
+      doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 40);
+    } else {
+      doc.text(`Ventas del Mes: ${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}`, 14, 50);
+      autoTable(doc, {
+        head: [["ID", "Fecha", "Producto", "Cantidad", "Precio"]],
+        body: ventas.map((venta) => [
+          venta.order_id,
+          venta.order_date,
+          venta.title,
+          venta.quantity,
+          formatCurrency(venta.price),
+        ]),
+        startY: 60,
+        theme: 'grid',
+        margin: { bottom: 10 }
+      });
+    }
+
+    const pageHeight = doc.internal.pageSize.height;
+    doc.setFontSize(10);
+    doc.setTextColor(150, 150, 150);
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+
+    const pdfData = doc.output("datauristring");
+    setPdfDataUrl(pdfData);
+    setShowModal(true);
+  };
+
+  const exportToExcel = () => {
+    if (filtroActivo === 'comparacion' && result) {
+      const workbook = XLSX.utils.book_new();
+
+      const createSheet = (yearData: any, sheetName: string) => {
+        const data = yearData.sold_products.map((product: any) => ({
+          Producto: product.title,
+          Cantidad: product.quantity,
+          Precio: formatCurrency(product.price),
+        }));
+
+        data.unshift({ Producto: `Total Ventas: ${formatCurrency(yearData.total_sales)}`, Cantidad: '', Precio: '' });
+
+        return XLSX.utils.json_to_sheet(data, { skipHeader: false });
+      };
+
+      const sheet1 = createSheet(result.data.year1, `Ventas ${year1}`);
+      const sheet2 = createSheet(result.data.year2, `Ventas ${year2}`);
+
+      XLSX.utils.book_append_sheet(workbook, sheet1, `Ventas ${year1}`);
+      XLSX.utils.book_append_sheet(workbook, sheet2, `Ventas ${year2}`);
+
+      const buffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+      const excelBlob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+
+      saveAs(excelBlob, `Comparacion_Ventas_${year1}_${year2}.xlsx`);
+    } else {
+      const worksheetData = [
+        ["ID", "Fecha", "Producto", "Cantidad", "Precio"],
+        ...ventas.map((venta) => [
+          venta.order_id,
+          venta.order_date,
+          venta.title,
+          venta.quantity,
+          formatCurrency(venta.price),
+        ]),
+      ];
+
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Ventas');
+
+      const fileName = `Ventas_${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+    }
+  };
+
+  const chartData = useMemo(() => ({
+    labels: ventas.map((venta) => venta.title),
+    datasets: [
+      {
+        label: 'Ventas por Orden',
+        data: ventas.map((venta) => venta.price),
+        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+        borderColor: 'rgba(75, 192, 192, 1)',
+        borderWidth: 1,
+      },
+    ],
+  }), [ventas]);
 
   return (
     <div className="container mt-4">
-
       {toastMessage && (
         <ToastComponent message={toastMessage} type="danger" onClose={() => setToastMessage(null)} />
       )}
       <h1 className="text-center mb-4">Detalles de Ventas</h1>
-
       {userData && (
         <div style={{ textAlign: "center" }}>
           <h3>Usuario: {userData.nickname}</h3>
@@ -173,10 +290,8 @@ const DetallesDeVentas: React.FC = () => {
         </div>
       )}
       <br />
-
       <Form className="mb-4">
         <Row className="d-flex justify-content-center">
-          {/* Filtro por mes */}
           <Col xs="auto" className="mb-3">
             <Button
               variant={filtroActivo === 'mes' ? 'primary' : 'outline-primary'}
@@ -199,7 +314,7 @@ const DetallesDeVentas: React.FC = () => {
                           onChange={(e) => setYearSeleccionado(Number(e.target.value))}
                           className="w-auto"
                         >
-                          {[2023, 2024, 2025, 2026].map((year) => (
+                          {years.map((year) => (
                             <option key={year} value={year}>
                               {year}
                             </option>
@@ -229,8 +344,6 @@ const DetallesDeVentas: React.FC = () => {
               </div>
             )}
           </Col>
-
-          {/* Filtro por año */}
           <Col xs="auto" className="mb-3">
             <Button
               variant={filtroActivo === "año" ? "primary" : "outline-primary"}
@@ -243,11 +356,11 @@ const DetallesDeVentas: React.FC = () => {
             {filtroActivo === "año" && (
               <div className="mt-2">
                 <Form.Group controlId="formYear" className="d-flex flex-column align-items-center">
-                  <Form.Label >Año</Form.Label>
+                  <Form.Label>Año</Form.Label>
                   <Form.Control
                     as="select"
-                    value={selectedYear}
-                    onChange={(e) => setSelectedYear(e.target.value)}
+                    value={yearSeleccionado}
+                    onChange={(e) => setYearSeleccionado(Number(e.target.value))}
                     className="w-auto"
                   >
                     {years.map((year) => (
@@ -260,8 +373,6 @@ const DetallesDeVentas: React.FC = () => {
               </div>
             )}
           </Col>
-
-          {/* Filtro de comparación */}
           <Col xs="auto" className="mb-3">
             <Button
               variant={filtroActivo === 'comparacion' ? 'primary' : 'outline-primary'}
@@ -273,7 +384,7 @@ const DetallesDeVentas: React.FC = () => {
             </Button>
             {filtroActivo === 'comparacion' && (
               <div className="mt-2">
-                <form onSubmit={handleSubmit}>
+                <Form onSubmit={handleSubmit}>
                   <div className="form-group">
                     <label>Año 1</label>
                     <select className="form-control" value={year1} onChange={handleDropdownChange(setYear1)} required>
@@ -283,7 +394,6 @@ const DetallesDeVentas: React.FC = () => {
                       ))}
                     </select>
                   </div>
-
                   <div className="form-group">
                     <label>Año 2</label>
                     <select className="form-control" value={year2} onChange={handleDropdownChange(setYear2)} required>
@@ -293,7 +403,8 @@ const DetallesDeVentas: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                </form>
+                  <Button variant="success" type="submit" className="mt-2">Comparar</Button>
+                </Form>
               </div>
             )}
           </Col>
@@ -306,7 +417,6 @@ const DetallesDeVentas: React.FC = () => {
           </Button>
         </Col>
       </Row>
-      {/* Mostrar gráfico solo si el filtro activo es "mes" o "año" */}
       {ventas.length > 0 && !loading && (filtroActivo === "mes" || filtroActivo === "año") && (
         <div className="mb-4">
           <Bar
@@ -325,11 +435,9 @@ const DetallesDeVentas: React.FC = () => {
           />
         </div>
       )}
-
-      {/* Mostrar tabla solo si hay un filtro activo */}
       {loading ? (
         <LoadingDinamico variant="container" />
-      ) : filtroActivo && (
+      ) : (
         <>
           {filtroActivo === "comparacion" ? (
             result ? (
@@ -343,11 +451,11 @@ const DetallesDeVentas: React.FC = () => {
                 <tbody>
                   <tr>
                     <td>{year1}</td>
-                    <td>{formatCurrency(result[year1])}</td>
+                    <td>{formatCurrency(result.data.year1.total_sales)}</td>
                   </tr>
                   <tr>
                     <td>{year2}</td>
-                    <td>{formatCurrency(result[year2])}</td>
+                    <td>{formatCurrency(result.data.year2.total_sales)}</td>
                   </tr>
                 </tbody>
               </Table>
@@ -386,15 +494,71 @@ const DetallesDeVentas: React.FC = () => {
               </tbody>
             </Table>
           )}
-
-          {/* Mostrar total de ingresos si hay filtro activo */}
           <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
+          <div className="d-flex justify-content-center mt-3">
+            <Button variant="primary" onClick={generatePDF} className="mr-2 mx-3">Generar PDF</Button>
+            <Button variant="secondary" onClick={exportToExcel}>Guardar Excel</Button>
+          </div>
         </>
+      )}
+      {filtroActivo === "comparacion" && result && Object.keys(result).length > 0 ? (
+        <Table striped bordered hover responsive className="mt-4">
+          <div className="container">
+            <div className={styles.tableContainer}>
+              <h3>{year1}</h3>
+              <p>Total Ventas: <strong>{formatCurrency(result.data.year1.total_sales)}</strong></p>
+              <table className={`table table-striped ${styles.table}`}>
+                <thead>
+                  <tr>
+                    <th className="table_header">Producto</th>
+                    <th className="table_header">Cantidad</th>
+                    <th className="table_header">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.data.year1.sold_products.map((product: any) => (
+                    <tr key={product.order_id}>
+                      <td>{product.title}</td>
+                      <td>{product.quantity}</td>
+                      <td>{formatCurrency(product.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className={styles.tableContainer}>
+              <h3>{year2}</h3>
+              <p>Total Ventas: <strong>{formatCurrency(result.data.year2.total_sales)}</strong></p>
+              <table className={`table table-striped ${styles.table}`}>
+                <thead>
+                  <tr>
+                    <th className="table_header">Producto</th>
+                    <th className="table_header">Cantidad</th>
+                    <th className="table_header">Precio</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {result.data.year2.sold_products.map((product: any) => (
+                    <tr key={product.order_id}>
+                      <td>{product.title}</td>
+                      <td>{product.quantity}</td>
+                      <td>{formatCurrency(product.price)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
+            <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
+              Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
+            </p>
+          </div>
+        </Table>
+      ) : (
+        <p className="text-center"></p>
       )}
     </div>
   );
-
-
 };
 
 export default DetallesDeVentas;
