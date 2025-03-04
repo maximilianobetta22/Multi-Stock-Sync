@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { Accordion, Table, Button, FormControl } from "react-bootstrap";
-import { motion } from "framer-motion";
+import { Accordion, Table, FormControl, Dropdown, DropdownButton } from "react-bootstrap";
+import { Link } from 'react-router-dom';
 import ProductActionsDropdown from "./ProductActionsDropdown";
 
 interface Product {
@@ -24,15 +24,34 @@ interface ProductTableProps {
   isEditing: { [key: string]: boolean };
   stockEdit: { [key: string]: number };
   onStockChange: (productId: string, newStock: number) => void;
-  onUpdateStock: (productId: string, newStock: number) => void;
+  onUpdateStock: (productId: string, newStock: number, pause?: boolean) => Promise<void>;
   onOpenModal: (product: Product) => void;
   formatPriceCLP: (price: number) => string;
   translateStatus: (status: string) => string;
-  onUpdateStatus: (productId: string, newStatus: string) => void;
+  onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
   onSelectProduct: (product: Product) => void;
-  onEditProduct: (product: Product) => void; // Add this prop
+  onEditProduct: (product: Product) => void;
 }
 
+/**
+ * Component that renders a table of products categorized by their categories.
+ * 
+ * @param {Object} props - The properties object.
+ * @param {Object} props.categorizedProducts - An object where keys are category IDs and values are arrays of products.
+ * @param {Object} props.categories - An object where keys are category IDs and values are category names.
+ * @param {Object} props.isEditing - An object where keys are product IDs and values are booleans indicating if the product is being edited.
+ * @param {Object} props.stockEdit - An object where keys are product IDs and values are the edited stock quantities.
+ * @param {Function} props.onStockChange - Function to handle changes in stock quantity.
+ * @param {Function} props.onUpdateStock - Function to handle updating the stock.
+ * @param {Function} props.onOpenModal - Function to handle opening a modal.
+ * @param {Function} props.formatPriceCLP - Function to format the price in CLP currency.
+ * @param {Function} props.translateStatus - Function to translate the product status.
+ * @param {Function} props.onUpdateStatus - Function to handle updating the product status.
+ * @param {Function} props.onSelectProduct - Function to handle selecting a product.
+ * @param {Function} props.onEditProduct - Function to handle editing a product.
+ * 
+ * @returns {JSX.Element} The rendered component.
+ */
 const ProductTable: React.FC<ProductTableProps> = ({
   categorizedProducts,
   categories,
@@ -45,13 +64,9 @@ const ProductTable: React.FC<ProductTableProps> = ({
   translateStatus,
   onUpdateStatus,
   onSelectProduct,
-  onEditProduct, // Destructure the new prop
+  onEditProduct,
 }) => {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
-
-  const handleEditClick = (productId: string) => {
-    setEditingProductId(productId);
-  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, productId: string) => {
     const { name, value } = e.target as HTMLInputElement;
@@ -63,95 +78,51 @@ const ProductTable: React.FC<ProductTableProps> = ({
     <Accordion defaultActiveKey="0">
       {Object.keys(categorizedProducts).map((categoryId, index) => (
         <Accordion.Item eventKey={index.toString()} key={categoryId}>
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4 }}
-          >
-            <div
-              style={{ border: '1px solid #dee2e6', borderRadius: '5px' }}
-            >
-              <Accordion.Header>
-                {categories[categoryId] || categoryId} (Cantidad: {categorizedProducts[categoryId].length})
-              </Accordion.Header>
-            </div>
-            <Accordion.Body>
-              <div className="table-container">
-                <Table striped bordered hover responsive>
-                  <thead>
-                    <tr>
-                      <th className="table_header">Imágen</th>
-                      <th className="table_header">ID MLC</th>
-                      <th className="table_header">Título</th>
-                      <th className="table_header">Código categoría</th>
-                      <th className="table_header">Precio CLP</th>
-                      <th className="table_header">Stock MercadoLibre</th>
-                      <th className="table_header">Bodega asignada</th>
-                      <th className="table_header">Stock Bodega</th>
-                      <th className="table_header">Status</th>
-                      <th className="table_header">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categorizedProducts[categoryId].map((producto) => (
-                      <motion.tr
-                        key={producto.id}
-                        transition={{ type: "spring", stiffness: 300 }}
-                        onClick={() => onSelectProduct(producto)}
-                        style={{ cursor: 'pointer' }}
-                      >
-                        <td className="text-center">
-                          <motion.img
-                            src={producto.thumbnail}
-                            className="rounded"
-                            alt={`Imagen del producto: ${producto.title}`}
-                            whileHover={{ scale: 1.1 }}
-                            transition={{ duration: 0.3 }}
-                          />
-                        </td>
-                        <td>{producto.id}</td>
-                        <td>
-                          {editingProductId === producto.id ? (
-                            <FormControl
-                              type="text"
-                              name="title"
-                              value={producto.title}
-                              onChange={(e) => handleInputChange(e, producto.id)}
-                            />
-                          ) : (
-                            producto.title
-                          )}
-                        </td>
-                        <td>{producto.category_id}</td>
-                        <td>
-                          {editingProductId === producto.id ? (
-                            <FormControl
-                              type="number"
-                              name="price"
-                              value={producto.price}
-                              onChange={(e) => handleInputChange(e, producto.id)}
-                            />
-                          ) : (
-                            formatPriceCLP(producto.price)
-                          )}
-                        </td>
-                        <td>{producto.available_quantity}</td>
-                        <td>no especificada</td>
-                        <td>no especificado</td>
-                        <td>{translateStatus(producto.status)}</td>
-                        <td>
-                          <ProductActionsDropdown
-                            productId={producto.id}
-                            onEdit={handleEditClick}
-                          />
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </div>
-            </Accordion.Body>
-          </motion.div>
+          <Accordion.Header>{categories[categoryId]}</Accordion.Header>
+          <Accordion.Body>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>Imagen</th>
+                  <th>Nombre</th>
+                  <th>Categoría</th>
+                  <th>Precio</th>
+                  <th>Stock</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {categorizedProducts[categoryId].map((product) => (
+                  <tr key={product.id}>
+                    <td><img src={product.thumbnail} alt={product.title} width="50" /></td>
+                    <td>{product.title}</td>
+                    <td>{categories[product.category_id]}</td>
+                    <td>{formatPriceCLP(product.price)}</td>
+                    <td>
+                      {isEditing[product.id] ? (
+                        <FormControl
+                          type="number"
+                          value={stockEdit[product.id] || product.available_quantity}
+                          onChange={(e) => onStockChange(product.id, parseInt(e.target.value))}
+                        />
+                      ) : (
+                        product.available_quantity
+                      )}
+                    </td>
+                    <td>{translateStatus(product.status)}</td>
+                    <td>
+                      <DropdownButton id="dropdown-basic-button" title="Acciones">
+                        <Dropdown.Item as={Link} to={`/sync/productos/editar/${product.id}`}>Editar</Dropdown.Item>                        
+                        <Dropdown.Item onClick={() => onUpdateStatus(product.id, 'paused')}>Pausar</Dropdown.Item>
+                        <Dropdown.Item onClick={() => onUpdateStatus(product.id, 'active')}>Activar</Dropdown.Item>
+                      </DropdownButton>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Accordion.Body>
         </Accordion.Item>
       ))}
     </Accordion>

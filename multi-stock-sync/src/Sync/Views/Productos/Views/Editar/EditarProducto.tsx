@@ -22,8 +22,8 @@ const EditarProducto: React.FC = () => {
   const fetchProducts = async () => {
     setLoading(true);
     try {
-      const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/products/${id}`, {
-        params: { q: searchQuery },
+      const response = await axiosInstance.get(`${process.env.VITE_API_URL}/mercadolibre/products`, {
+        params: { q: searchQuery, id }, // Ensure the correct parameters are passed
         headers: {
           'Accept': 'application/json',
           'Authorization': `Bearer ${location.state?.access_token}`, // Pass the access token
@@ -107,7 +107,10 @@ const EditarProducto: React.FC = () => {
           onOpenModal={() => {}}
           formatPriceCLP={(price: number) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price)}
           translateStatus={(status: string) => status}
-          onUpdateStatus={() => {}}
+          onUpdateStatus={async (productId: string, newStatus: string) => {
+            // Implement the logic to update the status here
+            return Promise.resolve();
+          }}
           onSelectProduct={handleProductSelect}
           onEditProduct={handleEditProduct} // Pass handleEditProduct to ProductTable
         />
