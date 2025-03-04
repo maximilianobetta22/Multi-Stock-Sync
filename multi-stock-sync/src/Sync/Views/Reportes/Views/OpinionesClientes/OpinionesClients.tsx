@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Container, Row, Col, Card, Form, Alert, Spinner, Modal, Button, Pagination } from 'react-bootstrap';
+import { Container, Row, Col, Card, Alert, Spinner, Modal, Button, Pagination } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar, faComments, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import styles from './DashboardReviews.module.css';
@@ -44,9 +44,9 @@ const DashboardReviews = () => {
 
   useEffect(() => {
     if (selectedClient) {
-      fetchProducts(selectedClient, 1);
+      fetchProducts(selectedClient, currentPage);
     }
-  }, [selectedClient]);
+  }, [selectedClient, currentPage]);
 
   const fetchClients = async () => {
     setLoading(true);
@@ -60,9 +60,6 @@ const DashboardReviews = () => {
       });
       console.log('Fetched clients:', response.data.data); // Debugging log
       setClients(response.data.data);
-      if (response.data.data.length > 0) {
-        setSelectedClient(response.data.data[0].client_id);
-      }
     } catch (error) {
       console.error('Error fetching clients:', error); // Debugging log
       if (axios.isAxiosError(error) && error.response) {
@@ -81,59 +78,73 @@ const DashboardReviews = () => {
     try {
       const limit = 35;
       const offset = (page - 1) * limit;
+      
+      // Fetch products first
       const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         params: { limit, offset },
       });
-      console.log('Fetched products response:', response.data); // Debugging log
+  
       const productsData = response.data.data;
       const total = response.data.paging?.total || 0;
       console.log('Fetched products:', productsData); // Debugging log
-      const productsWithReviews = await Promise.all(
-        productsData.map(async (product: Product) => {
-          const reviews = await fetchReviews(clientId, product.id);
-          const ratingAverage = reviews.length > 0 ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length : 0;
-          console.log(`Product ${product.id} reviews:`, reviews); // Debugging log
-          return { ...product, reviews, ratingAverage };
-        })
-      );
+      console.log('Total products:', total); // Debugging log
+  
+      // Fetch reviews for each product individually
+      const productsWithReviews = await Promise.all(productsData.map(async (product: Product) => {
+        try {
+          // Fetch reviews for this product with pagination
+          const productReviews = await fetchAllReviews(clientId, product.id);
+          const ratingAverage = productReviews.length > 0
+            ? productReviews.reduce((sum: number, review: Review) => sum + review.rating, 0) / productReviews.length
+            : 0;
+  
+          // Return product with reviews and average rating
+          return { ...product, reviews: productReviews, ratingAverage };
+        } catch (error) {
+          console.error(`Error fetching reviews for product ${product.id}:`, error);
+          return { ...product, reviews: [], ratingAverage: 0 };
+        }
+      }));
+  
       setProducts(productsWithReviews);
       setTotalProducts(total);
-      console.log('Products with reviews:', productsWithReviews); // Debugging log
     } catch (error) {
-      console.error('Error fetching products:', error); // Debugging log
-      setError(`Error fetching products: ${error.message}`);
+      console.error('Error fetching products:', error);
+      setError(error instanceof Error ? `Error fetching products: ${error.message}` : 'Error fetching products');
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchReviews = async (clientId: string, productId: string): Promise<Review[]> => {
+  const fetchAllReviews = async (clientId: string, productId: string): Promise<Review[]> => {
+    let allReviews: Review[] = [];
+    let offset = 0;
+    const limit = 5;
+    let totalReviews = 0;
+
     try {
-      const response = await axios.get(`${process.env.VITE_API_URL}/reviews/${clientId}/${productId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-      });
-      const data = response.data?.data;
-      console.log(`Fetched reviews for product ${productId}:`, data.reviews); // Debugging log
-      if (data && data.reviews) {
-        return data.reviews.map((review: any) => ({
-          id: review.id,
-          product_id: productId,
-          comment: review.content || 'Sin comentario',
-          rating: review.rate || 0,
-        }));
-      } else {
-        return [];
-      }
+      do {
+        const response = await axios.get(`${process.env.VITE_API_URL}/reviews/${clientId}/${productId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+          params: { limit, offset },
+        });
+
+        const reviewsData = response.data.data.reviews || [];
+        totalReviews = response.data.data.paging.total || 0;
+        allReviews = [...allReviews, ...reviewsData];
+        offset += limit;
+      } while (allReviews.length < totalReviews);
     } catch (error) {
-      if (axios.isAxiosError(error) && error.response && error.response.status === 429) {
-        console.warn(`Rate limit exceeded for product ${productId}. Skipping reviews for this product.`); // Debugging log
-        return [];
-      } else {
-        console.error('Error fetching reviews:', error);
-        return [];
-      }
+      console.error(`Error fetching reviews for product ${productId}:`, error);
     }
+
+    return allReviews.map((review: any) => ({
+      id: review.id,
+      product_id: productId,
+      comment: review.content || 'Sin comentario',
+      rating: review.rate || 0,
+    }));
   };
 
   const handleCardClick = (product: Product) => {
@@ -149,7 +160,6 @@ const DashboardReviews = () => {
 
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
-    fetchProducts(selectedClient, pageNumber);
   };
 
   const renderPagination = () => {
@@ -171,11 +181,13 @@ const DashboardReviews = () => {
         {/* Sidebar */}
         <Col md={3} className={styles.sidebar}>
           <h4>Select Client</h4>
-          <Form.Select value={selectedClient} onChange={(e) => setSelectedClient(e.target.value)}>
-            {clients.map(client => (
-              <option key={client.client_id} value={client.client_id}>{client.nickname}</option>
-            ))}
-          </Form.Select>
+          {clients.map(client => (
+            <Card key={client.client_id} className={styles.clientCard} onClick={() => setSelectedClient(client.client_id)}>
+              <Card.Body>
+                <Card.Title>{client.nickname}</Card.Title>
+              </Card.Body>
+            </Card>
+          ))}
         </Col>
         
         {/* Main Panel */}
@@ -235,7 +247,11 @@ const DashboardReviews = () => {
               </Col>
             ))}
           </Row>
-          {renderPagination()}
+          <Row className="mt-3">
+            <Col>
+              {renderPagination()}
+            </Col>
+          </Row>
         </Col>
       </Row>
 
