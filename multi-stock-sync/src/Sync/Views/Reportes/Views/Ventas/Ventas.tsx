@@ -44,6 +44,7 @@ const DetallesDeVentas: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const currentYear = new Date().getFullYear();
   const [yearSeleccionado, setYearSeleccionado] = useState<number>(currentYear);
+  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(new Date().getMonth() + 1);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -62,7 +63,9 @@ const DetallesDeVentas: React.FC = () => {
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
   };
-
+  /*  */
+  const params = { year: yearSeleccionado, month: monthSeleccionado.toString().padStart(2, "0") };
+  /*  */
   const fetchVentas = useCallback(async () => {
     if (!client_id) return;
     setLoading(true);
@@ -90,12 +93,18 @@ const DetallesDeVentas: React.FC = () => {
         ) || [];
         setVentas(formattedData);
       } else if (filtroActivo === 'año') {
-        const formattedData = Object.keys(ventasData).map(month => ({
-          month,
-          total_sales: ventasData[month].total_amount,
-          sold_products: ventasData[month].orders.flatMap((order: { sold_products: any; }) => order.sold_products)
-        }));
-        setVentas(formattedData.flatMap(month => month.sold_products));
+        const formattedData = Object.keys(ventasData).flatMap(month =>
+          ventasData[month].orders.flatMap((order: { sold_products: any; }) =>
+            order.sold_products.map((product: any) => ({
+              order_id: product.order_id,
+              order_date: product.order_date,
+              title: product.title,
+              quantity: product.quantity,
+              price: product.price,
+            }))
+          )
+        );
+        setVentas(formattedData);
       }
     } catch (error) {
       console.error("Error fetching sales data:", error);
@@ -104,7 +113,7 @@ const DetallesDeVentas: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [client_id, yearSeleccionado, filtroActivo]);
+  }, [client_id, yearSeleccionado, monthSeleccionado, filtroActivo]);
 
   useEffect(() => {
     if (filtroActivo === 'mes' || filtroActivo === 'año') {
@@ -163,7 +172,7 @@ const DetallesDeVentas: React.FC = () => {
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.setTextColor(255, 255, 255);
-    doc.text("Reporte de Ventas", 14, 20);
+    doc.text("Reporte de Comparación de Ventas Anuales", 14, 20);
 
     doc.setFontSize(12);
     doc.setTextColor(0, 0, 0);
@@ -426,6 +435,7 @@ const DetallesDeVentas: React.FC = () => {
                       ))}
                     </select>
                   </div>
+                  <Button variant="success" type="submit" className="mt-2">Comparar</Button>
                 </Form>
               </div>
             )}
@@ -463,24 +473,59 @@ const DetallesDeVentas: React.FC = () => {
         <>
           {filtroActivo === "comparacion" ? (
             result ? (
-              <Table striped bordered hover responsive className="mt-4">
-                <thead className="table-dark">
-                  <tr>
-                    <th>Año</th>
-                    <th>Total de Ventas</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td>{year1}</td>
-                    <td>{formatCurrency(result.data.year1.total_sales)}</td>
-                  </tr>
-                  <tr>
-                    <td>{year2}</td>
-                    <td>{formatCurrency(result.data.year2.total_sales)}</td>
-                  </tr>
-                </tbody>
-              </Table>
+              <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
+                <h1>Resultado de la Comparación</h1>
+                <div className={styles.tableContainer}>
+                  <h3>{year1}</h3>
+                  <p>Total Ventas: <strong>{formatCurrency(result.data.year1.total_sales)}</strong></p>
+                  <table className={`table table-striped ${styles.table}`}>
+                    <thead>
+                      <tr>
+                        <th className="table_header">Producto</th>
+                        <th className="table_header">Cantidad</th>
+                        <th className="table_header">Precio</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.data.year1.sold_products.map((product: any) => (
+                        <tr key={product.order_id}>
+                          <td>{product.title}</td>
+                          <td>{product.quantity}</td>
+                          <td>{formatCurrency(product.price)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <div className={styles.tableContainer}>
+                  <h3>{year2}</h3>
+                  <p>Total Ventas: <strong>{formatCurrency(result.data.year2.total_sales)}</strong></p>
+                  <table className={`table table-striped ${styles.table}`}>
+                    <thead>
+                      <tr>
+                        <th className="table_header">Producto</th>
+                        <th className="table_header">Cantidad</th>
+                        <th className="table_header">Precio</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {result.data.year2.sold_products.map((product: any) => (
+                        <tr key={product.order_id}>
+                          <td>{product.title}</td>
+                          <td>{product.quantity}</td>
+                          <td>{formatCurrency(product.price)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
+                <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
+                  Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
+                </p>
+                <Button onClick={generatePDF} className="btn btn-secondary" style={{ marginRight: '20px' }}>Generar PDF</Button>
+                <Button onClick={exportToExcel} className="btn btn-success">Descargar Excel</Button>
+              </div>
             ) : (
               <p className="text-center">No hay datos de comparación disponibles</p>
             )
@@ -523,62 +568,27 @@ const DetallesDeVentas: React.FC = () => {
           </div>
         </>
       )}
-      {filtroActivo === "comparacion" && result && Object.keys(result).length > 0 ? (
-        <Table striped bordered hover responsive className="mt-4">
-          <div className="container">
-            <div className={styles.tableContainer}>
-              <h3>{year1}</h3>
-              <p>Total Ventas: <strong>{formatCurrency(result.data.year1.total_sales)}</strong></p>
-              <table className={`table table-striped ${styles.table}`}>
-                <thead>
-                  <tr>
-                    <th className="table_header">Producto</th>
-                    <th className="table_header">Cantidad</th>
-                    <th className="table_header">Precio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.data.year1.sold_products.map((product: any) => (
-                    <tr key={product.order_id}>
-                      <td>{product.title}</td>
-                      <td>{product.quantity}</td>
-                      <td>{formatCurrency(product.price)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className={styles.tableContainer}>
-              <h3>{year2}</h3>
-              <p>Total Ventas: <strong>{formatCurrency(result.data.year2.total_sales)}</strong></p>
-              <table className={`table table-striped ${styles.table}`}>
-                <thead>
-                  <tr>
-                    <th className="table_header">Producto</th>
-                    <th className="table_header">Cantidad</th>
-                    <th className="table_header">Precio</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.data.year2.sold_products.map((product: any) => (
-                    <tr key={product.order_id}>
-                      <td>{product.title}</td>
-                      <td>{product.quantity}</td>
-                      <td>{formatCurrency(product.price)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p>Diferencia: <strong>{formatCurrency(result.data.difference)}</strong></p>
-            <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
-              Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
-            </p>
-          </div>
-        </Table>
-      ) : (
-        <p className="text-center"></p>
-      )}
+      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Modal.Header closeButton>
+          <Modal.Title>Reporte de Comparación de Ventas Anuales</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>
+          {pdfDataUrl && <iframe src={pdfDataUrl} width="100%" height="500px" />}
+        </Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={() => setShowModal(false)}>
+            Cerrar
+          </Button>
+          <Button variant="primary" onClick={() => {
+            const link = document.createElement('a');
+            link.href = pdfDataUrl!;
+            link.download = `Comparacion_Ventas_${year1}_${year2}.pdf`;
+            link.click();
+          }}>
+            Guardar PDF
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 };
