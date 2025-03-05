@@ -76,7 +76,7 @@ const DashboardReviews = () => {
   const fetchProducts = async (clientId: string, page: number) => {
     setLoading(true);
     try {
-      const limit = 35;
+      const limit = 20; // Updated limit to 20
       const offset = (page - 1) * limit;
       
       // Fetch products first
@@ -139,11 +139,22 @@ const DashboardReviews = () => {
       console.error(`Error fetching reviews for product ${productId}:`, error);
     }
 
-    return allReviews.map((review: any) => ({
+    // Deduplicate reviews
+    const uniqueReviewIds = new Set();
+    const uniqueReviews = allReviews.filter(review => {
+      if (uniqueReviewIds.has(review.id)) {
+        return false;
+      } else {
+        uniqueReviewIds.add(review.id);
+        return true;
+      }
+    });
+
+    return uniqueReviews.map((review: any) => ({
       id: review.id,
       product_id: productId,
-      comment: review.content || 'Sin comentario',
-      rating: review.rate || 0,
+      comment: review.comment || 'Sin comentario',
+      rating: review.rating || 0,
     }));
   };
 
@@ -163,7 +174,7 @@ const DashboardReviews = () => {
   };
 
   const renderPagination = () => {
-    const totalPages = Math.ceil(totalProducts / 35);
+    const totalPages = Math.ceil(totalProducts / 20); // Updated to match the new limit
     const items = [];
     for (let number = 1; number <= totalPages; number++) {
       items.push(
@@ -180,9 +191,13 @@ const DashboardReviews = () => {
       <Row>
         {/* Sidebar */}
         <Col md={3} className={styles.sidebar}>
-          <h4>Select Client</h4>
+          <h4>Seleccionar Cliente</h4>
           {clients.map(client => (
-            <Card key={client.client_id} className={styles.clientCard} onClick={() => setSelectedClient(client.client_id)}>
+            <Card
+              key={client.client_id}
+              className={`${styles.clientCard} ${selectedClient === client.client_id ? styles.selectedClientCard : ''}`}
+              onClick={() => setSelectedClient(client.client_id)}
+            >
               <Card.Body>
                 <Card.Title>{client.nickname}</Card.Title>
               </Card.Body>
@@ -192,7 +207,7 @@ const DashboardReviews = () => {
         
         {/* Main Panel */}
         <Col md={9}>
-          <h2>Product Reviews Dashboard</h2>
+          <h2>Panel de Opiniones de Productos</h2>
           {loading && <Spinner animation="border" />}
           {error && <Alert variant="danger">{error}</Alert>}
           
@@ -202,7 +217,7 @@ const DashboardReviews = () => {
               <Card className={styles.summaryCard}>
                 <Card.Body>
                   <FontAwesomeIcon icon={faShoppingCart} size="2x" />
-                  <h5>Total Products</h5>
+                  <h5>Total de Productos</h5>
                   <p>{products.length}</p>
                 </Card.Body>
               </Card>
@@ -211,7 +226,7 @@ const DashboardReviews = () => {
               <Card className={styles.summaryCard}>
                 <Card.Body>
                   <FontAwesomeIcon icon={faComments} size="2x" />
-                  <h5>Total Reviews</h5>
+                  <h5>Total de Opiniones</h5>
                   <p>{products.reduce((sum, p) => sum + (p.reviews?.length || 0), 0)}</p>
                 </Card.Body>
               </Card>
@@ -220,7 +235,7 @@ const DashboardReviews = () => {
               <Card className={styles.summaryCard}>
                 <Card.Body>
                   <FontAwesomeIcon icon={faStar} size="2x" />
-                  <h5>Avg. Rating</h5>
+                  <h5>Promedio de Calificación</h5>
                   <p>{(products.reduce((sum, p) => sum + (p.ratingAverage || 0), 0) / products.length).toFixed(1)}</p>
                 </Card.Body>
               </Card>
@@ -230,14 +245,14 @@ const DashboardReviews = () => {
           {/* Product List */}
           <Row>
             {products.map(product => (
-              <Col md={4} key={product.id}>
+              <Col md={4} key={`${product.id}-${product.title}`}>
                 <Card className={styles.productCard} onClick={() => handleCardClick(product)}>
                   <Card.Body>
                     <Card.Title>{product.title}</Card.Title>
-                    <Card.Text>Price: ${product.price}</Card.Text>
+                    <Card.Text>Precio: ${product.price}</Card.Text>
                     <Card.Text>Stock: {product.available_quantity}</Card.Text>
                     <Card.Text>
-                      Rating:
+                      Calificación:
                       {[...Array(5)].map((_, index) => (
                         <FontAwesomeIcon key={index} icon={faStar} color={index < (product.ratingAverage || 0) ? 'gold' : 'gray'} />
                       ))}
@@ -258,26 +273,26 @@ const DashboardReviews = () => {
       {/* Reviews Modal */}
       <Modal show={showModal} onHide={handleCloseModal}>
         <Modal.Header closeButton>
-          <Modal.Title>Product Reviews</Modal.Title>
+          <Modal.Title>Opiniones del Producto</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedProduct?.reviews?.length ? (
             selectedProduct.reviews.map(review => (
-              <div key={review.id}>
-                <p><strong>Comment:</strong> {review.comment}</p>
-                <p><strong>Rating:</strong> {[...Array(5)].map((_, index) => (
+              <div key={`${review.id}-${review.product_id}`}>
+                <p><strong>Comentario:</strong> {review.comment}</p>
+                <p><strong>Calificación:</strong> {[...Array(5)].map((_, index) => (
                   <FontAwesomeIcon key={index} icon={faStar} color={index < review.rating ? 'gold' : 'gray'} />
                 ))}</p>
                 <hr />
               </div>
             ))
           ) : (
-            <p>No reviews available for this product.</p>
+            <p>No hay opiniones disponibles para este producto.</p>
           )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={handleCloseModal}>
-            Close
+            Cerrar
           </Button>
         </Modal.Footer>
       </Modal>

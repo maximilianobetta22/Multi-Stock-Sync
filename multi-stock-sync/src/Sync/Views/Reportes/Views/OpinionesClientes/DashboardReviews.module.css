@@ -65,6 +65,11 @@
     margin-left: 3px;
   }
 
+  /* Add the style for the selected connection card */
+  .selectedClientCard {
+    border: 2px solid #007bff;
+    background-color: #495057;
+  }
 
-  
-  
+
+
