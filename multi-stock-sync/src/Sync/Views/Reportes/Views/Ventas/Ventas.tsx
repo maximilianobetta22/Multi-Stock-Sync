@@ -43,9 +43,7 @@ interface Venta {
 const DetallesDeVentas: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth() + 1;
   const [yearSeleccionado, setYearSeleccionado] = useState<number>(currentYear);
-  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(currentMonth);
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -69,18 +67,36 @@ const DetallesDeVentas: React.FC = () => {
     if (!client_id) return;
     setLoading(true);
     try {
-      const params = { year: yearSeleccionado, month: monthSeleccionado.toString().padStart(2, "0") };
-      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`, { params });
-      const ventasData = response.data.data[`${yearSeleccionado}-${params.month}`]?.orders.flatMap((order: any) =>
-        order.sold_products.map((product: any) => ({
-          order_id: product.order_id,
-          order_date: product.order_date,
-          title: product.title,
-          quantity: product.quantity,
-          price: product.price,
-        }))
-      ) || [];
-      setVentas(ventasData);
+      let apiUrl = '';
+      if (filtroActivo === 'mes') {
+        const params = { year: yearSeleccionado, month: monthSeleccionado.toString().padStart(2, "0") };
+        apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}?year=${params.year}&month=${params.month}`;
+      } else if (filtroActivo === 'año') {
+        apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/annual-sales/${client_id}?year=${yearSeleccionado}`;
+      }
+
+      const response = await axiosInstance.get(apiUrl);
+      const ventasData = response.data.data;
+
+      if (filtroActivo === 'mes') {
+        const formattedData = ventasData[`${yearSeleccionado}-${params.month}`]?.orders.flatMap((order: any) =>
+          order.sold_products.map((product: any) => ({
+            order_id: product.order_id,
+            order_date: product.order_date,
+            title: product.title,
+            quantity: product.quantity,
+            price: product.price,
+          }))
+        ) || [];
+        setVentas(formattedData);
+      } else if (filtroActivo === 'año') {
+        const formattedData = Object.keys(ventasData).map(month => ({
+          month,
+          total_sales: ventasData[month].total_amount,
+          sold_products: ventasData[month].orders.flatMap((order: { sold_products: any; }) => order.sold_products)
+        }));
+        setVentas(formattedData.flatMap(month => month.sold_products));
+      }
     } catch (error) {
       console.error("Error fetching sales data:", error);
       setVentas([]);
@@ -88,10 +104,10 @@ const DetallesDeVentas: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [client_id, yearSeleccionado, monthSeleccionado]);
+  }, [client_id, yearSeleccionado, filtroActivo]);
 
   useEffect(() => {
-    if (filtroActivo === 'mes') {
+    if (filtroActivo === 'mes' || filtroActivo === 'año') {
       fetchVentas();
     }
   }, [fetchVentas, filtroActivo]);
@@ -194,7 +210,7 @@ const DetallesDeVentas: React.FC = () => {
       doc.setTextColor(percentage_change > 0 ? 'green' : 'red');
       doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 40);
     } else {
-      doc.text(`Ventas del Mes: ${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}`, 14, 50);
+      doc.text(`Ventas del Año: ${yearSeleccionado}`, 14, 50);
       autoTable(doc, {
         head: [["ID", "Fecha", "Producto", "Cantidad", "Precio"]],
         body: ventas.map((venta) => [
@@ -262,7 +278,7 @@ const DetallesDeVentas: React.FC = () => {
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, 'Ventas');
 
-      const fileName = `Ventas_${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, '0')}.xlsx`;
+      const fileName = `Ventas_${yearSeleccionado}.xlsx`;
       XLSX.writeFile(workbook, fileName);
     }
   };
@@ -410,7 +426,6 @@ const DetallesDeVentas: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                  <Button variant="success" type="submit" className="mt-2">Comparar</Button>
                 </Form>
               </div>
             )}
