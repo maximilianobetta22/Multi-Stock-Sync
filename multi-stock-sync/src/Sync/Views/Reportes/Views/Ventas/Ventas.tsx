@@ -91,10 +91,17 @@ const DetallesDeVentas: React.FC = () => {
   }, [client_id, yearSeleccionado, monthSeleccionado]);
 
   useEffect(() => {
-    if (filtroActivo === 'mes' || filtroActivo === 'año') {
+    if (filtroActivo === 'mes') {
       fetchVentas();
     }
   }, [fetchVentas, filtroActivo]);
+
+  useEffect(() => {
+    if (filtroActivo === null) {
+      setVentas([]);
+      setResult(null);
+    }
+  }, [filtroActivo]);
 
   const fetchUserData = useCallback(async () => {
     if (!client_id) return;
