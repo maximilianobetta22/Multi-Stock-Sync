@@ -58,14 +58,9 @@ const DashboardReviews = () => {
       const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/credentials`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      console.log('Fetched clients:', response.data.data); // Debugging log
       setClients(response.data.data);
     } catch (error) {
-      console.error('Error fetching clients:', error); // Debugging log
       if (axios.isAxiosError(error) && error.response) {
-        console.error('Error response data:', error.response.data); // Debugging log
-        console.error('Error response status:', error.response.status); // Debugging log
-        console.error('Error response headers:', error.response.headers); // Debugging log
       }
       setError('Error fetching clients. Please try again later.');
     } finally {
@@ -76,7 +71,7 @@ const DashboardReviews = () => {
   const fetchProducts = async (clientId: string, page: number) => {
     setLoading(true);
     try {
-        const limit = 20; // Updated limit to 20
+        const limit = 10; 
         const offset = (page - 1) * limit;
 
         // Fetch products and reviews in batches
@@ -140,7 +135,7 @@ const DashboardReviews = () => {
   };
 
   const renderPagination = () => {
-    const totalPages = Math.ceil(totalProducts / 20); // Updated to match the new limit
+    const totalPages = Math.ceil(totalProducts / 10); // Updated to match the new limit
     const items = [];
     for (let number = 1; number <= totalPages; number++) {
       items.push(
