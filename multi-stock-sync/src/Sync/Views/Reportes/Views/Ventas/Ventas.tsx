@@ -1,3 +1,4 @@
+// Importación de librerías y módulos necesarios
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Table, Button, Form, Row, Col, Modal } from "react-bootstrap";
 import { Bar } from "react-chartjs-2";
@@ -22,6 +23,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
+// Registro de plugins para Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -32,6 +34,7 @@ ChartJS.register(
   ChartDataLabels
 );
 
+// Definición de la interfaz Venta
 interface Venta {
   order_id: number;
   order_date: string;
@@ -40,9 +43,13 @@ interface Venta {
   price: number;
 }
 
+// Componente funcional DetallesDeVentas
 const DetallesDeVentas: React.FC = () => {
+  // Obtención del parámetro client_id de la URL
   const { client_id } = useParams<{ client_id: string }>();
   const currentYear = new Date().getFullYear();
+
+  // Estados del componente
   const [yearSeleccionado, setYearSeleccionado] = useState<number>(currentYear);
   const [monthSeleccionado, setMonthSeleccionado] = useState<number>(new Date().getMonth() + 1);
   const [ventas, setVentas] = useState<Venta[]>([]);
@@ -56,23 +63,27 @@ const DetallesDeVentas: React.FC = () => {
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
 
+  // Generación de una lista de los últimos 10 años
   const years = useMemo(() => Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString()), []);
 
+  // Cálculo del total de ingresos
   const totalIngresos = useMemo(() => ventas.reduce((total, venta) => total + venta.price * venta.quantity, 0), [ventas]);
 
+  // Función para formatear valores como moneda chilena
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
   };
-  /*  */
+
+  // Parámetros para la consulta de ventas
   const params = { year: yearSeleccionado, month: monthSeleccionado.toString().padStart(2, "0") };
-  /*  */
+
+  // Función para obtener las ventas desde la API
   const fetchVentas = useCallback(async () => {
     if (!client_id) return;
     setLoading(true);
     try {
       let apiUrl = '';
       if (filtroActivo === 'mes') {
-        const params = { year: yearSeleccionado, month: monthSeleccionado.toString().padStart(2, "0") };
         apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}?year=${params.year}&month=${params.month}`;
       } else if (filtroActivo === 'año') {
         apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/annual-sales/${client_id}?year=${yearSeleccionado}`;
@@ -115,12 +126,14 @@ const DetallesDeVentas: React.FC = () => {
     }
   }, [client_id, yearSeleccionado, monthSeleccionado, filtroActivo]);
 
+  // Efecto para obtener las ventas cuando cambia el filtro activo
   useEffect(() => {
     if (filtroActivo === 'mes' || filtroActivo === 'año') {
       fetchVentas();
     }
   }, [fetchVentas, filtroActivo]);
 
+  // Efecto para limpiar las ventas y el resultado cuando no hay filtro activo
   useEffect(() => {
     if (filtroActivo === null) {
       setVentas([]);
@@ -128,6 +141,7 @@ const DetallesDeVentas: React.FC = () => {
     }
   }, [filtroActivo]);
 
+  // Función para obtener los datos del usuario
   const fetchUserData = useCallback(async () => {
     if (!client_id) return;
     try {
@@ -141,14 +155,17 @@ const DetallesDeVentas: React.FC = () => {
     }
   }, [client_id]);
 
+  // Efecto para obtener los datos del usuario al montar el componente
   useEffect(() => {
     fetchUserData();
   }, [fetchUserData]);
 
+  // Función para manejar el cambio en los selectores de año
   const handleDropdownChange = (setter: React.Dispatch<React.SetStateAction<string>>) => (e: React.ChangeEvent<HTMLSelectElement>) => {
     setter(e.target.value);
   };
 
+  // Función para manejar el envío del formulario de comparación de años
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -156,15 +173,17 @@ const DetallesDeVentas: React.FC = () => {
       const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/compare-annual-sales-data/${client_id}`, {
         params: { year1, year2 }
       });
+      console.log('Comparison response:', response.data);
       setResult(response.data);
     } catch (error) {
       console.error(error);
-      setToastMessage("Error al comparar los años");
     } finally {
       setLoading(false);
     }
   };
 
+
+  // Función para generar un PDF con los datos de ventas
   const generatePDF = () => {
     const doc = new jsPDF();
     doc.setFillColor(0, 121, 191);
@@ -245,6 +264,7 @@ const DetallesDeVentas: React.FC = () => {
     setShowModal(true);
   };
 
+  // Función para exportar los datos a Excel
   const exportToExcel = () => {
     if (filtroActivo === 'comparacion' && result) {
       const workbook = XLSX.utils.book_new();
@@ -292,6 +312,7 @@ const DetallesDeVentas: React.FC = () => {
     }
   };
 
+  // Datos para el gráfico de barras
   const chartData = useMemo(() => ({
     labels: ventas.map((venta) => venta.title),
     datasets: [
@@ -305,6 +326,7 @@ const DetallesDeVentas: React.FC = () => {
     ],
   }), [ventas]);
 
+  // Vista del componente
   return (
     <div className="container mt-4">
       {toastMessage && (
@@ -335,7 +357,7 @@ const DetallesDeVentas: React.FC = () => {
             </Button>
             {filtroActivo === 'mes' && (
               <div className="mt-2">
-                <Form className="mb-4">
+                <div className="mb-4">
                   <Row className="d-flex justify-content-center">
                     <Col xs="auto">
                       <Form.Group controlId="formYear">
@@ -372,7 +394,7 @@ const DetallesDeVentas: React.FC = () => {
                       </Form.Group>
                     </Col>
                   </Row>
-                </Form>
+                </div>
               </div>
             )}
           </Col>
@@ -405,6 +427,7 @@ const DetallesDeVentas: React.FC = () => {
               </div>
             )}
           </Col>
+
           <Col xs="auto" className="mb-3">
             <Button
               variant={filtroActivo === 'comparacion' ? 'primary' : 'outline-primary'}
@@ -416,7 +439,7 @@ const DetallesDeVentas: React.FC = () => {
             </Button>
             {filtroActivo === 'comparacion' && (
               <div className="mt-2">
-                <Form onSubmit={handleSubmit}>
+                <div onSubmit={handleSubmit}>
                   <div className="form-group">
                     <label>Año 1</label>
                     <select className="form-control" value={year1} onChange={handleDropdownChange(setYear1)} required>
@@ -436,10 +459,11 @@ const DetallesDeVentas: React.FC = () => {
                     </select>
                   </div>
                   <Button variant="success" type="submit" className="mt-2">Comparar</Button>
-                </Form>
+                </div>
               </div>
             )}
           </Col>
+
         </Row>
       </Form>
       <Row className="d-flex justify-content-center mt-3">
@@ -449,6 +473,8 @@ const DetallesDeVentas: React.FC = () => {
           </Button>
         </Col>
       </Row>
+
+
       {ventas.length > 0 && !loading && (filtroActivo === "mes" || filtroActivo === "año") && (
         <div className="mb-4">
           <Bar
@@ -467,6 +493,8 @@ const DetallesDeVentas: React.FC = () => {
           />
         </div>
       )}
+
+
       {loading ? (
         <LoadingDinamico variant="container" />
       ) : (
@@ -568,6 +596,11 @@ const DetallesDeVentas: React.FC = () => {
           </div>
         </>
       )}
+
+
+
+
+      
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Reporte de Comparación de Ventas Anuales</Modal.Title>
