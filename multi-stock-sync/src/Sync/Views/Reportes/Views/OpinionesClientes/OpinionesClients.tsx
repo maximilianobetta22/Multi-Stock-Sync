@@ -80,8 +80,8 @@ const DashboardReviews = () => {
             params: { limit, offset },
         });
 
-        const reviewsData = response.data.data.reviews;
-        const total = response.data.data.paging?.total || 0;
+        const reviewsData = response.data.data;
+        const total = Object.keys(reviewsData).length;
         console.log('Fetched reviews data:', reviewsData); // Debugging log
         console.log('Total reviews:', total); // Debugging log
 
@@ -102,8 +102,8 @@ const DashboardReviews = () => {
                 reviews: productReviews.map((review: any) => ({
                     id: review.id,
                     product_id: productId,
-                    comment: review.content || 'Sin comentario',
-                    rating: review.rate || 0,
+                    comment: review.comment || 'Sin comentario',
+                    rating: review.rating || 0,
                 })),
                 ratingAverage,
             };
