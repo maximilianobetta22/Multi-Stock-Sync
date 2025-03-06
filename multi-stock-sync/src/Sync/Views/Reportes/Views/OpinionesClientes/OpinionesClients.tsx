@@ -76,87 +76,53 @@ const DashboardReviews = () => {
   const fetchProducts = async (clientId: string, page: number) => {
     setLoading(true);
     try {
-      const limit = 20; // Updated limit to 20
-      const offset = (page - 1) * limit;
-      
-      // Fetch products first
-      const response = await axios.get(`${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-        params: { limit, offset },
-      });
-  
-      const productsData = response.data.data;
-      const total = response.data.paging?.total || 0;
-      console.log('Fetched products:', productsData); // Debugging log
-      console.log('Total products:', total); // Debugging log
-  
-      // Fetch reviews for each product individually
-      const productsWithReviews = await Promise.all(productsData.map(async (product: Product) => {
-        try {
-          // Fetch reviews for this product with pagination
-          const productReviews = await fetchAllReviews(clientId, product.id);
-          const ratingAverage = productReviews.length > 0
-            ? productReviews.reduce((sum: number, review: Review) => sum + review.rating, 0) / productReviews.length
-            : 0;
-  
-          // Return product with reviews and average rating
-          return { ...product, reviews: productReviews, ratingAverage };
-        } catch (error) {
-          console.error(`Error fetching reviews for product ${product.id}:`, error);
-          return { ...product, reviews: [], ratingAverage: 0 };
-        }
-      }));
-  
-      setProducts(productsWithReviews);
-      setTotalProducts(total);
-    } catch (error) {
-      console.error('Error fetching products:', error);
-      setError(error instanceof Error ? `Error fetching products: ${error.message}` : 'Error fetching products');
-    } finally {
-      setLoading(false);
-    }
-  };
+        const limit = 20; // Updated limit to 20
+        const offset = (page - 1) * limit;
 
-  const fetchAllReviews = async (clientId: string, productId: string): Promise<Review[]> => {
-    let allReviews: Review[] = [];
-    let offset = 0;
-    const limit = 5;
-    let totalReviews = 0;
-
-    try {
-      do {
-        const response = await axios.get(`${process.env.VITE_API_URL}/reviews/${clientId}/${productId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
-          params: { limit, offset },
+        // Fetch products and reviews in batches
+        const response = await axios.get(`${process.env.VITE_API_URL}/reviews/${clientId}`, {
+            headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+            params: { limit, offset },
         });
 
-        const reviewsData = response.data.data.reviews || [];
-        totalReviews = response.data.data.paging.total || 0;
-        allReviews = [...allReviews, ...reviewsData];
-        offset += limit;
-      } while (allReviews.length < totalReviews);
+        const reviewsData = response.data.data.reviews;
+        const total = response.data.data.paging?.total || 0;
+        console.log('Fetched reviews data:', reviewsData); // Debugging log
+        console.log('Total reviews:', total); // Debugging log
+
+        // Process the reviews data to extract products and their reviews
+        const productsWithReviews = Object.keys(reviewsData).map(productId => {
+            const productData = reviewsData[productId].product;
+            const productReviews = reviewsData[productId].reviews;
+
+            const ratingAverage = productReviews.length > 0
+                ? productReviews.reduce((sum: number, review: Review) => sum + review.rating, 0) / productReviews.length
+                : 0;
+
+            return {
+                id: productData.id,
+                title: productData.name,
+                price: 0, // Assuming price is not available in the response
+                available_quantity: 0, // Assuming available_quantity is not available in the response
+                reviews: productReviews.map((review: any) => ({
+                    id: review.id,
+                    product_id: productId,
+                    comment: review.content || 'Sin comentario',
+                    rating: review.rate || 0,
+                })),
+                ratingAverage,
+            };
+        });
+
+        setProducts(productsWithReviews);
+        setTotalProducts(total);
     } catch (error) {
-      console.error(`Error fetching reviews for product ${productId}:`, error);
+        console.error('Error fetching products and reviews:', error);
+        setError(error instanceof Error ? `Error fetching products and reviews: ${error.message}` : 'Error fetching products and reviews');
+    } finally {
+        setLoading(false);
     }
-
-    // Deduplicate reviews
-    const uniqueReviewIds = new Set();
-    const uniqueReviews = allReviews.filter(review => {
-      if (uniqueReviewIds.has(review.id)) {
-        return false;
-      } else {
-        uniqueReviewIds.add(review.id);
-        return true;
-      }
-    });
-
-    return uniqueReviews.map((review: any) => ({
-      id: review.id,
-      product_id: productId,
-      comment: review.comment || 'Sin comentario',
-      rating: review.rating || 0,
-    }));
-  };
+};
 
   const handleCardClick = (product: Product) => {
     console.log('Product clicked:', product); // Debugging log
