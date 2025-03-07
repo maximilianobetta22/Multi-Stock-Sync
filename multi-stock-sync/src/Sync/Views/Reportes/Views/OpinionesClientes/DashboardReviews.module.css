@@ -71,5 +71,10 @@
     background-color: #495057;
   }
 
+  .mainContent {
+    width: 75%;
+    margin: 0 auto;
+  }
+
 
 

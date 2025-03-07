@@ -169,95 +169,97 @@ const DashboardReviews = () => {
         </Col>
 
         {/* Main Panel */}
-        <Col md={9}>
-          <Row>
-            <Col md={6}>
-              <Card className={styles.infoCard}>
-                <Card.Body>
-                  <Card.Title>Total Products</Card.Title>
-                  <Card.Text>{totalProducts}</Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
-            <Col md={6}>
-              <Card className={styles.infoCard}>
-                <Card.Body>
-                  <Card.Title>Average Rating</Card.Title>
-                  <Card.Text>
-                    {averageRating.toFixed(2)}{" "}
-                    <FontAwesomeIcon icon={faStar} color="#FFD700" />
-                  </Card.Text>
-                </Card.Body>
-              </Card>
-            </Col>
-          </Row>
-          <h2 className={styles.title}>Product Reviews</h2>
-          {loading && <Spinner animation="border" className={styles.spinner} />}
-          {error && <Alert variant="danger">{error}</Alert>}
-          <Accordion
-            activeKey={expandedProduct || ""}
-            onSelect={(eventKey) => setExpandedProduct(eventKey as string | null)}
-          >
-            {paginatedProducts.map((product) => (
-              <Accordion.Item eventKey={product.id} key={product.id}>
-                <Accordion.Header className={styles.accordionHeader}>
-                  {product.title} - ${product.price !== undefined ? product.price : "N/A"}
-                </Accordion.Header>
-                <Accordion.Body className={styles.accordionBody}>
-                  {product.reviews && product.reviews.length > 0 ? (
-                    <>
-                      {product.reviews
-                        .slice(0, showMore[product.id] ? product.reviews.length : 3)
-                        .map((review, index) => (
-                          <div key={review.id} className={styles.review}>
-                            <p className={styles.comment}>
-                              <strong>Comentario:</strong> {review.comment}
-                            </p>
-                            <p className={styles.rating}>
-                              <strong>Calificación:</strong>{" "}
-                              {[...Array(5)].map((_, i) => (
-                                <FontAwesomeIcon
-                                  key={i}
-                                  icon={faStar}
-                                  color={i < review.rating ? "#FFD700" : "gray"} // Gold color
-                                />
-                              ))}
-                            </p>
-                            <hr className={styles.divider} />
-                          </div>
-                        ))}
-                      {product.reviews.length > 3 && (
-                        <Button
-                          variant="outline-primary"
-                          className={styles.viewMoreButton}
-                          onClick={() =>
-                            setShowMore({ ...showMore, [product.id]: !showMore[product.id] })
-                          }
-                        >
-                          {showMore[product.id] ? "Show Less" : "View More"}
-                        </Button>
-                      )}
-                    </>
-                  ) : (
-                    <p>No reviews available.</p>
-                  )}
-                </Accordion.Body>
-              </Accordion.Item>
-            ))}
-          </Accordion>
-          {totalPages > 1 && (
-            <Pagination className={styles.pagination}>
-              {[...Array(totalPages)].map((_, index) => (
-                <Pagination.Item
-                  key={index + 1}
-                  active={index + 1 === currentPage}
-                  onClick={() => handlePageChange(index + 1)}
-                >
-                  {index + 1}
-                </Pagination.Item>
+        <Col md={10}>
+          <Container fluid className={styles.mainContent}>
+            <Row>
+              <Col md={6}>
+                <Card className={styles.infoCard}>
+                  <Card.Body>
+                    <Card.Title>Total de productos</Card.Title>
+                    <Card.Text>{totalProducts}</Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+              <Col md={6}>
+                <Card className={styles.infoCard}>
+                  <Card.Body>
+                    <Card.Title>Puntuación media</Card.Title>
+                    <Card.Text>
+                      {averageRating.toFixed(2)}{" "}
+                      <FontAwesomeIcon icon={faStar} color="#FFD700" />
+                    </Card.Text>
+                  </Card.Body>
+                </Card>
+              </Col>
+            </Row>
+            <h2 className={styles.title}>Reseñas de productos</h2>
+            {loading && <Spinner animation="border" className={styles.spinner} />}
+            {error && <Alert variant="danger">{error}</Alert>}
+            <Accordion
+              activeKey={expandedProduct || ""}
+              onSelect={(eventKey) => setExpandedProduct(eventKey as string | null)}
+            >
+              {paginatedProducts.map((product) => (
+                <Accordion.Item eventKey={product.id} key={product.id}>
+                  <Accordion.Header className={styles.accordionHeader}>
+                    {product.title} - ${product.price !== undefined ? product.price : "N/A"}
+                  </Accordion.Header>
+                  <Accordion.Body className={styles.accordionBody}>
+                    {product.reviews && product.reviews.length > 0 ? (
+                      <>
+                        {product.reviews
+                          .slice(0, showMore[product.id] ? product.reviews.length : 3)
+                          .map((review, index) => (
+                            <div key={review.id} className={styles.review}>
+                              <p className={styles.comment}>
+                                <strong>Comentario:</strong> {review.comment}
+                              </p>
+                              <p className={styles.rating}>
+                                <strong>Calificación:</strong>{" "}
+                                {[...Array(5)].map((_, i) => (
+                                  <FontAwesomeIcon
+                                    key={i}
+                                    icon={faStar}
+                                    color={i < review.rating ? "#FFD700" : "gray"} // Gold color
+                                  />
+                                ))}
+                              </p>
+                              <hr className={styles.divider} />
+                            </div>
+                          ))}
+                        {product.reviews.length > 3 && (
+                          <Button
+                            variant="outline-primary"
+                            className={styles.viewMoreButton}
+                            onClick={() =>
+                              setShowMore({ ...showMore, [product.id]: !showMore[product.id] })
+                            }
+                          >
+                            {showMore[product.id] ? "Show Less" : "View More"}
+                          </Button>
+                        )}
+                      </>
+                    ) : (
+                      <p>No reviews available.</p>
+                    )}
+                  </Accordion.Body>
+                </Accordion.Item>
               ))}
-            </Pagination>
-          )}
+            </Accordion>
+            {totalPages > 1 && (
+              <Pagination className={styles.pagination}>
+                {[...Array(totalPages)].map((_, index) => (
+                  <Pagination.Item
+                    key={index + 1}
+                    active={index + 1 === currentPage}
+                    onClick={() => handlePageChange(index + 1)}
+                  >
+                    {index + 1}
+                  </Pagination.Item>
+                ))}
+              </Pagination>
+            )}
+          </Container>
         </Col>
       </Row>
     </Container>
