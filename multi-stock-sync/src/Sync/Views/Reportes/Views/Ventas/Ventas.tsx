@@ -326,7 +326,7 @@ const DetallesDeVentas: React.FC = () => {
     ],
   }), [ventas]);
 
-  // Vista del componente
+  // Vista del componente  ----------------------------------------------------------------------------------------------------------
   return (
     <div className="container mt-4">
       {toastMessage && (
@@ -458,14 +458,18 @@ const DetallesDeVentas: React.FC = () => {
                       ))}
                     </select>
                   </div>
-                  <Button variant="success" type="submit" className="mt-2">Comparar</Button>
                 </div>
               </div>
             )}
           </Col>
-
         </Row>
       </Form>
+
+
+
+
+
+      {/* Botón para Consultar Datos */}
       <Row className="d-flex justify-content-center mt-3">
         <Col xs="auto">
           <Button variant="success" onClick={fetchVentas}>
@@ -475,30 +479,31 @@ const DetallesDeVentas: React.FC = () => {
       </Row>
 
 
-      {ventas.length > 0 && !loading && (filtroActivo === "mes" || filtroActivo === "año") && (
-        <div className="mb-4">
-          <Bar
-            data={chartData}
-            options={{
-              responsive: true,
-              plugins: {
-                title: {
-                  display: true,
-                  text: "Ventas por Orden",
-                  font: { size: 18, weight: "bold" },
-                },
-                legend: { position: "top" },
-              },
-            }}
-          />
-        </div>
-      )}
 
 
-      {loading ? (
-        <LoadingDinamico variant="container" />
-      ) : (
+
+      {/* Renderizado Condicional de Tablas y Gráficos */}
+      {filtroActivo && !loading && (
         <>
+          {(filtroActivo === "mes" || filtroActivo === "año") && ventas.length > 0 && (
+            <div className="mb-4">
+              <Bar
+                data={chartData}
+                options={{
+                  responsive: true,
+                  plugins: {
+                    title: {
+                      display: true,
+                      text: "Ventas por Orden",
+                      font: { size: 18, weight: "bold" },
+                    },
+                    legend: { position: "top" },
+                  },
+                }}
+              />
+            </div>
+          )}
+
           {filtroActivo === "comparacion" ? (
             result ? (
               <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
@@ -589,7 +594,9 @@ const DetallesDeVentas: React.FC = () => {
               </tbody>
             </Table>
           )}
-          <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
+          {(filtroActivo === "mes" || filtroActivo === "año") && (
+            <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
+          )}
           <div className="d-flex justify-content-center mt-3">
             <Button variant="primary" onClick={generatePDF} className="mr-2 mx-3">Generar PDF</Button>
             <Button variant="secondary" onClick={exportToExcel}>Guardar Excel</Button>
@@ -600,7 +607,9 @@ const DetallesDeVentas: React.FC = () => {
 
 
 
-      
+
+
+
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Reporte de Comparación de Ventas Anuales</Modal.Title>
@@ -624,6 +633,10 @@ const DetallesDeVentas: React.FC = () => {
       </Modal>
     </div>
   );
+
+
+
+
 };
 
 export default DetallesDeVentas;
