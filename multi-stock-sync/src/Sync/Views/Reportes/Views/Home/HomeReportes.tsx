@@ -161,9 +161,9 @@ const HomeReportes: React.FC = () => {
                   <Link to={`/sync/reportes/estados-ordenes-anual/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Estados de órdenes Resumen Anual (pagadas, pendientes, canceladas)
                   </Link>
-                  <Link to={`/sync/reportes/estados-ordenes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  {/*<Link to={`/sync/reportes/estados-ordenes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Estados de órdenes (pagadas, pendientes, canceladas)
-                  </Link>
+                  </Link>*/}
                   {/*<Link to={`/sync/reportes/metodos-pago/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faCreditCard} className="mr-2" /> Métodos de pago más utilizados
                   </Link>*/}
