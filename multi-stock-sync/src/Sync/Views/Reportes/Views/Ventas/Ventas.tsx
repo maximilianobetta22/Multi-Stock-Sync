@@ -232,7 +232,7 @@ const DetallesDeVentas: React.FC = () => {
     ],
   }), [ventas]);
 
-  // Vista del componente
+  // Vista del componente en la Web
   return (
     <>
       {loading && <LoadingDinamico variant="container" />}
@@ -460,6 +460,7 @@ const DetallesDeVentas: React.FC = () => {
       </div>
     </>
   );
+  
 };
 
 export default DetallesDeVentas;
