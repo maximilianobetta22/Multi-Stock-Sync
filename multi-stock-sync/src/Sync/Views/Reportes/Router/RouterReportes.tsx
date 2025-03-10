@@ -19,7 +19,11 @@ import VentasPorYear from "../Views/VentasPorYear/VentasPorYear";
 import ReporteDisponible from "../Views/ReporteDisponible/ReporteDisponible";
 import ReporteRecepcion from "../Views/ReporteRecepcion/ReporteRecepcion";
 import DetalleReembolso from "../Views/DevolucionesReembolsos/DetalleReembolso/DetalleReembolso";
+<<<<<<< HEAD
+import ProductosDespachar from "../Views/ProductosDespachar/ProductosDespachar";
+=======
 import DetalleVentas from "../Views/Ventas/Ventas" /* el nuevo */
+>>>>>>> d24994f1cd781067b9b5445181655196bf14b1c9
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
 
 
@@ -35,6 +39,7 @@ function RouterReportes() {
             <Route path="ingreso-semana/:client_id" element={< IngresosSemana/>} />
             <Route path="Reporte-Disponible/:client_id" element={< ReporteDisponible/>} />
             <Route path="Reporte-Recepcion/:client_id" element={< ReporteRecepcion/>} />
+            <Route path="Despachar-Producto/:client_id" element={< ProductosDespachar/>} />
             {/*<Route path="ventas-dia/:client_id" element={<VentasPorDia />} />*/}
             {/*<Route path="ventas-mes/:client_id" element={<VentasPorMes />} />*/}
             <Route path="metodos-pago/:client_id" element={<MetodosPago />} />
