@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import axiosInstance from '../../../../../axiosConfig';
 import styles from './CompareYearYear.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Modal } from 'react-bootstrap';
-
+import axiosInstance from '../../../../../axiosConfig';
 import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver'; /* esta funcionando 👌 */
+import { saveAs } from 'file-saver';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
-
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faFilePdf, faFileExcel } from '@fortawesome/free-solid-svg-icons';
 
 const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
 
@@ -64,7 +64,7 @@ const CompareYearYear: React.FC = () => {
             setLoading(false);
         }
     };
-    /* Pdf------------------------------------------------------ */
+
     const generatePDF = () => {
         const doc = new jsPDF();
         doc.setFillColor(0, 121, 191);
@@ -130,10 +130,7 @@ const CompareYearYear: React.FC = () => {
         setPdfDataUrl(pdfData);
         setShowModal(true);
     };
-    /* fin del pdf---------------------------------------------------------------------------*/
 
-
-    /* excel */
     const exportToExcel = () => {
         if (!result) return;
 
@@ -163,7 +160,6 @@ const CompareYearYear: React.FC = () => {
         saveAs(excelBlob, `Comparacion_Ventas_${year1}_${year2}.xlsx`);
     };
 
-    /* fin del excel */
     return (
         <>
             {loading && <LoadingDinamico variant="container" />}
@@ -196,11 +192,17 @@ const CompareYearYear: React.FC = () => {
                             </div>
 
                             <div className={styles.buttonContainer}>
-                                <button type="submit" className="btn btn-primary">Comparar</button>
+                                <button type="submit" className="btn btn-primary" style={{ marginRight: '20px' }}>
+                                    <FontAwesomeIcon icon={faFilePdf} /> Comparar
+                                </button>
+
+                                <button onClick={() => window.history.back()} className="btn btn-secondary">
+                                    <FontAwesomeIcon icon={faArrowLeft} /> VOLVER
+                                </button>
                             </div>
+
                         </form>
                         <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
-                            {/* generasion de la tabla ----------------------- */}
                             {result && (
                                 <div style={{ maxHeight: '600px', overflowY: 'auto', width: '100%' }}>
                                     <h1>Resultado de la Comparación</h1>
@@ -208,7 +210,7 @@ const CompareYearYear: React.FC = () => {
                                     <div className={styles.tableContainer}>
                                         <h3>{year1}</h3>
                                         <p>Total Ventas: <strong>{formatCurrency(result.data.year1.total_sales)}</strong></p>
-                                        
+
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
                                                 <tr>
@@ -232,7 +234,7 @@ const CompareYearYear: React.FC = () => {
                                     <div className={styles.tableContainer}>
                                         <h3>{year2}</h3>
                                         <p>Total Ventas: <strong>{formatCurrency(result.data.year2.total_sales)}</strong></p>
-                                        
+
                                         <table className={`table table-striped ${styles.table}`}>
                                             <thead>
                                                 <tr>
@@ -258,17 +260,15 @@ const CompareYearYear: React.FC = () => {
                                         Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
                                     </p>
 
-                                    <button onClick={generatePDF} className="btn btn-secondary mx-3">Generar PDF</button>
-                                                
-
-                                    <button onClick={exportToExcel} className="btn btn-success">Descargar Excel</button>
-
+                                    <button onClick={generatePDF} className="btn btn-secondary mr-2">
+                                        <FontAwesomeIcon icon={faFilePdf} /> Generar PDF
+                                    </button>
+                                    <button onClick={exportToExcel} className="btn btn-success">
+                                        <FontAwesomeIcon icon={faFileExcel} /> Descargar Excel
+                                    </button>
                                 </div>
-
-
                             )}
                         </div>
-
                     </>
                 )}
             </div>

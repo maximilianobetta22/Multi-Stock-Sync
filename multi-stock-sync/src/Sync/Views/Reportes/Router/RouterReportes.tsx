@@ -19,6 +19,7 @@ import VentasPorYear from "../Views/VentasPorYear/VentasPorYear";
 import ReporteDisponible from "../Views/ReporteDisponible/ReporteDisponible";
 import ReporteRecepcion from "../Views/ReporteRecepcion/ReporteRecepcion";
 import DetalleReembolso from "../Views/DevolucionesReembolsos/DetalleReembolso/DetalleReembolso";
+import DetalleVentas from "../Views/Ventas/Ventas" /* el nuevo */
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
 
 
@@ -28,6 +29,7 @@ function RouterReportes() {
         <Routes>
             <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
             <Route path="home" element={<HomeReportes/>} />
+            <Route path="ventas/:client_id" element={<DetalleVentas />} />{/* el nuevo */}
             <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
             <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
             <Route path="ingreso-semana/:client_id" element={< IngresosSemana/>} />
