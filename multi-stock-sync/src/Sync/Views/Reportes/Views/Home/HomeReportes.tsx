@@ -4,7 +4,7 @@ import axiosInstance from '../../../../../axiosConfig';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo ,faPersonDolly,} from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity, faCalendar, faCalendarDays, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 
@@ -140,6 +140,11 @@ const HomeReportes: React.FC = () => {
               <>
                 <h3 className="mt-4">Reportes Disponibles</h3>
                 <div className="list-group mb-5">
+
+                  <Link to={`/sync/reportes/ventas/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Ventas
+                  </Link>
+
                   {/*<Link to={`/sync/reportes/ventas-mes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Ventas totales por mes
                   </Link>*/}
@@ -183,7 +188,7 @@ const HomeReportes: React.FC = () => {
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Productos a despachar
                   </Link>
                 </div>
-
+                {/*  
                 <h3 className="mt-4">Reportes de Comparaciones Disponibles</h3>
                 <div className="list-group mb-5">
                   <Link to={`/sync/reportes/compare-month-month/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
@@ -193,6 +198,7 @@ const HomeReportes: React.FC = () => {
                     <FontAwesomeIcon icon={faCalendar} className="mr-2" /> Comparar ganancias anuales
                   </Link>
                 </div>
+                */}
               </>
             )}
             <Link to="/sync/home" className='btn btn-primary mb-5'>Volver a inicio</Link>
