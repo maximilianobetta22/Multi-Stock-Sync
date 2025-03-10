@@ -392,8 +392,8 @@ const DetallesDeVentas: React.FC = () => {
               </div>
             )}
 
-            <Table striped bordered hover responsive className="mt-4">
-              <thead className="table-dark">
+            <Table striped bordered hover responsive className="mt-4 table-primary">
+              <thead className="table-primary">
                 <tr>
                   <th>ID Orden</th>
                   <th>Fecha</th>
@@ -405,7 +405,7 @@ const DetallesDeVentas: React.FC = () => {
               <tbody>
                 {ventas.length > 0 ? (
                   ventas.map((venta, index) => (
-                    <tr key={index}>
+                    <tr key={index} className="table-light">
                       <td>{venta.order_id}</td>
                       <td>{venta.order_date}</td>
                       <td>{venta.title}</td>
@@ -457,10 +457,15 @@ const DetallesDeVentas: React.FC = () => {
             </Button>
           </Modal.Footer>
         </Modal>
+
+        {/* Footer */}
+        <footer className="text-center mt-5">
+          <p>----------Multi Stock Sync----------</p>
+        </footer>
       </div>
     </>
   );
-  
+
 };
 
 export default DetallesDeVentas;
