@@ -34,7 +34,7 @@ function RouterReportes() {
             <Route path="home" element={<HomeReportes/>} />
             <Route path="ventas/:client_id" element={<DetallesDeVentas />} />{/* el nuevo */}
             <Route path="historial-Stock/:client_id" element={<ReporteHistorialStock />} />
-            <Route path="stock-Critico:client_id" element={<ReporteStockCritico />} />
+            <Route path="stock-Critico/:client_id" element={<ReporteStockCritico />} />
             <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
             <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
             <Route path="ingreso-semana/:client_id" element={< IngresosSemana/>} />
