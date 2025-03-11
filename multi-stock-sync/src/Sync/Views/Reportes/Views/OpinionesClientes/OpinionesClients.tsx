@@ -19,7 +19,7 @@ interface Review {
   id: number;
   product_id: string;
   comment: string;
-  rating: number;
+  rate: number | null; // Allow rate to be null
 }
 
 interface Product {
@@ -78,50 +78,52 @@ const DashboardReviews = () => {
     setLoading(true);
     try {
       const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/reviews/${clientId}`,
+        `${import.meta.env.VITE_API_URL}/reviews/${clientId}?limit=100`,
         {
           headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
         }
       );
 
       const reviewsData = response.data.data;
+      console.log("Full API response:", response.data); // Add this line
       console.log("Reviews data:", reviewsData);
+      console.log("Number of products returned:", Object.keys(reviewsData).length); // Add this line
 
-      const productsWithReviews = Object.keys(reviewsData)
-        .map((productId) => {
-          const productData = reviewsData[productId].product;
-          const productReviews = reviewsData[productId].reviews;
-          console.log(`Product ID: ${productId}, Product Data:`, productData);
-          console.log(`Product ID: ${productId}, Reviews:`, productReviews);
+      const productsWithReviews = Object.keys(reviewsData).map((productId, index) => {
+        console.log(`Processing product ID: ${productId}`); // Debugging step
+        const productData = reviewsData[productId].product;
+        const productReviews = reviewsData[productId].reviews;
+        console.log(`Product ID: ${productId}, Product Data:`, productData);
+        console.log(`Product ID: ${productId}, Reviews:`, productReviews);
 
-          const ratingAverage =
-            productReviews.length > 0
-              ? productReviews.reduce(
-                  (sum: number, review: any) => sum + review.rate,
-                  0
-                ) / productReviews.length
-              : 0;
+        const ratingAverage =
+          productReviews.length > 0
+            ? productReviews.reduce(
+                (sum: number, review: any) => sum + (review.rate || 0),
+                0
+              ) / productReviews.length
+            : 0;
 
-          return {
-            id: productData.id,
-            title: productData.name,
-            price: productData.price, // Price is optional
-            available_quantity: productData.available_quantity || 0, // Assuming available_quantity is not available in the response
-            reviews: productReviews.map((review: any, index: number) => ({
-              id: review.id || index, // Generate a unique id if not present
-              product_id: productId,
-              comment: review.content || "Sin comentario",
-              rating: review.rate || 0,
-            })),
-            ratingAverage,
-          };
-        })
-        .filter((product) => product.reviews.length > 0); // Filter out products with no reviews
+        return {
+          id: `${productData.id}-${index}`, // Ensure unique key
+          title: productData.name,
+          price: productData.price, // Price is now included in the response
+          available_quantity: productData.available_quantity || 0, // Assuming available_quantity is not available in the response
+          reviews: productReviews.map((review: any, reviewIndex: number) => ({
+            id: `${review.id}-${reviewIndex}`, // Ensure unique key
+            product_id: productId,
+            comment: review.comment || "Sin comentario",
+            rate: review.rate !== null ? review.rate : 0, // Handle null rate
+          })),
+          ratingAverage,
+        };
+      });
 
-      console.log(`Total products with reviews: ${productsWithReviews.length}`);
+      console.log(`Fixed total processed products: ${productsWithReviews.length}`);
+      console.log("Products with reviews:", productsWithReviews); // Add this line
       setTotalPages(Math.ceil(productsWithReviews.length / 15));
 
-      setProducts(productsWithReviews);
+      setProducts((prevProducts) => [...prevProducts, ...productsWithReviews]);
     } catch (error) {
       setError("Error fetching products and reviews");
     } finally {
@@ -133,15 +135,21 @@ const DashboardReviews = () => {
     setCurrentPage(pageNumber);
   };
 
-  const paginatedProducts = products.slice(
-    (currentPage - 1) * 15,
-    currentPage * 15
-  );
+  const itemsPerPage = 15;
+  const productsWithReviewsOnly = products.filter(product => product.reviews && product.reviews.length > 0);
 
-  const totalProducts = products.length;
+  // Calculate paginated data
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const paginatedProducts = productsWithReviewsOnly.slice(indexOfFirstItem, indexOfLastItem);
+
+  console.log("Total products:", products.length); // Add this line
+  console.log("Paginated products:", paginatedProducts.length); // Add this line
+
+  const totalProducts = productsWithReviewsOnly.length;
   const averageRating =
-    products.reduce((sum, product) => sum + (product.ratingAverage || 0), 0) /
-    (products.length || 1);
+    productsWithReviewsOnly.reduce((sum, product) => sum + (product.ratingAverage || 0), 0) /
+    (productsWithReviewsOnly.length || 1);
 
   return (
     <Container fluid className={styles.container}>
@@ -199,8 +207,8 @@ const DashboardReviews = () => {
               activeKey={expandedProduct || ""}
               onSelect={(eventKey) => setExpandedProduct(eventKey as string | null)}
             >
-              {paginatedProducts.map((product) => (
-                <Accordion.Item eventKey={product.id} key={product.id}>
+              {paginatedProducts.map((product, index) => (
+                <Accordion.Item eventKey={product.id} key={`${product.id}-${index}`}>
                   <Accordion.Header className={styles.accordionHeader}>
                     {product.title} - ${product.price !== undefined ? product.price : "N/A"}
                   </Accordion.Header>
@@ -209,8 +217,8 @@ const DashboardReviews = () => {
                       <>
                         {product.reviews
                           .slice(0, showMore[product.id] ? product.reviews.length : 3)
-                          .map((review, index) => (
-                            <div key={review.id} className={styles.review}>
+                          .map((review, reviewIndex) => (
+                            <div key={`${review.id}-${reviewIndex}`} className={styles.review}>
                               <p className={styles.comment}>
                                 <strong>Comentario:</strong> {review.comment}
                               </p>
@@ -220,7 +228,7 @@ const DashboardReviews = () => {
                                   <FontAwesomeIcon
                                     key={i}
                                     icon={faStar}
-                                    color={i < review.rating ? "#FFD700" : "gray"} // Gold color
+                                    color={i < (review.rate !== null ? review.rate : 0) ? "#FFD700" : "#D3D3D3"} // Gold color for filled stars, light gray for empty stars
                                   />
                                 ))}
                               </p>
