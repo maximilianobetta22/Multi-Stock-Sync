@@ -178,6 +178,12 @@ const HomeReportes: React.FC = () => {
                   <Link to={`/sync/reportes/Reporte-Recepcion/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Reporte de Recepción
                   </Link>
+                  <Link to={`/sync/reportes/historial-Stock/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Historial Stock
+                  </Link>
+                  <Link to={`/sync/reportes/stock-Critico/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Stock Critico
+                  </Link>
                   <Link to={`/sync/reportes/opiniones-clientes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faComments} className="mr-2" /> Opiniones de clientes por producto
                   </Link>
