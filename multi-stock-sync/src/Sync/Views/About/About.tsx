@@ -57,6 +57,11 @@ const teamMembers = [
     role: "Desarrollador Back-end.",
     img: "https://github.com/4d0lf00.png",
   },
+  {
+    name: "Sebastián Jeldres",
+    role: "Desarrollador Back-end.",
+    img: "https://github.com/SebaJeldres.png",
+  },
   
 ];
 
