@@ -1,8 +1,10 @@
+/* Styles for the table container to enable scrolling */
 .table-container {
   max-height: 300px;
   overflow-y: auto; 
 }
 
+/* Ensure the table header and rows have a fixed layout */
 .table-container thead,
 .table-container tbody tr {
   display: table;
@@ -10,6 +12,7 @@
   table-layout: fixed;
 }
 
+/* Make the table header sticky */
 .table-container thead {
   position: sticky;
   top: 0;

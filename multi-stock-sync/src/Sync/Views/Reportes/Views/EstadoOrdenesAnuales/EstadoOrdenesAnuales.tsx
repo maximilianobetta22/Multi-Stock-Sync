@@ -9,7 +9,12 @@ import {
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Card, ProgressBar, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
+<<<<<<< HEAD
 import { useParams, useNavigate } from 'react-router-dom';
+=======
+import { data, useParams } from 'react-router-dom';
+import styles from './EstadoOrdenesAnuales.module.css';
+>>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -110,7 +115,15 @@ const EstadosOrdenesAnual: React.FC = () => {
             const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/order-statuses/${client_id}?year=${selectedYear}`);
             const result = response.data;
             if (result.status === 'success') {
+<<<<<<< HEAD
                 setEstadoOrdenesData({ statuses: result.data.statuses || { paid: 0, pending: 0, cancelled: 0, used: 0 }, products: result.data.products || [] });
+=======
+                setEstadoOrdenesData({
+                    statuses: result.data.statuses || { paid: 0, pending: 0, cancelled: 0 },
+                    products: result.data.products || []
+                });
+                console.log(EstadoOrdenes)
+>>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
             } else {
                 console.error('Error en la respuesta de la API:', result.message);
             }
@@ -126,7 +139,16 @@ const EstadosOrdenesAnual: React.FC = () => {
             const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
             const result = response.data;
             if (result.status === 'success') {
+<<<<<<< HEAD
                 setUserData({ nickname: result.data.nickname, creation_date: result.data.creation_date || 'N/A', request_date: result.data.request_date || 'N/A' });
+=======
+                setUserData({
+                    nickname: result.data.nickname,
+                    creation_date: result.data.creation_date || 'N/A',
+                    request_date: result.data.request_date || 'N/A',
+                });
+                
+>>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
             } else {
                 console.error('Error en la respuesta de la API:', result.message);
             }
