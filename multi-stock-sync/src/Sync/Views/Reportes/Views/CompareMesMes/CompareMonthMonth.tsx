@@ -7,6 +7,8 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { Modal } from 'react-bootstrap';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 
 const months: { [key: string]: string } = {
     "01": "Enero",
@@ -48,8 +50,8 @@ const CompareMonthMonth: React.FC = () => {
             setLoading(true);
             try {
                 const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
-                console.log('Nickname response:', response.data); // Debugging statement
-                setNickname(response.data.data.nickname); // Correct path to nickname
+                console.log('Nickname response:', response.data);
+                setNickname(response.data.data.nickname);
             } catch (error) {
                 console.error(error);
             } finally {
@@ -191,7 +193,12 @@ const CompareMonthMonth: React.FC = () => {
                                 </select>
                             </div>
                             <div className={styles.buttonContainer}>
-                                <button type="submit" className="btn btn-primary">Comparar</button>
+                                <button type="submit" className="btn btn-primary" style={{ marginRight: '20px' }}>
+                                    <FontAwesomeIcon icon={faFilePdf} /> Comparar
+                                </button>
+                                <button onClick={() => window.history.back()} className="btn btn-secondary mr-2">
+                                    <FontAwesomeIcon icon={faArrowLeft} /> VOLVER
+                                </button>
                             </div>
                         </form>
                         {result && (
@@ -249,7 +256,9 @@ const CompareMonthMonth: React.FC = () => {
                                 <p style={{ color: result.data.percentage_change > 0 ? 'green' : 'red' }}>
                                     Cambio Porcentual: <strong>{result.data.percentage_change}%</strong>
                                 </p>
-                                <button onClick={generatePDF} className="btn btn-secondary">Generar PDF</button>
+                                <button onClick={generatePDF} className="btn btn-secondary mr-2">
+                                    <FontAwesomeIcon icon={faFilePdf} /> Generar PDF
+                                </button>
                             </div>
                         )}
                     </>

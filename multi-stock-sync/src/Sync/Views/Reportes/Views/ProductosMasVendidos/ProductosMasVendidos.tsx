@@ -208,6 +208,34 @@ const Productos: React.FC = () => {
         <div className="content-container mt-5">
             <h1 className="text-center mb-4">Reporte de Productos</h1>
             <div className="container mt-4">
+                {/* Selector de mes/año */}
+                <div className="d-flex justify-content-end mb-4">
+                    <div className="d-inline-block">
+                        <label htmlFor="monthSelector" className="form-label">Selecciona el mes y año:</label>
+                        <input
+                            type="month"
+                            id="monthSelector"
+                            value={selectedMonth}
+                            onChange={(e) => setSelectedMonth(e.target.value)}
+                            className="form-control w-auto"
+                            min="2022-01"
+                            max={new Date().toISOString().split("T")[0]}
+                        />
+                    </div>  
+                </div>
+                {/* Selector para ajustar el gráfico */}
+                <div className="d-flex justify-content-end mb-4">
+                    <Dropdown>
+                        <Dropdown.Toggle variant="secondary">Seleccionar cantidad de datos para el gráfico</Dropdown.Toggle>
+                        <Dropdown.Menu>
+                            {[10, 25, 50, 100, 1000].map((option) => (
+                                <Dropdown.Item key={option} onClick={() => handleGraphItemsChange(option)}>
+                                    Mostrar {option} productos
+                                </Dropdown.Item>
+                            ))}
+                        </Dropdown.Menu>
+                    </Dropdown>
+                </div>
                 <div className="row mb-4">
                     {/* Columna izquierda con el gráfico */}
                     <div className="col-md-8">
@@ -264,22 +292,6 @@ const Productos: React.FC = () => {
                                 )}
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Selector de mes/año */}
-                <div className="d-flex justify-content-end mb-4">
-                    <div className="d-inline-block">
-                        <label htmlFor="monthSelector" className="form-label">Selecciona el mes y año:</label>
-                        <input
-                            type="month"
-                            id="monthSelector"
-                            value={selectedMonth}
-                            onChange={(e) => setSelectedMonth(e.target.value)}
-                            className="form-control w-auto"
-                            min="2022-01"
-                            max={new Date().toISOString().split("T")[0]}
-                        />
                     </div>
                 </div>
 
@@ -350,53 +362,53 @@ const Productos: React.FC = () => {
                         </div>
                     </div>
                 )}
-
-                {/* Selector para ajustar el gráfico */}
-                <div className="text-center my-4">
-                    <Dropdown>
-                        <Dropdown.Toggle variant="secondary">Seleccionar cantidad de datos para el gráfico</Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            {[10, 25, 50, 100, 1000].map((option) => (
-                                <Dropdown.Item key={option} onClick={() => handleGraphItemsChange(option)}>
-                                    Mostrar {option} productos
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </div>
-
-                {/* Botones para exportar */}
-                <div className="text-center my-4">
+                <div>
+                    {/* Botones para exportar */}
+                <div className="d-flex justify-content-center align-items-center gap-3 mb-3 mx-2">
                     <button onClick={exportToExcel} className="btn btn-primary mb-3 mx-2">
                         Exportar a Excel
                     </button>
                     <button onClick={generatePDF} className="btn btn-danger mb-3">Generar Vista Previa PDF</button>
+                    {/* Modal para vista previa del PDF */}
+                    <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Vista previa del PDF</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {pdfData && (
+                                <iframe
+                                    src={pdfData}
+                                    style={{ width: '100%', height: '500px' }}
+                                    title="PDF Preview"
+                                />
+                            )}
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
+                            <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+                        </Modal.Footer>
+                    </Modal>
+                    <Link to="/sync/home" className='btn btn-primary mb-3 mx-2'>Volver a inicio</Link>
                 </div>
-
-                {/* Modal para vista previa del PDF */}
-                <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
-                    <Modal.Header closeButton>
-                        <Modal.Title>Vista previa del PDF</Modal.Title>
-                    </Modal.Header>
-                    <Modal.Body>
-                        {pdfData && (
-                            <iframe
-                                src={pdfData}
-                                style={{ width: '100%', height: '500px' }}
-                                title="PDF Preview"
-                            />
-                        )}
-                    </Modal.Body>
-                    <Modal.Footer>
-                        <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
-                        <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
-                    </Modal.Footer>
-                </Modal>
-
-                {/* Botones de navegación */}
-                <div className="text-center">
-                    <Link to="/sync/home" className='btn btn-primary mb-5 mx-2'>Volver a inicio</Link>
-                    <Link to="/sync/reportes/home" className='btn btn-primary mb-5 mx-2'>Volver a Menú de Reportes</Link>
+                    {/* Modal para vista previa del PDF */}
+                    <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Vista previa del PDF</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {pdfData && (
+                                <iframe
+                                    src={pdfData}
+                                    style={{ width: '100%', height: '500px' }}
+                                    title="PDF Preview"
+                                />
+                            )}
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
+                            <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+                        </Modal.Footer>
+                    </Modal>
                 </div>
             </div>
         </div>
