@@ -1,176 +1,273 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { Table, Button, Modal, Image } from "react-bootstrap";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
+import { Table, Button, Modal, Form } from "react-bootstrap";
+import { useParams } from "react-router-dom";
+import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faInfoCircle, faHistory } from '@fortawesome/free-solid-svg-icons';
+import { faInfoCircle, faHistory, faSearch } from '@fortawesome/free-solid-svg-icons';
+import "bootstrap/dist/css/bootstrap.min.css";
 
-interface StockItem {
+// Definición de la interfaz SalesHistory
+interface SalesHistory {
+    date: string;
+    quantity: number;
+}
+
+// Definición de la interfaz HistorialStock
+interface HistorialStock {
     id: string;
     title: string;
     available_quantity: number;
     stock_reload_date: string;
     purchase_sale_date: string;
-    history: Array<{ quantity: number, date: string }>;
+    history: SalesHistory[];
 }
 
+// Definición de la interfaz ClientData
 interface ClientData {
     nickname: string;
     profile_image: string;
 }
 
-interface ReporteHistorialStockProps {
-    client_id: string;
-}
-
-const ReporteHistorialStock: React.FC<ReporteHistorialStockProps> = ({ client_id }) => {
-    const [historialStock, setHistorialStock] = useState<StockItem[]>([]);
+// Componente funcional HistorialStock
+const HistorialStock: React.FC = () => {
+    const { client_id } = useParams<{ client_id: string }>();
+    const [historialStock, setHistorialStock] = useState<HistorialStock[]>([]);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [userData, setUserData] = useState<ClientData | null>({
+        nickname: "UsuarioEjemplo",
+        profile_image: "https://via.placeholder.com/100"
+    });
     const [showModal, setShowModal] = useState<boolean>(false);
-    const [selectedProduct, setSelectedProduct] = useState<StockItem | null>(null);
-    const [userData, setUserData] = useState<ClientData | null>(null);
-    const [viewMode, setViewMode] = useState<"details" | "history">("details"); // Modo de visualización del modal
+    const [selectedProduct, setSelectedProduct] = useState<HistorialStock | null>(null);
+    const [viewMode, setViewMode] = useState<'details' | 'history'>('details');
+    const [searchTerm, setSearchTerm] = useState<string>("");
 
-    // Datos estáticos para pruebas
-    const staticStockData: StockItem[] = [
+    // Datos fijos para la demostración
+    const mockData = [
         {
             id: "1",
-            title: "Producto de prueba 1",
+            title: "Producto A",
             available_quantity: 10,
-            stock_reload_date: "2023-10-01T12:00:00Z",
-            purchase_sale_date: "2023-10-05T12:00:00Z",
-            history: [
-                { quantity: 5, date: "2021-12-15T12:00:00Z" }, // Ventas antes de 2022
-                { quantity: 3, date: "2022-01-10T12:00:00Z" }, // Venta en 2022
-                { quantity: 7, date: "2023-10-05T12:00:00Z" }  // Venta en 2023
-            ]
+            stock_reload_date: "2024-03-10T00:00:00Z",
+            purchase_sale_date: "2024-03-11T00:00:00Z",
+        },
+        {
+            id: "1",
+            title: "Producto A",
+            available_quantity: 2,
+            stock_reload_date: "2023-03-10T00:00:00Z",
+            purchase_sale_date: "2024-03-12T00:00:00Z",
         },
         {
             id: "2",
-            title: "Producto de prueba 2",
-            available_quantity: 15,
-            stock_reload_date: "2023-10-02T12:00:00Z",
-            purchase_sale_date: "2023-10-07T12:00:00Z",
-            history: [
-                { quantity: 2, date: "2022-05-20T12:00:00Z" }, // Venta en 2022
-                { quantity: 4, date: "2023-09-25T12:00:00Z" }  // Venta en 2023
-            ]
-        }
+            title: "Producto B",
+            available_quantity: 20,
+            stock_reload_date: "2024-03-15T00:00:00Z",
+            purchase_sale_date: "2024-03-16T00:00:00Z",
+        },
+        {
+            id: "2",
+            title: "Producto B",
+            available_quantity: 2,
+            stock_reload_date: "2024-03-15T00:00:00Z",
+            purchase_sale_date: "2024-03-17T00:00:00Z",
+        },
+        {
+            id: "3",
+            title: "Producto C",
+            available_quantity: 30,
+            stock_reload_date: "2024-03-20T00:00:00Z",
+            purchase_sale_date: "2024-03-21T00:00:00Z",
+        },
+        {
+            id: "3",
+            title: "Producto C",
+            available_quantity: 1,
+            stock_reload_date: "2024-03-20T00:00:00Z",
+            purchase_sale_date: "2024-03-22T00:00:00Z",
+        },
+        {
+            id: "4",
+            title: "Producto D",
+            available_quantity: 8,
+            stock_reload_date: "2024-03-10T00:00:00Z",
+            purchase_sale_date: "2024-03-13T00:00:00Z",
+        },
     ];
 
-    const staticUserData: ClientData = {
-        nickname: "Usuario de prueba",
-        profile_image: "https://via.placeholder.com/100"
-    };
-
-    // Simulación de carga de datos estáticos
-    useEffect(() => {
+    // Función para obtener el historial de stock (usando datos fijos)
+    const fetchHistorialStock = useCallback(() => {
         setLoading(true);
-        setTimeout(() => {
-            setHistorialStock(staticStockData);
-            setUserData(staticUserData);
+        try {
+            // Agrupar ventas por producto y fecha
+            const salesMap: { [key: string]: HistorialStock } = {};
+
+            mockData.forEach((item) => {
+                const productId = item.id;
+                const saleDate = item.purchase_sale_date.split("T")[0]; // Extraer solo la fecha (YYYY-MM-DD)
+
+                if (!salesMap[productId]) {
+                    salesMap[productId] = {
+                        id: productId,
+                        title: item.title,
+                        available_quantity: item.available_quantity,
+                        stock_reload_date: item.stock_reload_date,
+                        purchase_sale_date: item.purchase_sale_date,
+                        history: [],
+                    };
+                }
+
+                // Acumular ventas en el historial
+                const existingEntry = salesMap[productId].history.find(entry => entry.date === saleDate);
+                if (existingEntry) {
+                    existingEntry.quantity += item.available_quantity;
+                } else {
+                    salesMap[productId].history.push({ date: saleDate, quantity: item.available_quantity });
+                }
+            });
+
+            const validatedData = Object.values(salesMap);
+            setHistorialStock(validatedData);
+        } catch (error) {
+            console.error("Error al procesar los datos:", error);
+            setError("Error al procesar los datos");
+        } finally {
             setLoading(false);
-        }, 1000); // Simula un retraso de 1 segundo
+        }
     }, []);
 
-    // Función para mostrar los detalles del producto en el modal
-    const handleViewDetails = (product: StockItem, mode: "details" | "history") => {
+    // Efecto para obtener el historial de stock al montar el componente
+    useEffect(() => {
+        fetchHistorialStock();
+    }, [fetchHistorialStock]);
+
+    // Función para manejar la visualización de detalles o historial
+    const handleViewDetails = (product: HistorialStock, mode: 'details' | 'history') => {
         setSelectedProduct(product);
-        setViewMode(mode); // Establece el modo de visualización
+        setViewMode(mode);
         setShowModal(true);
     };
 
-    // Filtrar el historial de ventas desde 2022 en adelante
-    const filteredHistory = useMemo(() => {
-        if (!selectedProduct) return [];
-        return selectedProduct.history.filter((entry) => {
-            const entryDate = new Date(entry.date);
-            return entryDate.getFullYear() >= 2022; // Filtra ventas desde 2022
-        });
-    }, [selectedProduct]);
+    // Filtrar productos según el término de búsqueda
+    const filteredStock = useMemo(() => {
+        return historialStock.filter(item =>
+            item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            item.id.includes(searchTerm)
+        );
+    }, [historialStock, searchTerm]);
 
     return (
         <div className="container mt-4">
-            <h1 className="text-center mb-4">Historial de Stock</h1>
+            <h1 className="text-center mb-4 text-primary">Historial de Stock</h1>
+            <h4 className="text-center mb-4 text-danger">Datos Fijos</h4>
+
             {userData && (
-                <div style={{ textAlign: "center" }}>
-                    <h3>Usuario: {userData.nickname}</h3>
+                <div className="text-center mb-4">
+                    <h3 className="fw-bold">{userData.nickname}</h3>
                     <img
                         src={userData.profile_image}
                         alt="Profile"
-                        style={{ width: "100px", height: "100px", borderRadius: "50%" }}
+                        className="rounded-circle shadow"
+                        style={{ width: "100px", height: "100px" }}
                     />
                 </div>
             )}
-            {loading && <p>Cargando...</p>}
-            {error && <p className="text-danger">{error}</p>}
-            <Table striped bordered hover responsive className="mt-4 table-primary">
-                <thead className="table-primary">
-                    <tr>
-                        <th>ID del Producto</th>
-                        <th>Nombre del Producto</th>
-                        <th>Cantidad Disponible</th>
-                        <th>Fecha de Recarga</th>
-                        <th>Fecha de Venta</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {historialStock.length > 0 ? (
-                        historialStock.map((item) => (
-                            <tr key={item.id}>
-                                <td>{item.id}</td>
-                                <td>{item.title}</td>
-                                <td>{item.available_quantity}</td>
-                                <td>{new Date(item.stock_reload_date).toLocaleString()}</td>
-                                <td>{new Date(item.purchase_sale_date).toLocaleString()}</td>
-                                <td>
-                                    <Button variant="info" onClick={() => handleViewDetails(item, "details")} className="mr-2">
-                                        <FontAwesomeIcon icon={faInfoCircle} /> Ver Detalles
-                                    </Button>
-                                    <Button variant="secondary" onClick={() => handleViewDetails(item, "history")}>
-                                        <FontAwesomeIcon icon={faHistory} /> Ver Historial
-                                    </Button>
-                                </td>
-                            </tr>
-                        ))
-                    ) : (
-                        <tr>
-                            <td colSpan={6} className="text-center">
-                                No hay datos disponibles
-                            </td>
-                        </tr>
-                    )}
-                </tbody>
-            </Table>
 
-            {/* Modal para mostrar los detalles del producto o el historial */}
+            {/* Barra de búsqueda */}
+            <Form className="mb-4">
+                <Form.Group controlId="searchForm">
+                    <Form.Control
+                        type="text"
+                        placeholder="Buscar por ID o nombre del producto..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </Form.Group>
+            </Form>
+
+            {loading ? (
+                <LoadingDinamico variant="container" />
+            ) : (
+                <>
+                    {error && <p className="text-danger text-center fw-bold">{error}</p>}
+                    <div className="table-responsive">
+                        <Table striped hover bordered className="table-primary align-middle">
+                            <thead className="table-dark text-center">
+                                <tr>
+                                    <th>#</th>
+                                    <th>ID del Producto</th>
+                                    <th>Nombre del Producto</th>
+                                    <th>Cantidad Disponible</th>
+                                    <th>Fecha de Recarga</th>
+                                    <th>Fecha de Venta</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+
+                            <tbody>
+                                {filteredStock.length > 0 ? (
+                                    filteredStock.map((item, index) => (
+                                        <tr key={item.id} className="text-center">
+                                            <td>{index + 1}</td>
+                                            <td>{item.id}</td>
+                                            <td className="fw-bold">{item.title}</td>
+                                            <td className="text-success">{item.available_quantity}</td>
+                                            <td>{new Date(item.stock_reload_date).toLocaleString()}</td>
+                                            <td>{new Date(item.purchase_sale_date).toLocaleString()}</td>
+                                            <td>
+                                                <div className="d-flex justify-content-center gap-2">
+                                                    <Button variant="info" onClick={() => handleViewDetails(item, "details")}>
+                                                        <FontAwesomeIcon icon={faInfoCircle} /> Detalles
+                                                    </Button>
+                                                    <Button variant="secondary" onClick={() => handleViewDetails(item, "history")}>
+                                                        <FontAwesomeIcon icon={faHistory} /> Historial
+                                                    </Button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={7} className="text-center fw-bold py-3">
+                                            No hay datos disponibles
+                                        </td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </Table>
+                    </div>
+                </>
+            )}
+
+            {/* Modal para mostrar detalles o historial */}
             <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-                <Modal.Header closeButton>
+                <Modal.Header closeButton className="bg-primary text-white">
                     <Modal.Title>
-                        {viewMode === "details" ? "Detalles del Producto" : "Historial de Ventas (Desde 2022)"}
+                        {viewMode === "details" ? "Detalles del Producto" : "Historial de Ventas"}
                     </Modal.Title>
                 </Modal.Header>
                 <Modal.Body>
                     {selectedProduct && viewMode === "details" && (
-                        <>
+                        <div className="p-3">
                             <p><strong>ID del Producto:</strong> {selectedProduct.id}</p>
                             <p><strong>Nombre del Producto:</strong> {selectedProduct.title}</p>
                             <p><strong>Cantidad Disponible:</strong> {selectedProduct.available_quantity}</p>
                             <p><strong>Fecha de Recarga:</strong> {new Date(selectedProduct.stock_reload_date).toLocaleString()}</p>
                             <p><strong>Fecha de Venta:</strong> {new Date(selectedProduct.purchase_sale_date).toLocaleString()}</p>
-                        </>
+                        </div>
                     )}
                     {selectedProduct && viewMode === "history" && (
-                        <>
-                            <h5>Historial de Ventas (Desde 2022):</h5>
-                            <ul>
-                                {filteredHistory.map((entry, index) => (
-                                    <li key={index}>
-                                        {new Date(entry.date).toLocaleDateString()} - Cantidad Vendida: {entry.quantity}
+                        <div className="p-3">
+                            <h5 className="fw-bold text-primary">Historial de Ventas:</h5>
+                            <ul className="list-group">
+                                {selectedProduct.history.map((entry, index) => (
+                                    <li key={index} className="list-group-item">
+                                        {new Date(entry.date).toLocaleDateString()} - Cantidad Vendida: <strong>{entry.quantity}</strong>
                                     </li>
                                 ))}
                             </ul>
-                        </>
+                        </div>
                     )}
                 </Modal.Body>
                 <Modal.Footer>
@@ -183,4 +280,4 @@ const ReporteHistorialStock: React.FC<ReporteHistorialStockProps> = ({ client_id
     );
 };
 
-export default ReporteHistorialStock;
+export default HistorialStock;
