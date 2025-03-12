@@ -8,7 +8,7 @@ function RouterCompania() {
     return (
         <Routes>
             <Route path="/home" element={<ListarCompanias />} />
-            <Route path="/crear" element={<CrearCompania />} />
+            <Route path="/crear-compañia" element={<CrearCompania />} />
             <Route path="/detalleCompania/:id" element={<DetalleCompania />} />
             <Route path="/editar/:id" element={<div>Editar Compania</div>} />
             <Route path="/*" element={<Navigate to="/sync/companias/home"/>}/>

@@ -4,7 +4,7 @@ import axiosInstance from '../../../../../axiosConfig';
 import ToastComponent from '../../../../Components/ToastComponent/ToastComponent';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo ,faPersonDolly,} from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faCalendarDay, faTags, faStar, faCalendarWeek, faClipboardList, faCreditCard, faComments, faUndo } from '@fortawesome/free-solid-svg-icons';
 import { faMoneyBillWave, faCreditCard as faCreditCardIcon, faUniversity, faCalendar, faCalendarDays, faCalendarCheck } from '@fortawesome/free-solid-svg-icons';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 
@@ -140,6 +140,11 @@ const HomeReportes: React.FC = () => {
               <>
                 <h3 className="mt-4">Reportes Disponibles</h3>
                 <div className="list-group mb-5">
+
+                  <Link to={`/sync/reportes/ventas/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Ventas
+                  </Link>
+
                   {/*<Link to={`/sync/reportes/ventas-mes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Ventas totales por mes
                   </Link>*/}
@@ -161,9 +166,9 @@ const HomeReportes: React.FC = () => {
                   <Link to={`/sync/reportes/estados-ordenes-anual/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Estados de órdenes Resumen Anual (pagadas, pendientes, canceladas)
                   </Link>
-                  <Link to={`/sync/reportes/estados-ordenes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                  {/*<Link to={`/sync/reportes/estados-ordenes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Estados de órdenes (pagadas, pendientes, canceladas)
-                  </Link>
+                  </Link>*/}
                   {/*<Link to={`/sync/reportes/metodos-pago/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faCreditCard} className="mr-2" /> Métodos de pago más utilizados
                   </Link>*/}
@@ -173,14 +178,23 @@ const HomeReportes: React.FC = () => {
                   <Link to={`/sync/reportes/Reporte-Recepcion/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Reporte de Recepción
                   </Link>
+                  <Link to={`/sync/reportes/historial-Stock/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Historial Stock
+                  </Link>
+                  <Link to={`/sync/reportes/stock-Critico/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faChartLine} className="mr-2" /> Stock Critico
+                  </Link>
                   <Link to={`/sync/reportes/opiniones-clientes/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faComments} className="mr-2" /> Opiniones de clientes por producto
                   </Link>
                   <Link to={`/sync/reportes/devoluciones-reembolsos/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faUndo} className="mr-2" /> Devoluciones o reembolsos por categoría
                   </Link>
+                  <Link to={`/sync/reportes/Despachar-Producto/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Productos a despachar
+                  </Link>
                 </div>
-
+                {/*  
                 <h3 className="mt-4">Reportes de Comparaciones Disponibles</h3>
                 <div className="list-group mb-5">
                   <Link to={`/sync/reportes/compare-month-month/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
@@ -190,6 +204,7 @@ const HomeReportes: React.FC = () => {
                     <FontAwesomeIcon icon={faCalendar} className="mr-2" /> Comparar ganancias anuales
                   </Link>
                 </div>
+                */}
               </>
             )}
             <Link to="/sync/home" className='btn btn-primary mb-5'>Volver a inicio</Link>
