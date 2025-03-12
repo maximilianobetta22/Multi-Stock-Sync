@@ -16,7 +16,13 @@ import EstadosOrdenesAnual from "../Views/EstadoOrdenesAnuales/EstadoOrdenesAnua
 import CompareMonthMonth from "../Views/CompareMesMes/CompareMonthMonth";
 import CompareYearYear from "../Views/CompareYearYear/CompareYearYear";
 import VentasPorYear from "../Views/VentasPorYear/VentasPorYear";
+import ReporteDisponible from "../Views/ReporteDisponible/ReporteDisponible";
+import ReporteRecepcion from "../Views/ReporteRecepcion/ReporteRecepcion";
 import DetalleReembolso from "../Views/DevolucionesReembolsos/DetalleReembolso/DetalleReembolso";
+import ProductosDespachar from "../Views/ProductosDespachar/ProductosDespachar";
+import DetallesDeVentas from "../Views/Ventas/Ventas";
+import ReporteHistorialStock from "../Views/HistorialStock/ReporteHistorialStock";
+import ReporteStockCritico from "../Views/StockCritico/ReporteStockCritico";
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
 
 
@@ -26,11 +32,17 @@ function RouterReportes() {
         <Routes>
             <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />  
             <Route path="home" element={<HomeReportes/>} />
+            <Route path="ventas/:client_id" element={<DetallesDeVentas />} />{/* el nuevo */}
+            <Route path="historial-Stock/:client_id" element={<ReporteHistorialStock />} />
+            <Route path="stock-Critico/:client_id" element={<ReporteStockCritico />} />
             <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
             <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
             <Route path="ingreso-semana/:client_id" element={< IngresosSemana/>} />
-            <Route path="ventas-dia/:client_id" element={<VentasPorDia />} />
-            <Route path="ventas-mes/:client_id" element={<VentasPorMes />} />
+            <Route path="Reporte-Disponible/:client_id" element={< ReporteDisponible/>} />
+            <Route path="Reporte-Recepcion/:client_id" element={< ReporteRecepcion/>} />
+            <Route path="Despachar-Producto/:client_id" element={< ProductosDespachar/>} />
+            {/*<Route path="ventas-dia/:client_id" element={<VentasPorDia />} />*/}
+            {/*<Route path="ventas-mes/:client_id" element={<VentasPorMes />} />*/}
             <Route path="metodos-pago/:client_id" element={<MetodosPago />} />
             <Route path="devoluciones-reembolsos/:client_id" element={<DevolucionesReembolso />} />
             <Route path="devoluciones-reembolsos/:client_id/detalle/:refund_id" element={<DetalleReembolso />} />
@@ -46,6 +58,7 @@ function RouterReportes() {
             <Route path="compare-month-month/:client_id" element={<CompareMonthMonth />} />
             <Route path="compare-year-year/:client_id" element={<CompareYearYear />} />
             <Route path="ventas-year/:client_id" element={<VentasPorYear />} />
+            {/*<Route path="ventas-year/:client_id" element={<VentasPorYear />} />*/}
 
         </Routes>
     );

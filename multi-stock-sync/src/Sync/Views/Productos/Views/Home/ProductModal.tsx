@@ -6,23 +6,31 @@ interface Product {
   thumbnail: string;
   site_id: string;
   title: string;
-  // handleSave: (product: Product) => void;
 }
 
 interface ProductModalProps {
-    show: boolean;
-    onHide: () => void;
-    product: Product | null;
-    modalContent: 'main' | 'stock' | 'pause';
-    onUpdateStock: (productId: string, newStock: number, pause?: boolean) => Promise<void>;
-    onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
-    onStockChange: (productId: string, newStock: number) => void;
-    stockEdit: { [key: string]: number };
-    fetchProducts: () => void;
-    setModalContent: React.Dispatch<React.SetStateAction<'main' | 'stock' | 'pause'>>;
-  }
+  show: boolean;
+  onHide: () => void;
+  product: Product | null;
+  onUpdateStock: (id: string, siteId: number) => void;
+  onUpdateStatus: (id: string, status: string) => void;
+  onStockChange: (id: string, value: number) => void;
+  stockEdit: { [key: string]: number };
+}
 
-const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUpdateStock, onUpdateStatus }) => {
+/**
+ * ProductModal component allows users to edit product details in a modal dialog.
+ * 
+ * @param {Object} props - Component props
+ * @param {boolean} props.show - Whether the modal is visible
+ * @param {function} props.onHide - Function to hide the modal
+ * @param {Object|null} props.product - Product details to edit
+ * @param {function} props.onUpdateStock - Function to update product stock
+ * @param {function} props.onUpdateStatus - Function to update product status
+ * @param {function} props.onStockChange - Function to handle stock change
+ * @param {Object} props.stockEdit - State of stock values being edited
+ */
+const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUpdateStock, onUpdateStatus, onStockChange, stockEdit }) => {
   const [editedProduct, setEditedProduct] = useState<Product | null>(product);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -33,7 +41,6 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUp
 
   const handleSubmit = () => {
     if (!editedProduct) return;
-    // handleSave(editedProduct);
     onUpdateStock(editedProduct.id, parseInt(editedProduct.site_id));
     onHide();
   };
@@ -84,6 +91,15 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUp
               name="title"
               value={editedProduct?.title || ''}
               onChange={handleChange}
+            />
+          </Form.Group>
+          <Form.Group controlId="formProductStock">
+            <Form.Label>Stock</Form.Label>
+            <Form.Control
+              type="number"
+              name="stock"
+              value={stockEdit[product.id] || product.available_quantity}
+              onChange={(e) => onStockChange(product.id, parseInt(e.target.value))}
             />
           </Form.Group>
         </Form>

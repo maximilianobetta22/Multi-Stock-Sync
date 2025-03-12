@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../../../../axiosConfig'; // Importa la configuración de Axios
 import { Container, Row, Col, Pagination, Button } from 'react-bootstrap';
 import Swal from 'sweetalert2';
@@ -37,6 +38,19 @@ interface Product {
   status: string;
 }
 
+interface ProductModalProps {
+  show: boolean;
+  onHide: () => void;
+  product: Product | null;
+  modalContent: 'main' | 'stock' | 'pause';
+  onUpdateStock: (productId: string, newStock: number, pause?: boolean) => Promise<void>;
+  onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
+  onStockChange: (productId: string, newStock: number) => void;
+  stockEdit: { [key: string]: number };
+  fetchProducts: () => void;
+  setModalContent: React.Dispatch<React.SetStateAction<'main' | 'stock' | 'pause'>>;
+}
+
 const statusDictionary: { [key: string]: string } = {
   active: 'Activo',
   paused: 'Pausado',
@@ -50,7 +64,146 @@ const statusDictionary: { [key: string]: string } = {
 
 const MySwal = withReactContent(Swal);
 
+/**
+ * HomeProducto component is the main component for managing and displaying products.
+ */
+/**
+ * HomeProducto component is responsible for displaying and managing products.
+ * It allows users to fetch, search, filter, and update products from MercadoLibre.
+ * 
+ * @component
+ * 
+ * @returns {JSX.Element} The rendered HomeProducto component.
+ * 
+ * @example
+ * <HomeProducto />
+ * 
+ * @remarks
+ * This component uses various hooks to manage state and side effects, including:
+ * - `useState` for managing local state.
+ * - `useEffect` for fetching data on component mount and handling side effects.
+ * 
+ * @function
+ * @name HomeProducto
+ * 
+ * @description
+ * The component fetches connections and products from an API, allows searching and filtering products,
+ * and provides functionalities to update product stock and status. It also handles pagination and displays
+ * a modal for detailed product actions.
+ * 
+ * @hook
+ * @name useNavigate
+ * @description Hook from `react-router-dom` for navigation.
+ * 
+ * @hook
+ * @name useState
+ * @description Hook for managing local state.
+ * 
+ * @hook
+ * @name useEffect
+ * @description Hook for performing side effects.
+ * 
+ * @typedef {Object} Connection
+ * @property {string} client_id - The client ID of the connection.
+ * @property {string} access_token - The access token for the connection.
+ * 
+ * @typedef {Object} Product
+ * @property {string} id - The product ID.
+ * @property {string} title - The product title.
+ * @property {number} price - The product price.
+ * @property {string} category_id - The category ID of the product.
+ * 
+ * @state {Connection[]} connections - List of connections.
+ * @state {string} selectedConnection - The currently selected connection.
+ * @state {boolean} loading - Loading state for fetching products.
+ * @state {Product[]} allProductos - List of all fetched products.
+ * @state {boolean} loadingConnections - Loading state for fetching connections.
+ * @state {string | null} toastMessage - Message to be displayed in a toast notification.
+ * @state {'success' | 'warning' | 'error'} toastType - Type of the toast notification.
+ * @state {{ [key: string]: number }} stockEdit - Object mapping product IDs to their edited stock values.
+ * @state {boolean} isUpdating - State indicating if a product update is in progress.
+ * @state {boolean} modalIsOpen - State indicating if the modal is open.
+ * @state {{ [key: string]: boolean }} isEditing - Object mapping product IDs to their editing state.
+ * @state {Product | null} currentProduct - The currently selected product for detailed actions.
+ * @state {'main' | 'stock' | 'pause'} modalContent - The content type to be displayed in the modal.
+ * @state {string} searchQuery - The current search query.
+ * @state {string} selectedCategory - The currently selected category.
+ * @state {number} limit - The limit of products per page.
+ * @state {number} offset - The current offset for pagination.
+ * @state {number} totalProducts - The total number of products.
+ * @state {{ [key: string]: string }} categories - Object mapping category IDs to their names.
+ * @state {Product | null} selectedProduct - The currently selected product.
+ * 
+ * @method
+ * @name fetchConnections
+ * @description Fetches connections from the API.
+ * 
+ * @method
+ * @name fetchProducts
+ * @description Fetches products from the API based on the selected connection, search query, limit, offset, and category.
+ * 
+ * @method
+ * @name fetchCategories
+ * @description Fetches category names for the given products.
+ * 
+ * @method
+ * @name handleConnectionChange
+ * @description Handles the change of the selected connection.
+ * 
+ * @method
+ * @name handleSearch
+ * @description Handles the search query change and fetches products based on the query.
+ * 
+ * @method
+ * @name handleCategoryChange
+ * @description Handles the change of the selected category.
+ * 
+ * @method
+ * @name handlePageChange
+ * @description Handles the change of the current page for pagination.
+ * 
+ * @method
+ * @name handleStockChange
+ * @description Handles the change of the stock value for a product.
+ * 
+ * @method
+ * @name updateStock
+ * @description Updates the stock of a product.
+ * 
+ * @method
+ * @name updateStatus
+ * @description Updates the status of a product.
+ * 
+ * @method
+ * @name openModal
+ * @description Opens the modal for detailed product actions.
+ * 
+ * @method
+ * @name closeModal
+ * @description Closes the modal.
+ * 
+ * @method
+ * @name formatPriceCLP
+ * @description Formats a price value to Chilean Peso (CLP) currency format.
+ * 
+ * @method
+ * @name translateStatus
+ * @description Translates a product status to a human-readable format.
+ * 
+ * @method
+ * @name categorizeProducts
+ * @description Categorizes products based on their category IDs.
+ * 
+ * @method
+ * @name filterResults
+ * @description Filters products based on the selected category.
+ * 
+ * @method
+ * @name onSelectSuggestion
+ * @description Handles the selection of a search suggestion.
+ */
 const HomeProducto = () => {
+  const navigate = useNavigate();
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState('');
   const [loading, setLoading] = useState(false);
@@ -70,6 +223,7 @@ const HomeProducto = () => {
   const [offset, setOffset] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
   const [categories, setCategories] = useState<{ [key: string]: string }>({});
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Add selectedProduct state
 
   useEffect(() => {
     const fetchConnections = async () => {
@@ -257,6 +411,8 @@ const HomeProducto = () => {
     }
   };
 
+  
+
   const openModal = (product: Product) => {
     setCurrentProduct(product);
     setModalContent('main');
@@ -293,6 +449,11 @@ const HomeProducto = () => {
     fetchProducts(selectedConnection, searchQuery, limit, 0, category);
   };
 
+  const onSelectSuggestion = (suggestion: string) => {
+    setSearchQuery(suggestion);
+    fetchProducts(selectedConnection, suggestion, limit, 0);
+  };
+
   const categorizedProducts = categorizeProducts(allProductos);
 
   const totalPages = Math.ceil(totalProducts / limit);
@@ -314,24 +475,31 @@ const HomeProducto = () => {
             </Row>
             <Row className="mb-3">
               <Col md={4}>
-                <ConnectionDropdown
-                  connections={connections}
-                  selectedConnection={selectedConnection}
-                  onChange={handleConnectionChange}
-                />
-                <br />
-                <p>Por favor, seleccione una conexión para ver los productos.</p>
+              <ConnectionDropdown
+                connections={connections}
+                selectedConnection={selectedConnection}
+                onChange={handleConnectionChange}
+              />
+              <br />
+              <p>Por favor, seleccione una conexión para ver los productos.</p>
               </Col>
               <Col md={4}>
-                <SearchBar
-                  searchQuery={searchQuery}
-                  onSearch={handleSearch}
-                />
+              <SearchBar
+                searchQuery={searchQuery}
+                onSearch={handleSearch}
+                suggestions={[]} 
+                onSelectSuggestion={onSelectSuggestion} 
+              />
+              </Col>
+              <Col md={4} className="text-end">
+                <Button variant="primary" onClick={() => navigate('/sync/productos/crear')}>
+                  Crear Producto
+                </Button>
               </Col>
             </Row>
             {!selectedConnection && (
-              <Row className="mb-3">              
-            </Row>
+              <Row className="mb-3">
+              </Row>
             )}
             {selectedConnection && (
               <ProductTable
@@ -344,6 +512,9 @@ const HomeProducto = () => {
                 onOpenModal={openModal}
                 formatPriceCLP={formatPriceCLP}
                 translateStatus={translateStatus}
+                onUpdateStatus={updateStatus}
+                onSelectProduct={setSelectedProduct} 
+                onEditProduct={(product) => console.log('Edit product', product)} // Add onEditProduct handler
               />
             )}
             <Row className="mt-3">
