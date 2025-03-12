@@ -1,33 +1,43 @@
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { SyncData } from '../interface';
-import { useState} from 'react';
 import styles from "../Views/ListConexiones/ListConexiones.module.css";
 
-interface props {
+interface Props {
   conexion: SyncData;
   loadingRowId: number | null;
   copyToClipboard: (token: string, message: string) => void;
   confirmDisconnect: (clientId: string, rowId: number) => void;
   testConnection: (clientId: string) => void;
+  isOpen: boolean;
+  handleMenuToggle: () => void;
 }
 
-export const ItemTableConexion = ({
+const ItemTableConexion: React.FC<Props> = ({
   conexion,
   loadingRowId,
   copyToClipboard,
   confirmDisconnect,
-  testConnection }: props
-) => {
-
-  const [isOpen, setIsOpen] = useState<boolean>(false);
-
-  const handleMenuToggle = () => {
-    setIsOpen(!isOpen);
-    console.log(isOpen);
-  }
-
+  testConnection,
+  isOpen,
+  handleMenuToggle
+}) => {
   const noImageSrc = "/assets/img/no_image.jpg";
+
+  const handleCopyToClipboard = () => {
+    copyToClipboard(conexion.access_token, "Token copiado al portapapeles!");
+    handleMenuToggle();
+  };
+
+  const handleTestConnection = () => {
+    testConnection(conexion.client_id);
+    handleMenuToggle();
+  };
+
+  const handleConfirmDisconnect = () => {
+    confirmDisconnect(conexion.client_id, conexion.id);
+    handleMenuToggle();
+  };
 
   return (
     <tr key={conexion.id} className={loadingRowId === conexion.id ? "table-warning" : styles.tBody__row}>
@@ -52,11 +62,11 @@ export const ItemTableConexion = ({
         >
           <FontAwesomeIcon className={styles.btn__icon} icon={faEllipsisV} />
         </button>
-        <ul className={`${styles.dropdown} ${(isOpen) ? styles.dropdownOpen : ''}`}>
+        <ul className={`${styles.dropdown} ${isOpen ? styles.dropdownOpen : ''}`}>
           <li>
             <button
               className={styles.dropdown__item}
-              onClick={() => copyToClipboard(conexion.access_token, "Token copiado al portapapeles!")}
+              onClick={handleCopyToClipboard}
             >
               Copiar Tóken Secreto
             </button>
@@ -64,7 +74,7 @@ export const ItemTableConexion = ({
           <li>
             <button
               className={styles.dropdown__item}
-              onClick={() => testConnection(conexion.client_id)}
+              onClick={handleTestConnection}
             >
               Refrescar Conexión
             </button>
@@ -72,7 +82,7 @@ export const ItemTableConexion = ({
           <li>
             <button
               className={styles.dropdown__item}
-              onClick={() => confirmDisconnect(conexion.client_id, conexion.id)}
+              onClick={handleConfirmDisconnect}
             >
               Eliminar Conexión
             </button>
@@ -82,3 +92,5 @@ export const ItemTableConexion = ({
     </tr>
   );
 };
+
+export default ItemTableConexion;
