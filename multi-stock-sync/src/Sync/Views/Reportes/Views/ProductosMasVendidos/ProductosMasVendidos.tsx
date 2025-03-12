@@ -277,6 +277,7 @@ const Productos: React.FC = () => {
                 <Modal.Footer>
                     <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
                     <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+                    <button>Opiniones</button> ******
                 </Modal.Footer>
             </Modal>
         </div>

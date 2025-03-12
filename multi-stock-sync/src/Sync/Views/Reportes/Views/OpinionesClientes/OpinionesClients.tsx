@@ -5,89 +5,70 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
 import styles from './OpinionesClients.module.css';
 
-interface Review {
-  id: number;
-  product_id: string;
-  comment: string;
-  rating: number;
-}
-
-const OpinionesClientes: React.FC = () => {
-  const { client_id, product_id } = useParams<{ client_id: string; product_id: string }>();
-  const [opiniones, setOpiniones] = useState<Review[]>([]);
-  const [ratingAverage, setRatingAverage] = useState<number>(0);
+const OpinionesClientes = () => {
+  const { productId } = useParams();
+  const [rating, setRating] = useState(0);  // Estado para la calificación
+  const [review, setReview] = useState('');  // Estado para el comentario
+  const [submitted, setSubmitted] = useState(false);  // Para saber si el comentario fue enviado
+  const [productDetails, setProductDetails] = useState(null);
 
   useEffect(() => {
-    if (!client_id || !product_id) {
-      console.error('client_id o product_id no están disponibles');
-      return;
-    }
+    // Aquí podrás hacer la llamada para obtener el producto (si es necesario)
+    // axios.get(`/api/product/${productId}`).then(response => setProductDetails(response.data));
+  }, [productId]);
 
-    const fetchOpiniones = async () => {
-      try {
-        const response = await axios.get(
-          `/mercadolibre/products/reviews/${product_id}?client_id=${client_id}`
-        );
+  // Función para manejar el cambio en la calificación
+  const handleRating = (value: number) => {
+    setRating(value);
+  };
 
-        const data = response.data?.data;
-        if (data && Array.isArray(data.reviews)) {
-          const formattedOpinions = data.reviews.map((review: any, index: number) => ({
-            id: index + 1, 
-            product_id: product_id,
-            comment: review.comment || 'Sin comentario',
-            rating: review.rating || 0,
-          }));
+  // Función para manejar el envío del comentario
+  const handleSubmit = () => {
+    // Aquí deberías hacer la solicitud POST para guardar la calificación y comentario
+    // axios.post('/api/reviews', { productId, rating, review }).then(() => setSubmitted(true));
 
-          setOpiniones(formattedOpinions);
-          setRatingAverage(data.rating_average);
-        } else {
-          console.error('La respuesta de la API no contiene opiniones válidas');
-        }
-      } catch (error) {
-        console.error('Error al obtener opiniones:', error);
-      }
-    };
-
-    fetchOpiniones();
-  }, [client_id, product_id]);
+    setSubmitted(true);  // Simulando que el comentario se envió
+  };
 
   return (
     <div className={styles.container}>
-      <h1 className={styles.title}>Opiniones de Clientes</h1>
-
-      <div className="mb-12 space-y-8">
-        <h2 className={styles.sectionTitle}>Calificación promedio: {ratingAverage.toFixed(1)} ⭐</h2>
-        
-        {opiniones.length > 0 ? (
-          <table className="table-auto w-full text-left">
-            <thead>
-              <tr>
-                <th className="px-4 py-2">Comentario</th>
-                <th className="px-4 py-2">Estrellas</th>
-              </tr>
-            </thead>
-            <tbody>
-              {opiniones.map((opinion) => (
-                <tr key={opinion.id}>
-                  <td className="border px-4 py-2">{opinion.comment}</td>
-                  <td className="border px-4 py-2">
-                    {[...Array(5)].map((_, index) => (
-                      <FontAwesomeIcon
-                        key={index}
-                        icon={faStar}
-                        color={index < opinion.rating ? 'gold' : 'gray'}
-                        className="text-xl"
-                      />
-                    ))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+      <h1>Califica el producto</h1>
+      <div className={styles.productDetails}>
+        {productDetails ? (
+          <div>
+            <h3>{productDetails.name}</h3>
+            <img src={productDetails.imageUrl} alt={productDetails.name} />
+          </div>
         ) : (
-          <p>No hay opiniones disponibles.</p>
+          <p>Cargando producto...</p>
         )}
       </div>
+
+      <div className={styles.rating}>
+        <p>Tu calificación:</p>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <FontAwesomeIcon
+            key={star}
+            icon={faStar}
+            className={star <= rating ? styles.filledStar : styles.emptyStar}
+            onClick={() => handleRating(star)}
+          />
+        ))}
+      </div>
+
+      <div className={styles.reviewSection}>
+        <textarea
+          placeholder="Deja un comentario..."
+          value={review}
+          onChange={(e) => setReview(e.target.value)}
+        />
+      </div>
+
+      <button onClick={handleSubmit} className={styles.submitButton}>
+        Enviar Comentario
+      </button>
+
+      {submitted && <p>¡Gracias por tu comentario!</p>}
     </div>
   );
 };
