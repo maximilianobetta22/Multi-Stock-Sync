@@ -9,20 +9,16 @@ import {
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Card, ProgressBar, Modal } from 'react-bootstrap';
 import 'bootstrap/dist/css/bootstrap.min.css';
-<<<<<<< HEAD
 import { useParams, useNavigate } from 'react-router-dom';
-=======
-import { data, useParams } from 'react-router-dom';
 import styles from './EstadoOrdenesAnuales.module.css';
->>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import axiosInstance from '../../../../../axiosConfig';
-import styles from './EstadoOrdenesAnuales.module.css';
 
+// Register chart.js plugins
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
 interface Product {
@@ -72,8 +68,6 @@ const EstadosOrdenesAnual: React.FC = () => {
         if (pageNumber >= 1 && pageNumber <= totalPages) setCurrentPage(pageNumber);
     };
 
-    
-
     const renderPaginationButtons = () => {
         let startPage = Math.max(1, currentPage - Math.floor(10 / 2));
         let endPage = Math.min(totalPages, startPage + 10 - 1);
@@ -88,7 +82,7 @@ const EstadosOrdenesAnual: React.FC = () => {
 
         return pages.map((page, index) =>
             page === "..." ? (
-                <span key={index} className="pagination-dots" >...</span>
+                <span key={index} className="pagination-dots">...</span>
             ) : (
                 <button
                     key={index}
@@ -103,10 +97,21 @@ const EstadosOrdenesAnual: React.FC = () => {
 
     // Filter logic
     const productosFiltrados = estadoOrdenes.products.filter(product => filtroEstadoPago === 'todos' || product.status.trim().toLowerCase() === filtroEstadoPago.toLowerCase());
-    useEffect(() => { setTotalPages(Math.ceil(estadoOrdenes.products.length / itemsPerPage)); }, [estadoOrdenes.products]);
-    const currentProducts = useMemo(() => estadoOrdenes.products.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage), [currentPage, estadoOrdenes.products]);
 
-    const handleFiltroChange = (e: React.ChangeEvent<HTMLSelectElement>) => setFiltroEstadoPago(e.target.value);
+    useEffect(() => {
+        setTotalPages(Math.ceil(productosFiltrados.length / itemsPerPage));
+    }, [productosFiltrados, itemsPerPage]);
+
+    const currentProducts = useMemo(() => {
+        const startIndex = (currentPage - 1) * itemsPerPage;
+        const endIndex = startIndex + itemsPerPage;
+        return productosFiltrados.slice(startIndex, endIndex);
+    }, [currentPage, productosFiltrados, itemsPerPage]);
+
+    const handleFiltroChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+        setFiltroEstadoPago(e.target.value);
+        setCurrentPage(1);
+    };
 
     // Fetch data from API
     const fetchEstadoOrdenesData = async (selectedYear: string) => {
@@ -115,15 +120,7 @@ const EstadosOrdenesAnual: React.FC = () => {
             const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/order-statuses/${client_id}?year=${selectedYear}`);
             const result = response.data;
             if (result.status === 'success') {
-<<<<<<< HEAD
-                setEstadoOrdenesData({ statuses: result.data.statuses || { paid: 0, pending: 0, cancelled: 0, used: 0 }, products: result.data.products || [] });
-=======
-                setEstadoOrdenesData({
-                    statuses: result.data.statuses || { paid: 0, pending: 0, cancelled: 0 },
-                    products: result.data.products || []
-                });
-                console.log(EstadoOrdenes)
->>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
+                setEstadoOrdenesData(result.data);
             } else {
                 console.error('Error en la respuesta de la API:', result.message);
             }
@@ -139,16 +136,11 @@ const EstadosOrdenesAnual: React.FC = () => {
             const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
             const result = response.data;
             if (result.status === 'success') {
-<<<<<<< HEAD
-                setUserData({ nickname: result.data.nickname, creation_date: result.data.creation_date || 'N/A', request_date: result.data.request_date || 'N/A' });
-=======
                 setUserData({
                     nickname: result.data.nickname,
                     creation_date: result.data.creation_date || 'N/A',
                     request_date: result.data.request_date || 'N/A',
                 });
-                
->>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
             } else {
                 console.error('Error en la respuesta de la API:', result.message);
             }
@@ -157,7 +149,9 @@ const EstadosOrdenesAnual: React.FC = () => {
         }
     };
 
-    useEffect(() => { fetchUserData(); }, [client_id]);
+    useEffect(() => {
+        fetchUserData();
+    }, [client_id]);
 
     const handleGenerateChart = () => {
         setSelectedYear(year);
@@ -191,14 +185,12 @@ const EstadosOrdenesAnual: React.FC = () => {
                 color: '#fff',
                 font: { weight: 'bold' },
                 labels: {
-                    boxWidth: 20, // Tamaño del cuadro de color en la leyenda
-                    padding: 15, // Espaciado entre elementos
+                    boxWidth: 20,
+                    padding: 15,
                 },
             },
         },
     };
-    
-    
 
     // PDF generation
     const generatePDF = (): void => {
@@ -393,6 +385,7 @@ const EstadosOrdenesAnual: React.FC = () => {
                         <thead className="thead-dark">
                             <tr>
                                 <th scope="col">Categoría</th>
+                                <th scope="col">SKU</th>
                                 <th scope="col">ID de Variación</th>
                                 <th scope="col">Campo Personalizado del Vendedor</th>
                                 <th scope="col">Precio Global</th>
@@ -405,6 +398,7 @@ const EstadosOrdenesAnual: React.FC = () => {
                             {currentProducts.map((product, index) => (
                                 <tr key={index}>
                                     <td>{product.category_id}</td>
+                                    <td>{product.sku}</td>
                                     <td>{product.variation_id}</td>
                                     <td>{product.seller_custom_field || "N/A"}</td>
                                     <td>{product.global_price !== null ? `$${product.global_price}` : "N/A"}</td>
