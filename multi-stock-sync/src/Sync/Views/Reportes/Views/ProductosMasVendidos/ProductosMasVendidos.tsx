@@ -221,6 +221,16 @@ const Productos: React.FC = () => {
                             min="2022-01"
                             max={new Date().toISOString().split("T")[0]}
                         />
+<<<<<<< HEAD
+                    )}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
+                    <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+                    <button>Opiniones</button> ******
+                </Modal.Footer>
+            </Modal>
+=======
                     </div>  
                 </div>
                 {/* Selector para ajustar el gráfico */}
@@ -411,6 +421,7 @@ const Productos: React.FC = () => {
                     </Modal>
                 </div>
             </div>
+>>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
         </div>
     );
 };
