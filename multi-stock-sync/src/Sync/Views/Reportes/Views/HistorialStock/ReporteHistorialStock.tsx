@@ -159,13 +159,7 @@ const HistorialStock: React.FC = () => {
       {userData && (
         <div className="text-center mb-4">
           <h3 className="fw-bold">{userData.nickname}</h3>
-          <img
-            src={userData.profile_image}
-            alt="Profile"
-            className="rounded-circle shadow"
-            style={{ width: "100px", height: "100px" }}
-            onError={(e) => (e.currentTarget.src = "/default-avatar.png")}
-          />
+
         </div>
       )}
 
@@ -204,6 +198,7 @@ const HistorialStock: React.FC = () => {
                 <tr>
                   <th>#</th>
                   <th>ID del Producto</th>
+                  <th>Sku</th>
                   <th>Nombre del Producto</th>
                   <th>Cantidad Disponible</th>
                   <th>Fecha de Recarga</th>
@@ -217,6 +212,7 @@ const HistorialStock: React.FC = () => {
                     <tr key={item.id} className="text-center">
                       <td>{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
                       <td>{item.id}</td>
+                      <td></td>
                       <td className="fw-bold">{item.title}</td>
                       <td className="text-success">{item.available_quantity}</td>
                       <td>{new Date(item.stock_reload_date).toLocaleDateString()}</td>
