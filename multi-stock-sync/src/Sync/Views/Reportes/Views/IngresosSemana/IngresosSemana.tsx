@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Bar } from "react-chartjs-2";
 import { ChartOptions } from "chart.js";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom"; // Añadimos Link aquí
 import { Modal } from "react-bootstrap";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
@@ -57,7 +57,6 @@ const IngresosSemana: React.FC = () => {
 
   const [showModal, setShowModal] = useState<boolean>(false);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
-
 
   useEffect(() => {
     const fetchWeeks = async () => {
@@ -400,10 +399,12 @@ const IngresosSemana: React.FC = () => {
               )}
 
               <div className="text-start">
+                <Link to="/sync/home" className="btn btn-primary mb-3 me-2">
+                  Volver a inicio
+                </Link>
                 <button type="button" className="btn btn-secondary mb-3 me-2" onClick={handleNavigate}>
                   Ir a Ventas por Mes
                 </button>
-
                 <button
                   type="button"
                   className="btn btn-success mb-3 me-2"
@@ -413,7 +414,6 @@ const IngresosSemana: React.FC = () => {
                 >
                   Exportar a PDF
                 </button>
-
                 <button className="btn btn-primary mb-3" onClick={generateExcel}>
                   Exportar a Excel
                 </button>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { Table, Button, Modal, Alert, Form } from "react-bootstrap";
-import { useParams } from "react-router-dom";
+import { useParams, Link } from "react-router-dom"; // Añadimos Link aquí
 import axiosInstance from "../../../../../axiosConfig";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -24,7 +24,6 @@ interface HistorialStock {
 
 interface ClientData {
   nickname: string;
-  profile_image: string;
 }
 
 // Constantes
@@ -87,7 +86,6 @@ const HistorialStock: React.FC = () => {
 
       setUserData({
         nickname: userResponse.data.data.nickname || "Sin nickname",
-        profile_image: userResponse.data.data.profile_image || "",
       });
     } catch (err: any) {
       const errorMessage = err.response
@@ -145,7 +143,6 @@ const HistorialStock: React.FC = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
 
-
   // Manejar cambio en el término de búsqueda
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
@@ -159,26 +156,32 @@ const HistorialStock: React.FC = () => {
       {userData && (
         <div className="text-center mb-4">
           <h3 className="fw-bold">{userData.nickname}</h3>
-
         </div>
       )}
 
       <div className="d-flex justify-content-between mb-3">
-        <Form className="d-flex" style={{ maxWidth: "400px" }}>
-          <Form.Control
-            type="text"
-            placeholder="Buscar por ID o Nombre..."
-            value={searchTerm}
-            onChange={handleSearchChange}
-            className="me-2"
-          />
-          <Button variant="outline-primary" disabled>
-            <FontAwesomeIcon icon={faSearch} />
+        <div>
+          <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">
+            Volver a inicio
+          </Link>
+        </div>
+        <div className="d-flex gap-3">
+          <Form className="d-flex" style={{ maxWidth: "400px" }}>
+            <Form.Control
+              type="text"
+              placeholder="Buscar por ID o Nombre..."
+              value={searchTerm}
+              onChange={handleSearchChange}
+              className="me-2"
+            />
+            <Button variant="outline-primary" disabled>
+              <FontAwesomeIcon icon={faSearch} />
+            </Button>
+          </Form>
+          <Button variant="outline-primary" onClick={fetchData} disabled={loading}>
+            <FontAwesomeIcon icon={faSync} spin={loading} /> {loading ? "Cargando..." : "Refrescar"}
           </Button>
-        </Form>
-        <Button variant="outline-primary" onClick={fetchData} disabled={loading}>
-          <FontAwesomeIcon icon={faSync} spin={loading} /> {loading ? "Cargando..." : "Refrescar"}
-        </Button>
+        </div>
       </div>
 
       {loading ? (
@@ -201,7 +204,6 @@ const HistorialStock: React.FC = () => {
                   <th>Sku</th>
                   <th>Nombre del Producto</th>
                   <th>Cantidad Disponible</th>
-                  <th>Fecha de Recarga</th>
                   <th>Fecha de Venta</th>
                   <th>Acciones</th>
                 </tr>
@@ -215,7 +217,6 @@ const HistorialStock: React.FC = () => {
                       <td></td>
                       <td className="fw-bold">{item.title}</td>
                       <td className="text-success">{item.available_quantity}</td>
-                      <td>{new Date(item.stock_reload_date).toLocaleDateString()}</td>
                       <td>{new Date(item.purchase_sale_date).toLocaleDateString()}</td>
                       <td>
                         <div className="d-flex justify-content-center gap-2">
@@ -283,10 +284,6 @@ const HistorialStock: React.FC = () => {
               <p><strong>ID del Producto:</strong> {selectedProduct.id}</p>
               <p><strong>Nombre del Producto:</strong> {selectedProduct.title}</p>
               <p><strong>Cantidad Disponible:</strong> {selectedProduct.available_quantity}</p>
-              <p>
-                <strong>Fecha de Recarga:</strong>{" "}
-                {new Date(selectedProduct.stock_reload_date).toLocaleString()}
-              </p>
               <p>
                 <strong>Fecha de Venta:</strong>{" "}
                 {new Date(selectedProduct.purchase_sale_date).toLocaleString()}
