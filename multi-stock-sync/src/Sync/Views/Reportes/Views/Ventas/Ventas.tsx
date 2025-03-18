@@ -247,11 +247,13 @@ const DetallesDeVentas: React.FC = () => {
             <h3>Usuario: {userData.nickname}</h3>
           </div>
         )}
-        <div className="d-flex justify-content-start mb-4">
+        <br />
+        <div className="d-flex justify-content-center mb-4">
           <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">
             Volver a inicio
           </Link>
         </div>
+
         {/* Reportes de Comparaciones */}
         <h4 className="d-flex justify-content-center gap-3 mb-4">Reportes de Comparaciones</h4>
         <div className="d-flex justify-content-center gap-3 mb-4">

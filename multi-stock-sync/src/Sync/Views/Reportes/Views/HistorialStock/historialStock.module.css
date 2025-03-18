@@ -1,0 +1,57 @@
+.customContainer {
+    background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+    min-height: 100vh;
+    padding: 2rem 0;
+  }
+  
+  .customCard {
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+  }
+  
+  .customHeader {
+    background-color: #007bff;
+    color: white;
+    padding: 1.5rem;
+    border-radius: 15px 15px 0 0;
+    text-align: center;
+  }
+  
+  .customTable th {
+    background-color: #343a40;
+    color: white;
+  }
+  
+  .customTable td {
+    vertical-align: middle;
+  }
+  
+  .customBtn {
+    transition: all 0.3s ease;
+  }
+  
+  .customBtn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  }
+  
+  .customFooter {
+    background-color: #343a40;
+    color: white;
+    padding: 1rem;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    left: 0;
+    text-align: center;
+  }
+  
+  .customSelect {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .customInput {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
