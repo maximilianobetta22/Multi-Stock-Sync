@@ -321,7 +321,7 @@ const Productos: React.FC = () => {
                         <table className="table table-striped table-bordered">
                             <thead>
                                 <tr>
-                                    <th>ID Producto</th>
+                                    <th>Numero de impresión</th>
                                     <th>SKU</th>
                                     <th>Título</th>
                                     <th>Cantidad</th>
