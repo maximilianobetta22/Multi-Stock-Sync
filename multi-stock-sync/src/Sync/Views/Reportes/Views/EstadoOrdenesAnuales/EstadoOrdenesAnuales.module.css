@@ -1,0 +1,6 @@
+.chartContainer {
+    width: 90%; /* Aumenta el ancho del contenedor */
+    max-width: 800px; /* Aumenta el ancho máximo */
+    margin: 0 auto; /* Centra el contenedor */
+    height: 400px; /* Añade una altura fija para controlarlo mejor, ajusta este valor según necesites */
+}
