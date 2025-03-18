@@ -200,7 +200,7 @@ const HistorialStock: React.FC = () => {
               <thead className="table-dark text-center">
                 <tr>
                   <th>#</th>
-                  <th>ID del Producto</th>
+                  <th>ID</th>
                   <th>Sku</th>
                   <th>Nombre del Producto</th>
                   <th>Cantidad Disponible</th>
