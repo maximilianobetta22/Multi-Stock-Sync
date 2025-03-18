@@ -36,8 +36,8 @@ const Productos: React.FC = () => {
                 );
                 const data = response.data;
                 if (data.status === 'success') {
-                    setProductos(data.data);
-                    console.log(data);  // Esto sigue mostrando la respuesta en la consola
+                    setProductos(data.data);  // Esto sigue mostrando la respuesta en la consola
+                    console.log(data);
                 } else {
                     console.error('No se pudieron obtener los productos'); // Log de error en consola
                 }
@@ -221,16 +221,6 @@ const Productos: React.FC = () => {
                             min="2022-01"
                             max={new Date().toISOString().split("T")[0]}
                         />
-<<<<<<< HEAD
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
-                    <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
-                    <button>Opiniones</button> ******
-                </Modal.Footer>
-            </Modal>
-=======
                     </div>  
                 </div>
                 {/* Selector para ajustar el gráfico */}
@@ -320,6 +310,7 @@ const Productos: React.FC = () => {
                             <thead>
                                 <tr>
                                     <th>ID Producto</th>
+                                    <th>SKU</th>
                                     <th>Título</th>
                                     <th>Cantidad</th>
                                     <th>Total</th>
@@ -333,6 +324,7 @@ const Productos: React.FC = () => {
                                     currentProducts.map((producto, index) => (
                                         <tr key={index}>
                                             <td>{producto.id}</td>
+                                            <td>{producto.sku}</td>
                                             <td>{producto.title}</td>
                                             <td>{producto.quantity}</td>
                                             <td>{currencyFormat.format(producto.total_amount)}</td>
@@ -421,7 +413,6 @@ const Productos: React.FC = () => {
                     </Modal>
                 </div>
             </div>
->>>>>>> f25b9920bef21420111db7e60beb9568bff1e697
         </div>
     );
 };
