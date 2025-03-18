@@ -10,16 +10,16 @@ import axiosInstance from '../../../../../axiosConfig';
 import { Link } from 'react-router-dom';
 
 const Productos: React.FC = () => {
-    const { client_id } = useParams<{ client_id: string }>();
-    const [productos, setProductos] = useState<any[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
-    const [error, setError] = useState<string | null>(null);
-    const [selectedMonth, setSelectedMonth] = useState<string>();
-    const itemsPerPage = 10;
-    const maxPageButtons = 10;  
+    const { client_id } = useParams<{ client_id: string }>();//captura el id del cliente por url
+    const [productos, setProductos] = useState<any[]>([]);//Función donde se almacen los datos que se obtienen de la api
+    const [loading, setLoading] = useState<boolean>(true);//Función de carga de los datos y de la pagina
+    const [error, setError] = useState<string | null>(null);//Función que captura los datos
+    const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // Fecha por defecto con el formato "YYYY-MM"
+    const itemsPerPage = 10;//Numero maximo por pagina
+    const maxPageButtons = 10;  //Numero maximo que muestra por pantalla si hay mas de 12 paginas compaginadas igual se muestran
     const [cantidadSeleccionada, setCantidadSeleccionada] = useState<number>(10);
     const chartRef = useRef<HTMLDivElement | null>(null);
-    const pdfRef = useRef<jsPDF | null>(null);
+    const pdfRef = useRef<jsPDF | null>(null);//Función que genera el pdf
     const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
     const [pdfData, setPdfData] = useState<string | null>(null);
     const currencyFormat = new Intl.NumberFormat('es-CL', {
@@ -29,6 +29,8 @@ const Productos: React.FC = () => {
     
     useEffect(() => {
         const fetchProductos = async () => {
+            if (!selectedMonth) return; // Verifica que selectedMonth no esté vacío
+
             try {
                 const [year, month] = selectedMonth.split('-');
                 const response = await axiosInstance.get(
@@ -36,21 +38,19 @@ const Productos: React.FC = () => {
                 );
                 const data = response.data;
                 if (data.status === 'success') {
-                    setProductos(data.data);  // Esto sigue mostrando la respuesta en la consola
+                    setProductos(data.data);
                     console.log(data);
                 } else {
-                    console.error('No se pudieron obtener los productos'); // Log de error en consola
+                    console.error('No se pudieron obtener los productos');
                 }
             } catch (error) {
-                console.error('Error al hacer la solicitud:', error); // Log de error en consola
+                console.error('Error al hacer la solicitud:', error);
             } finally {
-                setLoading(false);
+                setLoading(false); // Al terminar la carga, setea loading a false
             }
         };
         fetchProductos();
     }, [client_id, selectedMonth]);
-    
-    
 
     const [currentPage, setCurrentPage] = useState<number>(1);
 
@@ -63,10 +63,16 @@ const Productos: React.FC = () => {
 
     // Función para manejar la paginación
     const paginate = (pageNumber) => {
-        if (pageNumber >= 1 && pageNumber <= totalPages) {
+        if (pageNumber < 1) {
+            setCurrentPage(1);
+        } else if (pageNumber > totalPages) {
+            setCurrentPage(totalPages);
+        } else {
             setCurrentPage(pageNumber);
         }
     };
+
+    //Función del renderizado de los bótones y el compaginado de la pagina de la tabla
     const renderPaginationButtons = () => {
         let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
         let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
@@ -100,7 +106,7 @@ const Productos: React.FC = () => {
             )
         );
     };
-
+    //Función que genera el grafico del torta
     const chartData = {
         labels: productos.slice(0, cantidadSeleccionada).map((producto) => producto.title),
         datasets: [
@@ -118,7 +124,7 @@ const Productos: React.FC = () => {
             },
         ],
     };
-
+    //función encargada de realizar el grafico
     const chartOptions = {
         responsive: true,
         plugins: {
@@ -152,23 +158,27 @@ const Productos: React.FC = () => {
 
     const { mostSold, leastSold } = getMostAndLeastSoldProduct();
 
+    //función que genera el excel
     const exportToExcel = () => {
-        const worksheet = XLSX.utils.json_to_sheet(productos.map(producto => ({
-            ID: `'${producto.id}`, // Format as text
-            Título: producto.title,
-            Cantidad: producto.quantity,
+        const worksheet = XLSX.utils.json_to_sheet(productos.map(producto => ({//forma de los campos y texto del encabezado
+            ID: `${producto.id}`, // Numero de Impresión
+            SKU: producto.sku,// SKU del producto en mercado libre en las 5 cuentas
+            Título: producto.title,//nombre del producto
+            Variante: `${producto.variation_id}`, // Agregar comilla simple para evitar truncamiento
+            Cantidad: producto.quantity,//cantidad vendida
             Total: currencyFormat.format(producto.total_amount) // Formato CLP
         })));
+
         const workbook = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(workbook, worksheet, 'Productos');
-        const fileName = `reporte_Productos_${selectedMonth}_${client_id}.xlsx`;
+        const fileName = `reporte_Productos_${selectedMonth}_${client_id}.xlsx`;//nombre del archivo
         XLSX.writeFile(workbook, fileName);
     };
-
+    //Función que genera el pdf del reporte de productos
     const generatePDF = async () => {
         const doc = new jsPDF();
         const pageHeight = doc.internal.pageSize.height;
-
+    
         doc.text(`Reporte de Productos - Cliente: ${client_id}`, 10, 10);
         
         if (mostSold) {
@@ -179,9 +189,9 @@ const Productos: React.FC = () => {
         }
         
         autoTable(doc, {
-            startY: 40,
+            startY: 50, // Ajusta este valor para que no se solape
             head: [['#', 'Producto', 'Total Vendido']],
-            body: productos.map((prod, index) => [index + 1, prod.title, currencyFormat.format(prod.total_amount)]), // Formato CLP
+            body: productos.map((prod, index) => [index + 1, prod.title, currencyFormat.format(prod.total_amount)]),
         });
         
         doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
@@ -190,7 +200,7 @@ const Productos: React.FC = () => {
         const pdfUrl = URL.createObjectURL(pdfBlob);
         setPdfData(pdfUrl);
         setShowPDFModal(true);
-    };
+    };    
 
     const savePDF = () => {
         if (pdfRef.current) {
@@ -200,9 +210,9 @@ const Productos: React.FC = () => {
         }
     };
 
-    const sortedProducts = [...productos].sort((a, b) => b.total_amount - a.total_amount);
-    const bestSellingProduct = sortedProducts.length > 0 ? sortedProducts[0] : null;
-    const leastSellingProduct = sortedProducts.length > 0 ? sortedProducts[sortedProducts.length - 1] : null;
+    const sortedProducts = [...productos].sort((a, b) => b.total_amount - a.total_amount);//función que ordena los productos
+    const bestSellingProduct = sortedProducts.length > 0 ? sortedProducts[0] : null;//Función que busca al producto más vendido
+    const leastSellingProduct = sortedProducts.length > 0 ? sortedProducts[sortedProducts.length - 1] : null;//Función que busca al producto menos vendido
 
     return (
         <div className="content-container mt-5">
@@ -261,6 +271,7 @@ const Productos: React.FC = () => {
                                 {bestSellingProduct ? (
                                     <div className="card shadow-sm">
                                         <div className="card-body">
+                                            <p>Productos más vendidos</p>
                                             <h5 className="card-title">{bestSellingProduct.title || "Sin título"}</h5>
                                             <p className="card-text">Cantidad: {bestSellingProduct.quantity ?? "No disponible"}</p>
                                             <p className="card-text">Total: ${bestSellingProduct.total_amount ?? "No disponible"}</p>
@@ -280,6 +291,7 @@ const Productos: React.FC = () => {
                                 {leastSellingProduct ? (
                                     <div className="card shadow-sm">
                                         <div className="card-body">
+                                            <p>Productos menos vendidos</p>
                                             <h5 className="card-title">{leastSellingProduct.title || "Sin título"}</h5>
                                             <p className="card-text">Cantidad: {leastSellingProduct.quantity ?? "No disponible"}</p>
                                             <p className="card-text">Total: ${leastSellingProduct.total_amount ?? "No disponible"}</p>
