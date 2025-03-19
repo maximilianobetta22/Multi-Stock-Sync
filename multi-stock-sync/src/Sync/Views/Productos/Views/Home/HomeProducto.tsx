@@ -331,16 +331,20 @@ const HomeProducto = () => {
       const selectedConnectionData = connections.find(
         (connection) => connection.client_id === selectedConnection
       );
-
+  
       if (!selectedConnectionData) {
         setToastMessage('Conexión no encontrada');
         setToastType('error');
         return;
       }
-
+  
       const ACCESS_TOKEN = selectedConnectionData.access_token; 
       const ITEM_ID = productId;
-
+  
+      console.log('Updating stock for product:', productId);
+      console.log('New stock:', newStock);
+      console.log('Pause:', pause);
+  
       const response = await axiosInstance.put(
         `https://api.mercadolibre.com/items/${ITEM_ID}`,
         pause ? { status: 'paused' } : { available_quantity: newStock },
@@ -352,13 +356,14 @@ const HomeProducto = () => {
           },
         }
       );
-
+  
+      console.log('API response:', response.data);
+  
       const successMessage = pause
         ? 'Publicación pausada exitosamente.'
         : 'Stock actualizado correctamente';
       setToastMessage(successMessage);
       setToastType('success');
-      console.log(response.data);
     } catch (error) {
       console.error('Error updating stock:', error);
       setToastMessage('Error al actualizar el stock');

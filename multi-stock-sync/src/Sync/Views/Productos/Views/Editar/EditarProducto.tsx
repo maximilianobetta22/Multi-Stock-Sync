@@ -108,11 +108,10 @@ const EditarProducto: React.FC = () => {
           formatPriceCLP={(price: number) => new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(price)}
           translateStatus={(status: string) => status}
           onUpdateStatus={async (productId: string, newStatus: string) => {
-            // Implement the logic to update the status here
             return Promise.resolve();
           }}
           onSelectProduct={handleProductSelect}
-          onEditProduct={handleEditProduct} // Pass handleEditProduct to ProductTable
+          onEditProduct={handleEditProduct} 
         />
       )}
       {selectedProduct && (

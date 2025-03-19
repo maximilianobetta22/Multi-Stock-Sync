@@ -6,12 +6,21 @@ import { LoadingDinamico } from "../../../../../components/LoadingDinamico/Loadi
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faInfoCircle, faHistory, faSync, faChevronLeft, faChevronRight, faSearch } from "@fortawesome/free-solid-svg-icons";
 import "bootstrap/dist/css/bootstrap.min.css";
-import styles from "./historialStock.module.css"; 
+import styles from "./historialStock.module.css";
 
 // Interfaces
 interface SalesHistory {
   date: string;
   quantity: number;
+}
+
+interface Detail {
+  id: string;
+  name: string;
+  value_id: string;
+  value_name: string;
+  values: { id: string; name: string; struct: null }[];
+  value_type: string;
 }
 
 interface HistorialStock {
@@ -22,6 +31,7 @@ interface HistorialStock {
   purchase_sale_date: string;
   history: SalesHistory[];
   sku: string;
+  details?: Detail[];
 }
 
 interface ClientData {
@@ -48,15 +58,19 @@ const HistorialStock: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [connections, setConnections] = useState<Connection[]>([]);
   const [selectedConnection, setSelectedConnection] = useState<string>("");
+  const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchConnections = async () => {
       try {
         const response = await axiosInstance.get(`${API_BASE_URL}/mercadolibre/credentials`);
+        console.log("Conexiones obtenidas:", response.data.data);
         setConnections(response.data.data);
         if (response.data.data.length > 0) {
           setSelectedConnection(response.data.data[0].client_id);
-          console.log(historialStock);
+        } else {
+          setError("No se encontraron conexiones disponibles.");
         }
       } catch (error) {
         console.error('Error al obtener las conexiones:', error);
@@ -80,6 +94,7 @@ const HistorialStock: React.FC = () => {
           purchase_sale_date: item.purchase_sale_date || new Date().toISOString(),
           history: [],
           sku: item.sku || "Sin SKU",
+          details: item.details || [],
         };
       }
       const existingEntry = salesMap[productId].history.find((entry) => entry.date === saleDate);
@@ -93,7 +108,11 @@ const HistorialStock: React.FC = () => {
   }, []);
 
   const fetchData = useCallback(async () => {
-    if (!selectedConnection) return;
+    if (!selectedConnection) {
+      console.log("No hay conexión seleccionada, no se puede cargar los datos.");
+      setError("Por favor, selecciona una conexión.");
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
@@ -102,6 +121,7 @@ const HistorialStock: React.FC = () => {
         axiosInstance.get(`${API_BASE_URL}/mercadolibre/credentials/${selectedConnection}`),
       ]);
 
+      console.log("Datos de stock:", stockResponse.data.data);
       const stockData = Array.isArray(stockResponse.data.data)
         ? processStockData(stockResponse.data.data)
         : [];
@@ -111,25 +131,95 @@ const HistorialStock: React.FC = () => {
       const errorMessage = err.response
         ? `Error ${err.response.status}: ${err.response.data.message || "Datos no disponibles"}`
         : "Sin conexión a la API";
+      console.error("Error al cargar datos:", err);
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
   }, [selectedConnection, processStockData]);
 
+  const fetchSalesHistory = useCallback(async (clientId: string, productId: string) => {
+    setHistoryLoading(true);
+    setHistoryError(null);
+    try {
+      if (!clientId || !productId) {
+        throw new Error("Falta el clientId o productId para la solicitud.");
+      }
+      const url = `${API_BASE_URL}/mercadolibre/stock-sales-history/${clientId}/${productId}`;
+      console.log(`Haciendo solicitud a: ${url}`);
+      const response = await axiosInstance.get(url);
+      console.log("Respuesta del endpoint:", response.data);
+
+      // Verificamos si la respuesta tiene el formato esperado
+      if (!response.data || typeof response.data !== "object") {
+        throw new Error("La respuesta del endpoint no tiene el formato esperado.");
+      }
+
+      // Intentamos acceder al campo "sales", pero también manejamos si los datos están directamente en response.data
+      const salesData = response.data.sales || (Array.isArray(response.data) ? response.data : []);
+      if (!Array.isArray(salesData)) {
+        console.warn("salesData no es un array:", salesData);
+        return [];
+      }
+
+      const salesHistory: SalesHistory[] = salesData.map((sale: any) => {
+        if (!sale.sale_date || sale.quantity === undefined) {
+          console.warn("Entrada de historial inválida:", sale);
+          return null;
+        }
+        return {
+          date: sale.sale_date,
+          quantity: sale.quantity,
+        };
+      }).filter((entry: SalesHistory | null) => entry !== null) as SalesHistory[];
+
+      console.log("Historial mapeado:", salesHistory);
+      return salesHistory;
+    } catch (err: any) {
+      const errorMessage = err.response
+        ? `Error ${err.response.status}: ${err.response.data?.message || "Datos no disponibles"}`
+        : err.message || "Sin conexión a la API";
+      console.error("Error al obtener el historial:", err);
+      setHistoryError(errorMessage);
+      return [];
+    } finally {
+      setHistoryLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const handleViewDetails = useCallback((product: HistorialStock, mode: "details" | "history") => {
-    setSelectedProduct(product);
-    setViewMode(mode);
-    setShowModal(true);
-  }, []);
+  const handleViewDetails = useCallback(
+    async (product: HistorialStock, mode: "details" | "history") => {
+      console.log("Producto seleccionado:", product);
+      console.log("Conexión seleccionada:", selectedConnection);
+      if (!product.id) {
+        console.error("El producto no tiene un ID válido:", product);
+        setHistoryError("El producto seleccionado no tiene un ID válido.");
+        return;
+      }
 
-  const filteredHistory = useMemo(() => {
-    return selectedProduct?.history.filter((entry) => new Date(entry.date).getFullYear() >= 2022) || [];
-  }, [selectedProduct]);
+      setSelectedProduct(product);
+      setViewMode(mode);
+      setShowModal(true);
+
+      if (mode === "history") {
+        if (!selectedConnection) {
+          console.log("No hay conexión seleccionada para cargar el historial.");
+          setHistoryError("Por favor, selecciona una conexión.");
+          return;
+        }
+        const salesHistory = await fetchSalesHistory(selectedConnection, product.id);
+        console.log("Actualizando selectedProduct con historial:", salesHistory);
+        setSelectedProduct((prev) =>
+          prev ? { ...prev, history: salesHistory } : null
+        );
+      }
+    },
+    [selectedConnection, fetchSalesHistory]
+  );
 
   const filteredData = useMemo(() => {
     if (!searchTerm) return historialStock;
@@ -349,21 +439,51 @@ const HistorialStock: React.FC = () => {
                 <strong>Fecha de Venta:</strong>{" "}
                 {new Date(selectedProduct.purchase_sale_date).toLocaleString()}
               </p>
+              {selectedProduct.details && selectedProduct.details.length > 0 ? (
+                <div>
+                  <h5 className="fw-bold text-primary mt-3">Detalles Adicionales:</h5>
+                  <ul className="list-group">
+                    {selectedProduct.details.map((detail, index) => (
+                      <li key={index} className="list-group-item">
+                        <strong>{detail.name}:</strong> {detail.value_name}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : (
+                <p className="text-muted mt-3">No hay detalles adicionales disponibles.</p>
+              )}
             </div>
           )}
           {selectedProduct && viewMode === "history" && (
             <div className="p-3">
               <h5 className="fw-bold text-primary">Historial de Ventas:</h5>
-              {filteredHistory.length > 0 ? (
+              {historyLoading ? (
+                <LoadingDinamico variant="container" />
+              ) : historyError ? (
+                <Alert variant="danger" className="text-center">
+                  {historyError}
+                  <Button
+                    variant="link"
+                    onClick={() => handleViewDetails(selectedProduct, "history")}
+                    className="ms-2"
+                  >
+                    Reintentar
+                  </Button>
+                </Alert>
+              ) : selectedProduct.history.length > 0 ? (
                 <ul className="list-group">
-                  {filteredHistory.map((entry, index) => (
+                  {selectedProduct.history.map((entry, index) => (
                     <li key={index} className="list-group-item">
-                      {new Date(entry.date).toLocaleDateString()} - Cantidad Vendida: <strong>{entry.quantity}</strong>
+                      {new Date(entry.date).toLocaleDateString()} - Cantidad Vendida:{" "}
+                      <strong>{entry.quantity}</strong>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p>No hay historial disponible.</p>
+                <p className="text-muted mt-3">
+                  No hay historial de ventas disponible para este producto.
+                </p>
               )}
             </div>
           )}

@@ -14,7 +14,7 @@
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@reduxjs/toolkit": "2.5.1",
     "@types/react-router-dom": "5.3.3",
-    "axios": "1.7.9",
+    "axios": "^1.7.9",
     "bootstrap": "^5.3.3",
     "chart.js": "4.4.7",
     "chartjs-plugin-datalabels": "^2.2.0",
@@ -31,6 +31,8 @@
     "react-datepicker": "8.1.0",
     "react-dom": "19.0.0",
     "react-router-dom": "7.1.5",
+    "react-toastify": "^11.0.5",
+    "recharts": "^2.15.1",
     "sweetalert2": "^11.17.2",
     "sweetalert2-react-content": "5.1.0",
     "xlsx": "^0.18.5"
