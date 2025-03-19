@@ -345,12 +345,7 @@ const HistorialStock: React.FC = () => {
                         {paginatedData.length > 0 ? (
                           paginatedData.map((item, index) => (
                             <tr key={item.id}>
-                              <td>{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
-                              <td>{item.id}</td>
-                              <td>{item.sku}</td>
-                              <td className="fw-bold">{item.title}</td>
-                              <td className="text-success">{item.available_quantity}</td>
-                              <td>{new Date(item.purchase_sale_date).toLocaleDateString()}</td>
+                              <td>{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td><td>{item.id}</td><td>{item.sku}</td><td className="fw-bold">{item.title}</td><td className="text-success">{item.available_quantity}</td><td>{new Date(item.purchase_sale_date).toLocaleDateString()}</td>
                               <td>
                                 <div className="d-flex gap-2 justify-content-center">
                                   <Button
@@ -457,7 +452,7 @@ const HistorialStock: React.FC = () => {
           )}
           {selectedProduct && viewMode === "history" && (
             <div className="p-3">
-              <h5 className="fw-bold text-primary">Historial de Ventas:</h5>
+              <h5 className="fw-bold text-primary">{selectedProduct.title}</h5>
               {historyLoading ? (
                 <LoadingDinamico variant="container" />
               ) : historyError ? (
