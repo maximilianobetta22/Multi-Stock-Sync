@@ -25,6 +25,7 @@ const ProductosDespachar: React.FC = () => {
                 if (response.data.status === "success") {
                     setProductosDespachar(response.data.data);
                     setProductosDespacharOriginal(response.data.data); // Guardamos copia original
+                    console.log(response.data.data)
                 } else {
                     setError("No se pudo obtener la lista de productos a despachar.");
                 }
@@ -100,6 +101,7 @@ const ProductosDespachar: React.FC = () => {
                     <thead className="table-dark">
                         <tr>
                             <th>ID Producto</th>
+                            <th>SKU</th>
                             <th>Producto</th>
                             <th>Variante</th>
                             <th>Cantidad</th>
@@ -113,6 +115,7 @@ const ProductosDespachar: React.FC = () => {
                         {productosDespachar.map((producto, index) => (
                             <tr key={index}>
                                 <td>{producto.id}</td>
+                                <td>{producto.sku}</td>
                                 <td>{producto.title}</td>
                                 <td>{producto.size}</td>
                                 <td>{producto.quantity}</td>
