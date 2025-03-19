@@ -190,8 +190,8 @@ const Productos: React.FC = () => {
         
         autoTable(doc, {
             startY: 50, // Ajusta este valor para que no se solape
-            head: [['#', 'Producto', 'Total Vendido']],
-            body: productos.map((prod, index) => [index + 1, prod.title, currencyFormat.format(prod.total_amount)]),
+            head: [['Producto', 'Total Vendido','SKU','Numero de impresión', 'Cantidad','Variante','Talla']],
+            body: productos.map((prod) => [prod.title, currencyFormat.format(prod.total_amount),prod.sku,prod.id,prod.quantity,prod.variation_id,prod.size]),
         });
         
         doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
@@ -319,7 +319,7 @@ const Productos: React.FC = () => {
                 ) : (
                     <div className="table-responsive" style={{ overflowY: 'auto' }}>
                         <table className="table table-striped table-bordered">
-                            <thead>
+                            <thead className='table-dark'>
                                 <tr>
                                     <th>Numero de impresión</th>
                                     <th>SKU</th>
