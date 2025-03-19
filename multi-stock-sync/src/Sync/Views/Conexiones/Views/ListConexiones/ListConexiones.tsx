@@ -5,7 +5,7 @@ import styles from "./ListConexiones.module.css";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-import { ItemTableConexion } from "../../Components/ItemTableConexion";
+import ItemTableConexion from "../../Components/ItemTableConexion";
 import { SyncData } from "../../interface";
 import { copyToClipboard } from "../../helpers";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -17,6 +17,7 @@ const ListConexiones: React.FC = () => {
   const [conexiones, setConexiones] = useState<SyncData[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingRowId, setLoadingRowId] = useState<number | null>(null);
+  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
   const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials`;
 
   const confirmDisconnect = async (clientId: string, rowId: number) => {
@@ -109,6 +110,10 @@ const ListConexiones: React.FC = () => {
     }
   };
 
+  const handleMenuToggle = (id: number) => {
+    setOpenDropdownId(openDropdownId === id ? null : id);
+  };
+
   useEffect(() => {
     const fetchConexiones = async () => {
       try {
@@ -146,13 +151,13 @@ const ListConexiones: React.FC = () => {
             <thead className={styles.table__tHead}>
               <tr className={styles.tHead__row}>
                 <th className={styles.rowHead__item1}>ID</th>
-                <th className={styles.rowHead__item2}>IMG</th>
-                <th className={styles.rowHead__item3}>CLIENTE</th>
-                <th className={styles.rowHead__item4}>NOMBRE</th>
-                <th className={styles.rowHead__item5}>EMAIL</th>
-                <th className={styles.rowHead__item6}>Última Actualización</th>
+                <th className={styles.rowHead__item2}>Profile</th>
+                <th className={styles.rowHead__item3}>Client ID</th>
+                <th className={styles.rowHead__item4}>Nickname</th>
+                <th className={styles.rowHead__item5}>Email</th>
+                <th className={styles.rowHead__item6}>Updated At</th>
                 <th className={styles.rowHead__item7}>
-                  <FontAwesomeIcon className={styles.item__icon} icon={faList}/>
+                  <FontAwesomeIcon className={styles.item__icon} icon={faList} />
                 </th>
               </tr>
             </thead>
@@ -165,6 +170,8 @@ const ListConexiones: React.FC = () => {
                   copyToClipboard={copyToClipboard}
                   confirmDisconnect={confirmDisconnect}
                   testConnection={testConnection}
+                  isOpen={openDropdownId === conexion.id}
+                  handleMenuToggle={() => handleMenuToggle(conexion.id)}
                 />
               ))}
             </tbody>
