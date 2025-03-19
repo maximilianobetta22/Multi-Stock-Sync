@@ -25,6 +25,7 @@ const ProductosDespachar: React.FC = () => {
                 if (response.data.status === "success") {
                     setProductosDespachar(response.data.data);
                     setProductosDespacharOriginal(response.data.data); // Guardamos copia original
+                    console.log(response.data.data)
                 } else {
                     setError("No se pudo obtener la lista de productos a despachar.");
                 }

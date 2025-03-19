@@ -193,6 +193,9 @@ const HomeReportes: React.FC = () => {
                   <Link to={`/sync/reportes/Despachar-Producto/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
                     <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Productos a despachar
                   </Link>
+                  <Link to={`/sync/reportes/plantillas/${selectedConnection}`} className="list-group-item list-group-item-action" target="_blank">
+                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" /> Plantilla
+                  </Link>
                 </div>
                 {/*  
                 <h3 className="mt-4">Reportes de Comparaciones Disponibles</h3>
