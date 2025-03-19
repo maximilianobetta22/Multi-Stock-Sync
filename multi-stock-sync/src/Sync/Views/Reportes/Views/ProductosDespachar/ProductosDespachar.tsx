@@ -29,7 +29,7 @@ const ProductosDespachar: React.FC = () => {
                 } else {
                     setError("No se pudo obtener la lista de productos a despachar.");
                 }
-            } catch (err) {
+            } catch (error) {
                 setError("Error al obtener los datos de la API.");
             } finally {
                 setLoading(false);
@@ -100,7 +100,7 @@ const ProductosDespachar: React.FC = () => {
                 <Table striped bordered hover responsive>
                     <thead className="table-dark">
                         <tr>
-                            <th>ID Producto</th>
+                            <th>Numero de Impresión</th>
                             <th>SKU</th>
                             <th>Producto</th>
                             <th>Variante</th>
@@ -143,7 +143,7 @@ const ProductosDespachar: React.FC = () => {
                     {selectedProduct?.shipment_history?.date_history ? (
                         <ul>
                             {Object.entries(selectedProduct.shipment_history.date_history).map(([key, value]: any, index: number) => (
-                                <li key={index}><strong>{traducirCampo(key)}:</strong> {value || "No disponible"}</li>
+                                <li key={index}><strong>{traducirCampo(key)}:</strong> {value || "No Aplica"}</li>
                             ))}
                         </ul>
                     ) : (

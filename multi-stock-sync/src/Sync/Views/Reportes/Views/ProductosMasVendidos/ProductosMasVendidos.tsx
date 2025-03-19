@@ -34,7 +34,7 @@ const Productos: React.FC = () => {
             try {
                 const [year, month] = selectedMonth.split('-');
                 const response = await axiosInstance.get(
-                    `${import.meta.env.VITE_API_URL}/mercadolibre/top-selling-products/${client_id}?year=${year}&month=${month}`
+                    `${import.meta.env.VITE_API_URL}/mercadolibre/top-selling-products/${client_id}?year=${year}&month=${month}`,
                 );
                 const data = response.data;
                 if (data.status === 'success') {
@@ -161,12 +161,13 @@ const Productos: React.FC = () => {
     //función que genera el excel
     const exportToExcel = () => {
         const worksheet = XLSX.utils.json_to_sheet(productos.map(producto => ({//forma de los campos y texto del encabezado
-            ID: `${producto.id}`, // Numero de Impresión
+            Numero_de_Impresión: `${producto.id}`, // Numero de Impresión
             SKU: producto.sku,// SKU del producto en mercado libre en las 5 cuentas
             Título: producto.title,//nombre del producto
             Variante: `${producto.variation_id}`, // Agregar comilla simple para evitar truncamiento
             Cantidad: producto.quantity,//cantidad vendida
-            Total: currencyFormat.format(producto.total_amount) // Formato CLP
+            Total: currencyFormat.format(producto.total_amount), // Formato CLP
+            Talla: producto.size
         })));
 
         const workbook = XLSX.utils.book_new();
@@ -250,9 +251,9 @@ const Productos: React.FC = () => {
                     {/* Columna izquierda con el gráfico */}
                     <div className="col-md-8">
                         <h3 className="text-center">Gráfico de Torta: Precio Total de Productos</h3>
-                        <div className="chart-container mb-4" style={{ height: '500px', width: '100%' }} ref={chartRef}>
+                        <div className="chart-container mb-6" style={{ height: '700px', width: '1900px' }} ref={chartRef}>
                             {loading ? (
-                                <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+                                <div className="d-flex justify-content-center align-items-center" style={{ height: '120%' }}>
                                     <div className="spinner-border text-primary" role="status">
                                         <span className="sr-only">Cargando...</span>
                                     </div>
