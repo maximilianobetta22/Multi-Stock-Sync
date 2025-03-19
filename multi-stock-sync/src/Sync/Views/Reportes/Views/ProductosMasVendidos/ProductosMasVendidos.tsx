@@ -38,11 +38,7 @@ const Productos: React.FC = () => {
                 );
                 const data = response.data;
                 if (data.status === 'success') {
-<<<<<<< HEAD
                     setProductos(data.data);
-=======
-                    setProductos(data.data);  // Esto sigue mostrando la respuesta en la consola
->>>>>>> 14012d55ed0e0ae1be1788b6c4fb9b5be8afa931
                     console.log(data);
                 } else {
                     console.error('No se pudieron obtener los productos');
@@ -325,11 +321,7 @@ const Productos: React.FC = () => {
                         <table className="table table-striped table-bordered">
                             <thead>
                                 <tr>
-<<<<<<< HEAD
                                     <th>Numero de impresión</th>
-=======
-                                    <th>ID Producto</th>
->>>>>>> 14012d55ed0e0ae1be1788b6c4fb9b5be8afa931
                                     <th>SKU</th>
                                     <th>Título</th>
                                     <th>Cantidad</th>
