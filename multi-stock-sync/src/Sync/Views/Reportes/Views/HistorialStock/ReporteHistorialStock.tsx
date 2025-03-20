@@ -84,7 +84,6 @@ const HistorialStock: React.FC = () => {
     const salesMap: { [key: string]: HistorialStock } = {};
     data.forEach((item) => {
       const productId = item.id || "";
-      const saleDate = item.purchase_sale_date.split("T")[0];
       if (!salesMap[productId]) {
         salesMap[productId] = {
           id: productId,
@@ -92,16 +91,10 @@ const HistorialStock: React.FC = () => {
           available_quantity: item.available_quantity || 0,
           stock_reload_date: item.stock_reload_date || new Date().toISOString(),
           purchase_sale_date: item.purchase_sale_date || new Date().toISOString(),
-          history: [],
+          history: [], // No inicializamos el historial aquí, lo cargaremos desde la API
           sku: item.sku || "Sin SKU",
           details: item.details || [],
         };
-      }
-      const existingEntry = salesMap[productId].history.find((entry) => entry.date === saleDate);
-      if (existingEntry) {
-        existingEntry.quantity += item.available_quantity || 0;
-      } else {
-        salesMap[productId].history.push({ date: saleDate, quantity: item.available_quantity || 0 });
       }
     });
     return Object.values(salesMap);
@@ -146,34 +139,46 @@ const HistorialStock: React.FC = () => {
         throw new Error("Falta el clientId o productId para la solicitud.");
       }
       const url = `${API_BASE_URL}/mercadolibre/stock-sales-history/${clientId}/${productId}`;
-      console.log(`Haciendo solicitud a: ${url}`);
-      const response = await axiosInstance.get(url);
-      console.log("Respuesta del endpoint:", response.data);
+      let allSales: any[] = [];
+      let page = 1;
+      let hasMore = true;
 
-      // Verificamos si la respuesta tiene el formato esperado
-      if (!response.data || typeof response.data !== "object") {
-        throw new Error("La respuesta del endpoint no tiene el formato esperado.");
-      }
+      // Manejo de paginación para obtener todas las transacciones
+      while (hasMore) {
+        console.log(`Haciendo solicitud a: ${url}?page=${page}&limit=100`);
+        const response = await axiosInstance.get(`${url}?page=${page}&limit=100`);
+        console.log(`Respuesta del endpoint (página ${page}):`, JSON.stringify(response.data, null, 2));
 
-      // Intentamos acceder al campo "sales", pero también manejamos si los datos están directamente en response.data
-      const salesData = response.data.sales || (Array.isArray(response.data) ? response.data : []);
-      if (!Array.isArray(salesData)) {
-        console.warn("salesData no es un array:", salesData);
-        return [];
-      }
-
-      const salesHistory: SalesHistory[] = salesData.map((sale: any) => {
-        if (!sale.sale_date || sale.quantity === undefined) {
-          console.warn("Entrada de historial inválida:", sale);
-          return null;
+        // Verificamos si la respuesta tiene el formato esperado
+        if (!response.data || typeof response.data !== "object") {
+          throw new Error("La respuesta del endpoint no tiene el formato esperado.");
         }
-        return {
-          date: sale.sale_date,
-          quantity: sale.quantity,
-        };
-      }).filter((entry: SalesHistory | null) => entry !== null) as SalesHistory[];
 
-      console.log("Historial mapeado:", salesHistory);
+        const salesData = response.data.sales || [];
+        if (!Array.isArray(salesData) || salesData.length === 0) {
+          hasMore = false;
+          break;
+        }
+        allSales = [...allSales, ...salesData];
+        page++;
+      }
+
+      // Mapeamos el historial
+      const salesHistory: SalesHistory[] = allSales
+        .map((sale: any) => {
+          if (!sale.sale_date || sale.quantity === undefined) {
+            console.warn("Entrada de historial inválida:", sale);
+            return null;
+          }
+          console.log("Fecha de venta en historial:", sale.sale_date, "Cantidad vendida:", sale.quantity);
+          return {
+            date: sale.sale_date,
+            quantity: sale.quantity,
+          };
+        })
+        .filter((entry: SalesHistory | null) => entry !== null) as SalesHistory[];
+
+      console.log("Historial completo mapeado:", salesHistory);
       return salesHistory;
     } catch (err: any) {
       const errorMessage = err.response
@@ -205,7 +210,7 @@ const HistorialStock: React.FC = () => {
       setViewMode(mode);
       setShowModal(true);
 
-      if (mode === "history") {
+      if (mode === "history" && (!product.history || product.history.length === 0)) {
         if (!selectedConnection) {
           console.log("No hay conexión seleccionada para cargar el historial.");
           setHistoryError("Por favor, selecciona una conexión.");
@@ -254,6 +259,23 @@ const HistorialStock: React.FC = () => {
 
   const handleConnectionChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setSelectedConnection(e.target.value);
+  };
+
+  // Función para formatear fechas usando toLocaleString
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleString("es-ES", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    } catch (error) {
+      console.error("Error al formatear la fecha:", dateString, error);
+      return "Fecha inválida";
+    }
   };
 
   return (
@@ -337,41 +359,45 @@ const HistorialStock: React.FC = () => {
                           <th>Sku</th>
                           <th>Nombre del Producto</th>
                           <th>Cantidad Disponible</th>
-                          <th>Fecha de Venta</th>
+                          <th>Fecha de Última Venta</th>
                           <th>Acciones</th>
                         </tr>
                       </thead>
                       <tbody>
                         {paginatedData.length > 0 ? (
-                          paginatedData.map((item, index) => (
-                            <tr key={item.id}>
-                              <td>{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td><td>{item.id}</td><td>{item.sku}</td><td className="fw-bold">{item.title}</td><td className="text-success">{item.available_quantity}</td><td>{new Date(item.purchase_sale_date).toLocaleDateString()}</td>
-                              <td>
-                                <div className="d-flex gap-2 justify-content-center">
-                                  <Button
-                                    variant="info"
-                                    onClick={() => handleViewDetails(item, "details")}
-                                    className={styles.customBtn}
-                                  >
-                                    <FontAwesomeIcon icon={faInfoCircle} /> Detalles
-                                  </Button>
-                                  <Button
-                                    variant="secondary"
-                                    onClick={() => handleViewDetails(item, "history")}
-                                    className={styles.customBtn}
-                                  >
-                                    <FontAwesomeIcon icon={faHistory} /> Historial
-                                  </Button>
-                                </div>
-                              </td>
-                            </tr>
-                          ))
+                          paginatedData.map((item, index) => {
+                            console.log("Fecha de última venta en tabla:", item.purchase_sale_date, "Cantidad disponible:", item.available_quantity);
+                            return (
+                              <tr key={item.id}>
+                                <td>{(currentPage - 1) * ITEMS_PER_PAGE + index + 1}</td>
+                                <td>{item.id}</td>
+                                <td>{item.sku}</td>
+                                <td className="fw-bold">{item.title}</td>
+                                <td className="text-success">{item.available_quantity}</td>
+                                <td>{formatDate(item.purchase_sale_date)}</td>
+                                <td>
+                                  <div className="d-flex gap-2 justify-content-center">
+                                    <Button
+                                      variant="info"
+                                      onClick={() => handleViewDetails(item, "details")}
+                                      className={styles.customBtn}
+                                    >
+                                      <FontAwesomeIcon icon={faInfoCircle} /> Detalles
+                                    </Button>
+                                    <Button
+                                      variant="secondary"
+                                      onClick={() => handleViewDetails(item, "history")}
+                                      className={styles.customBtn}
+                                    >
+                                      <FontAwesomeIcon icon={faHistory} /> Historial
+                                    </Button>
+                                  </div>
+                                </td>
+                              </tr>
+                            );
+                          })
                         ) : (
-                          <tr>
-                            <td colSpan={7} className="text-center py-3">
-                              {searchTerm ? "No se encontraron resultados" : "No hay datos disponibles"}
-                            </td>
-                          </tr>
+                          <tr><td colSpan={7} className="text-center py-3">{searchTerm ? "No se encontraron resultados" : "No hay datos disponibles"}</td></tr>
                         )}
                       </tbody>
                     </Table>
@@ -431,8 +457,8 @@ const HistorialStock: React.FC = () => {
               <p><strong>Nombre del Producto:</strong> {selectedProduct.title}</p>
               <p><strong>Cantidad Disponible:</strong> {selectedProduct.available_quantity}</p>
               <p>
-                <strong>Fecha de Venta:</strong>{" "}
-                {new Date(selectedProduct.purchase_sale_date).toLocaleString()}
+                <strong>Fecha de Última Venta:</strong>{" "}
+                {formatDate(selectedProduct.purchase_sale_date)}
               </p>
               {selectedProduct.details && selectedProduct.details.length > 0 ? (
                 <div>
@@ -470,14 +496,15 @@ const HistorialStock: React.FC = () => {
                 <ul className="list-group">
                   {selectedProduct.history.map((entry, index) => (
                     <li key={index} className="list-group-item">
-                      {new Date(entry.date).toLocaleDateString()} - Cantidad Vendida:{" "}
-                      <strong>{entry.quantity}</strong>
+                      {formatDate(entry.date)} - Cantidad Vendida: <strong>{entry.quantity}</strong>
                     </li>
                   ))}
                 </ul>
               ) : (
                 <p className="text-muted mt-3">
-                  No hay historial de ventas disponible para este producto.
+                  {selectedProduct.purchase_sale_date && new Date(selectedProduct.purchase_sale_date).getTime() > 0
+                    ? `No hay ventas registradas en el historial, pero la última venta reportada fue el ${formatDate(selectedProduct.purchase_sale_date)}.`
+                    : "No hay historial de ventas disponible para este producto."}
                 </p>
               )}
             </div>
