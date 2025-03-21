@@ -764,6 +764,7 @@ const HistorialStock: React.FC = () => {
       </Modal>
     </Container>
   );
+  
 };
 
 export default HistorialStock;
