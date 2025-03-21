@@ -138,15 +138,17 @@ const HistorialStock: React.FC = () => {
       if (!clientId || !productId) {
         throw new Error("Falta el clientId o productId para la solicitud.");
       }
-      const url = `${API_BASE_URL}/mercadolibre/stock-sales-history/${clientId}/${productId}`;
+      const baseUrl = `${API_BASE_URL}/mercadolibre/stock-sales-history/${clientId}/${productId}`;
       let allSales: any[] = [];
       let page = 1;
       let hasMore = true;
+      const limit = 100; // Número de transacciones por página
 
       // Manejo de paginación para obtener todas las transacciones
       while (hasMore) {
-        console.log(`Haciendo solicitud a: ${url}?page=${page}&limit=100`);
-        const response = await axiosInstance.get(`${url}?page=${page}&limit=100`);
+        const url = `${baseUrl}?page=${page}&limit=${limit}`;
+        console.log(`Haciendo solicitud a: ${url}`);
+        const response = await axiosInstance.get(url);
         console.log(`Respuesta del endpoint (página ${page}):`, JSON.stringify(response.data, null, 2));
 
         // Verificamos si la respuesta tiene el formato esperado
@@ -155,12 +157,20 @@ const HistorialStock: React.FC = () => {
         }
 
         const salesData = response.data.sales || [];
-        if (!Array.isArray(salesData) || salesData.length === 0) {
-          hasMore = false;
-          break;
+        const totalSalesCount = response.data.sales_count || 0;
+
+        if (!Array.isArray(salesData)) {
+          throw new Error("El campo 'sales' no es un arreglo.");
         }
+
         allSales = [...allSales, ...salesData];
-        page++;
+
+        // Si hemos obtenido todas las transacciones o no hay más datos, terminamos
+        if (allSales.length >= totalSalesCount || salesData.length < limit) {
+          hasMore = false;
+        } else {
+          page++;
+        }
       }
 
       // Mapeamos el historial
