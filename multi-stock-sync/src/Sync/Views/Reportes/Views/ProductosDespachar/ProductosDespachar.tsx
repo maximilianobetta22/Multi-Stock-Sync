@@ -7,14 +7,15 @@ import { Modal, Button, Table, Form, Container, Row, Col } from 'react-bootstrap
 const ProductosDespachar: React.FC = () => {
     const { client_id } = useParams();
     const [productosDespachar, setProductosDespachar] = useState([]);
-    const [productosDespacharOriginal, setProductosDespacharOriginal] = useState([]); // Copia original
-
+    const [productosDespacharOriginal, setProductosDespacharOriginal] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [selectedProduct, setSelectedProduct] = useState<any>(null);
     const [filterText, setFilterText] = useState("");
     const [filterById, setFilterById] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const itemsPerPage = 10;
 
     useEffect(() => {
         const fetchProductos = async () => {
@@ -24,8 +25,8 @@ const ProductosDespachar: React.FC = () => {
                 );
                 if (response.data.status === "success") {
                     setProductosDespachar(response.data.data);
-                    setProductosDespacharOriginal(response.data.data); // Guardamos copia original
-                    console.log(response.data.data)
+                    setProductosDespacharOriginal(response.data.data);
+                    console.log(response.data)
                 } else {
                     setError("No se pudo obtener la lista de productos a despachar.");
                 }
@@ -35,12 +36,11 @@ const ProductosDespachar: React.FC = () => {
                 setLoading(false);
             }
         };
-
         fetchProductos();
     }, [client_id]);
 
     const handleFilter = () => {
-        let filteredProducts = [...productosDespacharOriginal]; // Usamos la copia original
+        let filteredProducts = [...productosDespacharOriginal];
         if (filterText) {
             filteredProducts = filteredProducts.filter((producto) =>
                 producto.id.toString().includes(filterText)
@@ -50,12 +50,41 @@ const ProductosDespachar: React.FC = () => {
             filteredProducts = filteredProducts.filter((producto) => producto.id.toString() === selectedId);
         }
         setProductosDespachar(filteredProducts);
+        setCurrentPage(1);
     };
 
     const handleClearFilter = () => {
         setFilterText("");
         setSelectedId(null);
-        setProductosDespachar(productosDespacharOriginal); // Restauramos la lista original
+        setProductosDespachar(productosDespacharOriginal);
+        setCurrentPage(1);
+    };
+
+    const totalPages = Math.ceil(productosDespachar.length / itemsPerPage);
+    const currentData = productosDespachar.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+    const handlePrev = () => {
+        if (currentPage > 1) setCurrentPage(currentPage - 1);
+    };
+
+    const handleNext = () => {
+        if (currentPage < totalPages) setCurrentPage(currentPage + 1);
+    };
+
+    const traducirCampo = (campo: string): string => {
+        const traducciones: { [key: string]: string } = {
+            date_created: "📌 Fecha de Creación",
+            date_handling: "🔄 Inicio del Procesamiento",
+            date_ready_to_ship: "📦 Listo para Envío",
+            date_first_printed: "🖨️ Impresión de Etiqueta",
+            date_shipped: "🚚 Fecha de Envío",
+            date_delivered: "🎯 Fecha de Entrega",
+            date_delivered_estimated: "📅 Entrega Estimada",
+            date_not_delivered: "❌ Intento Fallido de Entrega",
+            date_returned: "🔄 Devolución",
+            date_cancelled: "🚫 Cancelación",
+        };
+        return traducciones[campo] || campo;
     };
 
     if (loading) return <p className="text-center">Cargando productos...</p>;
@@ -64,7 +93,7 @@ const ProductosDespachar: React.FC = () => {
     return (
         <Container>
             <h2 className="text-center my-4">Productos Listos para Despachar</h2>
-            <Row className="mb-3">
+            <Row className="text-center mt-5 mb-3">
                 <Col md={6} className="d-flex align-items-center">
                     <Form.Check
                         type="checkbox"
@@ -78,7 +107,7 @@ const ProductosDespachar: React.FC = () => {
                             <option value="">Seleccione un ID</option>
                             {productosDespacharOriginal.map((producto) => (
                                 <option key={producto.id} value={producto.id}>
-                                    {producto.id} - {producto.title} {/* Muestra ID + Nombre del producto */}
+                                    {producto.id} - {producto.title}
                                 </option>
                             ))}
                         </Form.Select>
@@ -96,82 +125,82 @@ const ProductosDespachar: React.FC = () => {
                     <Button variant="secondary" onClick={handleClearFilter}>Limpiar</Button>
                 </Col>
             </Row>
+
             {productosDespachar.length > 0 ? (
-                <Table striped bordered hover responsive>
-                    <thead className="table-dark">
-                        <tr>
-                            <th>Numero de Impresión</th>
-                            <th>SKU</th>
-                            <th>Producto</th>
-                            <th>Variante</th>
-                            <th>Cantidad</th>
-                            <th>ID Orden</th>
-                            <th>ID Orden Servicio</th>
-                            <th>Estado</th>
-                            <th>Acción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {productosDespachar.map((producto, index) => (
-                            <tr key={index}>
-                                <td>{producto.id}</td>
-                                <td>{producto.sku}</td>
-                                <td>{producto.title}</td>
-                                <td>{producto.size}</td>
-                                <td>{producto.quantity}</td>
-                                <td>{producto.shipment_history?.order_id || "N/A"}</td>
-                                <td>{producto.shipment_history?.service_id || "N/A"}</td>
-                                <td>{producto.shipment_history?.status || "Desconocido"}</td>
-                                <td>
-                                    <Button variant="info" onClick={() => setSelectedProduct(producto)}>
-                                        Ver Detalles
-                                    </Button>
-                                </td>
+                <>
+                    <Table striped bordered hover responsive className='table-sm'>
+                        <thead className="table-dark">
+                            <tr>
+                                <th>Numero de Impresión</th>
+                                <th>SKU</th>
+                                <th>Producto</th>
+                                <th>Variante</th>
+                                <th>Cantidad</th>
+                                <th>ID Orden</th>
+                                <th>ID Orden Servicio</th>
+                                <th>Estado</th>
+                                <th>Acción</th>
                             </tr>
+                        </thead>
+                        <tbody>
+                            {currentData.map((producto, index) => (
+                                <tr key={index}>
+                                    <td>{producto.id}</td>
+                                    <td>{producto.sku}</td>
+                                    <td>{producto.title}</td>
+                                    <td>{producto.size}</td>
+                                    <td>{producto.quantity}</td>
+                                    <td>{producto.shipment_history?.order_id || "N/A"}</td>
+                                    <td>{producto.shipment_history?.service_id || "N/A"}</td>
+                                    <td>{producto.shipment_history?.status || "Desconocido"}</td>
+                                    <td>
+                                        <Button variant="info" onClick={() => setSelectedProduct(producto)}>
+                                            Ver Detalles
+                                        </Button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </Table>
+                    <Modal show={!!selectedProduct} onHide={() => setSelectedProduct(null)} centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Detalles de Envío</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {selectedProduct?.shipment_history?.date_history ? (
+                                <ul>
+                                    {Object.entries(selectedProduct.shipment_history.date_history || {}).map(([key, value]: any, index: number) => (
+                                        <li key={index}><strong>{traducirCampo(key)}:</strong> {value || "No Aplica"}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No hay historial de envíos disponible.</p>
+                            )}
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setSelectedProduct(null)}>Cerrar</Button>
+                        </Modal.Footer>
+                    </Modal>
+
+                    <div className="d-flex justify-content-center align-items-center mt-3">
+                        <Button onClick={handlePrev} disabled={currentPage === 1} className="mx-2">
+                            Anterior
+                        </Button>
+                        {[...Array(totalPages)].map((_, i) => (
+                            <Button key={i} onClick={() => setCurrentPage(i + 1)} variant={currentPage === i + 1 ? "dark" : "light"} className="mx-1">
+                                {i + 1}
+                            </Button>
                         ))}
-                    </tbody>
-                </Table>
+                        <Button onClick={handleNext} disabled={currentPage === totalPages} className="mx-2">
+                            Siguiente
+                        </Button>
+                    </div>
+                </>
             ) : (
                 <p className="text-center text-muted">No hay productos para despachar.</p>
             )}
-
-            <Modal show={!!selectedProduct} onHide={() => setSelectedProduct(null)} centered>
-                <Modal.Header closeButton>
-                    <Modal.Title>Detalles de Envío</Modal.Title>
-                </Modal.Header>
-                <Modal.Body>
-                    {selectedProduct?.shipment_history?.date_history ? (
-                        <ul>
-                            {Object.entries(selectedProduct.shipment_history.date_history).map(([key, value]: any, index: number) => (
-                                <li key={index}><strong>{traducirCampo(key)}:</strong> {value || "No Aplica"}</li>
-                            ))}
-                        </ul>
-                    ) : (
-                        <p>No hay historial de envíos disponible.</p>
-                    )}
-                </Modal.Body>
-                <Modal.Footer>
-                    <Button variant="secondary" onClick={() => setSelectedProduct(null)}>Cerrar</Button>
-                </Modal.Footer>
-            </Modal>
         </Container>
     );
-};
-
-const traducirCampo = (campo: string): string => {
-    const traducciones: { [key: string]: string } = {
-        date_created: "📌 Fecha de Creación",
-        date_handling: "🔄 Inicio del Procesamiento",
-        date_ready_to_ship: "📦 Listo para Envío",
-        date_first_printed: "🖨️ Impresión de Etiqueta",
-        date_shipped: "🚚 Fecha de Envío",
-        date_delivered: "🎯 Fecha de Entrega",
-        date_delivered_estimated: "📅 Entrega Estimada",
-        date_not_delivered: "❌ Intento Fallido de Entrega",
-        date_returned: "🔄 Devolución",
-        date_cancelled: "🚫 Cancelación",
-    };
-    return traducciones[campo] || campo;
 };
 
 export default ProductosDespachar;
