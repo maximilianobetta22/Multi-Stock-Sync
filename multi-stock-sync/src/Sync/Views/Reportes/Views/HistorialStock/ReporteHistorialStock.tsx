@@ -1,18 +1,37 @@
 import React, { useState, useEffect, useCallback, useMemo } from "react";
+// Importa React y hooks para manejar estado (useState), efectos secundarios (useEffect), 
+// memoización de funciones (useCallback) y valores calculados (useMemo).
+
 import { Table, Button, Modal, Alert, Form, Container, Row, Col, Card } from "react-bootstrap";
+// Importa componentes de React-Bootstrap para construir la interfaz (tablas, botones, modales, etc.).
+
 import { Link } from "react-router-dom";
+// Permite navegar entre rutas en la aplicación.
+
 import axiosInstance from "../../../../../axiosConfig";
+// Importa una instancia configurada de Axios para hacer solicitudes HTTP a la API.
+
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+// Componente personalizado para mostrar un indicador de carga.
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+// Biblioteca para usar íconos.
+
 import { faInfoCircle, faHistory, faSync, faChevronLeft, faChevronRight, faSearch, faSort, faTimes } from "@fortawesome/free-solid-svg-icons";
+// Íconos específicos usados en la interfaz (info, historial, sincronizar, flechas, etc.).
+
 import "bootstrap/dist/css/bootstrap.min.css";
+// Estilos base de Bootstrap.
+
 import styles from "./historialStock.module.css";
+// Estilos personalizados específicos para este componente.
 
 // Interfaces
 interface SalesHistory {
   date: string;
   quantity: number;
 }
+// Define la estructura de un registro del historial de ventas: fecha y cantidad vendida.
 
 interface Detail {
   id: string;
@@ -22,6 +41,7 @@ interface Detail {
   values: { id: string; name: string; struct: null }[];
   value_type: string;
 }
+// Define detalles adicionales de un producto (como atributos específicos).
 
 interface HistorialStock {
   id: string;
@@ -33,47 +53,94 @@ interface HistorialStock {
   sku: string;
   details?: Detail[];
 }
+// Define la estructura de un producto en el historial de stock, con datos como ID, título, cantidad disponible, fechas, historial de ventas y detalles opcionales.
 
 interface ClientData {
   nickname: string;
 }
+// Datos del cliente (solo el nickname por ahora).
 
 interface Connection {
   client_id: string;
   nickname: string;
 }
+// Define una conexión a MercadoLibre con un ID y un nickname.
 
 const API_BASE_URL = import.meta.env.VITE_API_URL;
+// Obtiene la URL base de la API desde las variables de entorno (por ejemplo, .env).
+
 const ITEMS_PER_PAGE_OPTIONS = [10, 25, 50, 100];
+// Opciones para cuántos elementos mostrar por página en la tabla.
 
 const HistorialStock: React.FC = () => {
+  // Define el componente como un Functional Component de React.
+
+  // Estados del componente:
   const [historialStock, setHistorialStock] = useState<HistorialStock[]>([]);
+  // Almacena la lista de productos con su historial de stock.
+
   const [loading, setLoading] = useState<boolean>(false);
+  // Indica si los datos principales están cargando.
+
   const [error, setError] = useState<string | null>(null);
+  // Almacena mensajes de error para los datos principales.
+
   const [userData, setUserData] = useState<ClientData | null>(null);
+  // Guarda los datos del usuario (nickname).
+
   const [showModal, setShowModal] = useState<boolean>(false);
+  // Controla si el modal está visible.
+
   const [selectedProduct, setSelectedProduct] = useState<HistorialStock | null>(null);
+  // Producto seleccionado para ver detalles o historial.
+
   const [viewMode, setViewMode] = useState<"details" | "history">("details");
+  // Modo del modal: "details" para detalles, "history" para historial de ventas.
+
   const [currentPage, setCurrentPage] = useState<number>(1);
+  // Página actual de la tabla paginada.
+
   const [itemsPerPage, setItemsPerPage] = useState<number>(ITEMS_PER_PAGE_OPTIONS[1]);
+  // Cantidad de ítems por página (por defecto 25).
+
   const [searchTerm, setSearchTerm] = useState<string>("");
+  // Término de búsqueda para filtrar la tabla.
+
   const [connections, setConnections] = useState<Connection[]>([]);
+  // Lista de conexiones disponibles a MercadoLibre.
+
   const [selectedConnection, setSelectedConnection] = useState<string>("");
+  // Conexión seleccionada actualmente.
+
   const [historyLoading, setHistoryLoading] = useState<boolean>(false);
+  // Indica si el historial de ventas está cargando.
+
   const [historyError, setHistoryError] = useState<string | null>(null);
+  // Mensaje de error para el historial de ventas.
+
   const [sortConfig, setSortConfig] = useState<{ key: keyof HistorialStock; direction: 'asc' | 'desc' } | null>(null);
+  // Configuración de ordenamiento de la tabla (columna y dirección).
+
   const [dateFilter, setDateFilter] = useState<{ start?: string; end?: string }>({});
+  // Filtro por rango de fechas.
+
   const [quantityFilter, setQuantityFilter] = useState<{ min?: number; max?: number }>({});
+  // Filtro por rango de cantidades.
+
   const [salesHistoryCache, setSalesHistoryCache] = useState<Map<string, SalesHistory[]>>(new Map());
+  // Caché para almacenar historiales de ventas ya cargados.
 
   useEffect(() => {
     const fetchConnections = async () => {
       try {
         const response = await axiosInstance.get(`${API_BASE_URL}/mercadolibre/credentials`);
+        // Solicita la lista de conexiones a la API.
         console.log("Conexiones obtenidas:", response.data.data);
         setConnections(response.data.data);
+        // Guarda las conexiones en el estado.
         if (response.data.data.length > 0) {
           setSelectedConnection(response.data.data[0].client_id);
+          // Selecciona la primera conexión por defecto.
         } else {
           setError("No se encontraron conexiones disponibles.");
         }
@@ -84,6 +151,7 @@ const HistorialStock: React.FC = () => {
     };
     fetchConnections();
   }, []);
+  // Se ejecuta una vez al montar el componente para cargar las conexiones.
 
   const processStockData = useCallback((data: any[]): HistorialStock[] => {
     const salesMap: { [key: string]: HistorialStock } = {};
@@ -103,6 +171,7 @@ const HistorialStock: React.FC = () => {
       }
     });
     return Object.values(salesMap);
+    // Transforma los datos crudos de la API en el formato HistorialStock.
   }, []);
 
   const fetchData = useCallback(async () => {
@@ -118,6 +187,7 @@ const HistorialStock: React.FC = () => {
         axiosInstance.get(`${API_BASE_URL}/mercadolibre/stock/${selectedConnection}`),
         axiosInstance.get(`${API_BASE_URL}/mercadolibre/credentials/${selectedConnection}`),
       ]);
+      // Hace dos solicitudes paralelas: una para el stock y otra para los datos del usuario.
 
       console.log("Datos de stock:", stockResponse.data.data);
       const stockData = Array.isArray(stockResponse.data.data)
@@ -135,11 +205,13 @@ const HistorialStock: React.FC = () => {
       setLoading(false);
     }
   }, [selectedConnection, processStockData]);
+  // Carga los datos de stock y usuario cuando cambia la conexión seleccionada.
 
   const fetchSalesHistory = useCallback(async (clientId: string, productId: string) => {
     const cacheKey = `${clientId}-${productId}`;
     if (salesHistoryCache.has(cacheKey)) {
       return salesHistoryCache.get(cacheKey)!;
+      // Usa la caché si ya se cargó el historial.
     }
 
     setHistoryLoading(true);
@@ -153,6 +225,7 @@ const HistorialStock: React.FC = () => {
       let page = 1;
       let hasMore = true;
       const limit = 100;
+      // Paginación para obtener todas las ventas.
 
       while (hasMore) {
         const url = `${baseUrl}?page=${page}&limit=${limit}`;
@@ -212,6 +285,7 @@ const HistorialStock: React.FC = () => {
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+  // Carga los datos principales cada vez que fetchData cambia (por ejemplo, al cambiar la conexión).
 
   const handleViewDetails = useCallback(
     async (product: HistorialStock, mode: "details" | "history") => {
@@ -242,6 +316,7 @@ const HistorialStock: React.FC = () => {
     },
     [selectedConnection, fetchSalesHistory]
   );
+  // Muestra el modal con detalles o historial y carga el historial si es necesario.
 
   const handleSort = (key: keyof HistorialStock) => {
     let direction: 'asc' | 'desc' = 'asc';
@@ -250,6 +325,7 @@ const HistorialStock: React.FC = () => {
     }
     setSortConfig({ key, direction });
   };
+  // Ordena la tabla por una columna específica en orden ascendente o descendente.
 
   const filteredAndSortedData = useMemo(() => {
     let result = [...historialStock];
@@ -283,6 +359,7 @@ const HistorialStock: React.FC = () => {
                (!quantityFilter.max || qty <= quantityFilter.max);
       });
     }
+
 
 
     return result;
