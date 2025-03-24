@@ -3,6 +3,7 @@ import { useParams } from 'react-router-dom';
 import axiosInstance from '../../../../../axiosConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Button, Table, Form, Container, Row, Col } from 'react-bootstrap';
+import HistorialDespacho from './HistorialDespacho'; // Importa el componente para el historial
 
 const ProductosDespachar: React.FC = () => {
     const { client_id } = useParams();
@@ -10,7 +11,7 @@ const ProductosDespachar: React.FC = () => {
     const [productosDespacharOriginal, setProductosDespacharOriginal] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [selectedProduct, setSelectedProduct] = useState<any>(null);
+    const [selectedProduct, setSelectedProduct] = useState<any>(null); // Producto seleccionado
     const [filterText, setFilterText] = useState("");
     const [filterById, setFilterById] = useState(false);
     const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -26,7 +27,7 @@ const ProductosDespachar: React.FC = () => {
                 if (response.data.status === "success") {
                     setProductosDespachar(response.data.data);
                     setProductosDespacharOriginal(response.data.data);
-                    console.log(response.data)
+                    console.log(response.data);
                 } else {
                     setError("No se pudo obtener la lista de productos a despachar.");
                 }
@@ -155,32 +156,13 @@ const ProductosDespachar: React.FC = () => {
                                     <td>{producto.shipment_history?.status || "Desconocido"}</td>
                                     <td>
                                         <Button variant="info" onClick={() => setSelectedProduct(producto)}>
-                                            Ver Detalles
+                                            Ver Historial
                                         </Button>
                                     </td>
                                 </tr>
                             ))}
                         </tbody>
                     </Table>
-                    <Modal show={!!selectedProduct} onHide={() => setSelectedProduct(null)} centered>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Detalles de Envío</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            {selectedProduct?.shipment_history?.date_history ? (
-                                <ul>
-                                    {Object.entries(selectedProduct.shipment_history.date_history || {}).map(([key, value]: any, index: number) => (
-                                        <li key={index}><strong>{traducirCampo(key)}:</strong> {value || "No Aplica"}</li>
-                                    ))}
-                                </ul>
-                            ) : (
-                                <p>No hay historial de envíos disponible.</p>
-                            )}
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={() => setSelectedProduct(null)}>Cerrar</Button>
-                        </Modal.Footer>
-                    </Modal>
 
                     <div className="d-flex justify-content-center align-items-center mt-3">
                         <Button onClick={handlePrev} disabled={currentPage === 1} className="mx-2">
@@ -199,6 +181,13 @@ const ProductosDespachar: React.FC = () => {
             ) : (
                 <p className="text-center text-muted">No hay productos para despachar.</p>
             )}
+
+            {/* Modal para mostrar el historial */}
+            <HistorialDespacho
+                show={!!selectedProduct}
+                onHide={() => setSelectedProduct(null)}
+                product={selectedProduct} // Pasamos el producto seleccionado aquí
+            />
         </Container>
     );
 };

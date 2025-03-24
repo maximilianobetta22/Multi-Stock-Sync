@@ -25,6 +25,7 @@ import ReporteHistorialStock from "../Views/HistorialStock/ReporteHistorialStock
 import ReporteStockCritico from "../Views/StockCritico/ReporteStockCritico";
 import Plantilla from "../Views/Plantillas/plantillas";
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
+import HistorialDespacho from "../Views/ProductosDespachar/HistorialDespacho";
 
 
 function RouterReportes() {
@@ -59,6 +60,7 @@ function RouterReportes() {
             <Route path="compare-month-month/:client_id" element={<CompareMonthMonth />} />
             <Route path="compare-year-year/:client_id" element={<CompareYearYear />} />
             <Route path="ventas-year/:client_id" element={<VentasPorYear />} />
+            <Route path="historial/:client_id" element={<HistorialDespacho />} />
             <Route path="plantillas/:client_id" element={<Plantilla />} />
             {/*<Route path="ventas-year/:client_id" element={<VentasPorYear />} />*/}
 
