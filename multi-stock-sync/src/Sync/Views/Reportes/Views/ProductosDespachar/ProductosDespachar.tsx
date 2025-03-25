@@ -4,6 +4,9 @@ import axiosInstance from '../../../../../axiosConfig';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { Modal, Button, Table, Form, Container, Row, Col } from 'react-bootstrap';
 import HistorialDespacho from './HistorialDespacho'; // Importa el componente para el historial
+import * as XLSX from "xlsx";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
 
 const ProductosDespachar: React.FC = () => {
     const { client_id } = useParams();
@@ -17,6 +20,9 @@ const ProductosDespachar: React.FC = () => {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 10;
+    const [showModal, setShowModal] = useState(false); // Estado para mostrar el modal del PDF
+    const [pdfUrl, setPdfUrl] = useState(null); // Estado para almacenar la URL del PDF generado
+
 
     useEffect(() => {
         const fetchProductos = async () => {
@@ -91,6 +97,45 @@ const ProductosDespachar: React.FC = () => {
     if (loading) return <p className="text-center">Cargando productos...</p>;
     if (error) return <p className="text-danger text-center">{error}</p>;
 
+    const exportToExcelManual = () => {
+        const filteredData = productosDespachar.map(producto => ({
+            Numero_Impresión: producto.id,
+            SKU: producto.sku,
+            Producto: producto.title,
+            Talla: producto.size,
+            Cantidad: producto.quantity
+        }));
+        const ws = XLSX.utils.json_to_sheet(filteredData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+        XLSX.writeFile(wb, "reporte.xlsx");
+    };
+
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        doc.text("Reporte de Productos", 14, 10);
+        doc.autoTable({
+            head: [["Numero de Impresión", "SKU", "Producto", "Talla", "Cantidad"]],
+            body: productosDespachar.map(producto => [producto.id, producto.sku, producto.title, producto.size, producto.quantity]),
+        });
+
+        const pdfBlob = doc.output("blob");
+        const pdfUrl = URL.createObjectURL(pdfBlob); // Crear un URL temporal para visualizar el PDF
+        setPdfUrl(pdfUrl);
+        setShowModal(true);
+    };
+
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Reporte de Productos", 14, 10);
+        doc.autoTable({
+            head: [["Numero de Impresión", "SKU", "Producto", "Talla", "Cantida"]],
+            body: data.map(producto=> [producto.id, producto.sku, producto.title, producto.size, producto.quantity]),
+        });
+        doc.save("reporte.pdf"); // Descargar el archivo PDF
+        setShowModal(false);
+    };
+
     return (
         <Container>
             <h2 className="text-center my-4">Productos Listos para Despachar</h2>
@@ -124,8 +169,22 @@ const ProductosDespachar: React.FC = () => {
                 <Col md={6} className="text-end">
                     <Button variant="primary" className="me-2" onClick={handleFilter}>Filtrar</Button>
                     <Button variant="secondary" onClick={handleClearFilter}>Limpiar</Button>
+                    <Button variant="success" className='mx-2' onClick={exportToExcelManual}>Descargar Excel</Button>
+                    <Button variant="danger" className='mx-2' onClick={exportToPDF}>Descargar PDF</Button>
                 </Col>
             </Row>
+
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Vista previa del PDF</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {pdfUrl && <iframe src={pdfUrl} width="100%" height="500px" />}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="danger" onClick={handleDownload}>Descargar PDF</Button>
+                </Modal.Footer>
+            </Modal>
 
             {productosDespachar.length > 0 ? (
                 <>
@@ -155,7 +214,7 @@ const ProductosDespachar: React.FC = () => {
                                     <td>{producto.shipment_history?.service_id || "N/A"}</td>
                                     <td>{producto.shipment_history?.status || "Desconocido"}</td>
                                     <td>
-                                        <Button variant="info" onClick={() => setSelectedProduct(producto)}>
+                                        <Button variant="info" onClick={() => traducirCampo(producto)}>
                                             Ver Historial
                                         </Button>
                                     </td>
