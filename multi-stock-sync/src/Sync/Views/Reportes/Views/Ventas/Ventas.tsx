@@ -10,7 +10,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link } from "react-router-dom"; // Añadimos Link aquí
 import axiosInstance from "../../../../../axiosConfig";
 import "bootstrap/dist/css/bootstrap.min.css";
 import ChartDataLabels from "chartjs-plugin-datalabels";
@@ -245,14 +245,14 @@ const DetallesDeVentas: React.FC = () => {
         {userData && (
           <div style={{ textAlign: "center" }}>
             <h3>Usuario: {userData.nickname}</h3>
-            <img
-              src={userData.profile_image}
-              alt="Profile"
-              style={{ width: "100px", height: "100px", borderRadius: "50%" }}
-            />
           </div>
         )}
         <br />
+        <div className="d-flex justify-content-center mb-4">
+          <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">
+            Volver a inicio
+          </Link>
+        </div>
 
         {/* Reportes de Comparaciones */}
         <h4 className="d-flex justify-content-center gap-3 mb-4">Reportes de Comparaciones</h4>
