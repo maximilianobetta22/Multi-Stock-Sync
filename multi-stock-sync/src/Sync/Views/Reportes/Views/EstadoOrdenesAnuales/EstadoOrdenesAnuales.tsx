@@ -25,6 +25,7 @@ interface Product {
     id: string;
     title: string;
     sale_number: number;
+    sku:string;
     variation_attributes: { name: string; value_name: string }[];
     status: 'entregado' | 'no entregado' | 'cancelado';
 }
@@ -152,7 +153,6 @@ const EstadosOrdenesAnual: React.FC = () => {
         setCurrentPage(1);
     };
 
-  
     const fetchEstadoOrdenesData = async (selectedYear: string) => {
         try {
             setLoading(true);
@@ -160,6 +160,7 @@ const EstadosOrdenesAnual: React.FC = () => {
             const result = response.data;
             if (result.status === 'success') {
                 setEstadoOrdenesData(result.data);
+                console.log(response.data)
             } else {
                 console.error('Error en la respuesta de la API:', result.message);
             }
@@ -169,10 +170,6 @@ const EstadosOrdenesAnual: React.FC = () => {
             setLoading(false);
         }
     };
-
-    
-
-
 
     const fetchUserData = async () => {
         try {
@@ -240,9 +237,6 @@ const EstadosOrdenesAnual: React.FC = () => {
         },
     };
 
-
-
-    
     const generatePDF = (): void => {
         if (!userData?.nickname || !estadoOrdenes?.statuses) return;  
     
@@ -304,10 +298,6 @@ const EstadosOrdenesAnual: React.FC = () => {
         const fileName = `Estado_de_ordenes_${client_id}_${userData.nickname}.xlsx`;
         saveAs(new Blob([excelData]), fileName);
     };
-   
-
-
-
 
     return (
         <>
@@ -438,8 +428,8 @@ const EstadosOrdenesAnual: React.FC = () => {
                         <thead className="thead-dark">
                             <tr>
                                 <th scope="col">Titulo Del Producto</th>
+                                <th scope="col">Numero de Impresión</th>
                                 <th scope="col">SKU</th>
-                                <th scope="col">Numero De Venta</th>
                                 <th scope="col">Estado</th>
                             </tr>
                         </thead>
@@ -447,6 +437,7 @@ const EstadosOrdenesAnual: React.FC = () => {
                             {currentProducts.map((product, index) => (
                                 <tr key={index}>
                                     <td>{product.title}</td>
+                                    <td>{product.id}</td>
                                     <td>{product.sku}</td>
                                     <td>{product.sale_number ? product.sale_number : "N/A"}</td>
                                     <td>

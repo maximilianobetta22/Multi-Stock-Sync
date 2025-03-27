@@ -17,6 +17,7 @@ const Productos: React.FC = () => {
     const [selectedMonth, setSelectedMonth] = useState<string>(new Date().toISOString().slice(0, 7)); // Fecha por defecto con el formato "YYYY-MM"
     const itemsPerPage = 10;//Numero maximo por pagina
     const maxPageButtons = 10;  //Numero maximo que muestra por pantalla si hay mas de 12 paginas compaginadas igual se muestran
+    const [maxProducts, setMaxProducts] = useState(10); // Número máximo de productos para mostrar en el gráfico
     const [cantidadSeleccionada, setCantidadSeleccionada] = useState<number>(10);
     const chartRef = useRef<HTMLDivElement | null>(null);
     const pdfRef = useRef<jsPDF | null>(null);//Función que genera el pdf
@@ -34,7 +35,7 @@ const Productos: React.FC = () => {
             try {
                 const [year, month] = selectedMonth.split('-');
                 const response = await axiosInstance.get(
-                    `${import.meta.env.VITE_API_URL}/mercadolibre/top-selling-products/${client_id}?year=${year}&month=${month}`
+                    `${import.meta.env.VITE_API_URL}/mercadolibre/top-selling-products/${client_id}?year=${year}&month=${month}`,
                 );
                 const data = response.data;
                 if (data.status === 'success') {
@@ -107,11 +108,13 @@ const Productos: React.FC = () => {
         );
     };
     //Función que genera el grafico del torta
+    const totalQuantity = productos.reduce((sum, producto) => sum + producto.quantity, 0);
+
     const chartData = {
-        labels: productos.slice(0, cantidadSeleccionada).map((producto) => producto.title),
+        labels: productos.slice(0, maxProducts).map(producto => producto.title), // Solo los primeros 'maxProducts'
         datasets: [
             {
-                data: productos.slice(0, cantidadSeleccionada).map((producto) => producto.total_amount),
+                data: productos.slice(0, maxProducts).map(producto => (producto.quantity / totalQuantity) * 100), // Solo los primeros 'maxProducts'
                 backgroundColor: [
                     'rgba(75, 192, 192, 0.2)', 'rgba(255, 159, 64, 0.2)', 'rgba(153, 102, 255, 0.2)',
                     'rgba(255, 99, 132, 0.2)', 'rgba(54, 162, 235, 0.2)', 'rgba(255, 206, 86, 0.2)'
@@ -123,26 +126,39 @@ const Productos: React.FC = () => {
                 borderWidth: 1,
             },
         ],
-    };
-    //función encargada de realizar el grafico
+    };  
+
     const chartOptions = {
         responsive: true,
         plugins: {
             legend: {
-                position: 'right', // Mueve la leyenda a la derecha
-                align: 'center', // Alinea al centro verticalmente
+                position: 'right',
+                align: 'center',
                 labels: {
-                    boxWidth: 20, // Tamaño del cuadro de color en la leyenda
-                    padding: 15, // Espaciado entre elementos
+                    boxWidth: 20,
+                    padding: 15,
                 },
             },
             tooltip: {
                 callbacks: {
-                    label: (context: any) => {
-                        return currencyFormat.format(context.raw); // Formato CLP
+                    label: (context) => {
+                        const index = context.dataIndex; // Obtiene el índice del producto
+                        const producto = productos[index]; // Obtiene el producto correspondiente
+                        return `${producto.title}: ${producto.quantity} vendidos`; // Muestra cantidad de productos vendidos
                     },
                 },
             },
+            datalabels: {
+                color: '#000',
+                font: {
+                    weight: 'bold',
+                    size: 14
+                },
+                formatter: (value) => {
+                    // Redondeamos el valor de porcentaje y lo mostramos sin decimales
+                    return `${Math.round(value)}%`; // Muestra el porcentaje sin decimales
+                }
+            }
         },
     };
     
@@ -161,13 +177,11 @@ const Productos: React.FC = () => {
     //función que genera el excel
     const exportToExcel = () => {
         const worksheet = XLSX.utils.json_to_sheet(productos.map(producto => ({//forma de los campos y texto del encabezado
-            Numero_de_Impresión: `${producto.id}`, // Numero de Impresión
             SKU: producto.sku,// SKU del producto en mercado libre en las 5 cuentas
             Título: producto.title,//nombre del producto
-            Variante: `${producto.variation_id}`, // Agregar comilla simple para evitar truncamiento
+            Talla: producto.size,
             Cantidad: producto.quantity,//cantidad vendida
             Total: currencyFormat.format(producto.total_amount), // Formato CLP
-            Talla: producto.size
         })));
 
         const workbook = XLSX.utils.book_new();
@@ -219,8 +233,8 @@ const Productos: React.FC = () => {
         <div className="content-container mt-5">
             <h1 className="text-center mb-4">Reporte de Productos</h1>
             <div className="container mt-4">
-                {/* Selector de mes/año */}
-                <div className="d-flex justify-content-end mb-4">
+                {/* Filtros y exportaciones en la parte superior derecha */}
+                <div className="d-flex justify-content-between align-items-center mb-4">
                     <div className="d-inline-block">
                         <label htmlFor="monthSelector" className="form-label">Selecciona el mes y año:</label>
                         <input
@@ -233,82 +247,17 @@ const Productos: React.FC = () => {
                             max={new Date().toISOString().split("T")[0]}
                         />
                     </div>  
-                </div>
-                {/* Selector para ajustar el gráfico */}
-                <div className="d-flex justify-content-end mb-4">
-                    <Dropdown>
-                        <Dropdown.Toggle variant="secondary">Seleccionar cantidad de datos para el gráfico</Dropdown.Toggle>
-                        <Dropdown.Menu>
-                            {[10, 25, 50, 100, 1000].map((option) => (
-                                <Dropdown.Item key={option} onClick={() => handleGraphItemsChange(option)}>
-                                    Mostrar {option} productos
-                                </Dropdown.Item>
-                            ))}
-                        </Dropdown.Menu>
-                    </Dropdown>
-                </div>
-                <div className="row mb-4">
-                    {/* Columna izquierda con el gráfico */}
-                    <div className="col-md-8">
-                        <h3 className="text-center">Gráfico de Torta: Precio Total de Productos</h3>
-                        <div className="chart-container mb-4" style={{ height: '500px', width: '100%' }} ref={chartRef}>
-                            {loading ? (
-                                <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
-                                    <div className="spinner-border text-primary" role="status">
-                                        <span className="sr-only">Cargando...</span>
-                                    </div>
-                                </div>
-                            ) : (
-                                <Pie data={chartData} options={chartOptions} />
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Columna derecha con las tarjetas apiladas */}
-                    <div className="col-md-4 d-flex flex-column">
-                        {/* Tarjeta para el Producto Más Vendido */}
-                        <div className="card shadow-sm mb-3">
-                            <div className="card-body">
-                                {bestSellingProduct ? (
-                                    <div className="card shadow-sm">
-                                        <div className="card-body">
-                                            <p>Productos más vendidos</p>
-                                            <h5 className="card-title">{bestSellingProduct.title || "Sin título"}</h5>
-                                            <p className="card-text">Cantidad: {bestSellingProduct.quantity ?? "No disponible"}</p>
-                                            <p className="card-text">Total: ${bestSellingProduct.total_amount ?? "No disponible"}</p>
-                                            <p className="card-text">Variante: {bestSellingProduct.variation_id || "N/A"}</p>
-                                            <p className="card-text">Talla: {bestSellingProduct.size || "N/A"}</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p>No hay datos disponibles para el producto más vendido.</p>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Tarjeta para el Producto Menos Vendido */}
-                        <div className="card shadow-sm">
-                            <div className="card-body">
-                                {leastSellingProduct ? (
-                                    <div className="card shadow-sm">
-                                        <div className="card-body">
-                                            <p>Productos menos vendidos</p>
-                                            <h5 className="card-title">{leastSellingProduct.title || "Sin título"}</h5>
-                                            <p className="card-text">Cantidad: {leastSellingProduct.quantity ?? "No disponible"}</p>
-                                            <p className="card-text">Total: ${leastSellingProduct.total_amount ?? "No disponible"}</p>
-                                            <p className="card-text">Variante: {leastSellingProduct.variation_id || "N/A"}</p>
-                                            <p className="card-text">Talla: {leastSellingProduct.size || "N/A"}</p>
-                                        </div>
-                                    </div>
-                                ) : (
-                                    <p>No hay datos disponibles para el producto menos vendido.</p>
-                                )}
-                            </div>
-                        </div>
+                    <div className="d-flex gap-2">
+                        <button onClick={exportToExcel} className="btn btn-success">Exportar a Excel</button>
+                        <button onClick={generatePDF} className="btn btn-danger">Generar Vista Previa PDF</button>
+                        <Link to="/sync/home" className='btn btn-primary'>Volver a inicio</Link>
+                        <Link to="/sync/reportes/home" className="btn btn-primary">
+                            Volver a Menú de Reportes
+                        </Link>
                     </div>
                 </div>
-
-                {/* Sección de la tabla */}
+                
+                {/* Tabla */}
                 {loading ? (
                     <div className="d-flex justify-content-center">
                         <div className="spinner-border text-primary" role="status">
@@ -322,26 +271,21 @@ const Productos: React.FC = () => {
                         <table className="table table-striped table-bordered">
                             <thead className='table-dark'>
                                 <tr>
-                                    <th>Numero de impresión</th>
                                     <th>SKU</th>
                                     <th>Título</th>
                                     <th>Cantidad</th>
                                     <th>Total</th>
-                                    <th>Variante</th>
                                     <th>Talla</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {/* Verificación si currentProducts tiene datos */}
                                 {currentProducts.length > 0 ? (
                                     currentProducts.map((producto, index) => (
                                         <tr key={index}>
-                                            <td>{producto.id}</td>
                                             <td>{producto.sku}</td>
                                             <td>{producto.title}</td>
                                             <td>{producto.quantity}</td>
                                             <td>{currencyFormat.format(producto.total_amount)}</td>
-                                            <td>{producto.variation_id}</td>
                                             <td>{producto.size}</td>
                                         </tr>
                                     ))
@@ -352,82 +296,107 @@ const Productos: React.FC = () => {
                                 )}
                             </tbody>
                         </table>
-
-                        {/* Paginación */}
-                        <div className="d-flex justify-content-between">
-                            <div className="d-flex">
-                                <button
-                                    onClick={() => paginate(currentPage - 1)}
-                                    disabled={currentPage === 1}
-                                    className="btn btn-primary btn-sm"
-                                >
-                                    Anterior
-                                </button>
-                                <div className="pagination d-flex align-items-center mx-2">
-                                    {renderPaginationButtons()}
-                                </div>
-                                <button
-                                    onClick={() => paginate(currentPage + 1)}
-                                    disabled={currentPage === totalPages}
-                                    className="btn btn-primary btn-sm"
-                                >
-                                    Siguiente
-                                </button>
+                    </div>
+                )}
+                
+                {/* Paginación en la parte inferior derecha */}
+                <div className="d-flex justify-content-end mt-3">
+                    <button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1} className="btn btn-primary btn-sm">Anterior</button>
+                    <div className="pagination d-flex align-items-center mx-2">{renderPaginationButtons()}</div>
+                    <button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages} className="btn btn-primary btn-sm">Siguiente</button>
+                </div>
+                {/* Modal para vista previa del PDF */}
+                <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
+                        <Modal.Header closeButton>
+                            <Modal.Title>Vista previa del PDF</Modal.Title>
+                        </Modal.Header>
+                        <Modal.Body>
+                            {pdfData && (
+                                <iframe
+                                    src={pdfData}
+                                    style={{ width: '100%', height: '500px' }}
+                                    title="PDF Preview"
+                                />
+                            )}
+                        </Modal.Body>
+                        <Modal.Footer>
+                            <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
+                            <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
+                        </Modal.Footer>
+                </Modal>
+                {/* Tarjetas */}
+                <div className="row mt-4">
+                    <div className="col-md-6">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h5>Producto más vendido</h5>
+                                {bestSellingProduct ? (
+                                    <>
+                                        <h6>{bestSellingProduct.title || "Sin título"}</h6>
+                                        <p>Cantidad: {bestSellingProduct.quantity ?? "No disponible"}</p>
+                                        <p>Total: ${bestSellingProduct.total_amount ?? "No disponible"}</p>
+                                        <p>Variante: {bestSellingProduct.variation_id || "N/A"}</p>
+                                        <p>Talla: {bestSellingProduct.size || "N/A"}</p>
+                                    </>
+                                ) : (
+                                    <p>No hay datos disponibles.</p>
+                                )}
                             </div>
                         </div>
                     </div>
-                )}
-                <div>
-                    {/* Botones para exportar */}
-                <div className="d-flex justify-content-center align-items-center gap-3 mb-3 mx-2">
-                    <button onClick={exportToExcel} className="btn btn-primary mb-3 mx-2">
-                        Exportar a Excel
-                    </button>
-                    <button onClick={generatePDF} className="btn btn-danger mb-3">Generar Vista Previa PDF</button>
-                    {/* Modal para vista previa del PDF */}
-                    <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Vista previa del PDF</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            {pdfData && (
-                                <iframe
-                                    src={pdfData}
-                                    style={{ width: '100%', height: '500px' }}
-                                    title="PDF Preview"
-                                />
-                            )}
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
-                            <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
-                        </Modal.Footer>
-                    </Modal>
-                    <Link to="/sync/home" className='btn btn-primary mb-3 mx-2'>Volver a inicio</Link>
+                    <div className="col-md-6">
+                        <div className="card shadow-sm">
+                            <div className="card-body">
+                                <h5>Producto menos vendido</h5>
+                                {leastSellingProduct ? (
+                                    <>
+                                        <h6>{leastSellingProduct.title || "Sin título"}</h6>
+                                        <p>Cantidad: {leastSellingProduct.quantity ?? "No disponible"}</p>
+                                        <p>Total: ${leastSellingProduct.total_amount ?? "No disponible"}</p>
+                                        <p>Variante: {leastSellingProduct.variation_id || "N/A"}</p>
+                                        <p>Talla: {leastSellingProduct.size || "N/A"}</p>
+                                    </>
+                                ) : (
+                                    <p>No hay datos disponibles.</p>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                    {/* Modal para vista previa del PDF */}
-                    <Modal show={showPDFModal} onHide={() => setShowPDFModal(false)} size="lg" centered>
-                        <Modal.Header closeButton>
-                            <Modal.Title>Vista previa del PDF</Modal.Title>
-                        </Modal.Header>
-                        <Modal.Body>
-                            {pdfData && (
-                                <iframe
-                                    src={pdfData}
-                                    style={{ width: '100%', height: '500px' }}
-                                    title="PDF Preview"
-                                />
-                            )}
-                        </Modal.Body>
-                        <Modal.Footer>
-                            <Button variant="secondary" onClick={() => setShowPDFModal(false)}>Cerrar</Button>
-                            <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>
-                        </Modal.Footer>
-                    </Modal>
+                
+                {/* Gráfico */}
+                <div className="mt-4">
+                    <h3 className="text-center">Distribución de Productos Más Vendidos</h3>
+                    <div className="d-flex justify-content-end mb-4">
+                        <Dropdown>
+                            <Dropdown.Toggle variant="secondary">
+                                Seleccionar cantidad de productos
+                            </Dropdown.Toggle>
+                            <Dropdown.Menu>
+                                {[10, 25, 50].map((option) => (
+                                    <Dropdown.Item key={option} onClick={() => setMaxProducts(option)}>
+                                        Mostrar {option} productos
+                                    </Dropdown.Item>
+                                ))}
+                            </Dropdown.Menu>
+                        </Dropdown>
+                    </div>
+                    <div className="chart-container" style={{ height: '700px', width: '75%' }} ref={chartRef}>
+                        {loading ? (
+                            <div className="d-flex justify-content-center align-items-center" style={{ height: '100%' }}>
+                                <div className="spinner-border text-primary" role="status">
+                                    <span className="sr-only">Cargando...</span>
+                                </div>
+                            </div>
+                        ) : (
+                            <Pie data={chartData} options={chartOptions} />
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
     );
+    
 };
 
 export default Productos;
