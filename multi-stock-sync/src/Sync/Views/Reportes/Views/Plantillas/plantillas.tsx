@@ -108,6 +108,7 @@ const Plantilla: React.FC = () => {
     return (
         <Container className="mt-4">
             <h2>Reporte de Productos</h2>
+            <h1>HOLA NUEVO EQUIPO DE FRONT</h1>
             <Button variant="success" className="m-2" onClick={exportToExcel}>Descargar Excel (todos los datos)</Button>
             <Button variant="danger" className="m-2" onClick={exportToPDF}>Descargar PDF</Button>
             <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
