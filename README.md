@@ -58,15 +58,16 @@ El proyecto se ejecutará en `http://localhost:3000/` por defecto.
 ## 📂 Estructura del Proyecto
 
 ```
-📂 nombre-del-proyecto
- ┣ 📂 src
- ┃ ┣ 📂 components  # Componentes reutilizables
- ┃ ┣ 📂 pages       # Páginas principales
- ┃ ┣ 📂 services    # Servicios y lógica de negocio
- ┃ ┣ 📂 utils       # Utilidades y funciones auxiliares
- ┃ ┗ index.js       # Archivo principal de la aplicación
- ┣ package.json     # Dependencias y configuración del proyecto
- ┗ README.md        # Documentación
+   📂 Multi-Stock-Sync
+   ┗ 📂 Multi-Stock-Sync
+      ┣ 📂 src
+      ┃ ┣ 📂 components  # Componentes reutilizables
+      ┃ ┣ 📂 pages       # Páginas principales
+      ┃ ┣ 📂 services    # Servicios y lógica de negocio
+      ┃ ┣ 📂 utils       # Utilidades y funciones auxiliares
+      ┃ ┗ index.js       # Archivo principal de la aplicación
+      ┣ package.json     # Dependencias y configuración del proyecto
+      ┗ README.md        # Documentación
 ```
 
 ## 📌 Funcionalidades Principales
