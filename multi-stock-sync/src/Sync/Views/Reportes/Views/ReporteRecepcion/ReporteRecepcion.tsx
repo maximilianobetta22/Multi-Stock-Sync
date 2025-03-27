@@ -42,17 +42,16 @@ const ReporteRecepcion: React.FC = () => {
     fetchStockReception();
   }, [client_id]);
 
-  // Función para aplicar el filtro
+  // Función para aplicar el filtro por SKU
   const applyFilter = () => {
     if (!filterText.trim()) {
       setFilteredData(reporte);
       return;
     }
 
-    const newFilteredData = reporte.filter((item) => {
-      const itemText = `${item.id} ${item.date_created} ${item.quantity} ${item.title} ${item.unit_price} ${item.total_amount}`;
-      return itemText.toLowerCase().includes(filterText.toLowerCase());
-    });
+    const newFilteredData = reporte.filter((item) =>
+      item.sku.toLowerCase().includes(filterText.toLowerCase())
+    );
 
     setFilteredData(newFilteredData);
     setCurrentPage(1);
@@ -81,6 +80,14 @@ const ReporteRecepcion: React.FC = () => {
     }
   };
 
+  // Formatear los valores a CLP
+  const formatCLP = (value: number) => {
+    return new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+    }).format(value);
+  };
+
   // Exportar a Excel
   const exportToExcel = () => {
     const worksheet = XLSX.utils.json_to_sheet(
@@ -89,8 +96,8 @@ const ReporteRecepcion: React.FC = () => {
         Fecha: item.date_created,
         Cantidad: item.quantity,
         Título: item.title,
-        "Costo Neto": `$${item.unit_price}`,
-        "Valor Total": `$${item.total_amount}`,
+        "Costo Neto": formatCLP(item.unit_price),
+        "Valor Total": formatCLP(item.total_amount),
       }))
     );
 
@@ -106,14 +113,14 @@ const ReporteRecepcion: React.FC = () => {
 
     autoTable(doc, {
       startY: 20,
-      head: [["ID", "Fecha", "Cantidad", "Título", "Costo Neto", "Valor Total"]],
+      head: [["SKU", "Producto", "Fecha", "Cantidad", "Costo Neto", "Valor Total"]],
       body: filteredData.map((item) => [
-        item.id,
+        item.sku,
+        item.title,
         new Date(item.date_created).toLocaleDateString(),
         item.quantity,
-        item.title,
-        `$${item.unit_price}`,
-        `$${item.total_amount}`,
+        formatCLP(item.unit_price),
+        formatCLP(item.total_amount),
       ]),
     });
 
@@ -122,92 +129,116 @@ const ReporteRecepcion: React.FC = () => {
   };
 
   // Calcular total de la columna "Valor Total"
-  const totalValor = filteredData.reduce((sum, item) => sum + parseFloat(item.total_amount), 0);
+  const totalValor = filteredData.reduce(
+    (sum, item) => sum + parseFloat(item.total_amount),
+    0
+  );
 
   return (
     <div className="container py-4">
-        <h2 className="text-center mb-3">REPORTE DISPONIBLE POR RECEPCIÓN</h2>
+      <h2 className="text-center mb-3">REPORTE DISPONIBLE POR RECEPCIÓN</h2>
 
-        {/* Controles de filtrado */}
-        <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
-            <input
-            type="text"
-            placeholder="Ingrese un valor para filtrar"
-            className="form-control text-dark w-50"
-            value={filterText}
-            onChange={(e) => setFilterText(e.target.value)}
-            />
-            <button className="btn btn-primary" onClick={applyFilter}>Filtrar</button>
-            <button className="btn btn-secondary" onClick={clearFilter}>Limpiar</button>
-        </div>
+      {/* Controles de filtrado */}
+      <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
+        <input
+          type="text"
+          placeholder="Ingrese SKU para filtrar"
+          className="form-control text-dark w-50"
+          value={filterText}
+          onChange={(e) => setFilterText(e.target.value)}
+        />
+        <button className="btn btn-primary" onClick={applyFilter}>
+          Filtrar
+        </button>
+        <button className="btn btn-secondary" onClick={clearFilter}>
+          Limpiar
+        </button>
+      </div>
 
-    {/* Tabla con datos paginados */}
-    <div className="bg-light p-3 rounded">
+      {/* Tabla con datos paginados */}
+      <div className="bg-light p-3 rounded">
         <div className="table-responsive">
-            <table className="table table-bordered table-striped">
-                <thead className="table-secondary">
+          <table className="table table-bordered table-striped">
+            <thead className="table-secondary">
+              <tr>
+                <th>SKU</th>
+                <th>Fecha</th>
+                <th>Cantidad recepcionada</th>
+                <th>Producto</th>
+                <th>Costo neto</th>
+                <th>Valor total</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentData.length > 0 ? (
+                currentData.map((item, index) => (
+                  <tr key={index}>
+                    <td>{item.sku}</td>
+                    <td>{new Date(item.date_created).toLocaleDateString()}</td>
+                    <td>{item.quantity}</td>
+                    <td>{item.title}</td>
+                    <td>{formatCLP(item.unit_price)}</td>
+                    <td>{formatCLP(item.total_amount)}</td>
+                  </tr>
+                ))
+              ) : (
                 <tr>
-                    <th>N° Documento</th>
-                    <th>SKU</th>
-                    <th>Fecha</th>
-                    <th>Cantidad recepcionada</th>
-                    <th>Título</th>
-                    <th>Costo neto</th>
-                    <th>Valor total</th>
+                  <td colSpan={6} className="text-center">
+                    No hay datos disponibles
+                  </td>
                 </tr>
-                </thead>
-                <tbody>
-                {currentData.length > 0 ? (
-                    currentData.map((item, index) => (
-                    <tr key={index}>
-                        <td>{item.id}</td>
-                        <td>{item.sku}</td>
-                        <td>{new Date(item.date_created).toLocaleDateString()}</td>
-                        <td>{item.quantity}</td>
-                        <td>{item.title}</td>
-                        <td>${item.unit_price}</td>
-                        <td>${item.total_amount}</td>
-                    </tr>
-                    ))
-                ) : (
-                    <tr>
-                    <td colSpan={6} className="text-center">No hay datos disponibles</td>
-                    </tr>
-                )}
-                </tbody>
-            </table>
+              )}
+            </tbody>
+          </table>
         </div>
 
         {/* Tarjeta con total de "Valor Total" */}
         <div className="card mt-4 text-center">
-            <div className="card-body">
+          <div className="card-body">
             <h5 className="card-title">Total de Valor Total</h5>
-            <p className="card-text fw-bold fs-4 text-success">${totalValor.toFixed(2)}</p>
-            </div>
+            <p className="card-text fw-bold fs-4 text-success">
+              {formatCLP(totalValor)}
+            </p>
+          </div>
         </div>
 
         {/* Paginación */}
         <div className="d-flex justify-content-between mt-2">
-            <button className="btn btn-outline-primary" onClick={prevPage} disabled={currentPage === 1}>
-                Anterior
-            </button>
-            <span className="align-self-center">Página {currentPage}</span>
-            <button className="btn btn-outline-primary" onClick={nextPage} disabled={indexOfLastItem >= filteredData.length}>
-                Siguiente
-            </button>
-            </div>
+          <button
+            className="btn btn-outline-primary"
+            onClick={prevPage}
+            disabled={currentPage === 1}
+          >
+            Anterior
+          </button>
+          <span className="align-self-center">Página {currentPage}</span>
+          <button
+            className="btn btn-outline-primary"
+            onClick={nextPage}
+            disabled={indexOfLastItem >= filteredData.length}
+          >
+            Siguiente
+          </button>
         </div>
+      </div>
 
-
-        {/* Botones de exportación */}
-        <div className="d-flex justify-content-center gap-3 mt-3">
-            <button className='btn btn-success mb-5 mx-2' onClick={exportToExcel}>Exportar a Excel</button>
-            <button className='btn btn-danger mb-5 mx-2' onClick={generatePDF}>Generar PDF</button>
-            <Link to="/sync/home" className='btn btn-primary mb-5 mx-2'>Volver a inicio</Link>
-            <Link to="/sync/reportes/home" className='btn btn-primary mb-5 mx-2'>Volver a Menú de Reportes</Link>
-        </div>
+      {/* Botones de exportación */}
+      <div className="d-flex justify-content-center gap-3 mt-3">
+        <button className="btn btn-success mb-5 mx-2" onClick={exportToExcel}>
+          Exportar a Excel
+        </button>
+        <button className="btn btn-danger mb-5 mx-2" onClick={generatePDF}>
+          Generar PDF
+        </button>
+        <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">
+          Volver a inicio
+        </Link>
+        <Link to="/sync/reportes/home" className="btn btn-primary mb-5 mx-2">
+          Volver a Menú de Reportes
+        </Link>
+      </div>
     </div>
-    );
+  );
 };
 
 export default ReporteRecepcion;

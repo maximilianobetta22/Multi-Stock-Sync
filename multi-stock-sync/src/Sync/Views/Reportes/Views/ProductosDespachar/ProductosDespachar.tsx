@@ -7,6 +7,7 @@ import HistorialDespacho from './HistorialDespacho'; // Importa el componente pa
 import * as XLSX from "xlsx";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import { Link } from 'react-router-dom';
 
 const ProductosDespachar: React.FC = () => {
     const { client_id } = useParams();
@@ -50,11 +51,11 @@ const ProductosDespachar: React.FC = () => {
         let filteredProducts = [...productosDespacharOriginal];
         if (filterText) {
             filteredProducts = filteredProducts.filter((producto) =>
-                producto.id.toString().includes(filterText)
+                producto.sku.toString().includes(filterText)
             );
         }
         if (selectedId) {
-            filteredProducts = filteredProducts.filter((producto) => producto.id.toString() === selectedId);
+            filteredProducts = filteredProducts.filter((producto) => producto.sku.toString() === selectedId);
         }
         setProductosDespachar(filteredProducts);
         setCurrentPage(1);
@@ -99,7 +100,6 @@ const ProductosDespachar: React.FC = () => {
 
     const exportToExcelManual = () => {
         const filteredData = productosDespachar.map(producto => ({
-            Numero_Impresión: producto.id,
             SKU: producto.sku,
             Producto: producto.title,
             Talla: producto.size,
@@ -115,8 +115,8 @@ const ProductosDespachar: React.FC = () => {
         const doc = new jsPDF();
         doc.text("Reporte de Productos", 14, 10);
         doc.autoTable({
-            head: [["Numero de Impresión", "SKU", "Producto", "Talla", "Cantidad"]],
-            body: productosDespachar.map(producto => [producto.id, producto.sku, producto.title, producto.size, producto.quantity]),
+            head: [[ "SKU", "Producto", "Talla", "Cantidad"]],
+            body: productosDespachar.map(producto => [ producto.sku, producto.title, producto.size, producto.quantity]),
         });
 
         const pdfBlob = doc.output("blob");
@@ -143,17 +143,17 @@ const ProductosDespachar: React.FC = () => {
                 <Col md={6} className="d-flex align-items-center">
                     <Form.Check
                         type="checkbox"
-                        label="Filtrar por ID"
+                        label="Filtrar SKU"
                         checked={filterById}
                         onChange={() => setFilterById(!filterById)}
                         className="me-2"
                     />
                     {filterById ? (
                         <Form.Select value={selectedId || ""} onChange={(e) => setSelectedId(e.target.value)}>
-                            <option value="">Seleccione un ID</option>
+                            <option value="">Seleccione un SKU</option>
                             {productosDespacharOriginal.map((producto) => (
-                                <option key={producto.id} value={producto.id}>
-                                    {producto.id} - {producto.title}
+                                <option key={producto.sku} value={producto.sku}>
+                                    {producto.sku} - {producto.title}
                                 </option>
                             ))}
                         </Form.Select>
@@ -171,6 +171,12 @@ const ProductosDespachar: React.FC = () => {
                     <Button variant="secondary" onClick={handleClearFilter}>Limpiar</Button>
                     <Button variant="success" className='mx-2' onClick={exportToExcelManual}>Descargar Excel</Button>
                     <Button variant="danger" className='mx-2' onClick={exportToPDF}>Descargar PDF</Button>
+                    <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">
+                        Volver a inicio
+                    </Link>
+                    <Link to="/sync/reportes/home" className="btn btn-primary mb-5 mx-2">
+                        Volver a Menú de Reportes
+                    </Link>
                 </Col>
             </Row>
 
@@ -185,19 +191,35 @@ const ProductosDespachar: React.FC = () => {
                     <Button variant="danger" onClick={handleDownload}>Descargar PDF</Button>
                 </Modal.Footer>
             </Modal>
+            <Modal show={!!selectedProduct} onHide={() => setSelectedProduct(null)} centered>
+                <Modal.Header closeButton>
+                    <Modal.Title>Detalles de Envío</Modal.Title>
+                        </Modal.Header>
+                    <Modal.Body>
+                        {selectedProduct?.shipment_history?.date_history ? (
+                            <ul>
+                                {Object.entries(selectedProduct.shipment_history.date_history || {}).map(([key, value]: any, index: number) => (
+                                    <li key={index}><strong>{traducirCampo(key)}:</strong> {value || "No Aplica"}</li>
+                                    ))}
+                                </ul>
+                            ) : (
+                                <p>No hay historial de envíos disponible.</p>
+                            )}
+                    </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={() => setSelectedProduct(null)}>Cerrar</Button>
+                </Modal.Footer>
+            </Modal>
 
             {productosDespachar.length > 0 ? (
                 <>
                     <Table striped bordered hover responsive className='table-sm'>
                         <thead className="table-dark">
                             <tr>
-                                <th>Numero de Impresión</th>
                                 <th>SKU</th>
                                 <th>Producto</th>
-                                <th>Variante</th>
+                                <th>Tallas</th>
                                 <th>Cantidad</th>
-                                <th>ID Orden</th>
-                                <th>ID Orden Servicio</th>
                                 <th>Estado</th>
                                 <th>Acción</th>
                             </tr>
@@ -205,16 +227,13 @@ const ProductosDespachar: React.FC = () => {
                         <tbody>
                             {currentData.map((producto, index) => (
                                 <tr key={index}>
-                                    <td>{producto.id}</td>
                                     <td>{producto.sku}</td>
                                     <td>{producto.title}</td>
                                     <td>{producto.size}</td>
                                     <td>{producto.quantity}</td>
-                                    <td>{producto.shipment_history?.order_id || "N/A"}</td>
-                                    <td>{producto.shipment_history?.service_id || "N/A"}</td>
                                     <td>{producto.shipment_history?.status || "Desconocido"}</td>
                                     <td>
-                                        <Button variant="info" onClick={() => traducirCampo(producto)}>
+                                        <Button variant="info" onClick={() => setSelectedProduct(producto)}>
                                             Ver Historial
                                         </Button>
                                     </td>
@@ -222,6 +241,7 @@ const ProductosDespachar: React.FC = () => {
                             ))}
                         </tbody>
                     </Table>
+                    
 
                     <div className="d-flex justify-content-center align-items-center mt-3">
                         <Button onClick={handlePrev} disabled={currentPage === 1} className="mx-2">

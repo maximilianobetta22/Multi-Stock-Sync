@@ -6,7 +6,7 @@ import { Modal, Button, Table, Form, Container, Row, Col, Alert } from 'react-bo
 import * as XLSX from "xlsx";
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-
+import { Link } from 'react-router-dom';
 
 interface DispatchData {
     shipping_id: number;
@@ -70,10 +70,8 @@ const HistorialDespacho: React.FC = () => {
 
     const exportToExcelManual = () => {
         const filteredData = data.map(item => ({
-            ID_Compra: item.shipping_id,
             Estado: item.status,
             Fecha_de_Envio: item.date_shipped,
-            Numero_de_Seguimiento: item.tracking_number,
             Cantidad: item.total_items,
             ID_Cliente: item.customer_id,
         }));
@@ -84,24 +82,32 @@ const HistorialDespacho: React.FC = () => {
     };
 
     const exportToPDF = () => {
+        if (!productId) return;
+        
+        const today = new Date().toISOString().split('T')[0]; // Obtener fecha actual en formato YYYY-MM-DD
+        const fileName = `reporte_${productId}_${today}.pdf`;
+        const reportTitle = `Reporte Historial Producto ${productId}`;
+    
         const doc = new jsPDF();
-        doc.text("Reporte de Historial de despacho", 14, 10);
+        doc.text(reportTitle, 14, 10);
         doc.autoTable({
-            head: [["ID Compra", "Estado", "Fecha de Envio", "Numero de Seguimiento", "Cantidad", "ID Cliente"]],
-            body: data.map(item => [item.shipping_id, item.status, item.date_shipped, item.tracking_number, item.total_items, item.customer_id]),
+            head: [["Estado", "Fecha de Envio", "Cantidad", "ID Cliente"]],
+            body: data.map(item => [item.status, item.date_shipped, item.total_items, item.customer_id]),
         });
-
+    
         const pdfBlob = doc.output("blob");
-        const pdfUrl = URL.createObjectURL(pdfBlob); // Crear un URL temporal para visualizar el PDF
+        const pdfUrl = URL.createObjectURL(pdfBlob);
         setPdfUrl(pdfUrl);
         setShowModal(true);
+        
     };
+
     const handleDownload = () => {
         const doc = new jsPDF();
         doc.text("Reporte de Productos", 14, 10);
         doc.autoTable({
-            head: [["ID Compra", "Estado", "Fecha de Envio", "Numero de Seguimiento", "Cantidad", "ID Cliente"]],
-            body: data.map(item => [item.shipping_id, item.status, item.date_shipped, item.tracking_number, item.total_items, item.customer_id]),
+            head: [[ "Fecha de Envio", "Cantidad", "ID Cliente"]],
+            body: data.map(item => [item.status, item.date_shipped, item.total_items, item.customer_id]),
         });
         doc.save("reporte.pdf"); // Descargar el archivo PDF
         setShowModal(false);
@@ -125,6 +131,12 @@ const HistorialDespacho: React.FC = () => {
                 <Col md={4}>
                     <Button variant="success" className='mx-2' onClick={exportToExcelManual}>Descargar Excel</Button>
                     <Button variant="danger" className='mx-2' onClick={exportToPDF}>Descargar PDF</Button>
+                    <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">
+                        Volver a inicio
+                    </Link>
+                    <Link to="/sync/reportes/home" className="btn btn-primary mb-5 mx-2">
+                        Volver a Menú de Reportes
+                    </Link>
                 </Col>
             </Row>
             {notFound && <Alert variant="warning" className="text-center">El código ingresado no se encontró. Por favor, ingrese otro código.</Alert>}
@@ -144,29 +156,19 @@ const HistorialDespacho: React.FC = () => {
             <Table striped bordered hover className="mt-3" id="product-table">
                 <thead className="table-dark">
                     <tr>
-                        <th>Shipping ID</th>
                         <th>Estado</th>
-                        <th>Número de Seguimiento</th>
                         <th>Fecha de Envío</th>
                         <th>Cantidad de Productos Comprados</th>
                         <th>ID del Cliente</th>
-                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
                     {filteredData.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage).map((item) => (
                         <tr key={item.shipping_id}>
-                            <td>{item.shipping_id}</td>
                             <td>{item.status}</td>
-                            <td>{item.tracking_number}</td>
                             <td>{item.date_shipped}</td>
                             <td>{item.total_items}</td>
                             <td>{item.customer_id}</td>
-                            <td>
-                                <Button variant="info" onClick={() => setSelectedDispatch(item)}>
-                                    Ver Detalles
-                                </Button>
-                            </td>
                         </tr>
                     ))}
                 </tbody>
