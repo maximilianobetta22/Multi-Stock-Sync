@@ -46,11 +46,11 @@ Para iniciar el servidor de desarrollo, usa:
 
 - **Con npm**:
   ```bash
-  npm start
+  npm run dev
   ```
 - **Con yarn**:
   ```bash
-  yarn start
+  yarn run dev
   ```
 
 El proyecto se ejecutará en `http://localhost:3000/` por defecto.
