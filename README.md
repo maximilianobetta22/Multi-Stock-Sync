@@ -1,98 +1,95 @@
-# Tareas y Mejoras
+# 📊 Gestión y Análisis de Ventas en Mercado Libre
 
-1. **Agregar en lista de productos los números de la página**
-   - ❌ No implementado
-   - ✔ Implementado
+Este proyecto proporciona cinco componentes clave para la gestión eficiente de ventas y stock en Mercado Libre. Desarrollado con **React**, ofrece herramientas avanzadas de monitoreo, comparación y exportación de datos, facilitando la toma de decisiones para mejorar el desempeño comercial.
 
-2. **Agregar en lista de productos la especificación de stock: si es stock full o si se encuentra en depósito**
-   - ❌ No implementado
-   - ✔ Implementado
+## 🚀 Instalación y Configuración
 
-3. **En estadísticas generales agregar una selección múltiple de conexiones (ej. poder ver Crazy y Ofertas al mismo tiempo)**
-   - ❌ No implementado
-   - ✔ Implementado
+Sigue estos pasos para instalar y ejecutar el proyecto en tu máquina local.
 
-4. **Mostrar las fechas en resumen de la tienda, mostrar el periodo actual. Arreglar ventas mensuales y ventas anuales en resumen tienda. Los métodos de pago preferidos son irrelevantes**
-   - ❌ No implementado
-   - ✔ Implementado
+### 📌 Prerrequisitos
 
-5. **Reporte de Productos**
-   - Arreglar el gráfico, centrar los datos del gráfico, modificar los colores.
-   - Arreglar el calendario para hacerlo más intuitivo, dejar hasta año 2022 en la selección del mes y año.
-   - Saber cuál es el color o talla que más se vende del producto.
-   - Agregar cuántas páginas son, agregar botón de volver.
-   - ❌ No implementado
-   - ✔ Implementado
+Asegúrate de tener instalados los siguientes programas antes de continuar:
 
-6. **Hacer que una conexión sea estática al igual que cuando uno hace login** - ✔ Implementado
+- [Node.js](https://nodejs.org/) (versión 14 o superior)
+- [Git](https://git-scm.com/)
+- Un gestor de paquetes como **npm** o **yarn**
 
-7. **Agregar el primer reporte que aparece en la sección de reportes dentro de los reportes disponibles, en su lugar mostrar un dashboard o gráfico interactivo**
-   - ❌ No implementado
-   - ✔ Implementado
+### 🔧 Instalación
 
-8. **Los primeros 3 reportes tienen demasiada información**
-   - ❌ No implementado
-   - ✔ Implementado
+1. **Clona el repositorio**
 
-9. **Todas las selecciones de fecha sean iguales, usar como referencia el calendario de Ventas por día**
-   - ❌ No implementado
-   - ✔ Implementado
+   ```bash
+   git clone https://github.com/usuario/repo.git
+   ```
 
-10. **En ventas por mes, agregar un calendario comparativo**
-   - ❌ No implementado
-   - ✔ Implementado
+   _(Reemplaza `usuario/repo.git` con la URL real del repositorio)._
 
-11. **Ventas por año, mes, semana y día hacerlos los 4 en 1 usando un solo tipo de gráfico**
-   - ❌ No implementado
-   - ✔ Implementado
+2. **Accede al directorio del proyecto**
 
-12. **Arreglar los datos de ventas por año, arreglar el método que pueda realizar comparaciones**
-   - ❌ No implementado
-   - ✔ Implementado
+   ```bash
+   cd nombre-del-proyecto
+   ```
 
-13. **Agregar las ventas que hay que entregar**
-   - ❌ No implementado
-   - ✔ Implementado
+3. **Instala las dependencias**  
+   Si usas **npm**:
+   ```bash
+   npm install
+   ```
+   Si usas **yarn**:
+   ```bash
+   yarn install
+   ```
 
-14. **Ingresos por categoría de producto: Renombrarlo "ventas por categoría de producto", hacer un 2x1 con productos más vendidos**
-   - ❌ No implementado
-   - ✔ Implementado
+### ▶️ Ejecución del Proyecto
 
-15. **Estado de órdenes: agregar el tema de las ventas que hay que entregar**
-   - ❌ No implementado
-   - ✔ Implementado
+Para iniciar el servidor de desarrollo, usa:
 
-16. **Agregar filtro del estado de pago de los productos**
-   - ❌ No implementado
-   - ✔ Implementado
+- **Con npm**:
+  ```bash
+  npm start
+  ```
+- **Con yarn**:
+  ```bash
+  yarn start
+  ```
 
-17. **Reporte de métodos de pago: irrelevante**
-   - ❌ No implementado
-   - ✔ Implementado
+El proyecto se ejecutará en `http://localhost:3000/` por defecto.
 
-18. **Avanzar con opiniones de Clientes, mostrar las opiniones de los clientes en la lista de productos en el botón de acciones**
-   - ❌ No implementado
-   - ✔ Implementado
+## 📂 Estructura del Proyecto
 
-19. **En lista de productos mostrar la categoría y no el código de la categoría**
-   - ❌ No implementado
-   - ✔ Implementado
+```
+📂 nombre-del-proyecto
+ ┣ 📂 src
+ ┃ ┣ 📂 components  # Componentes reutilizables
+ ┃ ┣ 📂 pages       # Páginas principales
+ ┃ ┣ 📂 services    # Servicios y lógica de negocio
+ ┃ ┣ 📂 utils       # Utilidades y funciones auxiliares
+ ┃ ┗ index.js       # Archivo principal de la aplicación
+ ┣ package.json     # Dependencias y configuración del proyecto
+ ┗ README.md        # Documentación
+```
 
-20. **Agregar apartado de preguntas que se muestre de manera global utilizando cualquiera de las conexiones**
-   - ❌ No implementado
-   - ✔ Implementado
+## 📌 Funcionalidades Principales
 
-21. **Mostrar el estado de la cuenta**
-   - ❌ No implementado
-   - ✔ Implementado
+✔️ **Monitoreo en tiempo real** del stock y ventas.  
+✔️ **Comparación de métricas** para evaluar el desempeño.  
+✔️ **Exportación de datos** en formatos útiles.  
+✔️ **Interfaz intuitiva y fácil de usar**.  
+✔️ **Optimizado para la toma de decisiones empresariales**.
 
-22. **REVISAR LOS VIDEOS DE BSALE**
-   - ❌ No implementado
-   - ✔ Implementado
-23. **Mejorar los visuales en productos**
-     -Agregar un scrollbar dentro de la tabla de productos
-     -Arreglar el ancho de la tabla
-     -Agregar las paginas para recorrer los productos de la tabla
-     - ❌ No implementado
-      - ✔ Implementado
-     
+## 🤝 Contribuciones
+
+Si deseas contribuir al proyecto, sigue estos pasos:
+
+1. **Haz un fork** del repositorio.
+2. **Crea una nueva rama** (`git checkout -b feature/nueva-funcionalidad`).
+3. **Realiza tus cambios** y haz commit (`git commit -m "Descripción del cambio"`).
+4. **Envía un pull request** para su revisión.
+
+## 📜 Licencia
+
+Este proyecto está bajo la licencia [MIT](https://opensource.org/licenses/MIT).
+
+---
+
+🚀 ¡Disfruta optimizando tus ventas en Mercado Libre con esta herramienta!

@@ -148,6 +148,7 @@ const ReporteRecepcion: React.FC = () => {
                 <thead className="table-secondary">
                 <tr>
                     <th>N° Documento</th>
+                    <th>SKU</th>
                     <th>Fecha</th>
                     <th>Cantidad recepcionada</th>
                     <th>Título</th>
@@ -160,6 +161,7 @@ const ReporteRecepcion: React.FC = () => {
                     currentData.map((item, index) => (
                     <tr key={index}>
                         <td>{item.id}</td>
+                        <td>{item.sku}</td>
                         <td>{new Date(item.date_created).toLocaleDateString()}</td>
                         <td>{item.quantity}</td>
                         <td>{item.title}</td>

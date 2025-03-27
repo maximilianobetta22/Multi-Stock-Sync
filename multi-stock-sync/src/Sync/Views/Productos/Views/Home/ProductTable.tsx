@@ -1,7 +1,15 @@
 import React, { useState } from "react";
-import { Accordion, Table, FormControl, Dropdown, DropdownButton } from "react-bootstrap";
-import { Link } from 'react-router-dom';
+import {
+  Accordion,
+  Table,
+  FormControl,
+  Dropdown,
+  DropdownButton,
+} from "react-bootstrap";
+import { Link } from "react-router-dom";
 import ProductActionsDropdown from "./ProductActionsDropdown";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEllipsis } from "@fortawesome/free-solid-svg-icons";
 
 interface Product {
   id: string;
@@ -24,7 +32,11 @@ interface ProductTableProps {
   isEditing: { [key: string]: boolean };
   stockEdit: { [key: string]: number };
   onStockChange: (productId: string, newStock: number) => void;
-  onUpdateStock: (productId: string, newStock: number, pause?: boolean) => Promise<void>;
+  onUpdateStock: (
+    productId: string,
+    newStock: number,
+    pause?: boolean
+  ) => Promise<void>;
   onOpenModal: (product: Product) => void;
   formatPriceCLP: (price: number) => string;
   translateStatus: (status: string) => string;
@@ -35,7 +47,7 @@ interface ProductTableProps {
 
 /**
  * Component that renders a table of products categorized by their categories.
- * 
+ *
  * @param {Object} props - The properties object.
  * @param {Object} props.categorizedProducts - An object where keys are category IDs and values are arrays of products.
  * @param {Object} props.categories - An object where keys are category IDs and values are category names.
@@ -49,7 +61,7 @@ interface ProductTableProps {
  * @param {Function} props.onUpdateStatus - Function to handle updating the product status.
  * @param {Function} props.onSelectProduct - Function to handle selecting a product.
  * @param {Function} props.onEditProduct - Function to handle editing a product.
- * 
+ *
  * @returns {JSX.Element} The rendered component.
  */
 const ProductTable: React.FC<ProductTableProps> = ({
@@ -68,9 +80,16 @@ const ProductTable: React.FC<ProductTableProps> = ({
 }) => {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>, productId: string) => {
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    productId: string
+  ) => {
     const { name, value } = e.target as HTMLInputElement;
-    const product = categorizedProducts[Object.keys(categorizedProducts).find(categoryId => categorizedProducts[categoryId].some(p => p.id === productId))!].find(p => p.id === productId)!;
+    const product = categorizedProducts[
+      Object.keys(categorizedProducts).find((categoryId) =>
+        categorizedProducts[categoryId].some((p) => p.id === productId)
+      )!
+    ].find((p) => p.id === productId)!;
     onEditProduct({ ...product, [name]: value });
   };
 
@@ -80,7 +99,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
         <Accordion.Item eventKey={index.toString()} key={categoryId}>
           <Accordion.Header>{categories[categoryId]}</Accordion.Header>
           <Accordion.Body>
-            <Table striped bordered hover>
+            <Table borderless hover>
               <thead>
                 <tr>
                   <th>Imagen</th>
@@ -95,7 +114,13 @@ const ProductTable: React.FC<ProductTableProps> = ({
               <tbody>
                 {categorizedProducts[categoryId].map((product) => (
                   <tr key={product.id}>
-                    <td><img src={product.thumbnail} alt={product.title} width="50" /></td>
+                    <td>
+                      <img
+                        src={product.thumbnail}
+                        alt={product.title}
+                        width="50"
+                      />
+                    </td>
                     <td>{product.title}</td>
                     <td>{categories[product.category_id]}</td>
                     <td>{formatPriceCLP(product.price)}</td>
@@ -103,8 +128,12 @@ const ProductTable: React.FC<ProductTableProps> = ({
                       {isEditing[product.id] ? (
                         <FormControl
                           type="number"
-                          value={stockEdit[product.id] || product.available_quantity}
-                          onChange={(e) => onStockChange(product.id, parseInt(e.target.value))}
+                          value={
+                            stockEdit[product.id] || product.available_quantity
+                          }
+                          onChange={(e) =>
+                            onStockChange(product.id, parseInt(e.target.value))
+                          }
                         />
                       ) : (
                         product.available_quantity
@@ -112,10 +141,26 @@ const ProductTable: React.FC<ProductTableProps> = ({
                     </td>
                     <td>{translateStatus(product.status)}</td>
                     <td>
-                      <DropdownButton id="dropdown-basic-button" title="Acciones">
-                        <Dropdown.Item as={Link} to={`/sync/productos/editar/${product.id}`}>Editar</Dropdown.Item>                        
-                        <Dropdown.Item onClick={() => onUpdateStatus(product.id, 'paused')}>Pausar</Dropdown.Item>
-                        <Dropdown.Item onClick={() => onUpdateStatus(product.id, 'active')}>Activar</Dropdown.Item>
+                      <DropdownButton
+                        id="dropdown-basic-button"
+                        title={<FontAwesomeIcon icon={faEllipsis} />}
+                      >
+                        <Dropdown.Item
+                          as={Link}
+                          to={`/sync/productos/editar/${product.id}`}
+                        >
+                          Editar
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => onUpdateStatus(product.id, "paused")}
+                        >
+                          Pausar
+                        </Dropdown.Item>
+                        <Dropdown.Item
+                          onClick={() => onUpdateStatus(product.id, "active")}
+                        >
+                          Activar
+                        </Dropdown.Item>
                       </DropdownButton>
                     </td>
                   </tr>
