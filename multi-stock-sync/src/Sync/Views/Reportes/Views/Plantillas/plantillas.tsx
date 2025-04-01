@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { Table, Button, Container, Row, Col } from "react-bootstrap";
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
+import * as XLSX from "xlsx";
+import jsPDF from 'jspdf';
+import 'jspdf-autotable';
+import { Modal } from "react-bootstrap";
 
 const data = [
     { id: "MLC2498031396", producto: "Cuadro Mujer Lady Genny C-413", variante: "L", cantidad: 2, orden: "200010344476138", servicio: "240127", estado: "delivered" },
@@ -21,40 +25,104 @@ const ITEMS_PER_PAGE = 5;
 const COLORS = ["#0088FE", "#00C49F", "#FFBB28", "#FF8042", "#A28DFF", "#FF6384"];
 
 const Plantilla: React.FC = () => {
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(1); // Estado para manejar la paginación
+    const [showModal, setShowModal] = useState(false); // Estado para mostrar el modal del PDF
+    const [pdfUrl, setPdfUrl] = useState(null); // Estado para almacenar la URL del PDF generado
 
+    // Cálculo de los elementos que se mostrarán en la tabla según la página actual
     const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
     const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
     const currentData = data.slice(indexOfFirstItem, indexOfLastItem);
+    const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE); // Cálculo total de páginas
 
-    const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
-
+    // Funciones para manejar la paginación
     const handleNext = () => {
         if (currentPage < totalPages) setCurrentPage(currentPage + 1);
     };
-
     const handlePrev = () => {
         if (currentPage > 1) setCurrentPage(currentPage - 1);
     };
 
-    // Contar cantidad de productos por variante para el gráfico
+    // Contar la cantidad de productos por variante para el gráfico de torta
     const variantCounts = data.reduce((acc: { [key: string]: number }, item) => {
         acc[item.variante] = (acc[item.variante] || 0) + item.cantidad;
         return acc;
     }, {});
 
+    // Convertir los datos en un formato adecuado para el gráfico de torta
     const pieData = Object.keys(variantCounts).map((key, index) => ({
         name: key,
         value: variantCounts[key],
         color: COLORS[index % COLORS.length]
     }));
 
+    // Función para exportar los datos a un archivo Excel
+    const exportToExcel = () => {
+        const ws = XLSX.utils.json_to_sheet(data); // Convertir los datos en una hoja de Excel
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+        XLSX.writeFile(wb, "reporte.xlsx"); // Descargar el archivo
+    };
+
+    // Función para exportar solo ciertos datos a Excel
+    const exportToExcelManual = () => {
+        const filteredData = data.map(item => ({
+            id: item.id,
+            producto: item.producto,
+            variante: item.variante,
+            cantidad: item.cantidad
+        }));
+        const ws = XLSX.utils.json_to_sheet(filteredData);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Reporte");
+        XLSX.writeFile(wb, "reporte.xlsx");
+    };
+
+    // Función para generar y previsualizar un PDF en el modal
+    const exportToPDF = () => {
+        const doc = new jsPDF();
+        doc.text("Reporte de Productos", 14, 10);
+        doc.autoTable({
+            head: [["ID Producto", "Producto", "Variante", "Cantidad", "ID Orden", "Servicio", "Estado"]],
+            body: data.map(item => [item.id, item.producto, item.variante, item.cantidad, item.orden, item.servicio, item.estado]),
+        });
+
+        const pdfBlob = doc.output("blob");
+        const pdfUrl = URL.createObjectURL(pdfBlob); // Crear un URL temporal para visualizar el PDF
+        setPdfUrl(pdfUrl);
+        setShowModal(true);
+    };
+
+    // Función para descargar el PDF generado
+    const handleDownload = () => {
+        const doc = new jsPDF();
+        doc.text("Reporte de Productos", 14, 10);
+        doc.autoTable({
+            head: [["ID Producto", "Producto", "Variante", "Cantidad", "ID Orden", "Servicio", "Estado"]],
+            body: data.map(item => [item.id, item.producto, item.variante, item.cantidad, item.orden, item.servicio, item.estado]),
+        });
+        doc.save("reporte.pdf"); // Descargar el archivo PDF
+        setShowModal(false);
+    };
+
     return (
         <Container className="mt-4">
-            <p>La idea de esta pagina es que tengan una referencia visual de como se tiene que ver algunos</p>
-            <p> de los graficos,tablas y formato de los excel y pdf para que tenga referencia y codigo a mano</p>
             <h2>Reporte de Productos</h2>
-            <Table striped bordered hover>
+            <h1>HOLA NUEVO EQUIPO DE FRONT</h1>
+            <Button variant="success" className="m-2" onClick={exportToExcel}>Descargar Excel (todos los datos)</Button>
+            <Button variant="danger" className="m-2" onClick={exportToPDF}>Descargar PDF</Button>
+            <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+                <Modal.Header closeButton>
+                    <Modal.Title>Vista previa del PDF</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    {pdfUrl && <iframe src={pdfUrl} width="100%" height="500px" />}
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button variant="primary" onClick={handleDownload}>Descargar PDF</Button>
+                </Modal.Footer>
+            </Modal>
+            <Table striped bordered hover className="mt-3" id="product-table">
                 <thead className="table-dark">
                     <tr>
                         <th>ID Producto</th>
@@ -62,9 +130,8 @@ const Plantilla: React.FC = () => {
                         <th>Variante</th>
                         <th>Cantidad</th>
                         <th>ID Orden</th>
-                        <th>ID Orden Servicio</th>
+                        <th>Servicio</th>
                         <th>Estado</th>
-                        <th>Acción</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -77,13 +144,10 @@ const Plantilla: React.FC = () => {
                             <td>{item.orden}</td>
                             <td>{item.servicio}</td>
                             <td>{item.estado}</td>
-                            <td>
-                                <Button variant="primary">Ver Detalles</Button>
-                            </td>
                         </tr>
                     ))}
                 </tbody>
-            </Table>
+            </Table>q
 
             {/* Paginación */}
             <div className="d-flex justify-content-center align-items-center">
