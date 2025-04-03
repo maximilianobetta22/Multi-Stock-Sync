@@ -1,36 +1,15 @@
-import React, { useState } from 'react';
-import { Modal, Button, Form } from 'react-bootstrap';
+import React, { useState } from "react";
+import { Modal, Button, Form } from "react-bootstrap";
+import { Product, ProductModalProps } from "../types/product.type";
 
-interface Product {
-  id: string;
-  thumbnail: string;
-  site_id: string;
-  title: string;
-}
-
-interface ProductModalProps {
-  show: boolean;
-  onHide: () => void;
-  product: Product | null;
-  onUpdateStock: (id: string, siteId: number) => void;
-  onUpdateStatus: (id: string, status: string) => void;
-  onStockChange: (id: string, value: number) => void;
-  stockEdit: { [key: string]: number };
-}
-
-/**
- * ProductModal component allows users to edit product details in a modal dialog.
- * 
- * @param {Object} props - Component props
- * @param {boolean} props.show - Whether the modal is visible
- * @param {function} props.onHide - Function to hide the modal
- * @param {Object|null} props.product - Product details to edit
- * @param {function} props.onUpdateStock - Function to update product stock
- * @param {function} props.onUpdateStatus - Function to update product status
- * @param {function} props.onStockChange - Function to handle stock change
- * @param {Object} props.stockEdit - State of stock values being edited
- */
-const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUpdateStock, onUpdateStatus, onStockChange, stockEdit }) => {
+const ProductModal: React.FC<ProductModalProps> = ({
+  show,
+  onHide,
+  product,
+  onUpdateStock,
+  onStockChange,
+  stockEdit,
+}) => {
   const [editedProduct, setEditedProduct] = useState<Product | null>(product);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,7 +40,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUp
             <Form.Control
               type="text"
               name="id"
-              value={editedProduct?.id || ''}
+              value={editedProduct?.id || ""}
               onChange={handleChange}
               readOnly
             />
@@ -71,7 +50,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUp
             <Form.Control
               type="text"
               name="thumbnail"
-              value={editedProduct?.thumbnail || ''}
+              value={editedProduct?.thumbnail || ""}
               onChange={handleChange}
             />
           </Form.Group>
@@ -80,7 +59,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUp
             <Form.Control
               type="text"
               name="site_id"
-              value={editedProduct?.site_id || ''}
+              value={editedProduct?.site_id || ""}
               onChange={handleChange}
             />
           </Form.Group>
@@ -89,7 +68,7 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUp
             <Form.Control
               type="text"
               name="title"
-              value={editedProduct?.title || ''}
+              value={editedProduct?.title || ""}
               onChange={handleChange}
             />
           </Form.Group>
@@ -99,7 +78,9 @@ const ProductModal: React.FC<ProductModalProps> = ({ show, onHide, product, onUp
               type="number"
               name="stock"
               value={stockEdit[product.id] || product.available_quantity}
-              onChange={(e) => onStockChange(product.id, parseInt(e.target.value))}
+              onChange={(e) =>
+                onStockChange(product.id, parseInt(e.target.value))
+              }
             />
           </Form.Group>
         </Form>

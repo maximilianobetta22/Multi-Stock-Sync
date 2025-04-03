@@ -1,7 +1,7 @@
 /* Styles for the table container to enable scrolling */
 .table-container {
   max-height: 300px;
-  overflow-y: auto; 
+  overflow-y: auto;
 }
 
 /* Ensure the table header and rows have a fixed layout */
