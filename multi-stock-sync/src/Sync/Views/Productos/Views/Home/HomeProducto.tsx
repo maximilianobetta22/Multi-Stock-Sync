@@ -5,57 +5,12 @@ import { Container, Row, Col, Pagination, Button } from "react-bootstrap";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-import ProductTable from "./ProductTable";
-import ProductModal from "./ProductModal";
-import SearchBar from "./SearchBar";
-import ConnectionDropdown from "./ConnectionDropdown";
-
-interface Connection {
-  client_id: string;
-  client_secret: string;
-  access_token: string;
-  refresh_token: string;
-  expires_at: string;
-  nickname: string;
-  email: string;
-  profile_image: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Product {
-  id: string;
-  thumbnail: string;
-  site_id: string;
-  title: string;
-  seller_id: number;
-  category_id: string;
-  user_product_id: string;
-  price: number;
-  base_price: number;
-  available_quantity: number;
-  permalink: string;
-  status: string;
-}
-
-interface ProductModalProps {
-  show: boolean;
-  onHide: () => void;
-  product: Product | null;
-  modalContent: "main" | "stock" | "pause";
-  onUpdateStock: (
-    productId: string,
-    newStock: number,
-    pause?: boolean
-  ) => Promise<void>;
-  onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
-  onStockChange: (productId: string, newStock: number) => void;
-  stockEdit: { [key: string]: number };
-  fetchProducts: () => void;
-  setModalContent: React.Dispatch<
-    React.SetStateAction<"main" | "stock" | "pause">
-  >;
-}
+import ProductTable from "../../components/ProductTable";
+import ProductModal from "../../components/ProductModal";
+import SearchBar from "../../components/SearchBar";
+import ConnectionDropdown from "../../components/ConnectionDropdown";
+import { Product } from "../../types/product.type";
+import { Connection } from "../../types/connection.type";
 
 const statusDictionary: { [key: string]: string } = {
   active: "Activo",
@@ -66,148 +21,10 @@ const statusDictionary: { [key: string]: string } = {
   payment_required: "Pago requerido",
   not_yet_active: "Aún no activo",
   deleted: "Eliminado",
-};
+}; //Pedir un diccionario a backend
 
 const MySwal = withReactContent(Swal);
 
-/**
- * HomeProducto component is the main component for managing and displaying products.
- */
-/**
- * HomeProducto component is responsible for displaying and managing products.
- * It allows users to fetch, search, filter, and update products from MercadoLibre.
- *
- * @component
- *
- * @returns {JSX.Element} The rendered HomeProducto component.
- *
- * @example
- * <HomeProducto />
- *
- * @remarks
- * This component uses various hooks to manage state and side effects, including:
- * - `useState` for managing local state.
- * - `useEffect` for fetching data on component mount and handling side effects.
- *
- * @function
- * @name HomeProducto
- *
- * @description
- * The component fetches connections and products from an API, allows searching and filtering products,
- * and provides functionalities to update product stock and status. It also handles pagination and displays
- * a modal for detailed product actions.
- *
- * @hook
- * @name useNavigate
- * @description Hook from `react-router-dom` for navigation.
- *
- * @hook
- * @name useState
- * @description Hook for managing local state.
- *
- * @hook
- * @name useEffect
- * @description Hook for performing side effects.
- *
- * @typedef {Object} Connection
- * @property {string} client_id - The client ID of the connection.
- * @property {string} access_token - The access token for the connection.
- *
- * @typedef {Object} Product
- * @property {string} id - The product ID.
- * @property {string} title - The product title.
- * @property {number} price - The product price.
- * @property {string} category_id - The category ID of the product.
- *
- * @state {Connection[]} connections - List of connections.
- * @state {string} selectedConnection - The currently selected connection.
- * @state {boolean} loading - Loading state for fetching products.
- * @state {Product[]} allProductos - List of all fetched products.
- * @state {boolean} loadingConnections - Loading state for fetching connections.
- * @state {string | null} toastMessage - Message to be displayed in a toast notification.
- * @state {'success' | 'warning' | 'error'} toastType - Type of the toast notification.
- * @state {{ [key: string]: number }} stockEdit - Object mapping product IDs to their edited stock values.
- * @state {boolean} isUpdating - State indicating if a product update is in progress.
- * @state {boolean} modalIsOpen - State indicating if the modal is open.
- * @state {{ [key: string]: boolean }} isEditing - Object mapping product IDs to their editing state.
- * @state {Product | null} currentProduct - The currently selected product for detailed actions.
- * @state {'main' | 'stock' | 'pause'} modalContent - The content type to be displayed in the modal.
- * @state {string} searchQuery - The current search query.
- * @state {string} selectedCategory - The currently selected category.
- * @state {number} limit - The limit of products per page.
- * @state {number} offset - The current offset for pagination.
- * @state {number} totalProducts - The total number of products.
- * @state {{ [key: string]: string }} categories - Object mapping category IDs to their names.
- * @state {Product | null} selectedProduct - The currently selected product.
- *
- * @method
- * @name fetchConnections
- * @description Fetches connections from the API.
- *
- * @method
- * @name fetchProducts
- * @description Fetches products from the API based on the selected connection, search query, limit, offset, and category.
- *
- * @method
- * @name fetchCategories
- * @description Fetches category names for the given products.
- *
- * @method
- * @name handleConnectionChange
- * @description Handles the change of the selected connection.
- *
- * @method
- * @name handleSearch
- * @description Handles the search query change and fetches products based on the query.
- *
- * @method
- * @name handleCategoryChange
- * @description Handles the change of the selected category.
- *
- * @method
- * @name handlePageChange
- * @description Handles the change of the current page for pagination.
- *
- * @method
- * @name handleStockChange
- * @description Handles the change of the stock value for a product.
- *
- * @method
- * @name updateStock
- * @description Updates the stock of a product.
- *
- * @method
- * @name updateStatus
- * @description Updates the status of a product.
- *
- * @method
- * @name openModal
- * @description Opens the modal for detailed product actions.
- *
- * @method
- * @name closeModal
- * @description Closes the modal.
- *
- * @method
- * @name formatPriceCLP
- * @description Formats a price value to Chilean Peso (CLP) currency format.
- *
- * @method
- * @name translateStatus
- * @description Translates a product status to a human-readable format.
- *
- * @method
- * @name categorizeProducts
- * @description Categorizes products based on their category IDs.
- *
- * @method
- * @name filterResults
- * @description Filters products based on the selected category.
- *
- * @method
- * @name onSelectSuggestion
- * @description Handles the selection of a search suggestion.
- */
 const HomeProducto = () => {
   const navigate = useNavigate();
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -222,18 +39,18 @@ const HomeProducto = () => {
   const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
   const [isUpdating, setIsUpdating] = useState(false);
   const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState<{ [key: string]: boolean }>({});
+  const [isEditing] = useState<{ [key: string]: boolean }>({});
   const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
   const [modalContent, setModalContent] = useState<"main" | "stock" | "pause">(
     "main"
   );
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [limit] = useState(35); // Updated limit to 35
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [limit] = useState(35);
   const [offset, setOffset] = useState(0);
   const [totalProducts, setTotalProducts] = useState(0);
   const [categories, setCategories] = useState<{ [key: string]: string }>({});
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null); // Add selectedProduct state
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     const fetchConnections = async () => {
