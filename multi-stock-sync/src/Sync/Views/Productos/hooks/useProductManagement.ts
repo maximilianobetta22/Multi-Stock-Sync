@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { Product } from '../types/product.type';
 import { productService } from '../service/productService';
 import { Connection } from '../types/connection.type';
+import axiosInstance from '../../../../axiosConfig';
 
 export const useProductManagement = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
