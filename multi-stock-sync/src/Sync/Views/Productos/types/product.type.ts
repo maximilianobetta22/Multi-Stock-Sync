@@ -11,6 +11,7 @@ export interface Product {
   available_quantity: number;
   permalink: string;
   status: string;
+  status_translated: string;
 }
 
 export interface ProductModalProps {
@@ -45,7 +46,6 @@ export interface ProductTableProps {
   ) => Promise<void>;
   onOpenModal: (product: Product) => void;
   formatPriceCLP: (price: number) => string;
-  translateStatus: (status: string) => string;
   onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
   onSelectProduct: (product: Product) => void;
   onEditProduct: (product: Product) => void;

@@ -18,29 +18,17 @@ const ProductTable: React.FC<ProductTableProps> = ({
   stockEdit,
   onStockChange,
   formatPriceCLP,
-  translateStatus,
   onUpdateStatus,
 }) => {
-  //const [editingProductId, setEditingProductId] = useState<string | null>(null);
-
-  /*const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    productId: string
-  ) => {
-    const { name, value } = e.target as HTMLInputElement;
-    const product = categorizedProducts[
-      Object.keys(categorizedProducts).find((categoryId) =>
-        categorizedProducts[categoryId].some((p) => p.id === productId)
-      )!
-    ].find((p) => p.id === productId)!;
-    onEditProduct({ ...product, [name]: value });
-  };*/
+  const getCategoryName = (categoryId: string) => {
+    return categories[categoryId] || "Categoría no disponible";
+  };
 
   return (
     <Accordion defaultActiveKey="0">
       {Object.keys(categorizedProducts).map((categoryId, index) => (
         <Accordion.Item eventKey={index.toString()} key={categoryId}>
-          <Accordion.Header>{categories[categoryId]}</Accordion.Header>
+          <Accordion.Header>{getCategoryName(categoryId)}</Accordion.Header>
           <Accordion.Body>
             <Table borderless hover>
               <thead>
@@ -65,7 +53,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                       />
                     </td>
                     <td>{product.title}</td>
-                    <td>{categories[product.category_id]}</td>
+                    <td>{getCategoryName(product.category_id)}</td>
                     <td>{formatPriceCLP(product.price)}</td>
                     <td>
                       {isEditing[product.id] ? (
@@ -82,7 +70,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
                         product.available_quantity
                       )}
                     </td>
-                    <td>{translateStatus(product.status)}</td>
+                    <td>{product.status_translated}</td>
                     <td>
                       <DropdownButton
                         id="dropdown-basic-button"
