@@ -1,8 +1,8 @@
-import { useState, useCallback } from 'react';
-import { Product } from '../types/product.type';
-import { productService } from '../service/productService';
-import { Connection } from '../types/connection.type';
-import axiosInstance from '../../../../axiosConfig';
+import { useState, useCallback } from "react";
+import { Product } from "../types/product.type";
+import { productService } from "../service/productService";
+import { Connection } from "../types/connection.type";
+import axiosInstance from "../../../../axiosConfig";
 
 export const useProductManagement = () => {
   const [connections, setConnections] = useState<Connection[]>([]);
@@ -18,45 +18,82 @@ export const useProductManagement = () => {
       const data = await productService.fetchConnections();
       setConnections(data);
     } catch (error) {
-      throw new Error('Error fetching connections');
+      throw new Error("Error fetching connections");
     } finally {
       setLoadingConnections(false);
     }
   }, []);
 
-  const fetchProducts = useCallback(async (
-    clientId: string,
-    query: string = "",
-    limit: number = 35,
-    offset: number = 0,
-    category: string = ""
-  ) => {
-    setLoading(true);
-    try {
-      const response = await productService.fetchProducts(clientId, query, limit, offset, category);
-      setAllProducts(response.data);
-      setTotalProducts(response.pagination.total);
-      await fetchCategories(response.data);
-    } catch (error) {
-      throw new Error('Error fetching products');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   const fetchCategories = async (products: Product[]) => {
-    const categoryIds = Array.from(new Set(products.map(product => product.category_id)));
-    const categoriesMap: { [key: string]: string } = {};
-
-    await Promise.all(
-      categoryIds.map(async (categoryId) => {
-        const response = await axiosInstance.get(`https://api.mercadolibre.com/categories/${categoryId}`);
-        categoriesMap[categoryId] = response.data.name;
-      })
+    const categoryIds = Array.from(
+      new Set(products.map((product) => product.category_id))
     );
-
-    setCategories(categoriesMap);
+    try {
+      const categoriesMap: { [key: string]: string } = {};
+      await Promise.all(
+        categoryIds.map(async (categoryId) => {
+          const response = await axiosInstance.get(
+            `https://api.mercadolibre.com/categories/${categoryId}`
+          );
+          categoriesMap[categoryId] = response.data.name;
+        })
+      );
+      setCategories(categoriesMap);
+    } catch (error) {
+      console.error("Error fetching categories:", error);
+    }
   };
+
+  const fetchProducts = useCallback(
+    async (
+      clientId: string,
+      query: string = "",
+      limit: number = 35,
+      offset: number = 0,
+      category: string = ""
+    ) => {
+      setLoading(true);
+      try {
+        const response = await productService.fetchProducts(
+          clientId,
+          query,
+          limit,
+          offset,
+          category
+        );
+
+        if (!response || !response.data) {
+          console.error("Invalid response:", response);
+          throw new Error("Invalid response from server");
+        }
+
+        if (!Array.isArray(response.data)) {
+          console.error("Response data is not an array:", response.data);
+          throw new Error("Invalid data format from server");
+        }
+
+        setAllProducts(response.data);
+        setTotalProducts(response.pagination?.total || 0);
+
+        // Call fetchCategories with the products array
+        if (response.data.length > 0) {
+          await fetchCategories(response.data);
+        }
+      } catch (error) {
+        console.error("Error in fetchProducts:", error);
+        setAllProducts([]);
+        setTotalProducts(0);
+        if (error instanceof Error) {
+          throw new Error(`Error fetching products: ${error.message}`);
+        } else {
+          throw new Error("Unknown error fetching products");
+        }
+      } finally {
+        setLoading(false);
+      }
+    },
+    [fetchCategories] // Add fetchCategories to dependencies
+  );
 
   return {
     connections,
@@ -68,6 +105,6 @@ export const useProductManagement = () => {
     totalProducts,
     setSelectedConnection,
     fetchConnections,
-    fetchProducts
+    fetchProducts,
   };
 };

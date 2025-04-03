@@ -14,17 +14,6 @@ import { useProductManagement } from "../../hooks/useProductManagement";
 import { useStockManagement } from "../../hooks/useStockManagement";
 import { useStatusManagement } from "../../hooks/useStatusManagement";
 
-const statusDictionary: { [key: string]: string } = {
-  active: "Activo",
-  paused: "Pausado",
-  closed: "Cerrado",
-  under_review: "En revisión",
-  inactive: "Inactivo",
-  payment_required: "Pago requerido",
-  not_yet_active: "Aún no activo",
-  deleted: "Eliminado",
-}; //Pedir un diccionario a backend
-
 const MySwal = withReactContent(Swal);
 
 const HomeProducto = () => {
@@ -93,10 +82,6 @@ const HomeProducto = () => {
     fetchProducts(selectedConnection, query, limit, 0);
   };
 
-  /*const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-  };*/
-
   const handlePageChange = (newOffset: number) => {
     setOffset(newOffset);
     fetchProducts(selectedConnection, searchQuery, limit, newOffset);
@@ -142,10 +127,6 @@ const HomeProducto = () => {
     }).format(price);
   };
 
-  const translateStatus = (status: string) => {
-    return statusDictionary[status] || status;
-  };
-
   const categorizeProducts = (products: Product[]) => {
     const categories: { [key: string]: Product[] } = {};
     products.forEach((product) => {
@@ -156,12 +137,6 @@ const HomeProducto = () => {
     });
     return categories;
   };
-
-  /*const filterResults = (category: string) => {
-  setSelectedCategory(category);
-  setOffset(0);
-  fetchProducts(selectedConnection, searchQuery, limit, 0, category);
-  };*/
 
   const onSelectSuggestion = (suggestion: string) => {
     setSearchQuery(suggestion);
@@ -236,7 +211,6 @@ const HomeProducto = () => {
                   onUpdateStock={updateStock}
                   onOpenModal={openModal}
                   formatPriceCLP={formatPriceCLP}
-                  translateStatus={translateStatus}
                   onUpdateStatus={updateStatus}
                   onSelectProduct={setSelectedProduct}
                   onEditProduct={(product) =>

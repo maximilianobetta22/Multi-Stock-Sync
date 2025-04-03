@@ -17,14 +17,26 @@ export const productService = {
     offset: number = 0,
     category: string = ""
   ) {
-    const url = query
-      ? `${process.env.VITE_API_URL}/mercadolibre/products/search/${clientId}`
-      : `${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`;
+    try {
+      const url = query
+        ? `${process.env.VITE_API_URL}/mercadolibre/products/search/${clientId}`
+        : `${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`;
 
-    const response = await axiosInstance.get(url, {
-      params: { q: query, limit, offset, category },
-    });
-    return response.data;
+      const response = await axiosInstance.get(url, {
+        params: { q: query, limit, offset, category },
+      });
+
+      console.log("Products API response:", response.data);
+
+      if (!response.data || !response.data.data) {
+        throw new Error("Invalid API response structure");
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Error in productService.fetchProducts:", error);
+      throw error;
+    }
   },
 
   async updateProductStock({
@@ -48,6 +60,18 @@ export const productService = {
         },
       }
     );
+  },
+
+  async fetchCategory(categoryId: string) {
+    try {
+      const response = await axiosInstance.get(
+        `https://api.mercadolibre.com/categories/${categoryId}`
+      );
+      return response.data;
+    } catch (error) {
+      console.error(`Error fetching category ${categoryId}:`, error);
+      return null;
+    }
   },
 
   async updateProductStatus({
