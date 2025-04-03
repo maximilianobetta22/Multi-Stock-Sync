@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../../../../../axiosConfig"; // Importa la configuración de Axios
 import { Container, Row, Col, Pagination, Button } from "react-bootstrap";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -10,68 +9,52 @@ import ProductModal from "../../components/ProductModal";
 import SearchBar from "../../components/SearchBar";
 import ConnectionDropdown from "../../components/ConnectionDropdown";
 import { Product } from "../../types/product.type";
-import { Connection } from "../../types/connection.type";
-
-const statusDictionary: { [key: string]: string } = {
-  active: "Activo",
-  paused: "Pausado",
-  closed: "Cerrado",
-  under_review: "En revisión",
-  inactive: "Inactivo",
-  payment_required: "Pago requerido",
-  not_yet_active: "Aún no activo",
-  deleted: "Eliminado",
-}; //Pedir un diccionario a backend
+import { useModalManagement } from "../../hooks/useModalManagement";
+import { useProductManagement } from "../../hooks/useProductManagement";
+import { useStockManagement } from "../../hooks/useStockManagement";
+import { useStatusManagement } from "../../hooks/useStatusManagement";
 
 const MySwal = withReactContent(Swal);
 
 const HomeProducto = () => {
+  //nuevo
+  const {
+    modalIsOpen,
+    currentProduct,
+    modalContent,
+    setModalContent,
+    openModal,
+    closeModal,
+  } = useModalManagement();
+
+  const {
+    connections,
+    selectedConnection,
+    allProducts,
+    categories,
+    loading,
+    loadingConnections,
+    totalProducts,
+    setSelectedConnection,
+    fetchConnections,
+    fetchProducts,
+  } = useProductManagement();
+
   const navigate = useNavigate();
-  const [connections, setConnections] = useState<Connection[]>([]);
-  const [selectedConnection, setSelectedConnection] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [allProductos, setAllProductos] = useState<Product[]>([]);
-  const [loadingConnections, setLoadingConnections] = useState(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<"success" | "warning" | "error">(
     "error"
   );
   const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
-  const [isUpdating, setIsUpdating] = useState(false);
-  const [modalIsOpen, setModalIsOpen] = useState(false);
   const [isEditing] = useState<{ [key: string]: boolean }>({});
-  const [currentProduct, setCurrentProduct] = useState<Product | null>(null);
-  const [modalContent, setModalContent] = useState<"main" | "stock" | "pause">(
-    "main"
-  );
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [limit] = useState(35);
   const [offset, setOffset] = useState(0);
-  const [totalProducts, setTotalProducts] = useState(0);
-  const [categories, setCategories] = useState<{ [key: string]: string }>({});
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
-    const fetchConnections = async () => {
-      try {
-        const response = await axiosInstance.get(
-          `${process.env.VITE_API_URL}/mercadolibre/credentials`
-        );
-        setConnections(response.data.data);
-      } catch (error) {
-        console.error("Error fetching connections:", error);
-        setToastMessage(
-          (error as any).response?.data?.message || "Error fetching connections"
-        );
-        setToastType("error");
-      } finally {
-        setLoadingConnections(false);
-      }
-    };
-
     fetchConnections();
-  }, []);
+  }, [fetchConnections]);
 
   useEffect(() => {
     if (toastMessage) {
@@ -84,67 +67,12 @@ const HomeProducto = () => {
     }
   }, [toastMessage]);
 
-  const handleConnectionChange = async (clientId: string) => {
+  const handleConnectionChange = (clientId: string) => {
     setSelectedConnection(clientId);
-    setAllProductos([]);
-    setCategories({});
     setSearchQuery("");
-    setSelectedCategory("");
     setOffset(0);
-
-    if (clientId === "") {
-      return;
-    }
-
-    fetchProducts(clientId);
-  };
-
-  const fetchProducts = async (
-    clientId: string,
-    query: string = "",
-    limit: number = 35,
-    offset: number = 0,
-    category: string = ""
-  ) => {
-    setLoading(true);
-    try {
-      const url = query
-        ? `${process.env.VITE_API_URL}/mercadolibre/products/search/${clientId}`
-        : `${process.env.VITE_API_URL}/mercadolibre/products/${clientId}`;
-      const response = await axiosInstance.get(url, {
-        params: { q: query, limit, offset, category },
-      });
-      setAllProductos(response.data.data);
-      setTotalProducts(response.data.pagination.total);
-      fetchCategories(response.data.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      setToastMessage(
-        (error as any).response?.data?.message || "Error fetching products"
-      );
-      setToastType("error");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchCategories = async (products: Product[]) => {
-    const categoryIds = Array.from(
-      new Set(products.map((product) => product.category_id))
-    );
-    try {
-      const categoriesMap: { [key: string]: string } = {};
-      await Promise.all(
-        categoryIds.map(async (categoryId) => {
-          const response = await axiosInstance.get(
-            `https://api.mercadolibre.com/categories/${categoryId}`
-          );
-          categoriesMap[categoryId] = response.data.name;
-        })
-      );
-      setCategories(categoriesMap);
-    } catch (error) {
-      console.error("Error fetching categories:", error);
+    if (clientId) {
+      fetchProducts(clientId);
     }
   };
 
@@ -153,10 +81,6 @@ const HomeProducto = () => {
     setOffset(0);
     fetchProducts(selectedConnection, query, limit, 0);
   };
-
-  /*const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-  };*/
 
   const handlePageChange = (newOffset: number) => {
     setOffset(newOffset);
@@ -170,122 +94,37 @@ const HomeProducto = () => {
     }));
   };
 
-  const updateStock = async (
-    productId: string,
-    newStock: number,
-    pause: boolean = false
-  ) => {
-    setIsUpdating(true);
-    try {
-      const selectedConnectionData = connections.find(
-        (connection) => connection.client_id === selectedConnection
-      );
-
-      if (!selectedConnectionData) {
-        setToastMessage("Conexión no encontrada");
-        setToastType("error");
-        return;
-      }
-
-      const ACCESS_TOKEN = selectedConnectionData.access_token;
-      const ITEM_ID = productId;
-
-      console.log("Updating stock for product:", productId);
-      console.log("New stock:", newStock);
-      console.log("Pause:", pause);
-
-      const response = await axiosInstance.put(
-        `https://api.mercadolibre.com/items/${ITEM_ID}`,
-        pause ? { status: "paused" } : { available_quantity: newStock },
-        {
-          headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
-
-      console.log("API response:", response.data);
-
-      const successMessage = pause
-        ? "Publicación pausada exitosamente."
-        : "Stock actualizado correctamente";
-      setToastMessage(successMessage);
+  const { isUpdating: isUpdatingStock, updateStock } = useStockManagement({
+    connections,
+    selectedConnection,
+    onSuccess: (message) => {
+      setToastMessage(message);
       setToastType("success");
-    } catch (error) {
-      console.error("Error updating stock:", error);
-      setToastMessage("Error al actualizar el stock");
+    },
+    onError: (message) => {
+      setToastMessage(message);
       setToastType("error");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
+    },
+  });
 
-  const updateStatus = async (productId: string, newStatus: string) => {
-    setIsUpdating(true);
-    try {
-      const selectedConnectionData = connections.find(
-        (connection) => connection.client_id === selectedConnection
-      );
-
-      if (!selectedConnectionData) {
-        setToastMessage("Conexión no encontrada");
-        setToastType("error");
-        return;
-      }
-
-      const ACCESS_TOKEN = selectedConnectionData.access_token;
-      const ITEM_ID = productId;
-
-      const response = await axiosInstance.put(
-        `https://api.mercadolibre.com/items/${ITEM_ID}`,
-        { status: newStatus },
-        {
-          headers: {
-            Authorization: `Bearer ${ACCESS_TOKEN}`,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-          },
-        }
-      );
-
-      const successMessage =
-        newStatus === "paused"
-          ? "Publicación pausada exitosamente."
-          : "Publicación reanudada exitosamente.";
-      setToastMessage(successMessage);
+  const { isUpdating: isUpdatingStatus, updateStatus } = useStatusManagement({
+    connections,
+    selectedConnection,
+    onSuccess: (message) => {
+      setToastMessage(message);
       setToastType("success");
-      console.log(response.data);
-    } catch (error) {
-      console.error("Error updating status:", error);
-      setToastMessage("Error al actualizar el estado");
+    },
+    onError: (message) => {
+      setToastMessage(message);
       setToastType("error");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  const openModal = (product: Product) => {
-    setCurrentProduct(product);
-    setModalContent("main");
-    setModalIsOpen(true);
-  };
-
-  const closeModal = () => {
-    setModalIsOpen(false);
-    setCurrentProduct(null);
-  };
+    },
+  });
 
   const formatPriceCLP = (price: number) => {
     return new Intl.NumberFormat("es-CL", {
       style: "currency",
       currency: "CLP",
     }).format(price);
-  };
-
-  const translateStatus = (status: string) => {
-    return statusDictionary[status] || status;
   };
 
   const categorizeProducts = (products: Product[]) => {
@@ -299,18 +138,12 @@ const HomeProducto = () => {
     return categories;
   };
 
-  /*const filterResults = (category: string) => {
-  setSelectedCategory(category);
-  setOffset(0);
-  fetchProducts(selectedConnection, searchQuery, limit, 0, category);
-  };*/
-
   const onSelectSuggestion = (suggestion: string) => {
     setSearchQuery(suggestion);
     fetchProducts(selectedConnection, suggestion, limit, 0);
   };
 
-  const categorizedProducts = categorizeProducts(allProductos);
+  const categorizedProducts = categorizeProducts(allProducts);
 
   const totalPages = Math.ceil(totalProducts / limit);
   const currentPage = Math.floor(offset / limit);
@@ -323,108 +156,111 @@ const HomeProducto = () => {
 
   return (
     <>
-      {(loadingConnections || loading || isUpdating) && (
-        <LoadingDinamico variant="container" />
-      )}
+      {(loadingConnections ||
+        loading ||
+        isUpdatingStock ||
+        isUpdatingStatus) && <LoadingDinamico variant="container" />}
       <Container>
-        {!loadingConnections && !loading && !isUpdating && (
-          <section>
-            <Row className="mb-3 mt-3">
-              <Col>
-                <h1>Productos</h1>
-              </Col>
-            </Row>
-            <Row className="mb-3">
-              <Col md={4}>
-                <ConnectionDropdown
-                  connections={connections}
-                  selectedConnection={selectedConnection}
-                  onChange={handleConnectionChange}
+        {!loadingConnections &&
+          !loading &&
+          !isUpdatingStock &&
+          !isUpdatingStatus && (
+            <section>
+              <Row className="mb-3 mt-3">
+                <Col>
+                  <h1>Productos</h1>
+                </Col>
+              </Row>
+              <Row className="mb-3">
+                <Col md={4}>
+                  <ConnectionDropdown
+                    connections={connections}
+                    selectedConnection={selectedConnection}
+                    onChange={handleConnectionChange}
+                  />
+                  <br />
+                  <p>
+                    Por favor, seleccione una conexión para ver los productos.
+                  </p>
+                </Col>
+                <Col md={4}>
+                  <SearchBar
+                    searchQuery={searchQuery}
+                    onSearch={handleSearch}
+                    suggestions={[]}
+                    onSelectSuggestion={onSelectSuggestion}
+                  />
+                </Col>
+                <Col md={4} className="text-end">
+                  <Button
+                    variant="primary"
+                    onClick={() => navigate("/sync/productos/crear")}
+                  >
+                    Crear Producto
+                  </Button>
+                </Col>
+              </Row>
+              {!selectedConnection && <Row className="mb-3"></Row>}
+              {selectedConnection && (
+                <ProductTable
+                  categorizedProducts={categorizedProducts}
+                  categories={categories}
+                  isEditing={isEditing}
+                  stockEdit={stockEdit}
+                  onStockChange={handleStockChange}
+                  onUpdateStock={updateStock}
+                  onOpenModal={openModal}
+                  formatPriceCLP={formatPriceCLP}
+                  onUpdateStatus={updateStatus}
+                  onSelectProduct={setSelectedProduct}
+                  onEditProduct={(product) =>
+                    console.log("Edit product", product)
+                  } // Add onEditProduct handler
                 />
-                <br />
-                <p>
-                  Por favor, seleccione una conexión para ver los productos.
-                </p>
-              </Col>
-              <Col md={4}>
-                <SearchBar
-                  searchQuery={searchQuery}
-                  onSearch={handleSearch}
-                  suggestions={[]}
-                  onSelectSuggestion={onSelectSuggestion}
-                />
-              </Col>
-              <Col md={4} className="text-end">
-                <Button
-                  variant="primary"
-                  onClick={() => navigate("/sync/productos/crear")}
-                >
-                  Crear Producto
-                </Button>
-              </Col>
-            </Row>
-            {!selectedConnection && <Row className="mb-3"></Row>}
-            {selectedConnection && (
-              <ProductTable
-                categorizedProducts={categorizedProducts}
-                categories={categories}
-                isEditing={isEditing}
-                stockEdit={stockEdit}
-                onStockChange={handleStockChange}
-                onUpdateStock={updateStock}
-                onOpenModal={openModal}
-                formatPriceCLP={formatPriceCLP}
-                translateStatus={translateStatus}
-                onUpdateStatus={updateStatus}
-                onSelectProduct={setSelectedProduct}
-                onEditProduct={(product) =>
-                  console.log("Edit product", product)
-                } // Add onEditProduct handler
-              />
-            )}
-            <Row className="mt-3">
-              <Col>
-                <Button
-                  variant="secondary"
-                  onClick={() => handlePageChange(offset - limit)}
-                  disabled={offset === 0}
-                >
-                  Anterior
-                </Button>
-              </Col>
-              <Col className="text-center">
-                <Pagination>
-                  {Array.from({ length: endPage - startPage }, (_, index) => (
-                    <Pagination.Item
-                      key={startPage + index}
-                      active={startPage + index === currentPage}
-                      onClick={() =>
-                        handlePageChange((startPage + index) * limit)
-                      }
-                    >
-                      {startPage + index + 1}
-                    </Pagination.Item>
-                  ))}
-                </Pagination>
-              </Col>
-              <Col className="text-end">
-                <Button
-                  variant="secondary"
-                  onClick={() => handlePageChange(offset + limit)}
-                  disabled={offset + limit >= totalProducts}
-                >
-                  Siguiente
-                </Button>
-              </Col>
-            </Row>
-          </section>
-        )}
+              )}
+              <Row className="mt-3">
+                <Col>
+                  <Button
+                    variant="secondary"
+                    onClick={() => handlePageChange(offset - limit)}
+                    disabled={offset === 0}
+                  >
+                    Anterior
+                  </Button>
+                </Col>
+                <Col className="text-center">
+                  <Pagination>
+                    {Array.from({ length: endPage - startPage }, (_, index) => (
+                      <Pagination.Item
+                        key={startPage + index}
+                        active={startPage + index === currentPage}
+                        onClick={() =>
+                          handlePageChange((startPage + index) * limit)
+                        }
+                      >
+                        {startPage + index + 1}
+                      </Pagination.Item>
+                    ))}
+                  </Pagination>
+                </Col>
+                <Col className="text-end">
+                  <Button
+                    variant="secondary"
+                    onClick={() => handlePageChange(offset + limit)}
+                    disabled={offset + limit >= totalProducts}
+                  >
+                    Siguiente
+                  </Button>
+                </Col>
+              </Row>
+            </section>
+          )}
       </Container>
 
       <ProductModal
         show={modalIsOpen}
         onHide={closeModal}
-        product={currentProduct}
+        product={selectedProduct || currentProduct}
         modalContent={modalContent}
         onUpdateStock={updateStock}
         onUpdateStatus={updateStatus}
