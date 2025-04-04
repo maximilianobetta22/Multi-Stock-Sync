@@ -16,13 +16,17 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
-import styles from "./Ventas.module.css";
-import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
-import { saveAs } from 'file-saver';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCalendarDays, faCalendar, faFilter, faFilePdf, faFileExcel } from '@fortawesome/free-solid-svg-icons';
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faCalendarDays,
+  faCalendar,
+  faFilter,
+  faFilePdf,
+  faFileExcel,
+} from "@fortawesome/free-solid-svg-icons";
 
 // Registro de plugins para Chart.js
 ChartJS.register(
@@ -53,58 +57,87 @@ const DetallesDeVentas: React.FC = () => {
 
   // Estados del componente
   const [yearSeleccionado, setYearSeleccionado] = useState<number>(currentYear);
-  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(new Date().getMonth() + 1);
+  const [monthSeleccionado, setMonthSeleccionado] = useState<number>(
+    new Date().getMonth() + 1
+  );
   const [ventas, setVentas] = useState<Venta[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [filtroActivo, setFiltroActivo] = useState<'mes' | 'año' | null>(null);
-  const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
+  const [filtroActivo, setFiltroActivo] = useState<"mes" | "año" | null>(null);
+  const [userData, setUserData] = useState<{
+    nickname: string;
+    profile_image: string;
+  } | null>(null);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState<boolean>(false);
 
   // Generación de una lista de los últimos 10 años
-  const years = useMemo(() => Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString()), []);
+  const years = useMemo(
+    () =>
+      Array.from({ length: 10 }, (_, i) =>
+        (new Date().getFullYear() - i).toString()
+      ),
+    []
+  );
 
   // Cálculo del total de ingresos
-  const totalIngresos = useMemo(() => ventas.reduce((total, venta) => total + venta.price * venta.quantity, 0), [ventas]);
+  const totalIngresos = useMemo(
+    () =>
+      ventas.reduce((total, venta) => total + venta.price * venta.quantity, 0),
+    [ventas]
+  );
 
   // Función para formatear valores como moneda chilena
   const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+    return new Intl.NumberFormat("es-CL", {
+      style: "currency",
+      currency: "CLP",
+    }).format(value);
   };
 
   // Parámetros para la consulta de ventas
-  const params = { year: yearSeleccionado, month: monthSeleccionado.toString().padStart(2, "0") };
+  const params = {
+    year: yearSeleccionado,
+    month: monthSeleccionado.toString().padStart(2, "0"),
+  };
 
   // Función para obtener las ventas desde la API
   const fetchVentas = useCallback(async () => {
     if (!client_id) return;
     setLoading(true);
     try {
-      let apiUrl = '';
-      if (filtroActivo === 'mes') {
-        apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}?year=${params.year}&month=${params.month}`;
-      } else if (filtroActivo === 'año') {
-        apiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/annual-sales/${client_id}?year=${yearSeleccionado}`;
+      let apiUrl = "";
+      if (filtroActivo === "mes") {
+        apiUrl = `${
+          import.meta.env.VITE_API_URL
+        }/mercadolibre/sales-by-month/${client_id}?year=${params.year}&month=${
+          params.month
+        }`;
+      } else if (filtroActivo === "año") {
+        apiUrl = `${
+          import.meta.env.VITE_API_URL
+        }/mercadolibre/annual-sales/${client_id}?year=${yearSeleccionado}`;
       }
 
       const response = await axiosInstance.get(apiUrl);
       const ventasData = response.data.data;
 
-      if (filtroActivo === 'mes') {
-        const formattedData = ventasData[`${yearSeleccionado}-${params.month}`]?.orders.flatMap((order: any) =>
-          order.sold_products.map((product: any) => ({
-            order_id: product.order_id,
-            order_date: product.order_date,
-            title: product.title,
-            quantity: product.quantity,
-            price: product.price,
-          }))
-        ) || [];
+      if (filtroActivo === "mes") {
+        const formattedData =
+          ventasData[`${yearSeleccionado}-${params.month}`]?.orders.flatMap(
+            (order: any) =>
+              order.sold_products.map((product: any) => ({
+                order_id: product.order_id,
+                order_date: product.order_date,
+                title: product.title,
+                quantity: product.quantity,
+                price: product.price,
+              }))
+          ) || [];
         setVentas(formattedData);
-      } else if (filtroActivo === 'año') {
-        const formattedData = Object.keys(ventasData).flatMap(month =>
-          ventasData[month].orders.flatMap((order: { sold_products: any; }) =>
+      } else if (filtroActivo === "año") {
+        const formattedData = Object.keys(ventasData).flatMap((month) =>
+          ventasData[month].orders.flatMap((order: { sold_products: any }) =>
             order.sold_products.map((product: any) => ({
               order_id: product.order_id,
               order_date: product.order_date,
@@ -127,7 +160,7 @@ const DetallesDeVentas: React.FC = () => {
 
   // Efecto para obtener las ventas cuando cambia el filtro activo
   useEffect(() => {
-    if (filtroActivo === 'mes' || filtroActivo === 'año') {
+    if (filtroActivo === "mes" || filtroActivo === "año") {
       fetchVentas();
     }
   }, [fetchVentas, filtroActivo]);
@@ -143,7 +176,9 @@ const DetallesDeVentas: React.FC = () => {
   const fetchUserData = useCallback(async () => {
     if (!client_id) return;
     try {
-      const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+      const response = await axiosInstance.get(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`
+      );
       setUserData({
         nickname: response.data.data.nickname,
         profile_image: response.data.data.profile_image,
@@ -183,14 +218,16 @@ const DetallesDeVentas: React.FC = () => {
         formatCurrency(venta.price),
       ]),
       startY: 60,
-      theme: 'grid',
-      margin: { bottom: 10 }
+      theme: "grid",
+      margin: { bottom: 10 },
     });
 
     const pageHeight = doc.internal.pageSize.height;
     doc.setFontSize(10);
     doc.setTextColor(150, 150, 150);
-    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, {
+      align: "center",
+    });
 
     const pdfData = doc.output("datauristring");
     setPdfDataUrl(pdfData);
@@ -212,25 +249,28 @@ const DetallesDeVentas: React.FC = () => {
 
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Ventas');
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Ventas");
 
     const fileName = `Ventas_${yearSeleccionado}.xlsx`;
     XLSX.writeFile(workbook, fileName);
   };
 
   // Datos para el gráfico de barras
-  const chartData = useMemo(() => ({
-    labels: ventas.map((venta) => venta.title),
-    datasets: [
-      {
-        label: 'Ventas por Orden',
-        data: ventas.map((venta) => venta.price),
-        backgroundColor: 'rgba(75, 192, 192, 0.2)',
-        borderColor: 'rgba(75, 192, 192, 1)',
-        borderWidth: 1,
-      },
-    ],
-  }), [ventas]);
+  const chartData = useMemo(
+    () => ({
+      labels: ventas.map((venta) => venta.title),
+      datasets: [
+        {
+          label: "Ventas por Orden",
+          data: ventas.map((venta) => venta.price),
+          backgroundColor: "rgba(75, 192, 192, 0.2)",
+          borderColor: "rgba(75, 192, 192, 1)",
+          borderWidth: 1,
+        },
+      ],
+    }),
+    [ventas]
+  );
 
   // Vista del componente en la Web
   return (
@@ -238,7 +278,11 @@ const DetallesDeVentas: React.FC = () => {
       {loading && <LoadingDinamico variant="container" />}
       <div className="container mt-4">
         {toastMessage && (
-          <ToastComponent message={toastMessage} type="danger" onClose={() => setToastMessage(null)} />
+          <ToastComponent
+            message={toastMessage}
+            type="danger"
+            onClose={() => setToastMessage(null)}
+          />
         )}
         <br />
         <h1 className="text-center mb-4">Detalles de Ventas</h1>
@@ -255,38 +299,51 @@ const DetallesDeVentas: React.FC = () => {
         </div>
 
         {/* Reportes de Comparaciones */}
-        <h4 className="d-flex justify-content-center gap-3 mb-4">Reportes de Comparaciones</h4>
+        <h4 className="d-flex justify-content-center gap-3 mb-4">
+          Reportes de Comparaciones
+        </h4>
         <div className="d-flex justify-content-center gap-3 mb-4">
           <Button
             variant="outline-primary"
             className="d-flex align-items-center"
-            onClick={() => navigate(`/sync/reportes/compare-month-month/${client_id}`)}
+            onClick={() =>
+              navigate(`/sync/reportes/compare-month-month/${client_id}`)
+            }
           >
-            <FontAwesomeIcon icon={faCalendarDays} className="me-2" /> Comparar meses
+            <FontAwesomeIcon icon={faCalendarDays} className="me-2" /> Comparar
+            meses
           </Button>
           <Button
             variant="outline-primary"
             className="d-flex align-items-center"
-            onClick={() => navigate(`/sync/reportes/compare-year-year/${client_id}`)}
+            onClick={() =>
+              navigate(`/sync/reportes/compare-year-year/${client_id}`)
+            }
           >
             <FontAwesomeIcon icon={faCalendar} className="me-2" /> Comparar años
           </Button>
         </div>
 
-        <br /><br />
-        <h4 className="d-flex justify-content-center gap-3 mb-4">Filtros disponibles</h4>
+        <br />
+        <br />
+        <h4 className="d-flex justify-content-center gap-3 mb-4">
+          Filtros disponibles
+        </h4>
         <Form className="mb-4">
           <Row className="d-flex justify-content-center">
             <Col xs="auto" className="mb-3">
               <Button
-                variant={filtroActivo === 'mes' ? 'primary' : 'outline-primary'}
-                onClick={() => setFiltroActivo(filtroActivo === 'mes' ? null : 'mes')}
-                disabled={filtroActivo === 'año'}
+                variant={filtroActivo === "mes" ? "primary" : "outline-primary"}
+                onClick={() =>
+                  setFiltroActivo(filtroActivo === "mes" ? null : "mes")
+                }
+                disabled={filtroActivo === "año"}
                 className="w-100 d-flex align-items-center"
               >
-                <FontAwesomeIcon icon={faFilter} className="me-2" /> Filtrar por Mes
+                <FontAwesomeIcon icon={faFilter} className="me-2" /> Filtrar por
+                Mes
               </Button>
-              {filtroActivo === 'mes' && (
+              {filtroActivo === "mes" && (
                 <div className="mt-2">
                   <div className="mb-4">
                     <Row className="d-flex justify-content-center">
@@ -296,7 +353,9 @@ const DetallesDeVentas: React.FC = () => {
                           <Form.Control
                             as="select"
                             value={yearSeleccionado}
-                            onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+                            onChange={(e) =>
+                              setYearSeleccionado(Number(e.target.value))
+                            }
                             className="w-auto"
                           >
                             {years.map((year) => (
@@ -313,14 +372,18 @@ const DetallesDeVentas: React.FC = () => {
                           <Form.Control
                             as="select"
                             value={monthSeleccionado}
-                            onChange={(e) => setMonthSeleccionado(Number(e.target.value))}
+                            onChange={(e) =>
+                              setMonthSeleccionado(Number(e.target.value))
+                            }
                             className="w-auto"
                           >
-                            {Array.from({ length: 12 }, (_, i) => i + 1).map((month) => (
-                              <option key={month} value={month}>
-                                {month.toString().padStart(2, '0')}
-                              </option>
-                            ))}
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(
+                              (month) => (
+                                <option key={month} value={month}>
+                                  {month.toString().padStart(2, "0")}
+                                </option>
+                              )
+                            )}
                           </Form.Control>
                         </Form.Group>
                       </Col>
@@ -332,20 +395,28 @@ const DetallesDeVentas: React.FC = () => {
             <Col xs="auto" className="mb-3">
               <Button
                 variant={filtroActivo === "año" ? "primary" : "outline-primary"}
-                onClick={() => setFiltroActivo(filtroActivo === "año" ? null : "año")}
+                onClick={() =>
+                  setFiltroActivo(filtroActivo === "año" ? null : "año")
+                }
                 disabled={filtroActivo === "mes"}
                 className="w-100 d-flex align-items-center"
               >
-                <FontAwesomeIcon icon={faFilter} className="me-2" /> Filtrar por Año
+                <FontAwesomeIcon icon={faFilter} className="me-2" /> Filtrar por
+                Año
               </Button>
               {filtroActivo === "año" && (
                 <div className="mt-2">
-                  <Form.Group controlId="formYear" className="d-flex flex-column align-items-center">
+                  <Form.Group
+                    controlId="formYear"
+                    className="d-flex flex-column align-items-center"
+                  >
                     <Form.Label>Año</Form.Label>
                     <Form.Control
                       as="select"
                       value={yearSeleccionado}
-                      onChange={(e) => setYearSeleccionado(Number(e.target.value))}
+                      onChange={(e) =>
+                        setYearSeleccionado(Number(e.target.value))
+                      }
                       className="w-auto"
                     >
                       {years.map((year) => (
@@ -364,8 +435,13 @@ const DetallesDeVentas: React.FC = () => {
         {/* Botón para Consultar Datos */}
         <Row className="d-flex justify-content-center mt-3">
           <Col xs="auto">
-            <Button variant="success" onClick={fetchVentas} className="d-flex align-items-center">
-              <FontAwesomeIcon icon={faFilter} className="me-2" /> Consultar Datos
+            <Button
+              variant="success"
+              onClick={fetchVentas}
+              className="d-flex align-items-center"
+            >
+              <FontAwesomeIcon icon={faFilter} className="me-2" /> Consultar
+              Datos
             </Button>
           </Col>
         </Row>
@@ -373,26 +449,33 @@ const DetallesDeVentas: React.FC = () => {
         {/* Renderizado Condicional de Tablas y Gráficos */}
         {filtroActivo && !loading && (
           <>
-            {(filtroActivo === "mes" || filtroActivo === "año") && ventas.length > 0 && (
-              <div className="mb-4">
-                <Bar
-                  data={chartData}
-                  options={{
-                    responsive: true,
-                    plugins: {
-                      title: {
-                        display: true,
-                        text: "Ventas por Orden",
-                        font: { size: 18, weight: "bold" },
+            {(filtroActivo === "mes" || filtroActivo === "año") &&
+              ventas.length > 0 && (
+                <div className="mb-4">
+                  <Bar
+                    data={chartData}
+                    options={{
+                      responsive: true,
+                      plugins: {
+                        title: {
+                          display: true,
+                          text: "Ventas por Orden",
+                          font: { size: 18, weight: "bold" },
+                        },
+                        legend: { position: "top" },
                       },
-                      legend: { position: "top" },
-                    },
-                  }}
-                />
-              </div>
-            )}
+                    }}
+                  />
+                </div>
+              )}
 
-            <Table striped bordered hover responsive className="mt-4 table-primary">
+            <Table
+              striped
+              bordered
+              hover
+              responsive
+              className="mt-4 table-primary"
+            >
               <thead className="table-primary">
                 <tr>
                   <th>ID Orden</th>
@@ -423,14 +506,26 @@ const DetallesDeVentas: React.FC = () => {
               </tbody>
             </Table>
             {(filtroActivo === "mes" || filtroActivo === "año") && (
-              <h4 className="text-center mt-3">Total de ingresos: ${totalIngresos.toLocaleString('es-CL')}</h4>
+              <h4 className="text-center mt-3">
+                Total de ingresos: ${totalIngresos.toLocaleString("es-CL")}
+              </h4>
             )}
             <div className="d-flex justify-content-center mt-3">
-              <Button variant="primary" onClick={generatePDF} className="mr-2 mx-3 d-flex align-items-center">
-                <FontAwesomeIcon icon={faFilePdf} className="me-2" /> Generar PDF
+              <Button
+                variant="primary"
+                onClick={generatePDF}
+                className="mr-2 mx-3 d-flex align-items-center"
+              >
+                <FontAwesomeIcon icon={faFilePdf} className="me-2" /> Generar
+                PDF
               </Button>
-              <Button variant="secondary" onClick={exportToExcel} className="d-flex align-items-center">
-                <FontAwesomeIcon icon={faFileExcel} className="me-2" /> Guardar Excel
+              <Button
+                variant="secondary"
+                onClick={exportToExcel}
+                className="d-flex align-items-center"
+              >
+                <FontAwesomeIcon icon={faFileExcel} className="me-2" /> Guardar
+                Excel
               </Button>
             </div>
           </>
@@ -441,18 +536,23 @@ const DetallesDeVentas: React.FC = () => {
             <Modal.Title>Reporte de Ventas</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            {pdfDataUrl && <iframe src={pdfDataUrl} width="100%" height="500px" />}
+            {pdfDataUrl && (
+              <iframe src={pdfDataUrl} width="100%" height="500px" />
+            )}
           </Modal.Body>
           <Modal.Footer>
             <Button variant="secondary" onClick={() => setShowModal(false)}>
               Cerrar
             </Button>
-            <Button variant="primary" onClick={() => {
-              const link = document.createElement('a');
-              link.href = pdfDataUrl!;
-              link.download = `Ventas_${yearSeleccionado}.pdf`;
-              link.click();
-            }}>
+            <Button
+              variant="primary"
+              onClick={() => {
+                const link = document.createElement("a");
+                link.href = pdfDataUrl!;
+                link.download = `Ventas_${yearSeleccionado}.pdf`;
+                link.click();
+              }}
+            >
               Guardar PDF
             </Button>
           </Modal.Footer>
@@ -465,7 +565,6 @@ const DetallesDeVentas: React.FC = () => {
       </div>
     </>
   );
-
 };
 
 export default DetallesDeVentas;
