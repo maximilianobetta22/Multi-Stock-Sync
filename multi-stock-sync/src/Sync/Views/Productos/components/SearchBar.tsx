@@ -3,7 +3,7 @@ import { Form, Button, ListGroup } from "react-bootstrap";
 
 interface SearchBarProps {
   searchQuery: string;
-  onSearch: (query: string) => void;
+  onSearch: (query: string) => Promise<void>;
   suggestions: string[];
   onSelectSuggestion: (suggestion: string) => void;
 }
@@ -37,8 +37,8 @@ const SearchBar: React.FC<SearchBarProps> = ({
     onSelectSuggestion(suggestion);
   };
 
-  const handleSearch = () => {
-    onSearch(query);
+  const handleSearch = async () => {
+    await onSearch(query);
     setQuery(""); // Clear the search bar after search
     setShowSuggestions(false);
   };
