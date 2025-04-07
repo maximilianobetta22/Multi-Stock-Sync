@@ -1,19 +1,28 @@
+// Ventas_Reportes/VentasPorMes.tsx
+
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Modal, Button, Form, Row, Col, Table } from "react-bootstrap";
-import styles from "./VentasPorMes.module.css";
+import axiosInstance from "../../../../../axiosConfig";
 
-import GraficoPorMes from "./GraficoPorMes";
+// Componentes reutilizables
+import GraficoPorMes from "./components/GraficoPorMes";
+import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+
+import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+
+
 import {
   generarPDFPorMes,
   guardarPDFPorMes,
   exportarExcelPorMes,
-} from "./exportUtilsPorMes";
+} from "./utils/exportUtils";
 
-import axiosInstance from "../../../../../axiosConfig";
-import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+// Estilos locales
+import styles from "./VentasPorMes.module.css";
 
+
+// Tipado de los datos de ventas
 interface Venta {
   order_id: number;
   order_date: string;
@@ -37,20 +46,16 @@ const VentasPorMes: React.FC = () => {
   const [showModal, setShowModal] = useState<boolean>(false);
   const [userName, setUserName] = useState<string>("");
 
-  // Función formateadora reutilizable
-  const formatCLP = (value: number) => {
-    return `$ ${new Intl.NumberFormat("es-CL", {
-      style: "decimal",
-      minimumFractionDigits: 0,
-    }).format(value)}`;
-  };
+  // Formateo CLP
+  const formatCLP = (value: number) =>
+    `$ ${new Intl.NumberFormat("es-CL", { style: "decimal" }).format(value)}`;
 
-  // Carga ventas y usuario cada vez que cambian filtros
+  // Obtener ventas al cambiar filtros
   useEffect(() => {
     const fetchVentas = async () => {
       setLoading(true);
       try {
-        const response = await axiosInstance.get(
+        const { data } = await axiosInstance.get(
           `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`,
           {
             params: {
@@ -60,23 +65,21 @@ const VentasPorMes: React.FC = () => {
           }
         );
 
-        // La API entrega un objeto agrupado por mes
-        const ventasData =
-          response.data.data[
-            `${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, "0")}`
-          ]?.orders.flatMap((order: any) =>
-            order.sold_products.map((product: any) => ({
-              order_id: product.order_id,
-              order_date: product.order_date,
-              title: product.title,
-              quantity: product.quantity,
-              price: product.price,
-            }))
-          ) || [];
+        const ventasData = data.data[
+          `${yearSeleccionado}-${monthSeleccionado.toString().padStart(2, "0")}`
+        ]?.orders.flatMap((order: any) =>
+          order.sold_products.map((p: any) => ({
+            order_id: p.order_id,
+            order_date: p.order_date,
+            title: p.title,
+            quantity: p.quantity,
+            price: p.price,
+          }))
+        ) || [];
 
         setVentas(ventasData);
       } catch (error) {
-        console.error("Error fetching sales data:", error);
+        console.error("Error al obtener ventas:", error);
         setVentas([]);
       } finally {
         setLoading(false);
@@ -85,12 +88,12 @@ const VentasPorMes: React.FC = () => {
 
     const fetchUserName = async () => {
       try {
-        const response = await axiosInstance.get(
+        const res = await axiosInstance.get(
           `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`
         );
-        setUserName(response.data.data.nickname);
+        setUserName(res.data.data.nickname);
       } catch (error) {
-        console.error("Error fetching user data:", error);
+        console.error("Error al obtener nombre de usuario:", error);
       }
     };
 
@@ -101,13 +104,12 @@ const VentasPorMes: React.FC = () => {
   }, [client_id, yearSeleccionado, monthSeleccionado]);
 
   const totalVentas = ventas.reduce(
-    (acc, venta) => acc + venta.price * venta.quantity,
-    0
+    (acc, v) => acc + v.price * v.quantity, 0
   );
 
-  // Configura vista previa del PDF en el modal
+  // Exportar a PDF (modal de vista previa)
   const generatePDF = () => {
-    const pdfData = generarPDFPorMes(
+    const pdf = generarPDFPorMes(
       ventas,
       yearSeleccionado,
       monthSeleccionado,
@@ -115,10 +117,10 @@ const VentasPorMes: React.FC = () => {
       totalVentas,
       formatCLP
     );
-    setPdfDataUrl(pdfData);
+    setPdfDataUrl(pdf);
   };
 
-  // Genera y descarga directamente el PDF
+  // Guardar directamente el PDF
   const savePDF = () => {
     guardarPDFPorMes(
       ventas,
@@ -130,7 +132,7 @@ const VentasPorMes: React.FC = () => {
     );
   };
 
-  // Exporta datos al archivo Excel
+  // Exportar a Excel
   const generateExcel = () => {
     exportarExcelPorMes(
       ventas,
@@ -161,8 +163,9 @@ const VentasPorMes: React.FC = () => {
             <h1 className="text-center">Ventas por Mes</h1>
             <h5 className="text-center">Usuario: {userName}</h5>
 
+            {/* Selectores de año y mes */}
             <Form className="mb-4">
-              <Row className="d-flex justify-content-center">
+              <Row className="justify-content-center">
                 <Col xs="auto">
                   <Form.Group controlId="formYear">
                     <Form.Label>Año</Form.Label>
@@ -172,9 +175,7 @@ const VentasPorMes: React.FC = () => {
                       onChange={(e) => setYearSeleccionado(Number(e.target.value))}
                     >
                       {[2023, 2024, 2025, 2026].map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
+                        <option key={year} value={year}>{year}</option>
                       ))}
                     </Form.Control>
                   </Form.Group>
@@ -198,6 +199,7 @@ const VentasPorMes: React.FC = () => {
               </Row>
             </Form>
 
+            {/* Gráfico */}
             <div className="chart-container" style={{ height: "66vh", width: "100%" }}>
               <GraficoPorMes
                 chartData={{
@@ -219,6 +221,7 @@ const VentasPorMes: React.FC = () => {
               />
             </div>
 
+            {/* Botones de acción */}
             <div className="d-flex justify-content-center mt-3">
               <Button variant="primary" onClick={() => setShowModal(true)} className="mx-2">
                 Mostrar Detalles
@@ -234,7 +237,7 @@ const VentasPorMes: React.FC = () => {
         </section>
       )}
 
-      {/* Modal para tabla */}
+      {/* Modal para tabla de ventas */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Detalles de Ventas</Modal.Title>
@@ -244,39 +247,33 @@ const VentasPorMes: React.FC = () => {
             <thead>
               <tr>
                 <th>ID</th>
-                <th>Nombre del Producto</th>
-                <th>Cantidad Vendida</th>
-                <th>Valor del Producto</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
               </tr>
             </thead>
             <tbody>
-              {ventas.length > 0 ? (
-                ventas.map((venta) => (
-                  <tr key={venta.order_id}>
-                    <td>{venta.order_id}</td>
-                    <td>{venta.title}</td>
-                    <td>{venta.quantity}</td>
-                    <td>{formatCLP(venta.price)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={4} className="text-muted">No hay ventas disponibles.</td>
+              {ventas.map((venta) => (
+                <tr key={venta.order_id}>
+                  <td>{venta.order_id}</td>
+                  <td>{venta.title}</td>
+                  <td>{venta.quantity}</td>
+                  <td>{formatCLP(venta.price)}</td>
                 </tr>
-              )}
+              ))}
             </tbody>
           </Table>
         </Modal.Body>
       </Modal>
 
-      {/* Modal para vista previa de PDF */}
+      {/* Modal PDF */}
       {pdfDataUrl && (
         <Modal show={true} onHide={() => setPdfDataUrl(null)} size="lg">
           <Modal.Header closeButton>
             <Modal.Title>Vista Previa del PDF</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF"></iframe>
+            <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista PDF" />
           </Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={savePDF}>Guardar PDF</Button>

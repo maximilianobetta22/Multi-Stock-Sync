@@ -1,0 +1,133 @@
+/* VentasPorYear.module.css */
+
+.container {
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+  }
+  
+  .header {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .subtitulo {
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #666;
+  }
+  
+  .chartWrapper {
+    height: 66vh;
+    margin-bottom: 2rem;
+  }
+  
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .table th,
+  .table td {
+    vertical-align: middle;
+    text-align: center;
+  }
+  
+  .table thead {
+    background-color: #f8f9fa;
+  }
+  
+  .modalBody iframe {
+    border: none;
+    width: 100%;
+    height: 500px;
+  }
+  
+  .formYearSelector {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+  }
+/* VentasPorYear.module.css */
+
+.container {
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 15px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-top: 2rem;
+  }
+  
+  .header {
+    font-size: 2rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+  
+  .subtitulo {
+    font-size: 1rem;
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #666;
+  }
+  
+  .chartWrapper {
+    height: 66vh;
+    margin-bottom: 2rem;
+  }
+  
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+  }
+  
+  .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+  }
+  
+  .table th,
+  .table td {
+    vertical-align: middle;
+    text-align: center;
+  }
+  
+  .table thead {
+    background-color: #f8f9fa;
+  }
+  
+  .modalBody iframe {
+    border: none;
+    width: 100%;
+    height: 500px;
+  }
+  
+  .formYearSelector {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+  }
+    

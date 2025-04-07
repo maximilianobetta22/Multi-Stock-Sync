@@ -2,13 +2,15 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../../../../../axiosConfig";
 import { Modal, Button, Form } from "react-bootstrap";
-import GraficoPorYear from "./GraficoPorYear";
+import GraficoPorYear from "./components/GraficoPorYear";
+
 import {
   generarPDFPorYear,
   guardarPDFPorYear,
   exportarExcelPorYear
-} from "./exportUtilsPorYear";
+} from "./utils/exportUtils";
 import styles from "./VentasPorYear.module.css";
+
 
 interface ProductoVendido {
   order_id: number;
