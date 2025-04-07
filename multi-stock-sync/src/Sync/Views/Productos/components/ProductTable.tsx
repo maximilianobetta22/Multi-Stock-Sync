@@ -1,6 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
 import {
-  Accordion,
   Table,
   FormControl,
   Dropdown,
@@ -20,36 +19,20 @@ const ProductTable: React.FC<ProductTableProps> = ({
   formatPriceCLP,
   onUpdateStatus,
 }) => {
+  // Lista de IDs de categorías
+  const categoryIds = Object.keys(categorizedProducts);
+
+  // Categoría seleccionada (por defecto la primera)
+  const [selectedCategory, setSelectedCategory] = useState(categoryIds[0]);
 
   const getCategoryName = (categoryId: string) =>
     categories[categoryId] || "Categoría no disponible";
 
-  //reestructuración del accordion (función)
-  const renderTableForCategory = (categoryId: string, index: number) => (
-    <Accordion.Item eventKey={index.toString()} key={categoryId}>
-      <Accordion.Header>{getCategoryName(categoryId)}</Accordion.Header>
-      <Accordion.Body>
-        <Table borderless hover>
-          <thead>
-            <tr>
-              <th>Imagen</th>
-              <th>Nombre</th>
-              <th>Categoría</th>
-              <th>Precio</th>
-              <th>Stock</th>
-              <th>Estado</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {categorizedProducts[categoryId].map(renderProductRow)}
-          </tbody>
-        </Table>
-      </Accordion.Body>
-    </Accordion.Item>
-  );
+  const handleCategorySelect = (categoryId: string | null) => {
+    if (categoryId) setSelectedCategory(categoryId);
+  };
 
-  //funcion para render de producto individual y drop button
+  // Render individual de productos
   const renderProductRow = (product: any) => (
     <tr key={product.id}>
       <td>
@@ -77,10 +60,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
           id={`dropdown-${product.id}`}
           title={<FontAwesomeIcon icon={faEllipsis} />}
         >
-          <Dropdown.Item
-            as={Link}
-            to={`/sync/productos/editar/${product.id}`}
-          >
+          <Dropdown.Item as={Link} to={`/sync/productos/editar/${product.id}`}>
             Editar
           </Dropdown.Item>
           <Dropdown.Item onClick={() => onUpdateStatus(product.id, "paused")}>
@@ -95,9 +75,44 @@ const ProductTable: React.FC<ProductTableProps> = ({
   );
 
   return (
-    <Accordion defaultActiveKey="0">
-      {Object.keys(categorizedProducts).map(renderTableForCategory)}
-    </Accordion>
+    <div>
+      <div className="mb-3 d-flex align-items-center gap-2">
+        <strong>Categoría:</strong>
+        <DropdownButton
+          id="category-dropdown"
+          title={getCategoryName(selectedCategory)}
+          onSelect={handleCategorySelect}
+          variant="secondary"
+        >
+          {categoryIds.map((categoryId) => (
+            <Dropdown.Item
+              key={categoryId}
+              eventKey={categoryId}
+              active={selectedCategory === categoryId}
+            >
+              {getCategoryName(categoryId)}
+            </Dropdown.Item>
+          ))}
+        </DropdownButton>
+      </div>
+
+      <Table borderless hover>
+        <thead>
+          <tr>
+            <th>Imagen</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Stock</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          {categorizedProducts[selectedCategory].map(renderProductRow)}
+        </tbody>
+      </Table>
+    </div>
   );
 };
 
