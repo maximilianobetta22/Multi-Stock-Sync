@@ -20,17 +20,27 @@ const ProductTable: React.FC<ProductTableProps> = ({
   onUpdateStatus,
 }) => {
   // Lista de IDs de categorías
-  const categoryIds = Object.keys(categorizedProducts);
+  // const categoryIds = Object.keys(categorizedProducts);
 
-  // Categoría seleccionada (por defecto la primera)
-  const [selectedCategory, setSelectedCategory] = useState(categoryIds[0]);
+  // Categoría seleccionada (ahora ya no elige ninguna por defecto)
+
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); //valor inicial null
 
   const getCategoryName = (categoryId: string) =>
     categories[categoryId] || "Categoría no disponible";
 
   const handleCategorySelect = (categoryId: string | null) => {
-    if (categoryId) setSelectedCategory(categoryId);
+    setSelectedCategory(prev => 
+      categoryId === prev ? null : categoryId  // fuerza cambio de estado
+    );
   };
+
+  //constante para guardar 'todas las categorías' para recalcular cuando sea necesario
+  const productsToShow = React.useMemo(() => {
+    return selectedCategory
+      ? categorizedProducts[selectedCategory] || []
+      : Object.values(categorizedProducts).flatMap(cat => cat || []);
+  }, [selectedCategory, categorizedProducts]);
 
   // Render individual de productos
   const renderProductRow = (product: any) => (
@@ -78,22 +88,30 @@ const ProductTable: React.FC<ProductTableProps> = ({
     <div>
       <div className="mb-3 d-flex align-items-center gap-2">
         <strong>Categoría:</strong>
-        <DropdownButton
-          id="category-dropdown"
-          title={getCategoryName(selectedCategory)}
-          onSelect={handleCategorySelect}
-          variant="secondary"
-        >
-          {categoryIds.map((categoryId) => (
+        <Dropdown>
+          <Dropdown.Toggle variant="secondary">
+            {selectedCategory ? getCategoryName(selectedCategory) : "Todas las categorías"}
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu>
             <Dropdown.Item
-              key={categoryId}
-              eventKey={categoryId}
-              active={selectedCategory === categoryId}
+              onClick={() => handleCategorySelect(null)}
+              active={!selectedCategory}
             >
-              {getCategoryName(categoryId)}
+              Todas las categorías
             </Dropdown.Item>
-          ))}
-        </DropdownButton>
+
+            {Object.keys(categorizedProducts).map((categoryId) => (
+              <Dropdown.Item
+                key={categoryId}
+                onClick={() => handleCategorySelect(categoryId)}
+                active={selectedCategory === categoryId}
+              >
+                {getCategoryName(categoryId)}
+              </Dropdown.Item>
+            ))}
+          </Dropdown.Menu>
+        </Dropdown>
       </div>
 
       <Table borderless hover>
@@ -109,7 +127,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
           </tr>
         </thead>
         <tbody>
-          {categorizedProducts[selectedCategory].map(renderProductRow)}
+        {productsToShow.map(renderProductRow)}
         </tbody>
       </Table>
     </div>

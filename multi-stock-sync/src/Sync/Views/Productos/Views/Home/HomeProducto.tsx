@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Pagination, Button } from "react-bootstrap";
 import Swal from "sweetalert2";
@@ -17,7 +17,6 @@ import { useStatusManagement } from "../../hooks/useStatusManagement";
 const MySwal = withReactContent(Swal);
 
 const HomeProducto = () => {
-  //nuevo
   const {
     modalIsOpen,
     currentProduct,
@@ -42,15 +41,29 @@ const HomeProducto = () => {
 
   const navigate = useNavigate();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<"success" | "warning" | "error">(
-    "error"
-  );
+  const [toastType, setToastType] = useState<"success" | "warning" | "error">("error");
   const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
   const [isEditing] = useState<{ [key: string]: boolean }>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [limit] = useState(35);
+  const [limit] = useState(50);
   const [offset, setOffset] = useState(0);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  // Cálculos de paginación
+  const currentPage = useMemo(() => Math.floor(offset / limit) + 1, [offset, limit]);
+  const totalPages = useMemo(() => Math.ceil(totalProducts / limit), [totalProducts, limit]);
+
+  const getPageNumbers = () => {
+    const maxPageNumbersToShow = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxPageNumbersToShow / 2));
+    let endPage = Math.min(totalPages, startPage + maxPageNumbersToShow - 1);
+
+    if (endPage - startPage + 1 < maxPageNumbersToShow) {
+      startPage = Math.max(1, endPage - maxPageNumbersToShow + 1);
+    }
+
+    return Array.from({ length: endPage - startPage + 1 }, (_, i) => startPage + i);
+  };
 
   useEffect(() => {
     fetchConnections();
@@ -83,8 +96,9 @@ const HomeProducto = () => {
   };
 
   const handlePageChange = (newOffset: number) => {
-    setOffset(newOffset);
-    fetchProducts(selectedConnection, searchQuery, limit, newOffset);
+    const validatedOffset = Math.max(0, Math.min(newOffset, totalProducts - limit));
+    setOffset(validatedOffset);
+    fetchProducts(selectedConnection, searchQuery, limit, validatedOffset);
   };
 
   const handleStockChange = (productId: string, newStock: number) => {
@@ -145,63 +159,55 @@ const HomeProducto = () => {
 
   const categorizedProducts = categorizeProducts(allProducts);
 
-  const totalPages = Math.ceil(totalProducts / limit);
-  const currentPage = Math.floor(offset / limit);
-  const maxPageNumbersToShow = 5;
-  const startPage = Math.max(
-    0,
-    currentPage - Math.floor(maxPageNumbersToShow / 2)
-  );
-  const endPage = Math.min(totalPages, startPage + maxPageNumbersToShow);
-
   return (
     <>
-      {(loadingConnections ||
-        loading ||
-        isUpdatingStock ||
-        isUpdatingStatus) && <LoadingDinamico variant="container" />}
+      {(loadingConnections || loading || isUpdatingStock || isUpdatingStatus) && (
+        <LoadingDinamico variant="container" />
+      )}
+
       <Container>
-        {!loadingConnections &&
-          !loading &&
-          !isUpdatingStock &&
-          !isUpdatingStatus && (
-            <section>
-              <Row className="mb-3 mt-3">
-                <Col>
-                  <h1>Productos</h1>
-                </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col md={4}>
-                  <ConnectionDropdown
-                    connections={connections}
-                    selectedConnection={selectedConnection}
-                    onChange={handleConnectionChange}
-                  />
-                  <br />
-                  <p>
-                    Por favor, seleccione una conexión para ver los productos.
-                  </p>
-                </Col>
-                <Col md={4}>
-                  <SearchBar
-                    searchQuery={searchQuery}
-                    onSearch={handleSearch}
-                    suggestions={[]}
-                    onSelectSuggestion={onSelectSuggestion}
-                  />
-                </Col>
-                <Col md={4} className="text-end">
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate("/sync/productos/crear")}
-                  >
-                    Crear Producto
-                  </Button>
-                </Col>
-              </Row>
-              {!selectedConnection && <Row className="mb-3"></Row>}
-              {selectedConnection && (
+        {!loadingConnections && !loading && !isUpdatingStock && !isUpdatingStatus && (
+          <section>
+            <Row className="mb-3 mt-3">
+              <Col>
+                <h1>Productos</h1>
+              </Col>
+            </Row>
+
+            <Row className="mb-3">
+              <Col md={4}>
+                <ConnectionDropdown
+                  connections={connections}
+                  selectedConnection={selectedConnection}
+                  onChange={handleConnectionChange}
+                />
+                <br />
+                <p>Por favor, seleccione una conexión para ver los productos.</p>
+              </Col>
+
+              <Col md={4}>
+                <SearchBar
+                  searchQuery={searchQuery}
+                  onSearch={handleSearch}
+                  suggestions={[]}
+                  onSelectSuggestion={onSelectSuggestion}
+                />
+              </Col>
+
+              <Col md={4} className="text-end">
+                <Button
+                  variant="primary"
+                  onClick={() => navigate("/sync/productos/crear")}
+                >
+                  Crear Producto
+                </Button>
+              </Col>
+            </Row>
+
+            {!selectedConnection && <Row className="mb-3"></Row>}
+
+            {selectedConnection && (
+              <>
                 <ProductTable
                   categorizedProducts={categorizedProducts}
                   categories={categories}
@@ -213,48 +219,55 @@ const HomeProducto = () => {
                   formatPriceCLP={formatPriceCLP}
                   onUpdateStatus={updateStatus}
                   onSelectProduct={setSelectedProduct}
-                  onEditProduct={(product) =>
-                    console.log("Edit product", product)
-                  } // Add onEditProduct handler
+                  onEditProduct={(product) => console.log("Edit product", product)}
                 />
-              )}
-              <Row className="mt-3">
-                <Col>
-                  <Button
-                    variant="secondary"
-                    onClick={() => handlePageChange(offset - limit)}
-                    disabled={offset === 0}
-                  >
-                    Anterior
-                  </Button>
-                </Col>
-                <Col className="text-center">
-                  <Pagination>
-                    {Array.from({ length: endPage - startPage }, (_, index) => (
-                      <Pagination.Item
-                        key={startPage + index}
-                        active={startPage + index === currentPage}
-                        onClick={() =>
-                          handlePageChange((startPage + index) * limit)
-                        }
-                      >
-                        {startPage + index + 1}
-                      </Pagination.Item>
-                    ))}
-                  </Pagination>
-                </Col>
-                <Col className="text-end">
-                  <Button
-                    variant="secondary"
-                    onClick={() => handlePageChange(offset + limit)}
-                    disabled={offset + limit >= totalProducts}
-                  >
-                    Siguiente
-                  </Button>
-                </Col>
-              </Row>
-            </section>
-          )}
+
+                {/* Paginación funcional */}
+                <Row className="mt-3 mb-3 align-items-center">
+                  <Col md={3} className="text-start">
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => handlePageChange(offset - limit)}
+                      disabled={offset === 0}
+                      className="px-4"
+                    >
+                      &larr; Anterior
+                    </Button>
+                  </Col>
+
+                  <Col md={6} className="text-center">
+                    <Pagination className="justify-content-center mb-0">
+                      {getPageNumbers().map((page) => {
+                        const pageOffset = (page - 1) * limit;
+                        return (
+                          <Pagination.Item
+                            key={page}
+                            active={page === currentPage}
+                            onClick={() => handlePageChange(pageOffset)}
+                            className="mx-1"
+                          >
+                            {page}
+                          </Pagination.Item>
+                        );
+                      })}
+                    </Pagination>
+                  </Col>
+
+                  <Col md={3} className="text-end">
+                    <Button
+                      variant="outline-secondary"
+                      onClick={() => handlePageChange(offset + limit)}
+                      disabled={offset + limit >= totalProducts}
+                      className="px-4"
+                    >
+                      Siguiente &rarr;
+                    </Button>
+                  </Col>
+                </Row>
+              </>
+            )}
+          </section>
+        )}
       </Container>
 
       <ProductModal
@@ -266,9 +279,7 @@ const HomeProducto = () => {
         onUpdateStatus={updateStatus}
         onStockChange={handleStockChange}
         stockEdit={stockEdit}
-        fetchProducts={() =>
-          fetchProducts(selectedConnection, searchQuery, limit, offset)
-        }
+        fetchProducts={() => fetchProducts(selectedConnection, searchQuery, limit, offset)}
         setModalContent={setModalContent}
       />
     </>
