@@ -7,11 +7,9 @@ import { generarPDFPorDia } from "./utils/exportUtils";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import styles from "./VentasPorDia.module.css";
 
-
 const VentasPorDia: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
 
-  // Estados principales
   const [fecha, setFecha] = useState<string>("2025-01-01");
   const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
   const [loading, setLoading] = useState<boolean>(false);
@@ -21,7 +19,6 @@ const VentasPorDia: React.FC = () => {
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
 
-  // Llama a la API para obtener ventas por día usando el mismo inicio y fin
   const fetchIncomes = async () => {
     if (!client_id || !fecha) return;
 
@@ -31,12 +28,18 @@ const VentasPorDia: React.FC = () => {
         `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${client_id}?week_start_date=${fecha}&week_end_date=${fecha}`
       );
 
-      const soldProducts = response.data.data.sold_products;
+      const soldProducts = response.data?.data?.sold_products || [];
 
-      // Formateo de los datos para el gráfico
-      const labels = soldProducts.map((p: any) => p.title);
-      const ingresos = soldProducts.map((p: any) => p.total_amount);
-      const cantidades = soldProducts.map((p: any) => p.quantity);
+      if (!soldProducts.length) {
+        setError("No hay ventas registradas para esta fecha.");
+        setChartData({ labels: [], datasets: [] });
+        setTotalIngresos(0);
+        return;
+      }
+
+      const labels = soldProducts.map((p: any) => p.title || "Producto");
+      const ingresos = soldProducts.map((p: any) => p.total_amount || 0);
+      const cantidades = soldProducts.map((p: any) => p.quantity || 0);
 
       setChartData({
         labels,
@@ -44,21 +47,14 @@ const VentasPorDia: React.FC = () => {
           {
             label: "Ingresos Totales",
             data: ingresos,
-            backgroundColor: "rgba(75, 192, 192, 0.6)",
-            borderColor: "rgba(75, 192, 192, 1)",
+            backgroundColor: "rgba(135, 206, 235, 0.6)",
+            borderColor: "rgba(70, 130, 180, 1)",
             borderWidth: 2,
-          },
-          {
-            label: "Cantidad Vendida",
-            data: cantidades,
-            backgroundColor: "rgba(153, 102, 255, 0.6)",
-            borderColor: "rgba(153, 102, 255, 1)",
-            borderWidth: 2,
+            quantityData: cantidades,
           },
         ],
       });
 
-      // Suma total de ingresos
       const total = ingresos.reduce((acc: number, curr: number) => acc + curr, 0);
       setTotalIngresos(total);
       setError(null);
@@ -70,7 +66,6 @@ const VentasPorDia: React.FC = () => {
     }
   };
 
-  // Trae los datos del usuario (nickname, imagen de perfil)
   const fetchUserData = async () => {
     if (!client_id) return;
 
@@ -78,7 +73,6 @@ const VentasPorDia: React.FC = () => {
       const response = await axiosInstance.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`
       );
-
       const { nickname, profile_image } = response.data.data;
       setUserData({ nickname, profile_image });
     } catch (error: any) {
@@ -95,7 +89,6 @@ const VentasPorDia: React.FC = () => {
     fetchUserData();
   }, [client_id]);
 
-  // Genera la vista previa del PDF
   const handleExportPDF = () => {
     const pdf = generarPDFPorDia(fecha, chartData, totalIngresos, userData);
     setPdfDataUrl(pdf);
@@ -104,25 +97,26 @@ const VentasPorDia: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <h2 className="text-center my-4">Ventas por Día</h2>
-      <p className="text-center">Usuario: {userData?.nickname}</p>
+      <h2 className={styles.titulo}>Ventas por Día</h2>
+      <p className={styles.subtitulo}>Usuario: <strong>{userData?.nickname || "Cargando..."}</strong></p>
 
-      <div className="form-group d-flex justify-content-center mb-3">
-        <label htmlFor="fecha" className="me-2">Selecciona Fecha:</label>
+      <div className={styles.fechaSelector}>
+        <label htmlFor="fecha">Selecciona Fecha:</label>
         <input
           type="date"
           id="fecha"
           value={fecha}
           onChange={(e) => setFecha(e.target.value)}
-          className="form-control w-auto"
         />
       </div>
 
-      <div style={{ width: "700px", height: "400px", margin: "2rem auto" }}>
+      <div className={styles.graficoContenedor}>
         {loading ? (
           <LoadingDinamico variant="container" />
         ) : error ? (
           <p className="text-danger text-center">{error}</p>
+        ) : chartData.labels.length === 0 ? (
+          <p className="text-muted text-center">No hay datos para mostrar.</p>
         ) : (
           <GraficoPorDia
             chartData={chartData}
@@ -132,29 +126,23 @@ const VentasPorDia: React.FC = () => {
         )}
       </div>
 
-      <div className="d-flex justify-content-center mt-3">
-        <Button
-          variant="success"
+      <div className={styles.botonContenedor}>
+        <button
+          className={styles.botonPDF}
           onClick={handleExportPDF}
           disabled={chartData.labels.length === 0}
         >
           Exportar a PDF
-        </Button>
+        </button>
       </div>
 
-      {/* Modal de vista previa del PDF */}
       {pdfDataUrl && (
         <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
           <Modal.Header closeButton>
             <Modal.Title>Vista Previa del PDF</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <iframe
-              src={pdfDataUrl}
-              width="100%"
-              height="500px"
-              title="Vista Previa PDF"
-            />
+            <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF" />
           </Modal.Body>
           <Modal.Footer>
             <Button
@@ -168,9 +156,7 @@ const VentasPorDia: React.FC = () => {
             >
               Guardar PDF
             </Button>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
-              Cerrar
-            </Button>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>Cerrar</Button>
           </Modal.Footer>
         </Modal>
       )}

@@ -1,16 +1,20 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../../../../../axiosConfig";
-import { Modal, Button, Form } from "react-bootstrap";
+import { Modal, Button } from "react-bootstrap";
+import axiosInstance from '../../../../../axiosConfig';
 import GraficoPorYear from "./components/GraficoPorYear";
-
 import {
   generarPDFPorYear,
   guardarPDFPorYear,
-  exportarExcelPorYear
+  exportarExcelPorYear,
 } from "./utils/exportUtils";
 import styles from "./VentasPorYear.module.css";
-
+interface ProductoVendido {
+  order_id: number;
+  title: string;
+  quantity: number;
+  price: number;
+}
 
 interface ProductoVendido {
   order_id: number;
@@ -31,9 +35,9 @@ const VentasPorYear: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [selectedYear, setSelectedYear] = useState("2025");
   const [userName, setUserName] = useState("");
-  const [showDetails, setShowDetails] = useState(false);
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfData, setPdfData] = useState<string | null>(null);
+  const [mostrarTablaDetalle, setMostrarTablaDetalle] = useState(false);
 
   const totalSales = salesData.reduce((acc, mes) => acc + mes.total_sales, 0);
 
@@ -96,92 +100,93 @@ const VentasPorYear: React.FC = () => {
 
   return (
     <div className={styles.container}>
-      <h1 className="text-center mt-4">Ventas Por Año</h1>
-      <p className="text-center">Usuario: {userName}</p>
+      <h2 className={styles.titulo}>Ventas por Año</h2>
+      <p className={styles.subtitulo}>
+        Usuario: <strong>{userName || "Cargando..."}</strong>
+      </p>
 
-      <Form.Group controlId="formYear" className="d-flex justify-content-center my-3">
-        <Form.Label className="me-2">Seleccione un Año</Form.Label>
-        <Form.Control
-          as="select"
+      <div className={styles.fechaSelector}>
+        <label>Selecciona Año:</label>
+        <select
           value={selectedYear}
           onChange={(e) => setSelectedYear(e.target.value)}
-          className="w-auto"
         >
           {years.map((year) => (
             <option key={year} value={year}>
               {year}
             </option>
           ))}
-        </Form.Control>
-      </Form.Group>
+        </select>
+      </div>
 
-      {loading ? (
-        <p className="text-center">Cargando datos...</p>
-      ) : (
-        <div className="w-75 mx-auto">
-          <div style={{ height: "66vh" }}>
-            <GraficoPorYear
-              chartData={{
-                labels: salesData.map((m) => m.month),
-                datasets: [
-                  {
-                    label: "Ventas Totales",
-                    data: salesData.map((m) => m.total_sales),
-                    backgroundColor: salesData.map(() => randomColor()),
-                    borderWidth: 1
-                  }
-                ]
-              }}
-              totalVentas={totalSales}
-              year={selectedYear}
-            />
-          </div>
+      <div className={styles.graficoContenedor}>
+        <GraficoPorYear
+          chartData={{
+            labels: salesData.map((m) => m.month),
+            datasets: [
+              {
+                label: "Ventas Totales",
+                data: salesData.map((m) => m.total_sales),
+                backgroundColor: "rgba(255,165,0,0.6)",
+                borderColor: "rgba(255,140,0,1)",
+                borderWidth: 1,
+              },
+            ],
+          }}
+          totalVentas={totalSales}
+          year={selectedYear}
+        />
+      </div>
 
-          <div className="d-flex justify-content-center gap-3 my-4">
-            <Button variant="primary" onClick={() => setShowDetails(!showDetails)}>
-              {showDetails ? "Ocultar Detalles" : "Mostrar Detalles"}
-            </Button>
-            <Button variant="primary" onClick={generatePDF}>
-              Vista Previa PDF
-            </Button>
-            <Button variant="secondary" onClick={generateExcel}>
-              Guardar Excel
-            </Button>
-          </div>
+      <div className={styles.botonContenedor}>
+        <button className={styles.botonPDF} onClick={generatePDF}>
+          Exportar a PDF
+        </button>
+        <button className={styles.botonExcel} onClick={generateExcel}>
+          Exportar a Excel
+        </button>
+        <button
+          className={styles.botonPDF}
+          onClick={() => setMostrarTablaDetalle(!mostrarTablaDetalle)}
+        >
+          {mostrarTablaDetalle ? "Ocultar Detalle" : "Ver Detalle"}
+        </button>
+      </div>
 
-          {showDetails && (
-            <div className="table-responsive">
-              <table className="table table-bordered table-hover">
-                <thead>
-                  <tr>
-                    <th>Mes</th>
-                    <th>Ventas Totales</th>
-                    <th>Productos Vendidos</th>
+      {mostrarTablaDetalle && (
+        <div className={styles.tablaDetalle}>
+          <h4 className="text-center mt-4">Detalle de Ventas por Año</h4>
+          <table className="table table-striped table-bordered">
+            <thead>
+              <tr>
+                <th>Mes</th>
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio Unitario</th>
+              </tr>
+            </thead>
+            <tbody>
+              {salesData.flatMap((mes) =>
+                mes.sold_products.map((prod, index) => (
+                  <tr key={`${mes.month}-${index}`}>
+                    <td>{mes.month}</td>
+                    <td>{prod.title}</td>
+                    <td>{prod.quantity}</td>
+                    <td>${prod.price.toLocaleString("es-CL")} CLP</td>
                   </tr>
-                </thead>
-                <tbody>
-                  {salesData.map((mes) => (
-                    <tr key={mes.month}>
-                      <td>{mes.month}</td>
-                      <td>
-                        ${" "}
-                        {new Intl.NumberFormat("es-CL").format(mes.total_sales)} CLP
-                      </td>
-                      <td>
-                        {mes.sold_products
-                          .map((p) => `${p.title}: ${p.quantity}`)
-                          .join("\n")}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                ))
+              )}
+            </tbody>
+            <tfoot>
+              <tr>
+                <td colSpan={3}><strong>Total Vendido Año</strong></td>
+                <td><strong>${totalSales.toLocaleString("es-CL")} CLP</strong></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       )}
 
-      {/* Modal PDF Preview */}
       {pdfData && (
         <Modal
           show={showPDFModal}
@@ -203,7 +208,10 @@ const VentasPorYear: React.FC = () => {
             <Button variant="primary" onClick={savePDF}>
               Guardar PDF
             </Button>
-            <Button variant="secondary" onClick={() => setShowPDFModal(false)}>
+            <Button
+              variant="secondary"
+              onClick={() => setShowPDFModal(false)}
+            >
               Cerrar
             </Button>
           </Modal.Footer>
@@ -214,11 +222,3 @@ const VentasPorYear: React.FC = () => {
 };
 
 export default VentasPorYear;
-
-// Genera un color aleatorio para las barras del gráfico
-const randomColor = (): string => {
-  const letras = "456789AB";
-  return "#" + Array.from({ length: 6 }, () =>
-    letras[Math.floor(Math.random() * letras.length)]
-  ).join("");
-};

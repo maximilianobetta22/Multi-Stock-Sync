@@ -78,18 +78,23 @@ export const generarPDFPorDia = (
   const doc = new jsPDF();
   doc.setFontSize(16);
   doc.text(`Reporte de Ventas - ${fecha}`, 10, 10);
+  
   if (userData) {
     doc.setFontSize(12);
     doc.text(`Usuario: ${userData.nickname}`, 10, 20);
   }
+
+  // Validar que exista quantityData
+  const ingresosData = chartData.datasets[0]?.data || [];
+  const cantidadData = chartData.datasets[0]?.quantityData || [];
 
   autoTable(doc, {
     startY: 30,
     head: [["Producto", "Cantidad", "Ingresos"]],
     body: chartData.labels.map((label: string, index: number) => [
       label,
-      chartData.datasets[1].data[index],
-      `$${chartData.datasets[0].data[index].toLocaleString("es-CL")}`,
+      cantidadData[index],
+      `$${ingresosData[index]?.toLocaleString("es-CL") || 0}`,
     ]),
     foot: [
       [
@@ -101,6 +106,7 @@ export const generarPDFPorDia = (
 
   return doc.output("datauristring");
 };
+
 
 // 🟦 Exportar PDF para Ventas por Año
 export const generarPDFPorYear = (

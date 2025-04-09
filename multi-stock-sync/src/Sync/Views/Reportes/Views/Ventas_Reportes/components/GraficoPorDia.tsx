@@ -12,35 +12,42 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
+// Registro de plugins
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
+// Props
 interface Props {
   chartData: any;
   totalVentas: number;
   fecha: string;
 }
 
+// Opciones del gráfico
 const options: ChartOptions<"bar"> = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: "top" as const,
+      display: false, // Ocultamos la leyenda
     },
     title: {
       display: true,
-      text: "Ventas por Día",
+      text: "Ingresos por Producto",
       font: {
         size: 18,
+        weight: "bold",
       },
+      color: "#333",
     },
     datalabels: {
-      color: "#fff",
+      color: "#000",
+      anchor: "end",
+      align: "top",
+      formatter: (value: number) =>
+        `$ ${new Intl.NumberFormat("es-CL").format(value)}`,
       font: {
         weight: "bold",
       },
-      formatter: (value: number) =>
-        `$ ${new Intl.NumberFormat("es-CL").format(value)} CLP`,
     },
     tooltip: {
       callbacks: {
@@ -49,11 +56,37 @@ const options: ChartOptions<"bar"> = {
       },
     },
   },
+  scales: {
+    x: {
+      title: {
+        display: true,
+        text: "Productos",
+        font: {
+          weight: "bold",
+        },
+      },
+      ticks: {
+        autoSkip: false,
+        maxRotation: 45,
+        minRotation: 0,
+      },
+    },
+    y: {
+      title: {
+        display: true,
+        text: "Ingresos (CLP)",
+        font: {
+          weight: "bold",
+        },
+      },
+      beginAtZero: true,
+    },
+  },
 };
 
 const GraficoPorDia: React.FC<Props> = ({ chartData }) => {
   return (
-    <div style={{ position: "relative", height: "66vh", width: "100%" }}>
+    <div style={{ position: "relative", height: "500px", width: "100%", padding: "2rem" }}>
       <Bar data={chartData} options={options} />
     </div>
   );
