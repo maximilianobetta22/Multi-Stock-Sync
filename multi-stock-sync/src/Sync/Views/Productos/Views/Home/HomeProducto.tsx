@@ -78,7 +78,7 @@ const HomeProducto = () => {
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     setOffset(0);
-    await fetchProducts(selectedConnection, query, limit, 0, "");
+    await fetchProducts(selectedConnection, query);
   };
 
   const handlePageChange = (newOffset: number) => {
