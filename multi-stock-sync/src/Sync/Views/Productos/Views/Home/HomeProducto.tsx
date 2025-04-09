@@ -17,7 +17,6 @@ import { useStatusManagement } from "../../hooks/useStatusManagement";
 const MySwal = withReactContent(Swal);
 
 const HomeProducto = () => {
-  //nuevo
   const {
     modalIsOpen,
     currentProduct,
@@ -76,10 +75,10 @@ const HomeProducto = () => {
     }
   };
 
-  const handleSearch = (query: string) => {
+  const handleSearch = async (query: string) => {
     setSearchQuery(query);
     setOffset(0);
-    fetchProducts(selectedConnection, query, limit, 0);
+    await fetchProducts(selectedConnection, query);
   };
 
   const handlePageChange = (newOffset: number) => {

@@ -1,6 +1,7 @@
 import axiosInstance from "../../../../axiosConfig";
 import { Connection } from "../types/connection.type";
 import { UpdateStockParams, UpdateStatusParams } from "../types/update.type";
+import axios from "axios";
 
 export const productService = {
   async fetchConnections(): Promise<Connection[]> {
@@ -24,6 +25,9 @@ export const productService = {
 
       const response = await axiosInstance.get(url, {
         params: { q: query, limit, offset, category },
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
       });
 
       console.log("Products API response:", response.data);
@@ -35,6 +39,11 @@ export const productService = {
       return response.data;
     } catch (error) {
       console.error("Error in productService.fetchProducts:", error);
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 403) {
+          throw new Error("Access denied. Please check your permissions.");
+        }
+      }
       throw error;
     }
   },
