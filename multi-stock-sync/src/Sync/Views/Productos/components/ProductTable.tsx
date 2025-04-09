@@ -20,7 +20,6 @@ const ProductTable: React.FC<ProductTableProps> = ({
   formatPriceCLP,
   onUpdateStatus,
 }) => {
-
   const getCategoryName = (categoryId: string) =>
     categories[categoryId] || "Categoría no disponible";
 
@@ -41,9 +40,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
               <th>Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            {categorizedProducts[categoryId].map(renderProductRow)}
-          </tbody>
+          <tbody>{categorizedProducts[categoryId].map(renderProductRow)}</tbody>
         </Table>
       </Accordion.Body>
     </Accordion.Item>
@@ -71,16 +68,13 @@ const ProductTable: React.FC<ProductTableProps> = ({
           product.available_quantity
         )}
       </td>
-      <td>{product.status_translated}</td>
+      <td>{product.status}</td>
       <td>
         <DropdownButton
           id={`dropdown-${product.id}`}
           title={<FontAwesomeIcon icon={faEllipsis} />}
         >
-          <Dropdown.Item
-            as={Link}
-            to={`/sync/productos/editar/${product.id}`}
-          >
+          <Dropdown.Item as={Link} to={`/sync/productos/editar/${product.id}`}>
             Editar
           </Dropdown.Item>
           <Dropdown.Item onClick={() => onUpdateStatus(product.id, "paused")}>
