@@ -1,19 +1,17 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
-import axiosInstance from "../../../../../axiosConfig";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
-import { Link } from 'react-router-dom';
+import { Link } from "react-router-dom";
+import { useReceptionManagements } from "../../hooks/useReceptionManagements";
 
 const ReporteRecepcion: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-
-  const [reporte, setReporte] = useState<any[]>([]);
   const [filteredData, setFilteredData] = useState<any[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
   const [filterText, setFilterText] = useState<string>("");
+  const { loading, reporte, fetchStockReception } = useReceptionManagements();
 
   // Paginación
   const [currentPage, setCurrentPage] = useState(1);
@@ -22,30 +20,14 @@ const ReporteRecepcion: React.FC = () => {
   const pdfRef = useRef<jsPDF | null>(null);
 
   useEffect(() => {
-    const fetchStockReception = async () => {
-      try {
-        const response = await axiosInstance.get(
-          `${import.meta.env.VITE_API_URL}/mercadolibre/stock-reception/${client_id}`
-        );
-        if (response.data.status === "success") {
-          setReporte(response.data.data);
-          setFilteredData(response.data.data);
-        } else {
-          console.error("No se pudo obtener la recepción de stock");
-        }
-      } catch (error) {
-        console.error("Error al hacer la solicitud:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStockReception();
+    loading;
+    fetchStockReception(); // Llama a la función para obtener los datos
   }, [client_id]);
 
   // Función para aplicar el filtro por SKU
   const applyFilter = () => {
     if (!filterText.trim()) {
-      setFilteredData(reporte);
+      setFilteredData(reporte); // Si no hay texto de filtro, mostrar todos los datos
       return;
     }
 
@@ -113,7 +95,9 @@ const ReporteRecepcion: React.FC = () => {
 
     autoTable(doc, {
       startY: 20,
-      head: [["SKU", "Producto", "Fecha", "Cantidad", "Costo Neto", "Valor Total"]],
+      head: [
+        ["SKU", "Producto", "Fecha", "Cantidad", "Costo Neto", "Valor Total"],
+      ],
       body: filteredData.map((item) => [
         item.sku,
         item.title,
