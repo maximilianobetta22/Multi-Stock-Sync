@@ -10,6 +10,7 @@ import { LoadingDinamico } from '../../../../../components/LoadingDinamico/Loadi
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faFilePdf } from '@fortawesome/free-solid-svg-icons';
 
+//str meses
 const months: { [key: string]: string } = {
   "01": "Enero", "02": "Febrero", "03": "Marzo", "04": "Abril", "05": "Mayo",
   "06": "Junio", "07": "Julio", "08": "Agosto", "09": "Septiembre", "10": "Octubre",
@@ -50,14 +51,16 @@ const CompareMonthMonth: React.FC = () => {
 
   useEffect(() => {
     const fetchNickname = async () => {
-      setLoading(true);
-      try {
+      setLoading(true); // establece el estado de carga en true para indicar que se está esperando una respuesta
+      try { // realiza la solicitud GET para obtener nickname del cliente
         const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`);
+        // al recibir la respuesta, establece el nickname en el estado correspondiente
         setNickname(response.data.data.nickname);
       } catch (error) {
+        // si ocurre un error durante la solicitud, se captura y se imprime en la consola
         console.error(error);
       } finally {
-        setLoading(false);
+        setLoading(false); // una vez que la solicitud se ha completado (ya sea con éxito o error), establece el estado de carga en false
       }
     };
     fetchNickname();
@@ -85,53 +88,72 @@ const CompareMonthMonth: React.FC = () => {
 
   //generar pdf
   const generatePDF = () => {
-    const doc = new jsPDF();
-    doc.setFillColor(0, 121, 191);
-    doc.rect(0, 0, 210, 30, "F");
-    doc.setFont("helvetica", "bold");
-    doc.setFontSize(18);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Reporte de Comparación de Ventas", 14, 20);
-    doc.setFontSize(12);
-    doc.setTextColor(0, 0, 0);
-    doc.text(`Cliente: ${nickname}`, 14, 40);
-
+    const doc = new jsPDF(); // Crea un nuevo documento PDF con jsPDF
+    
+    // Configuración de la primera sección del PDF (encabezado)
+    doc.setFillColor(0, 121, 191); // Establece el color de relleno en azul
+    doc.rect(0, 0, 210, 30, "F"); // Dibuja un rectángulo relleno en la parte superior (0,0) con un tamaño A4
+    
+    // Configuración del texto para el encabezado
+    doc.setFont("helvetica", "bold"); // Establece la fuente en Helvetica, negrita
+    doc.setFontSize(18); // Establece el tamaño de la fuente en 18
+    doc.setTextColor(255, 255, 255); // Establece el color del texto en blanco
+    doc.text("Reporte de Comparación de Ventas", 14, 20); // Añade el texto "Reporte de Comparación de Ventas" en las coordenadas (14, 20)
+    
+    doc.setFontSize(12); // Cambia el tamaño de la fuente a 12.
+    doc.setTextColor(0, 0, 0); // Establece el color del texto a negro.
+    doc.text(`Cliente: ${nickname}`, 14, 40); // Añade el texto con el nombre del cliente en las coordenadas (14, 40).
+    
+    // Si hay un resultado de comparación de ventas (result)
     if (result) {
-      const { month1, month2, difference, percentage_change } = result.data;
-
+      const { month1, month2, difference, percentage_change } = result.data; // Desestructura los datos de los dos meses y la diferencia.
+      
+      // Función que genera la tabla de ventas para un mes determinado.
       const generateTable = (monthData: any, startY: number) => {
+        // Añade el texto con el nombre del mes y el año.
         doc.text(`${months[monthData.month]} ${monthData.year}`, 105, startY, { align: 'center' });
+        // Añade el total de ventas para ese mes.
         doc.setFontSize(12);
         doc.text(`Total Ventas: ${formatCurrency(monthData.total_sales)}`, 105, startY + 10, { align: 'center' });
+        
+        // Genera una tabla con la lista de productos vendidos ese mes.
         autoTable(doc, {
           head: [["Producto", "Cantidad", "Precio"]],
           body: monthData.sold_products.map((product: any) => [
-            product.title,
-            product.quantity,
-            formatCurrency(product.price),
+            product.title, // Nombre del producto.
+            product.quantity, // Cantidad vendida.
+            formatCurrency(product.price), // Precio del producto formateado.
           ]),
-          startY: startY + 20,
-          theme: 'grid',
-          margin: { bottom: 10 }
+          startY: startY + 20, // Posiciona la tabla en el PDF.
+          theme: 'grid', // Establece el tema de la tabla a 'grid'.
+          margin: { bottom: 10 } // Establece un margen inferior en la tabla.
         });
       };
-
+      
+      // Genera la tabla para el primer mes.
       generateTable(month1, 70);
+      // Genera la tabla para el segundo mes, ajustando la posición en Y.
       generateTable(month2, (doc as any).lastAutoTable.finalY + 20);
-
+      
+      // Añade la diferencia de ventas entre los dos meses.
       doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, (doc as any).lastAutoTable.finalY + 30);
+      
+      // Cambia el color del texto dependiendo si el cambio porcentual es positivo o negativo.
       doc.setTextColor(percentage_change > 0 ? 'green' : 'red');
       doc.text(`Cambio Porcentual: ${percentage_change}%`, 14, (doc as any).lastAutoTable.finalY + 40);
     }
-
-    const pageHeight = doc.internal.pageSize.height;
-    doc.setFontSize(10);
-    doc.setTextColor(150, 150, 150);
-    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
-
+    
+    // Añade el pie de página con el texto fijo.
+    const pageHeight = doc.internal.pageSize.height; // Obtiene la altura de la página.
+    doc.setFontSize(10); // Establece el tamaño de la fuente en 10.
+    doc.setTextColor(150, 150, 150); // Establece el color de texto gris claro.
+    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" }); // Añade el texto en el pie de página.
+    
+    // Convierte el documento PDF a una URL de datos (Data URL).
     const pdfData = doc.output("datauristring");
+    
     setPdfDataUrl(pdfData);
-    setShowModal(true);
+    setShowModal(true); // Muestra el modal con el PDF.
   };
 
   //renderizado del componente

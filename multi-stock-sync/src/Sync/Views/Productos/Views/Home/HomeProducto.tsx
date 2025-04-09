@@ -85,7 +85,7 @@ const HomeProducto = () => {
     setSearchQuery("");
     setOffset(0);
     if (clientId) {
-      fetchProducts(clientId);
+      fetchProducts(clientId, "", limit, 0); // Asegurar que se llama con todos los parámetros
     }
   };
 
@@ -99,7 +99,7 @@ const HomeProducto = () => {
     const validatedOffset = Math.max(0, Math.min(newOffset, totalProducts - limit));
     setOffset(validatedOffset);
     fetchProducts(selectedConnection, searchQuery, limit, validatedOffset);
-  };
+  }
 
   const handleStockChange = (productId: string, newStock: number) => {
     setStockEdit((prevStock) => ({

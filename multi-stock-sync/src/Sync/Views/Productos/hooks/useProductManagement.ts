@@ -12,6 +12,7 @@ export const useProductManagement = () => {
   const [loading, setLoading] = useState(false);
   const [loadingConnections, setLoadingConnections] = useState(true);
   const [totalProducts, setTotalProducts] = useState(0);
+  const [offset, setOffset] = useState(0); // Track offset for pagination
 
   const fetchConnections = useCallback(async () => {
     try {
@@ -48,10 +49,12 @@ export const useProductManagement = () => {
     async (
       clientId: string,
       query: string = "",
-      limit: number = 35,
+      limit: number = 50, // Default limit
       offset: number = 0,
       category: string = ""
     ) => {
+      console.log("→ Ejecutando fetchProducts con offset:", offset);
+      
       setLoading(true);
       try {
         const response = await productService.fetchProducts(
@@ -73,9 +76,9 @@ export const useProductManagement = () => {
         }
 
         setAllProducts(response.data);
-        setTotalProducts(response.pagination?.total || 0);
-
-        // Call fetchCategories with the products array
+        setTotalProducts(response.pagination?.total ?? response.data.length); // Fix for pagination
+        
+        // Fetch categories for products
         if (response.data.length > 0) {
           await fetchCategories(response.data);
         }
@@ -83,16 +86,11 @@ export const useProductManagement = () => {
         console.error("Error in fetchProducts:", error);
         setAllProducts([]);
         setTotalProducts(0);
-        if (error instanceof Error) {
-          throw new Error(`Error fetching products: ${error.message}`);
-        } else {
-          throw new Error("Unknown error fetching products");
-        }
       } finally {
         setLoading(false);
       }
     },
-    [fetchCategories] // Add fetchCategories to dependencies
+    [fetchCategories] // Fetch categories when the products are fetched
   );
 
   return {
@@ -104,7 +102,9 @@ export const useProductManagement = () => {
     loadingConnections,
     totalProducts,
     setSelectedConnection,
-    fetchConnections,
+    fetchConnections: fetchConnections,
     fetchProducts,
+    offset, // Include offset here
+    setOffset, // Expose setOffset to update offset externally
   };
 };
