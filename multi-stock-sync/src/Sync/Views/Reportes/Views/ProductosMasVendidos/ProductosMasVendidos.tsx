@@ -8,6 +8,7 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import * as XLSX from "xlsx";
 import axiosInstance from "../../../../../axiosConfig";
 import { Link } from "react-router-dom";
+import { ChartOptions } from "chart.js";
 
 const Productos: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>(); //captura el id del cliente por url
@@ -152,12 +153,12 @@ const Productos: React.FC = () => {
     ],
   };
 
-  const chartOptions = {
+  const chartOptions: ChartOptions<"pie"> = {
     responsive: true,
     plugins: {
       legend: {
-        position: "right",
-        align: "center",
+        position: "right" as const,
+        align: "center" as const,
         labels: {
           boxWidth: 20,
           padding: 15,
