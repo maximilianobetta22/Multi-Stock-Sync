@@ -39,17 +39,11 @@ export interface ProductTableProps {
   isEditing: { [key: string]: boolean };
   stockEdit: { [key: string]: number };
   onStockChange: (productId: string, newStock: number) => void;
-  onUpdateStock: (
-    productId: string,
-    newStock: number,
-    pause?: boolean
-  ) => Promise<void>;
-  onOpenModal: (product: Product) => void;
   formatPriceCLP: (price: number) => string;
   onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
-  onSelectProduct: (product: Product) => void;
-  onEditProduct: (product: Product) => void;
 }
+
+
 
 export interface ProductActionsDropdownProps {
   productId: string;
