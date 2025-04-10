@@ -40,3 +40,8 @@ export interface ProductTableProps {
   onSelectProduct?: (product: Product) => void;
   onEditProduct?: (updatedProduct: Product) => void;
 }
+export interface ProductActionsDropdownProps {
+  productId: string;
+  onEdit?: (id: string) => void;
+  onUpdateStatus?: (id: string, status: string) => void;
+}
