@@ -366,7 +366,8 @@ const Productos: React.FC = () => {
                   ))
                 ) : (
                   <tr>
-                    <td colSpan="6" className="text-center">
+                    <td colSpan={6} className="text-center">
+
                       No hay productos disponibles.
                     </td>
                   </tr>

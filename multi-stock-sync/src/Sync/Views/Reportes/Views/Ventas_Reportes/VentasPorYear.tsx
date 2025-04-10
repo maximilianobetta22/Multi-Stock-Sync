@@ -9,6 +9,8 @@ import {
   exportarExcelPorYear,
 } from "./utils/exportUtils";
 import styles from "./VentasPorYear.module.css";
+
+// Interfaz para un producto vendido
 interface ProductoVendido {
   order_id: number;
   title: string;
@@ -16,13 +18,7 @@ interface ProductoVendido {
   price: number;
 }
 
-interface ProductoVendido {
-  order_id: number;
-  title: string;
-  quantity: number;
-  price: number;
-}
-
+// Interfaz para estructura de ventas por mes
 interface Mes {
   month: string;
   total_sales: number;
@@ -31,24 +27,36 @@ interface Mes {
 
 const VentasPorYear: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
+
+  // Estado para almacenar ventas agrupadas por mes
   const [salesData, setSalesData] = useState<Mes[]>([]);
-  const [loading, setLoading] = useState(false);
+
+  // Estado para el año seleccionado
   const [selectedYear, setSelectedYear] = useState("2025");
+
+  // Nombre del usuario que aparece en el reporte
   const [userName, setUserName] = useState("");
+
+  // Control del modal de vista previa PDF
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfData, setPdfData] = useState<string | null>(null);
+
+  // Mostrar u ocultar tabla con detalle completo
   const [mostrarTablaDetalle, setMostrarTablaDetalle] = useState(false);
 
+  // Total de ventas del año seleccionado
   const totalSales = salesData.reduce((acc, mes) => acc + mes.total_sales, 0);
 
+  // Obtener datos de ventas por año y usuario
   useEffect(() => {
     const fetchSalesData = async () => {
-      setLoading(true);
       try {
         const response = await axiosInstance.get(
           `${import.meta.env.VITE_API_URL}/mercadolibre/annual-sales/${client_id}?year=${selectedYear}`
         );
         const rawData = response.data.data;
+
+        // Estructurar los datos para el gráfico y la tabla
         const parsed = Object.keys(rawData).map((month) => ({
           month,
           total_sales: rawData[month].total_amount,
@@ -56,12 +64,11 @@ const VentasPorYear: React.FC = () => {
             (order: { sold_products: ProductoVendido[] }) => order.sold_products
           )
         }));
+
         setSalesData(parsed);
       } catch (err) {
         console.error("Error cargando ventas:", err);
         setSalesData([]);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -82,29 +89,35 @@ const VentasPorYear: React.FC = () => {
     }
   }, [client_id, selectedYear]);
 
+  // Generar vista previa PDF en modal
   const generatePDF = () => {
     const data = generarPDFPorYear(salesData, selectedYear, userName);
     setPdfData(data);
     setShowPDFModal(true);
   };
 
+  // Descargar PDF directo
   const savePDF = () => {
     guardarPDFPorYear(salesData, selectedYear, userName);
   };
 
+  // Exportar a archivo Excel
   const generateExcel = () => {
     exportarExcelPorYear(salesData, selectedYear, userName);
   };
 
+  // Años disponibles en el selector (últimos 4 años)
   const years = Array.from({ length: 4 }, (_, i) => (2025 - i).toString());
 
   return (
     <div className={styles.container}>
       <h2 className={styles.titulo}>Ventas por Año</h2>
+
       <p className={styles.subtitulo}>
         Usuario: <strong>{userName || "Cargando..."}</strong>
       </p>
 
+      {/* Selector de año */}
       <div className={styles.fechaSelector}>
         <label>Selecciona Año:</label>
         <select
@@ -119,6 +132,7 @@ const VentasPorYear: React.FC = () => {
         </select>
       </div>
 
+      {/* Gráfico de ventas por año */}
       <div className={styles.graficoContenedor}>
         <GraficoPorYear
           chartData={{
@@ -138,6 +152,7 @@ const VentasPorYear: React.FC = () => {
         />
       </div>
 
+      {/* Botones de exportación y detalle */}
       <div className={styles.botonContenedor}>
         <button className={styles.botonPDF} onClick={generatePDF}>
           Exportar a PDF
@@ -153,6 +168,7 @@ const VentasPorYear: React.FC = () => {
         </button>
       </div>
 
+      {/* Tabla con detalle de productos vendidos por mes */}
       {mostrarTablaDetalle && (
         <div className={styles.tablaDetalle}>
           <h4 className="text-center mt-4">Detalle de Ventas por Año</h4>
@@ -187,6 +203,7 @@ const VentasPorYear: React.FC = () => {
         </div>
       )}
 
+      {/* Modal de vista previa PDF */}
       {pdfData && (
         <Modal
           show={showPDFModal}
