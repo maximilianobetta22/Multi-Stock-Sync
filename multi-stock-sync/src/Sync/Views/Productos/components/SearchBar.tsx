@@ -1,5 +1,6 @@
-import React, { useState } from "react";
-import { Form, Button, ListGroup } from "react-bootstrap";
+import React, { useEffect, useState } from "react";
+import { Form, Button, ListGroup, InputGroup } from "react-bootstrap";
+import { FaSearch } from "react-icons/fa";
 
 interface SearchBarProps {
   searchQuery: string;
@@ -18,54 +19,77 @@ const SearchBar: React.FC<SearchBarProps> = ({
   const [filteredSuggestions, setFilteredSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const userInput = event.target.value;
-    setQuery(userInput);
+  // Sincroniza el estado interno si el searchQuery cambia desde afuera
+  useEffect(() => {
+    setQuery(searchQuery);
+  }, [searchQuery]);
 
-    const filtered = suggestions.filter(
-      (suggestion) =>
-        suggestion.toLowerCase().indexOf(userInput.toLowerCase()) > -1
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setQuery(value);
+
+    if (value.trim() === "") {
+      setFilteredSuggestions([]);
+      setShowSuggestions(false);
+      return;
+    }
+
+    const filtered = suggestions.filter((suggestion) =>
+      suggestion.toLowerCase().includes(value.toLowerCase())
     );
+
     setFilteredSuggestions(filtered);
     setShowSuggestions(true);
   };
 
+  const handleSearch = async () => {
+    if (query.trim() === "") return;
+    await onSearch(query);
+    setShowSuggestions(false);
+  };
+
   const handleSuggestionClick = (suggestion: string) => {
     setQuery(suggestion);
-    setFilteredSuggestions([]);
     setShowSuggestions(false);
     onSelectSuggestion(suggestion);
   };
 
-  const handleSearch = async () => {
-    await onSearch(query);
-    setQuery(""); // Clear the search bar after search
-    setShowSuggestions(false);
-  };
-
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
     handleSearch();
   };
 
   return (
-    <div>
-      <Form className="d-flex gap-2" onSubmit={handleSubmit}>
-        <Form.Control
-          type="text"
-          placeholder="Buscar productos"
-          value={query}
-          onChange={handleInputChange}
-        />
-        <Button variant="outline-success" onClick={handleSearch}>
-          Buscar
-        </Button>
+    <div style={{ position: "relative" }}>
+      <Form onSubmit={handleSubmit}>
+        <InputGroup>
+          <Form.Control
+            type="text"
+            placeholder="🔍 Buscar productos por nombre o ID"
+            value={query}
+            onChange={handleInputChange}
+          />
+          <Button variant="primary" onClick={handleSearch}>
+            <FaSearch />
+          </Button>
+        </InputGroup>
       </Form>
-      {showSuggestions && query && (
-        <ListGroup>
-          {filteredSuggestions.map((suggestion, index) => (
+
+      {showSuggestions && filteredSuggestions.length > 0 && (
+        <ListGroup
+          style={{
+            position: "absolute",
+            width: "100%",
+            zIndex: 1000,
+            maxHeight: "200px",
+            overflowY: "auto",
+            borderTop: "none",
+          }}
+        >
+          {filteredSuggestions.map((suggestion, idx) => (
             <ListGroup.Item
-              key={index}
+              key={idx}
+              action
               onClick={() => handleSuggestionClick(suggestion)}
             >
               {suggestion}
