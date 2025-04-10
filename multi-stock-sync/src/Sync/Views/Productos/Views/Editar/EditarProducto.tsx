@@ -1,209 +1,120 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate, useLocation } from "react-router-dom";
-import axiosInstance from "../../../../../axiosConfig";
-import { Button, Form, Container, Row, Col, Alert } from "react-bootstrap";
-import SearchBar from "../../components/SearchBar";
-import ProductTable from "../../components/ProductTable";
+import { useEffect, useState } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button, Card, Form } from "react-bootstrap";
+import { productService } from "../../service/productService";
+import styles from "./EditarProducto.module.css";
 
-const EditarProducto: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+interface Producto {
+  id: string;
+  title: string;
+  price: number;
+  available_quantity: number;
+}
+
+export default function EditarProducto() {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
-  const [products, setProducts] = useState<any[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [producto, setProducto] = useState<Producto | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchProducts();
-  }, [searchQuery]);
+    const fetchProducto = async () => {
+      try {
+        const response = await productService.fetchProducts("", "", 35, 0, "");
+        const productoEncontrado = response.results.find((p: Producto) => p.id === id);
+        setProducto(productoEncontrado);
+      } catch (error) {
+        console.error("Error al obtener el producto:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const fetchProducts = async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get(
-        `${process.env.VITE_API_URL}/mercadolibre/products`,
-        {
-          params: { q: searchQuery, id }, // Ensure the correct parameters are passed
-          headers: {
-            Accept: "application/json",
-            Authorization: `Bearer ${location.state?.access_token}`, // Pass the access token
-          },
-        }
-      );
-      setProducts(response.data.data);
-    } catch (error) {
-      console.error("Error fetching products:", error);
-      setError("Error fetching products. Please try again later.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchProducto();
+  }, [id]);
 
-  const handleSearch = (query: string) => {
-    setSearchQuery(query);
-  };
-
-  const handleProductSelect = (product: any) => {
-    setSelectedProduct(product);
-  };
-
-  const handleEditProduct = (updatedProduct: any) => {
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.id === updatedProduct.id ? updatedProduct : product
-      )
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const { name, value } = e.target;
+    setProducto((prev: Producto | null) =>
+      prev ? { ...prev, [name]: name === "price" || name === "available_quantity" ? parseFloat(value) : value } : null
     );
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+  const handleActualizar = async () => {
+    if (!producto) return;
     try {
-      await axiosInstance.put(
-        `${process.env.VITE_API_URL}/mercadolibre/products/${selectedProduct.id}`,
-        selectedProduct,
-        {
-          headers: {
-            Authorization: `Bearer ${location.state?.access_token}`, // Pass the access token
-          },
-        }
-      );
-      navigate("/sync/productos/home", { state: location.state });
+      await productService.updateProduct(producto);
+      alert("Producto actualizado con éxito");
+      navigate("/productos");
     } catch (error) {
-      console.error("Error updating product:", error);
-      setError("Error updating product. Please try again later.");
+      console.error("Error al actualizar producto:", error);
     }
   };
 
-  if (error) {
-    return <Alert variant="danger">{error}</Alert>;
-  }
+  const handleEliminar = async () => {
+    if (!producto) return;
+    try {
+      await productService.deleteProduct(producto.id);
+      alert("Producto eliminado con éxito");
+      navigate("/productos");
+    } catch (error) {
+      console.error("Error al eliminar producto:", error);
+    }
+  };
+
+  if (loading) return <p className="text-center">Cargando producto...</p>;
+  if (!producto) return <p className="text-center">Producto no encontrado</p>;
 
   return (
-    <Container>
-      <h1>Editar Producto</h1>
-      <Row className="mb-3">
-        <Col>
-          <Button
-            variant="secondary"
-            onClick={() =>
-              navigate("/sync/productos/home", { state: location.state })
-            }
-          >
-            Back
-          </Button>
-        </Col>
-        <Col className="text-end">
-          <Button
-            variant="primary"
-            onClick={() => navigate(`/sync/productos/editar/${id}`)}
-          >
-            Editar
-          </Button>
-          <Button
-            variant="success"
-            className="ms-2"
-            onClick={() => navigate("/sync/productos/crear")}
-          >
-            Crear
-          </Button>
-        </Col>
-      </Row>
-      <SearchBar
-        searchQuery={searchQuery}
-        onSearch={handleSearch}
-        suggestions={[]}
-        onSelectSuggestion={() => {}}
-      />
-      {loading && <div>Loading...</div>}
-      {products.length > 0 && (
-        <ProductTable
-          categorizedProducts={{ "": products }}
-          categories={{}}
-          isEditing={{}}
-          stockEdit={{}}
-          onStockChange={() => {}}
-          onUpdateStock={async (id: string, value: number) => {
-            // Implement the logic to update stock here
-            return Promise.resolve();
-          }}
-          onOpenModal={() => {}}
-          formatPriceCLP={(price: number) =>
-            new Intl.NumberFormat("es-CL", {
-              style: "currency",
-              currency: "CLP",
-            }).format(price)
-          }
-          translateStatus={(status: string) => status}
-          onUpdateStatus={async (productId: string, newStatus: string) => {
-            return Promise.resolve();
-          }}
-          onSelectProduct={handleProductSelect}
-          onEditProduct={handleEditProduct}
-        />
-      )}
-      {selectedProduct && (
-        <Form onSubmit={handleSubmit}>
-          <Form.Group as={Row} className="mb-3" controlId="productName">
-            <Form.Label column sm={2}>
-              Nombre del Producto:
-            </Form.Label>
-            <Col sm={10}>
+    <div className={styles.container}>
+      <Card className={styles.card}>
+        <Card.Body>
+          <Card.Title className="text-center">Editar Producto</Card.Title>
+          <Form>
+            <Form.Group className="mb-3">
+              <Form.Label>ID del Producto</Form.Label>
+              <Form.Control value={producto.id} disabled />
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Nombre</Form.Label>
               <Form.Control
                 type="text"
                 name="title"
-                value={selectedProduct.title}
-                onChange={(e) =>
-                  handleEditProduct({
-                    ...selectedProduct,
-                    title: e.target.value,
-                  })
-                }
+                value={producto.title}
+                onChange={handleInputChange}
               />
-            </Col>
-          </Form.Group>
-          <Form.Group as={Row} className="mb-3" controlId="productPrice">
-            <Form.Label column sm={2}>
-              Precio del Producto:
-            </Form.Label>
-            <Col sm={10}>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Precio</Form.Label>
               <Form.Control
                 type="number"
                 name="price"
-                value={selectedProduct.price}
-                onChange={(e) =>
-                  handleEditProduct({
-                    ...selectedProduct,
-                    price: e.target.value,
-                  })
-                }
+                value={producto.price}
+                onChange={handleInputChange}
               />
-            </Col>
-          </Form.Group>
-          <Form.Group as={Row} className="mb-3" controlId="productDescription">
-            <Form.Label column sm={2}>
-              Descripción del Producto:
-            </Form.Label>
-            <Col sm={10}>
+            </Form.Group>
+            <Form.Group className="mb-3">
+              <Form.Label>Stock</Form.Label>
               <Form.Control
-                as="textarea"
-                name="description"
-                value={selectedProduct.description}
-                onChange={(e) =>
-                  handleEditProduct({
-                    ...selectedProduct,
-                    description: e.target.value,
-                  })
-                }
+                type="number"
+                name="available_quantity"
+                value={producto.available_quantity}
+                onChange={handleInputChange}
               />
-            </Col>
-          </Form.Group>
-          <Button type="submit">Guardar Cambios</Button>
-        </Form>
-      )}
-    </Container>
+            </Form.Group>
+          </Form>
+          <div className="d-flex justify-content-between mt-4">
+            <Button variant="success" onClick={handleActualizar}>
+              Actualizar
+            </Button>
+            <Button variant="danger" onClick={handleEliminar}>
+              Eliminar
+            </Button>
+          </div>
+        </Card.Body>
+      </Card>
+    </div>
   );
-};
-
-export default EditarProducto;
+}

@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Container, Row, Col, Pagination, Button, Alert } from "react-bootstrap";
-import { FaPlus, } from "react-icons/fa";
+import { FaPlus } from "react-icons/fa";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";

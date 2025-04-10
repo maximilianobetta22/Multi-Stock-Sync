@@ -19,18 +19,12 @@ export interface ProductModalProps {
   onHide: () => void;
   product: Product | null;
   modalContent: "main" | "stock" | "pause";
-  onUpdateStock: (
-    productId: string,
-    newStock: number,
-    pause?: boolean
-  ) => Promise<void>;
+  onUpdateStock: (productId: string, newStock: number, pause?: boolean) => Promise<void>;
   onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
   onStockChange: (productId: string, newStock: number) => void;
   stockEdit: { [key: string]: number };
   fetchProducts: () => void;
-  setModalContent: React.Dispatch<
-    React.SetStateAction<"main" | "stock" | "pause">
-  >;
+  setModalContent: React.Dispatch<React.SetStateAction<"main" | "stock" | "pause">>;
 }
 
 export interface ProductTableProps {
@@ -41,16 +35,8 @@ export interface ProductTableProps {
   onStockChange: (productId: string, newStock: number) => void;
   formatPriceCLP: (price: number) => string;
   onUpdateStatus: (productId: string, newStatus: string) => Promise<void>;
-}
-
-
-
-export interface ProductActionsDropdownProps {
-  productId: string;
-  onEdit: (productId: string) => void;
-}
-
-export interface ProductActionsDropdownProps {
-  productId: string;
-  onUpdateStatus: (productId: string, status: string) => void;
+  onUpdateStock?: (productId: string, value: number) => Promise<void>;
+  onOpenModal?: () => void;
+  onSelectProduct?: (product: Product) => void;
+  onEditProduct?: (updatedProduct: Product) => void;
 }
