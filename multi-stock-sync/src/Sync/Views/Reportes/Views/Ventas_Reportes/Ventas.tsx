@@ -54,9 +54,10 @@ const Ventas: React.FC = () => {
       <p className={styles.subtitulo}>Comparaciones inteligentes</p>
 
       <div className={styles.botonesFila}>
+        {/* Rutas nuevas para comparación unificada */}
         <button
           className={`${styles.boton} ${styles.botonSecundario}`}
-          onClick={() => handleNavigate("compare-month-month")}
+          onClick={() => navigate(`/sync/reportes/compare/month/${client_id}`)}
         >
           <FontAwesomeIcon icon={faChartBar} />
           Mes a Mes
@@ -64,7 +65,7 @@ const Ventas: React.FC = () => {
 
         <button
           className={`${styles.boton} ${styles.botonSecundario}`}
-          onClick={() => handleNavigate("compare-year-year")}
+          onClick={() => navigate(`/sync/reportes/compare/year/${client_id}`)}
         >
           <FontAwesomeIcon icon={faChartLine} />
           Año a Año

@@ -19,8 +19,7 @@ import IngresosCategoriaProducto from "../Views/IngresosCategoriaProducto/Ingres
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
 import EstadosOrdenes from "../Views/EstadosOrdenes/EstadosOrdenes";
 import EstadosOrdenesAnual from "../Views/EstadoOrdenesAnuales/EstadoOrdenesAnuales";
-import CompareMonthMonth from "../Views/CompareMesMes/CompareMonthMonth";
-import CompareYearYear from "../Views/CompareYearYear/CompareYearYear";
+
 import ReporteDisponible from "../Views/ReporteDisponible/ReporteDisponible";
 import ReporteRecepcion from "../Views/ReporteRecepcion/ReporteRecepcion";
 import ProductosDespachar from "../Views/ProductosDespachar/ProductosDespachar";
@@ -28,6 +27,9 @@ import HistorialDespacho from "../Views/ProductosDespachar/HistorialDespacho";
 import ReporteHistorialStock from "../Views/HistorialStock/ReporteHistorialStock";
 import ReporteStockCritico from "../Views/StockCritico/ReporteStockCritico";
 import Plantilla from "../Views/Plantillas/plantillas";
+
+// ✅ Nueva vista unificada de comparación
+import Compare from "../Views/Compare/Compare";
 
 function RouterReportes() {
   return (
@@ -68,8 +70,10 @@ function RouterReportes() {
       />
       <Route path="estados-ordenes/:client_id" element={<EstadosOrdenes />} />
       <Route path="estados-ordenes-anual/:client_id" element={<EstadosOrdenesAnual />} />
-      <Route path="compare-month-month/:client_id" element={<CompareMonthMonth />} />
-      <Route path="compare-year-year/:client_id" element={<CompareYearYear />} />
+
+      {/* ✅ Ruta unificada para comparaciones por mes o año */}
+      <Route path="compare/:mode/:client_id" element={<Compare />} />
+
       <Route path="plantillas/:client_id" element={<Plantilla />} />
     </Routes>
   );
