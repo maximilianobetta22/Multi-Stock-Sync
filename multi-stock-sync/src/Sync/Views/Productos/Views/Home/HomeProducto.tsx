@@ -1,6 +1,14 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Pagination, Button, Alert } from "react-bootstrap";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  Container,
+  Row,
+  Col,
+  Pagination,
+  Button,
+  Alert,
+  Form,
+} from "react-bootstrap";
 import { FaPlus } from "react-icons/fa";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -19,7 +27,6 @@ import styles from "./HomeProducto.module.css";
 const MySwal = withReactContent(Swal);
 
 const HomeProducto = () => {
-  // Gestión de modal
   const {
     modalIsOpen,
     currentProduct,
@@ -28,7 +35,6 @@ const HomeProducto = () => {
     closeModal,
   } = useModalManagement();
 
-  // Gestión de productos y conexiones
   const {
     connections,
     selectedConnection,
@@ -51,7 +57,14 @@ const HomeProducto = () => {
   const [limit] = useState(35);
   const [offset, setOffset] = useState(0);
 
-  // Hook para actualizar stock
+  const [stockFilter, setStockFilter] = useState("todos");
+  const [estadoFilter, setEstadoFilter] = useState("todos");
+  const [categoriaFilter, setCategoriaFilter] = useState("todos");
+  const [ordenarPor, setOrdenarPor] = useState("nombre");
+
+  const [searchParams] = useSearchParams();
+  const urlStockFilter = searchParams.get("stock");
+
   const { isUpdating: isUpdatingStock, updateStock } = useStockManagement({
     connections,
     selectedConnection,
@@ -65,7 +78,6 @@ const HomeProducto = () => {
     },
   });
 
-  // Hook para actualizar estado del producto
   const { isUpdating: isUpdatingStatus, updateStatus } = useStatusManagement({
     connections,
     selectedConnection,
@@ -79,12 +91,10 @@ const HomeProducto = () => {
     },
   });
 
-  // Cargar conexiones al iniciar
   useEffect(() => {
     fetchConnections();
   }, []);
 
-  // Mostrar notificaciones tipo toast
   useEffect(() => {
     if (toastMessage) {
       MySwal.fire({
@@ -96,7 +106,12 @@ const HomeProducto = () => {
     }
   }, [toastMessage]);
 
-  // Manejo de cambio de conexión
+  useEffect(() => {
+    if (urlStockFilter === "0") {
+      setStockFilter("sin_stock");
+    }
+  }, [urlStockFilter]);
+
   const handleConnectionChange = async (clientId: string) => {
     setSelectedConnection(clientId);
     setSearchQuery("");
@@ -104,38 +119,73 @@ const HomeProducto = () => {
     if (clientId) await fetchProducts(clientId);
   };
 
-  // Manejo de búsqueda
   const handleSearch = async (query: string) => {
     setSearchQuery(query);
     setOffset(0);
     await fetchProducts(selectedConnection, query);
   };
 
-  // Cambio de página en paginación
   const handlePageChange = (newOffset: number) => {
     setOffset(newOffset);
     fetchProducts(selectedConnection, searchQuery, limit, newOffset);
   };
 
-  // Formatear precios en CLP
   const formatPriceCLP = (price: number) =>
     new Intl.NumberFormat("es-CL", {
       style: "currency",
       currency: "CLP",
     }).format(price);
 
-  // Agrupar productos por categoría
-  const categorizeProducts = (products: Product[]) => {
-    const grouped: { [key: string]: Product[] } = {};
-    products.forEach((product) => {
-      const categoryId = product.category_id ?? "sin_categoria";
-      if (!grouped[categoryId]) grouped[categoryId] = [];
-      grouped[categoryId].push(product);
-    });
-    return grouped;
+  const filtrarYOrdenarProductos = () => {
+    let filtrados = [...allProducts];
+
+    if (stockFilter === "sin_stock") {
+      filtrados = filtrados.filter((p) => (p.stock ?? 0) === 0);
+    } else if (stockFilter === "bajo") {
+      filtrados = filtrados.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 5);
+    }
+
+    if (estadoFilter !== "todos") {
+      filtrados = filtrados.filter((p) =>
+        estadoFilter === "activo" ? p.status === "active" : p.status !== "active"
+      );
+    }
+
+    if (categoriaFilter !== "todos") {
+      filtrados = filtrados.filter((p) => p.category_id === categoriaFilter);
+    }
+
+    switch (ordenarPor) {
+      case "precio_asc":
+        filtrados.sort((a, b) => a.price - b.price);
+        break;
+      case "precio_desc":
+        filtrados.sort((a, b) => b.price - a.price);
+        break;
+      case "stock_asc":
+        filtrados.sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0));
+        break;
+      case "stock_desc":
+        filtrados.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
+        break;
+      default:
+        filtrados.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    return filtrados;
   };
 
-  const categorizedProducts = categorizeProducts(allProducts);
+  const categorizedProducts = (() => {
+    const agrupado: { [key: string]: Product[] } = {};
+    const filtrados = filtrarYOrdenarProductos();
+    filtrados.forEach((p) => {
+      const cat = p.category_id ?? "sin_categoria";
+      if (!agrupado[cat]) agrupado[cat] = [];
+      agrupado[cat].push(p);
+    });
+    return agrupado;
+  })();
+
   const totalPages = Math.ceil(totalProducts / limit);
   const currentPage = Math.floor(offset / limit);
   const pageRange = Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + currentPage - 2).filter(
@@ -145,7 +195,7 @@ const HomeProducto = () => {
   return (
     <Container className={styles.homeProductoContainer}>
       {(loadingConnections || loading || isUpdatingStock || isUpdatingStatus) && (
-        <LoadingDinamico variant="container" />
+        <LoadingDinamico variant="fullScreen" />
       )}
 
       <section className={styles.contentSection}>
@@ -169,7 +219,7 @@ const HomeProducto = () => {
             />
             {!selectedConnection && (
               <Alert variant="info" className="mt-3">
-                Selecciona una conexión para comenzar a visualizar tus productos disponibles.
+                Selecciona una conexión para comenzar.
               </Alert>
             )}
           </Col>
@@ -183,6 +233,41 @@ const HomeProducto = () => {
           </Col>
         </Row>
 
+        {/* FILTROS VISUALES */}
+        <Row className="mb-4 g-2">
+          <Col md={3}>
+            <Form.Select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}>
+              <option value="todos">Todos los stock</option>
+              <option value="sin_stock">Sin Stock</option>
+              <option value="bajo">Stock bajo (Menor a 5)</option>
+            </Form.Select>
+          </Col>
+          <Col md={3}>
+            <Form.Select value={estadoFilter} onChange={(e) => setEstadoFilter(e.target.value)}>
+              <option value="todos">Todos los estados</option>
+              <option value="activo">Activos</option>
+              <option value="inactivo">Inactivos</option>
+            </Form.Select>
+          </Col>
+          <Col md={3}>
+            <Form.Select value={categoriaFilter} onChange={(e) => setCategoriaFilter(e.target.value)}>
+              <option value="todos">Todas las categorías</option>
+              {Object.entries(categories).map(([id, name]) => (
+                <option key={id} value={id}>{name}</option>
+              ))}
+            </Form.Select>
+          </Col>
+          <Col md={3}>
+            <Form.Select value={ordenarPor} onChange={(e) => setOrdenarPor(e.target.value)}>
+              <option value="nombre">Nombre A-Z</option>
+              <option value="precio_asc">Precio: menor a mayor</option>
+              <option value="precio_desc">Precio: mayor a menor</option>
+              <option value="stock_asc">Stock: menor a mayor</option>
+              <option value="stock_desc">Stock: mayor a menor</option>
+            </Form.Select>
+          </Col>
+        </Row>
+
         {selectedConnection && (
           <>
             <ProductTable
@@ -191,10 +276,7 @@ const HomeProducto = () => {
               isEditing={isEditing}
               stockEdit={stockEdit}
               onStockChange={(productId, newStock) => {
-                setStockEdit((prevStock) => ({
-                  ...prevStock,
-                  [productId]: newStock,
-                }));
+                setStockEdit((prev) => ({ ...prev, [productId]: newStock }));
               }}
               formatPriceCLP={formatPriceCLP}
               onUpdateStatus={updateStatus}
@@ -213,7 +295,9 @@ const HomeProducto = () => {
                     </Pagination.Item>
                   ))}
                 </Pagination>
-                <p className="text-muted">Página {currentPage + 1} de {totalPages}</p>
+                <p className="text-muted">
+                  Página {currentPage + 1} de {totalPages}
+                </p>
               </div>
             )}
           </>
@@ -228,15 +312,10 @@ const HomeProducto = () => {
         onUpdateStock={updateStock}
         onUpdateStatus={updateStatus}
         onStockChange={(productId, newStock) => {
-          setStockEdit((prevStock) => ({
-            ...prevStock,
-            [productId]: newStock,
-          }));
+          setStockEdit((prev) => ({ ...prev, [productId]: newStock }));
         }}
         stockEdit={stockEdit}
-        fetchProducts={() =>
-          fetchProducts(selectedConnection, searchQuery, limit, offset)
-        }
+        fetchProducts={() => fetchProducts(selectedConnection, searchQuery, limit, offset)}
         setModalContent={setModalContent}
       />
     </Container>

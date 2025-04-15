@@ -72,12 +72,17 @@ export const useProductManagement = () => {
           throw new Error("Invalid data format from server");
         }
 
-        setAllProducts(response.data);
+        // ✅ Agrega alias `stock` al producto
+        const productosConStock = response.data.map((p: Product) => ({
+          ...p,
+          stock: p.available_quantity,
+        }));
+
+        setAllProducts(productosConStock);
         setTotalProducts(response.pagination?.total || 0);
 
-        // Call fetchCategories with the products array
-        if (response.data.length > 0) {
-          await fetchCategories(response.data);
+        if (productosConStock.length > 0) {
+          await fetchCategories(productosConStock);
         }
       } catch (error) {
         console.error("Error in fetchProducts:", error);
@@ -92,7 +97,7 @@ export const useProductManagement = () => {
         setLoading(false);
       }
     },
-    [fetchCategories] // Add fetchCategories to dependencies
+    [fetchCategories]
   );
 
   return {

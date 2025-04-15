@@ -112,7 +112,7 @@ const VentasPorDia: React.FC = () => {
 
       <div className={styles.graficoContenedor}>
         {loading ? (
-          <LoadingDinamico variant="container" />
+          <LoadingDinamico variant="fullScreen" />
         ) : error ? (
           <p className="text-danger text-center">{error}</p>
         ) : chartData.labels.length === 0 ? (
