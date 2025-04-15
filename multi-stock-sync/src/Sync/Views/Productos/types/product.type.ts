@@ -8,11 +8,15 @@ export interface Product {
   user_product_id: string;
   price: number;
   base_price: number;
-  available_quantity: number;
+  available_quantity: number; // valor real del stock
   permalink: string;
   status: string;
   status_translated: string;
+
+  // alias para que puedas usar p.stock
+  stock?: number; // esto no se envía al backend, lo calculamos al recibir los productos
 }
+
 
 export interface ProductModalProps {
   show: boolean;

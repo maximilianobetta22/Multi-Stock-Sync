@@ -1,0 +1,88 @@
+/* Contenedor principal */
+.container {
+  background-color: #ffffff;
+  padding: 2.5rem;
+  margin-top: 2rem;
+  border-radius: 1.5rem;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.08);
+  min-height: 85vh;
+}
+
+/* Título principal centrado */
+.titulo {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #213f99;
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+/* Filtro de búsqueda centrado */
+.filtroContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+  flex-wrap: nowrap;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+
+/* Tabla limpia y clara */
+.tabla {
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background-color: #fff;
+  margin-top: 1rem;
+}
+
+.tabla thead th {
+  background-color: #f7f7f7;
+  text-align: center;
+  font-weight: 500;
+  font-size: 0.95rem;
+  color: #444;
+}
+
+.tabla tbody td {
+  text-align: center;
+  vertical-align: middle;
+  font-size: 0.92rem;
+}
+
+/* Botones de exportación debajo de la tabla */
+.exportaciones {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+/* Responsive para móvil */
+@media (max-width: 768px) {
+  .container {
+    padding: 1rem;
+  }
+
+  .titulo {
+    font-size: 1.5rem;
+  }
+
+  .filtroContainer {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .exportaciones {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  button,
+  .btn {
+    width: 100%;
+  }
+}

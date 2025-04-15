@@ -1,0 +1,107 @@
+.chatbotContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 9999;
+  }
+  
+  .toggleButton {
+    background-color: #213f99;
+    color: #fff;
+    border: none;
+    border-radius: 50%;
+    width: 56px;
+    height: 56px;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  .toggleButton:hover {
+    background-color: #1a327d;
+  }
+  
+  .chatbox {
+    background-color: #ffffff;
+    width: 280px;
+    padding: 1rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+    position: absolute;
+    bottom: 70px;
+    right: 0;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .chatbox h5 {
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #213f99;
+  }
+  
+  .chatbox p {
+    font-size: 0.95rem;
+    margin-bottom: 0.8rem;
+  }
+  
+  .preguntas button {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.5rem;
+    background-color: #f0f2ff;
+    color: #213f99;
+    border: 1px solid #ccc;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.8rem;
+    font-size: 0.88rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .preguntas button:hover {
+    background-color: #e4e8ff;
+  }
+  
+  .respuesta {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    background-color: #f8f8f8;
+    padding: 0.6rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #213f99;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  .icono {
+    margin-right: 8px;
+    color: #213f99;
+  }
+  
+  .historial {
+    margin-top: 1rem;
+    font-size: 0.85rem;
+    background-color: #f8f8f8;
+    padding: 0.6rem;
+    border-radius: 0.5rem;
+    border-left: 4px solid #213f99;
+  }
+  
+  .historialTitulo {
+    font-weight: 600;
+    color: #213f99;
+    margin-bottom: 0.3rem;
+  }
+  

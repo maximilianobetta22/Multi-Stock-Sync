@@ -1,293 +1,203 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import axiosInstance from '../../../../../axiosConfig';
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { Button, Table, Form, Container, Row, Col, Modal } from 'react-bootstrap';
-import * as XLSX from "xlsx";
+import { Button, Table, Form, Container, Modal, Spinner } from 'react-bootstrap';
+import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
+import styles from './Despacho.module.css';
 
 const ProductosDespachar: React.FC = () => {
   const { client_id } = useParams();
-
-  // Estados principales
-  const [productosDespachar, setProductosDespachar] = useState<any[]>([]);
-  const [productosDespacharOriginal, setProductosDespacharOriginal] = useState<any[]>([]);
+  const [productos, setProductos] = useState<any[]>([]);
+  const [productosOriginal, setProductosOriginal] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-
-  // Estados de filtrado
-  const [filterText, setFilterText] = useState("");
-  const [filterById, setFilterById] = useState(false);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-
-  // Estados de paginación
+  const [filtro, setFiltro] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
-
-  // Estados para el modal PDF
+  const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+  const itemsPerPage = 10;
 
-  // Estado para ver detalles del historial de envío
-  const [selectedProduct, setSelectedProduct] = useState<any>(null);
-
-  // Obtener productos al montar el componente
   useEffect(() => {
-    const fetchProductos = async () => {
+    const fetchData = async () => {
       try {
         const response = await axiosInstance.get(
           `${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${client_id}`
         );
-        if (response.data.status === "success") {
-          setProductosDespachar(response.data.data);
-          setProductosDespacharOriginal(response.data.data);
+        if (response.data.status === 'success') {
+          setProductos(response.data.data);
+          setProductosOriginal(response.data.data);
         } else {
-          setError("No se pudo obtener la lista de productos a despachar.");
+          setError('No se encontraron productos disponibles.');
         }
-      } catch (error) {
-        setError("Error al obtener los datos de la API.");
+      } catch {
+        setError('Error al conectar con la API.');
       } finally {
         setLoading(false);
       }
     };
-    fetchProductos();
+    fetchData();
   }, [client_id]);
 
-  // Función para aplicar filtro por texto o SKU
-  const handleFilter = () => {
-    let filteredProducts = [...productosDespacharOriginal];
-
-    if (filterText) {
-      filteredProducts = filteredProducts.filter((producto) =>
-        producto.sku.toString().includes(filterText)
-      );
-    }
-
-    if (selectedId) {
-      filteredProducts = filteredProducts.filter((producto) => producto.sku.toString() === selectedId);
-    }
-
-    setProductosDespachar(filteredProducts);
-    setCurrentPage(1); // Reiniciar a la primera página
-  };
-
-  // Limpiar filtros y restaurar productos originales
-  const handleClearFilter = () => {
-    setFilterText("");
-    setSelectedId(null);
-    setProductosDespachar(productosDespacharOriginal);
+  const handleFiltrar = () => {
+    const filtrados = productosOriginal.filter(p =>
+      p.sku.toString().toLowerCase().includes(filtro.toLowerCase()) ||
+      p.title.toLowerCase().includes(filtro.toLowerCase())
+    );
+    setProductos(filtrados);
     setCurrentPage(1);
   };
 
-  // Paginación: calcular páginas y productos por página
-  const totalPages = Math.ceil(productosDespachar.length / itemsPerPage);
-  const currentData = productosDespachar.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  // Traducción de campos del historial de despacho
-  const traducirCampo = (campo: string): string => {
-    const traducciones: { [key: string]: string } = {
-      date_created: "Fecha de creación",
-      date_handling: "Inicio del procesamiento",
-      date_ready_to_ship: "Listo para envío",
-      date_first_printed: "Impresión de etiqueta",
-      date_shipped: "Fecha de envío",
-      date_delivered: "Fecha de entrega",
-      date_delivered_estimated: "Entrega estimada",
-      date_not_delivered: "Intento fallido de entrega",
-      date_returned: "Devolución",
-      date_cancelled: "Cancelación",
-    };
-    return traducciones[campo] || campo;
-  };
-
-  // Exportar los productos actuales a archivo Excel
-  const exportToExcelManual = () => {
-    const filteredData = productosDespachar.map(producto => ({
-      SKU: producto.sku,
-      Producto: producto.title,
-      Talla: producto.size,
-      Cantidad: producto.quantity
+  const exportToExcel = () => {
+    const datos = productos.map(p => ({
+      SKU: p.sku,
+      Producto: p.title,
+      Talla: p.size,
+      Cantidad: p.quantity
     }));
-    const ws = XLSX.utils.json_to_sheet(filteredData);
+    const ws = XLSX.utils.json_to_sheet(datos);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Reporte");
-    XLSX.writeFile(wb, "reporte.xlsx");
+    XLSX.utils.book_append_sheet(wb, ws, 'Despacho');
+    XLSX.writeFile(wb, 'productos_despachar.xlsx');
   };
 
-  // Generar vista previa en PDF (no descarga automática)
   const exportToPDF = () => {
     const doc = new jsPDF();
-    doc.text("Reporte de Productos", 14, 10);
+    doc.text('Productos Listos para Despacho', 14, 10);
     doc.autoTable({
-      head: [["SKU", "Producto", "Talla", "Cantidad"]],
-      body: productosDespachar.map(producto => [
-        producto.sku,
-        producto.title,
-        producto.size,
-        producto.quantity
-      ]),
+      head: [['SKU', 'Producto', 'Talla', 'Cantidad']],
+      body: productos.map(p => [p.sku, p.title, p.size, p.quantity])
     });
-    const blob = doc.output("blob");
-    const url = URL.createObjectURL(blob);
-    setPdfUrl(url);
+    const blob = doc.output('blob');
+    setPdfUrl(URL.createObjectURL(blob));
     setShowModal(true);
   };
 
-  // Descargar directamente el PDF
-  const handleDownload = () => {
+  const handleDownloadPDF = () => {
     const doc = new jsPDF();
-    doc.text("Reporte de Productos", 14, 10);
+    doc.text('Productos Listos para Despacho', 14, 10);
     doc.autoTable({
-      head: [["SKU", "Producto", "Talla", "Cantidad"]],
-      body: productosDespachar.map(producto => [
-        producto.sku,
-        producto.title,
-        producto.size,
-        producto.quantity
-      ]),
+      head: [['SKU', 'Producto', 'Talla', 'Cantidad']],
+      body: productos.map(p => [p.sku, p.title, p.size, p.quantity])
     });
-    doc.save("reporte.pdf");
+    doc.save('productos_despachar.pdf');
     setShowModal(false);
   };
 
-  // Mostrar loading o error si corresponde
-  if (loading) return <p className="text-center">Cargando productos...</p>;
+  const traducirCampo = (campo: string): string => {
+    const map: Record<string, string> = {
+      date_created: 'Creación',
+      date_handling: 'Procesamiento',
+      date_ready_to_ship: 'Listo para envío',
+      date_first_printed: 'Etiqueta impresa',
+      date_shipped: 'Enviado',
+      date_delivered: 'Entregado',
+      date_not_delivered: 'No entregado',
+      date_returned: 'Devuelto',
+      date_cancelled: 'Cancelado'
+    };
+    return map[campo] || campo;
+  };
+
+  const totalPages = Math.ceil(productos.length / itemsPerPage);
+  const currentData = productos.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  if (loading) return <div className="text-center"><Spinner animation="border" /> Cargando...</div>;
   if (error) return <p className="text-danger text-center">{error}</p>;
 
   return (
-    <Container>
-      <h2 className="text-center my-4">Productos Listos para Despachar</h2>
+    <Container className={styles.container}>
+      <h2 className={styles.titulo}>Productos Listos para Despacho</h2>
 
-      {/* Filtro por texto o SKU */}
-      <Row className="text-center mt-5 mb-3">
-        <Col md={6} className="d-flex align-items-center">
-          <Form.Check
-            type="checkbox"
-            label="Filtrar SKU"
-            checked={filterById}
-            onChange={() => setFilterById(!filterById)}
-            className="me-2"
-          />
-          {filterById ? (
-            <Form.Select value={selectedId || ""} onChange={(e) => setSelectedId(e.target.value)}>
-              <option value="">Seleccione un SKU</option>
-              {productosDespacharOriginal.map((producto) => (
-                <option key={producto.sku} value={producto.sku}>
-                  {producto.sku} - {producto.title}
-                </option>
-              ))}
-            </Form.Select>
-          ) : (
-            <Form.Control
-              type="text"
-              placeholder="Ingrese ID de producto"
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-            />
-          )}
-        </Col>
+      <Form className={styles.filtroContainer} onSubmit={(e) => { e.preventDefault(); handleFiltrar(); }}>
+        <Form.Control
+          type="text"
+          placeholder="Buscar por SKU o nombre"
+          value={filtro}
+          onChange={(e) => setFiltro(e.target.value)}
+        />
+        <Button variant="dark" onClick={handleFiltrar}>Buscar</Button>
+      </Form>
 
-        {/* Botones de acción */}
-        <Col md={6} className="text-end">
-          <Button variant="primary" className="me-2" onClick={handleFilter}>Filtrar</Button>
-          <Button variant="secondary" onClick={handleClearFilter}>Limpiar</Button>
-          <Button variant="success" className="mx-2" onClick={exportToExcelManual}>Descargar Excel</Button>
-          <Button variant="danger" className="mx-2" onClick={exportToPDF}>Vista previa PDF</Button>
-          <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">Volver a inicio</Link>
-          <Link to="/sync/reportes/home" className="btn btn-primary mb-5 mx-2">Menú de Reportes</Link>
-        </Col>
-      </Row>
+      <Table responsive bordered hover className={styles.tabla}>
+        <thead className="table-light text-center">
+          <tr>
+            <th>SKU</th>
+            <th>Producto</th>
+            <th>Talla</th>
+            <th>Cantidad</th>
+            <th>Estado</th>
+            <th>Detalle</th>
+          </tr>
+        </thead>
+        <tbody>
+          {currentData.map((p, i) => (
+            <tr key={i}>
+              <td>{p.sku}</td>
+              <td>{p.title}</td>
+              <td>{p.size}</td>
+              <td>{p.quantity}</td>
+              <td>{p.shipment_history?.status || 'Desconocido'}</td>
+              <td>
+                <Button size="sm" variant="outline-primary" onClick={() => setSelectedProduct(p)}>
+                  Ver
+                </Button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </Table>
 
-      {/* Modal de vista previa PDF */}
+      <div className={styles.exportaciones}>
+        <Button variant="outline-success" onClick={exportToExcel}>Exportar Excel</Button>
+        <Button variant="outline-primary" onClick={exportToPDF}>Exportar PDF</Button>
+      </div>
+
+      <div className="d-flex justify-content-center mt-3 gap-2 flex-wrap">
+        <Button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>Anterior</Button>
+        {[...Array(totalPages)].map((_, i) => (
+          <Button
+            key={i}
+            variant={currentPage === i + 1 ? 'dark' : 'outline-secondary'}
+            onClick={() => setCurrentPage(i + 1)}
+          >
+            {i + 1}
+          </Button>
+        ))}
+        <Button disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>Siguiente</Button>
+      </div>
+
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
-          <Modal.Title>Vista previa del PDF</Modal.Title>
+          <Modal.Title>Vista previa PDF</Modal.Title>
         </Modal.Header>
-        <Modal.Body>
-          {pdfUrl && <iframe src={pdfUrl} width="100%" height="500px" title="Vista PDF" />}
-        </Modal.Body>
+        <Modal.Body>{pdfUrl && <iframe src={pdfUrl} width="100%" height="500px" title="PDF" />}</Modal.Body>
         <Modal.Footer>
-          <Button variant="danger" onClick={handleDownload}>Descargar PDF</Button>
+          <Button variant="dark" onClick={handleDownloadPDF}>Descargar PDF</Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Modal de detalles de envío */}
       <Modal show={!!selectedProduct} onHide={() => setSelectedProduct(null)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Detalles de Envío</Modal.Title>
+          <Modal.Title>Historial de Envío</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedProduct?.shipment_history?.date_history ? (
             <ul>
-              {Object.entries(selectedProduct.shipment_history.date_history).map(([key, value]: any, i) => (
-                <li key={i}><strong>{traducirCampo(key)}:</strong> {value || "No disponible"}</li>
+              {Object.entries(selectedProduct.shipment_history.date_history).map(([key, value], i) => (
+                <li key={i}><strong>{traducirCampo(key)}:</strong> {String(value) || 'No disponible'}</li>
               ))}
             </ul>
           ) : (
-            <p>No hay historial de envíos disponible.</p>
+            <p>No hay historial disponible.</p>
           )}
         </Modal.Body>
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setSelectedProduct(null)}>Cerrar</Button>
         </Modal.Footer>
       </Modal>
-
-      {/* Tabla de productos */}
-      {productosDespachar.length > 0 ? (
-        <>
-          <Table striped bordered hover responsive className="table-sm">
-            <thead className="table-dark">
-              <tr>
-                <th>SKU</th>
-                <th>Producto</th>
-                <th>Talla</th>
-                <th>Cantidad</th>
-                <th>Estado</th>
-                <th>Acción</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentData.map((producto, i) => (
-                <tr key={i}>
-                  <td>{producto.sku}</td>
-                  <td>{producto.title}</td>
-                  <td>{producto.size}</td>
-                  <td>{producto.quantity}</td>
-                  <td>{producto.shipment_history?.status || "Desconocido"}</td>
-                  <td>
-                    <Button variant="info" onClick={() => setSelectedProduct(producto)}>
-                      Ver Historial
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-
-          {/* Navegación entre páginas */}
-          <div className="d-flex justify-content-center align-items-center mt-3">
-            <Button onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1} className="mx-2">
-              Anterior
-            </Button>
-            {[...Array(totalPages)].map((_, i) => (
-              <Button
-                key={i}
-                onClick={() => setCurrentPage(i + 1)}
-                variant={currentPage === i + 1 ? "dark" : "light"}
-                className="mx-1"
-              >
-                {i + 1}
-              </Button>
-            ))}
-            <Button onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages} className="mx-2">
-              Siguiente
-            </Button>
-          </div>
-        </>
-      ) : (
-        <p className="text-center text-muted">No hay productos para despachar.</p>
-      )}
     </Container>
   );
 };
