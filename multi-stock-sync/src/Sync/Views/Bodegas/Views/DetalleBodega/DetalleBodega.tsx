@@ -1,37 +1,9 @@
-import styles from './DetalleBodega.module.css';
+import styles from "./DetalleBodega.module.css";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import { Link } from 'react-router-dom';
-import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
-
-interface Product {
-  id: number;
-  thumbnail: string;
-  id_mlc: string;
-  title: string;
-  price_clp: string;
-  warehouse_stock: number;
-  warehouse_id: number;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Company {
-  id: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Warehouse {
-  id: number;
-  name: string;
-  location: string;
-  assigned_company_id: number;
-  created_at: string;
-  updated_at: string;
-  company: Company;
-}
+import { Link } from "react-router-dom";
+import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import { Warehouse, Product } from "../../Types/warehouse.type";
 
 interface ApiResponseWarehouse {
   message: string;
@@ -73,7 +45,12 @@ const DetalleBodega = () => {
     const fetchProducts = async () => {
       try {
         const response = await fetch(
-          `${import.meta.env.VITE_API_URL}/warehouse-stock/${id}`
+          `${import.meta.env.VITE_API_URL}/warehouses-stock/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            },
+          }
         );
         const data: ApiResponseProducts = await response.json();
 
@@ -94,8 +71,8 @@ const DetalleBodega = () => {
 
   const filteredProducts = products.filter((product) => {
     return (
-      product.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
-      product.id.toString().includes(searchTerm) || 
+      product.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      product.id.toString().includes(searchTerm) ||
       product.id_mlc.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
@@ -105,7 +82,7 @@ const DetalleBodega = () => {
   }
 
   if (!warehouse) {
-    return <LoadingDinamico variant="container" />
+    return <LoadingDinamico variant="container" />;
   }
 
   return (
@@ -130,8 +107,12 @@ const DetalleBodega = () => {
                 <td>{warehouse.name}</td>
                 <td>{warehouse.location}</td>
                 <td>{warehouse.company.name}</td>
-                <td>{new Date(warehouse.created_at).toLocaleDateString("es-CL")}</td>
-                <td>{new Date(warehouse.updated_at).toLocaleDateString("es-CL")}</td>
+                <td>
+                  {new Date(warehouse.created_at).toLocaleDateString("es-CL")}
+                </td>
+                <td>
+                  {new Date(warehouse.updated_at).toLocaleDateString("es-CL")}
+                </td>
               </tr>
             </tbody>
           </table>
@@ -176,33 +157,46 @@ const DetalleBodega = () => {
                         src={product.thumbnail}
                         alt={product.title}
                         style={{ width: "50px", height: "50px" }}
-                        onError={(e) => (e.currentTarget.src = placeholderImage)}
+                        onError={(e) =>
+                          (e.currentTarget.src = placeholderImage)
+                        }
                       />
                     </td>
                     <td>{product.title}</td>
                     <td>{product.id_mlc}</td>
-                    <td>{new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(Number(product.price_clp))}</td>
+                    <td>
+                      {new Intl.NumberFormat("es-CL", {
+                        style: "currency",
+                        currency: "CLP",
+                      }).format(Number(product.price_clp))}
+                    </td>
                     <td>{product.warehouse_stock}</td>
                     <td>{product.warehouse_id}</td>
                     <td>{product.warehouse_stock}</td>
-                    <td>{new Date(product.created_at).toLocaleString("es-CL")}</td>
-                    <td>{new Date(product.created_at).toLocaleString("es-CL")}</td>
+                    <td>
+                      {new Date(product.created_at).toLocaleString("es-CL")}
+                    </td>
+                    <td>
+                      {new Date(product.created_at).toLocaleString("es-CL")}
+                    </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan={10} className="text-muted">No hay productos registrados en esta bodega.</td>
+                  <td colSpan={10} className="text-muted">
+                    No hay productos registrados en esta bodega.
+                  </td>
                 </tr>
               )}
             </tbody>
           </table>
-          
         </div>
 
         <div style={{ textAlign: "right" }}>
-          <Link to="/sync/bodegas/home" className="btn btn-secondary mt-3 mb-4">Volver a bodegas</Link>
+          <Link to="/sync/bodegas/home" className="btn btn-secondary mt-3 mb-4">
+            Volver a bodegas
+          </Link>
         </div>
-        
       </div>
     </div>
   );

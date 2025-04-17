@@ -1,184 +1,144 @@
 import { useState, useEffect } from "react";
 import styles from "./HomeBodega.module.css";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faWarehouse,
+  faMapPin,
+  faCalendarPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-
-interface Company {
-  id: number;
-  name: string;
-  created_at: string;
-  updated_at: string;
-}
-
-interface Warehouse {
-  id: number;
-  name: string;
-  location: string;
-  assigned_company_id: number;
-  created_at: string;
-  updated_at: string;
-  company: Company;
-}
+import { Warehouse } from "../../Types/warehouse.type";
+import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
+import DropdownFilter from "../../Components/dropdownFilter";
 
 const HomeBodega = () => {
-  const [warehouses, setWarehouses] = useState<Warehouse[]>([]);
   const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [showToast, setShowToast] = useState(false);
-  const [loading, setLoading] = useState(false);
   const [companyFilter, setCompanyFilter] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("");
+  const { fetchWarehouses, warehouses, loading, error } =
+    useWarehouseManagement();
 
   useEffect(() => {
-    const fetchWarehouses = async () => {
-      setShowToast(false);
-      setLoading(true);
-      try {
-        const response = await fetch(`${import.meta.env.VITE_API_URL}/warehouses`);
-
-        const data = await response.json();
-
-        if (response.ok) {
-          setWarehouses(data);
-          if (data.length === 0) {
-            setShowToast(true);
-          }
-        } else {
-          setError(data.message || "Error al obtener los almacenes");
-          setShowToast(true);
-        }
-      } catch (err) {
-        console.error(err);
-        setError(" Ocurrió un problema inesperado. Inténtalo de nuevo.");
-        setShowToast(true);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWarehouses();
+    //Traer todas las bodegas
+    fetchWarehouses(); //Función que trae las bodegas desde useWarehouseManagement
   }, []);
 
   useEffect(() => {
-    let filtered = warehouses;
+    let filtered = warehouses || [];
 
     if (companyFilter) {
       filtered = filtered.filter(
-        (warehouse) => warehouse.company.name === companyFilter
+        (warehouse) => warehouse.company?.name === companyFilter
       );
     }
 
     if (sortOrder === "asc") {
       filtered = filtered.sort(
-        (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        (a, b) =>
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
       );
     } else if (sortOrder === "desc") {
       filtered = filtered.sort(
-        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
     }
 
     setFilteredWarehouses(filtered);
   }, [warehouses, companyFilter, sortOrder]);
 
+  const companyOptions = [
+    { value: "", label: "Todas" },
+    ...Array.from(new Set(warehouses.map((w) => w.company?.name || "")))
+      .filter((name) => name) // Filter out empty names
+      .map((company) => ({
+        value: company,
+        label: company,
+      })),
+  ];
+
+  const sortOptions = [
+    { value: "", label: "Sin ordenar" },
+    { value: "asc", label: "Ascendente" },
+    { value: "desc", label: "Descendente" },
+  ];
+
   useEffect(() => {
-    if (showToast) {
-      const timer = setTimeout(() => {
-        setShowToast(false);
-      }, 2500);
-      return () => clearTimeout(timer);
+    if (error) {
+      setShowToast(true);
     }
-  }, [showToast]);
-
-  const handleCompanyFilterChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setCompanyFilter(e.target.value);
-  };
-
-  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortOrder(e.target.value);
-  };
+  }, [error]);
 
   if (loading) {
-    return (
-      <LoadingDinamico variant="container" />
-    );
+    return <LoadingDinamico variant="fullScreen" />;
   }
 
   return (
-    <div>
-      <div className="container-fluid">
-        <h1 className="mt-2">Lista de bodegas</h1>
-        <p>En este apartado puedes ver la lista de todas las bodegas registradas en el sistema, puedes filtrarlas por compañías u ordenarlas!</p>
+    <div className="container-fluid bg-body-tertiary h-100">
+      <h1 className={styles.title}>Lista de bodegas</h1>
+      <div className={styles.menu}>
+        <DropdownFilter
+          id="companyFilter"
+          label="Filtrar por compañía:"
+          value={companyFilter}
+          options={companyOptions}
+          onChange={(e) => setCompanyFilter(e.target.value)}
+        />
 
-        <div className={styles.menu}>
-          <div className={styles.filter}>
-            <label htmlFor="companyFilter">Filtrar por compañía:</label>
-            <select id="companyFilter" value={companyFilter} onChange={handleCompanyFilterChange}>
-              <option value="">Todas</option>
-              {Array.from(new Set(warehouses.map((w) => w.company.name))).map((company) => (
-                <option key={company} value={company}>
-                  {company}
-                </option>
-              ))}
-            </select>
-          </div>
-          <div className={styles.filter}>
-            <label htmlFor="sortOrder">Ordenar por fecha de creación:</label>
-            <select id="sortOrder" value={sortOrder} onChange={handleSortOrderChange}>
-              <option value="">Sin ordenar</option>
-              <option value="asc">Ascendente</option>
-              <option value="desc">Descendente</option>
-            </select>
-          </div>
-          <Link to="../crear" className={styles.btn__add}>
-            <FontAwesomeIcon className={styles.icon__add} icon={faPlus}/>
-          </Link>
-        </div>
+        <DropdownFilter
+          id="sortOrder"
+          label="Ordenar por fecha de creación:"
+          value={sortOrder}
+          options={sortOptions}
+          onChange={(e) => setSortOrder(e.target.value)}
+        />
 
-        <div className={styles.tableContainer}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th className="table_header">Nombre</th>
-                <th className="table_header">Ubicación</th>
-                <th className="table_header">Compañía/Empresa asignada</th>
-                <th className="table_header">Última actualización</th>
-                <th className="table_header">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredWarehouses.length > 0 ? (
-                filteredWarehouses.map((warehouse) => (
-                  <tr key={warehouse.id}>
-                    <td>{warehouse.name}</td>
-                    <td>{warehouse.location}</td>
-                    <td>{warehouse.company.name}</td>
-                    <td>{new Date(warehouse.updated_at).toLocaleDateString()}</td>
-                    <td>
-                    <Link to={`../DetalleBodega/${warehouse.id}`} className={"btn btn-primary mx-1"}>Ir a Bodega</Link>
-                    <Link to={`../editar/${warehouse.id}`} className={"btn btn-warning"}>Editar bodega</Link>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={5} className="text-muted">No hay almacenes disponibles.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        {showToast && (
-          <ToastComponent
-            message={error ? `Error: ${error}` : "No hay almacenes disponibles"}
-            type={error ? "danger" : "success"}
-            onClose={() => setShowToast(false)}
-          />
-        )}
+        <Link to="../crear" className={styles.create_button}>
+          Crear Bodega
+        </Link>
       </div>
+
+      <div className={styles.format_container}>
+        {filteredWarehouses.length > 0
+          ? filteredWarehouses.map((warehouse) => (
+              <div className={styles.bodegas_box} key={warehouse.id}>
+                <div className={styles.bodega_item}>
+                  <Link
+                    to={`../DetalleBodega/${warehouse.id}`}
+                    className={styles.bodega_item_link}
+                  >
+                    <div className={styles.bodega_item_bg}></div>
+                    <div className={styles.bodega_item_title}>
+                      <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
+                    </div>
+                    <div className={styles.bodega_item_date_box}>
+                      <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
+                      <span className={styles.bodega_item_date}>
+                        {new Date(warehouse.updated_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className={styles.bodega_item_date_box}>
+                      <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
+                      <span className={styles.bodega_item_date}>
+                        {warehouse.location}
+                      </span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            ))
+          : "hello"}
+      </div>
+      {showToast && (
+        <ToastComponent
+          message={error ? `Error: ${error}` : "No hay almacenes disponibles"}
+          type={error ? "danger" : "success"}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };
