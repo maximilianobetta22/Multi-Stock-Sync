@@ -11,7 +11,7 @@ import ToastComponent from "../../../../Components/ToastComponent/ToastComponent
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import { Warehouse } from "../../Types/warehouse.type";
 import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
-import DropdownFilter from "../../Components/dropdownFilter";
+import DropdownFilter from "../../Components/DropdownFilterBodega";
 
 const HomeBodega = () => {
   const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
@@ -102,35 +102,41 @@ const HomeBodega = () => {
       </div>
 
       <div className={styles.format_container}>
-        {filteredWarehouses.length > 0
-          ? filteredWarehouses.map((warehouse) => (
-              <div className={styles.bodegas_box} key={warehouse.id}>
-                <div className={styles.bodega_item}>
-                  <Link
-                    to={`../DetalleBodega/${warehouse.id}`}
-                    className={styles.bodega_item_link}
-                  >
-                    <div className={styles.bodega_item_bg}></div>
-                    <div className={styles.bodega_item_title}>
-                      <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
-                    </div>
-                    <div className={styles.bodega_item_date_box}>
-                      <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
-                      <span className={styles.bodega_item_date}>
-                        {new Date(warehouse.updated_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className={styles.bodega_item_date_box}>
-                      <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
-                      <span className={styles.bodega_item_date}>
-                        {warehouse.location}
-                      </span>
-                    </div>
-                  </Link>
-                </div>
+        {filteredWarehouses.length > 0 ? (
+          filteredWarehouses.map((warehouse) => (
+            <div className={styles.bodegas_box} key={warehouse.id}>
+              <div className={styles.bodega_item}>
+                <Link
+                  to={`../DetalleBodega/${warehouse.id}`}
+                  className={styles.bodega_item_link}
+                >
+                  <div className={styles.bodega_item_bg}></div>
+                  <div className={styles.bodega_item_title}>
+                    <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
+                  </div>
+                  <div className={styles.bodega_item_date_box}>
+                    <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
+                    <span className={styles.bodega_item_date}>
+                      {new Date(warehouse.updated_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className={styles.bodega_item_date_box}>
+                    <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
+                    <span className={styles.bodega_item_date}>
+                      {warehouse.location}
+                    </span>
+                  </div>
+                </Link>
               </div>
-            ))
-          : "hello"}
+            </div>
+          ))
+        ) : (
+          <ToastComponent
+            message={error ? `Error: ${error}` : "No hay almacenes disponibles"}
+            type={error ? "danger" : "success"}
+            onClose={() => setShowToast(false)}
+          />
+        )}
       </div>
       {showToast && (
         <ToastComponent
