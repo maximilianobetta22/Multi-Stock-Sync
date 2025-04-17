@@ -2,8 +2,8 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { Modal, Button } from "react-bootstrap";
 import axiosInstance from "../../../../../axiosConfig";
-import GraficoPorDia from "./components/GraficoPorDia";
-import { generarPDFPorMes } from "./utils/exportUtils";
+import GraficoPorMes from "./components/GraficoPorMes";
+import { generarPDFPorMes, exportarExcelPorMes } from "./utils/exportUtils";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import styles from "./VentasPorMes.module.css";
 
@@ -38,22 +38,30 @@ const VentasPorMes: React.FC = () => {
         }
       );
 
-      const ventasData =
-        data.data[`${year}-${month.toString().padStart(2, "0")}`]?.orders.flatMap(
-          (order: any) =>
-            order.sold_products.map((p: any) => ({
-              title: p.title,
-              quantity: p.quantity,
-              total_amount: p.price * p.quantity,
-            }))
-        ) || [];
+      const rawData = data.data[`${year}-${month.toString().padStart(2, "0")}`]?.orders || [];
+
+      const ventasData = rawData.flatMap((order: any) =>
+        order.sold_products.map((p: any) => ({
+          date: new Date(order.date_created).toLocaleDateString("es-CL"),
+          title: p.title,
+          quantity: p.quantity,
+          total_amount: p.price * p.quantity,
+        }))
+      );
 
       setVentas(ventasData);
 
-      const labels = ventasData.map((v: { title: string }) => v.title);
-      const ingresos = ventasData.map((v: { total_amount: number }) => v.total_amount);
-      const cantidades = ventasData.map((v: { quantity: number }) => v.quantity);
+      const ordenadas = [...ventasData].sort((a, b) => b.total_amount - a.total_amount);
+      const top10 = ordenadas.slice(0, 10);
+      const resto = ordenadas.slice(10);
 
+      const totalOtros = resto.reduce((acc, curr) => acc + curr.total_amount, 0);
+      const total = ordenadas.reduce((acc, curr) => acc + curr.total_amount, 0);
+      setTotalIngresos(total);
+
+      const labels = [...top10.map(v => v.title), ...(resto.length ? ["Otros"] : [])];
+      const ingresos = [...top10.map(v => v.total_amount), ...(resto.length ? [totalOtros] : [])];
+      const cantidades = [...top10.map(v => v.quantity), ...(resto.length ? [null] : [])];
 
       setChartData({
         labels,
@@ -62,15 +70,14 @@ const VentasPorMes: React.FC = () => {
             label: "Ingresos Totales",
             data: ingresos,
             quantityData: cantidades,
-            backgroundColor: "rgba(135, 206, 235, 0.6)",
-            borderColor: "rgba(70, 130, 180, 1)",
-            borderWidth: 2,
+            backgroundColor: "#8d92ed",
+            borderColor: "#4f5a95",
+            borderWidth: 1.5,
+            borderRadius: 8,
           },
         ],
       });
 
-      const total = ingresos.reduce((acc: number, curr: number) => acc + curr, 0);
-      setTotalIngresos(total);
       setError(null);
     } catch (err) {
       console.error("Error al obtener ventas:", err);
@@ -114,10 +121,22 @@ const VentasPorMes: React.FC = () => {
     setShowModal(true);
   };
 
+  const handleExportExcel = () => {
+    exportarExcelPorMes(
+      ventas,
+      year,
+      month,
+      userData?.nickname || "Desconocido",
+      formatCLP
+    );
+  };
+
   return (
     <div className={styles.container}>
       <h2 className={styles.titulo}>Ventas por Mes</h2>
-      <p className={styles.subtitulo}>Usuario: <strong>{userData?.nickname || "Cargando..."}</strong></p>
+      <p className={styles.subtitulo}>
+        Usuario: <strong>{userData?.nickname || "Cargando..."}</strong>
+      </p>
 
       <div className={styles.fechaSelector}>
         <label htmlFor="year">Año:</label>
@@ -140,17 +159,23 @@ const VentasPorMes: React.FC = () => {
       <div className={styles.graficoContenedor}>
         {loading ? (
           <LoadingDinamico variant="fullScreen" />
-        
         ) : error ? (
           <p className="text-danger text-center">{error}</p>
         ) : chartData.labels.length === 0 ? (
           <p className="text-muted text-center">No hay datos para mostrar.</p>
         ) : (
-          <GraficoPorDia
-            chartData={chartData}
-            totalVentas={totalIngresos}
-            fecha={`${month.toString().padStart(2, "0")}-${year}`}
-          />
+          <>
+            <GraficoPorMes
+              chartData={chartData}
+              totalVentas={totalIngresos}
+              year={year}
+              month={month}             
+            />
+            <p className="text-center text-muted mt-2">
+              Gráfico basado en los 10 productos con mayor ingreso.  
+              El detalle completo está disponible en el PDF o Excel exportado.
+            </p>
+          </>
         )}
       </div>
 
@@ -161,6 +186,13 @@ const VentasPorMes: React.FC = () => {
           disabled={chartData.labels.length === 0}
         >
           Exportar a PDF
+        </button>
+        <button
+          className={styles.botonExcel}
+          onClick={handleExportExcel}
+          disabled={chartData.labels.length === 0}
+        >
+          Exportar a Excel
         </button>
       </div>
 

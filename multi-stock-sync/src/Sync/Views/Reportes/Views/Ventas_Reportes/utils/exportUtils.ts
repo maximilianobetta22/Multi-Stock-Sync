@@ -1,114 +1,153 @@
-// Ventas_Reportes/utils/exportUtils.ts
-
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
-// 🟩 Exportar PDF para Ventas por Mes o Tabla
-export const exportToPDF = (
-  tipo: "mes" | "tabla",
-  data: any[],
-  year: string,
-  month?: string,
-  userName?: string,
-  descargar?: boolean
-): string | void => {
+// 🟧 PDF: Ventas por Mes
+export const generarPDFPorMes = (
+  ventas: any[],
+  year: number,
+  month: number,
+  userName: string,
+  totalVentas: number,
+  formatCLP: (value: number) => string
+): string => {
   const doc = new jsPDF();
-  const fecha = tipo === "mes" ? `${month}-${year}` : year;
+  const fecha = `${month.toString().padStart(2, "0")}-${year}`;
 
-  doc.text(`Reporte de Ventas - ${fecha}`, 10, 10);
-  if (userName) doc.text(`Usuario: ${userName}`, 10, 20);
+  doc.setFontSize(16);
+  doc.text(`Reporte de Ventas por Mes - ${fecha}`, 10, 10);
+  doc.setFontSize(12);
+  doc.text(`Usuario: ${userName}`, 10, 20);
 
   autoTable(doc, {
     startY: 30,
-    head: [["ID", "Producto", "Cantidad", "Precio"]],
-    body: data.map((v: any) => [
-      v.order_id,
+    head: [["Fecha", "Producto", "Cantidad", "Total"]],
+    body: ventas.map((v) => [
+      v.date || "Sin Fecha",
       v.title,
       v.quantity,
-      `$${v.price.toLocaleString("es-CL")}`,
+      formatCLP(v.total_amount || 0),
     ]),
+    foot: [
+      [
+        { content: "Total del Mes", colSpan: 3 },
+        formatCLP(totalVentas),
+      ],
+    ],
+    styles: { fontSize: 9, cellPadding: 2 },
+    theme: "striped",
   });
-
-  if (descargar) {
-    doc.save(`Ventas_${fecha}.pdf`);
-    return;
-  }
 
   return doc.output("datauristring");
 };
 
-// 🟩 Exportar a Excel para Mes o Tabla
-export const exportToExcel = (
-  tipo: "mes" | "tabla",
-  data: any[],
-  year: string,
-  month?: string,
-  userName?: string
+// 🟧 PDF: Guardar directo Mes
+export const guardarPDFPorMes = (
+  ventas: any[],
+  year: number,
+  month: number,
+  userName: string,
+  totalVentas: number,
+  formatCLP: (value: number) => string
+): void => {
+  const doc = new jsPDF();
+  const fecha = `${month.toString().padStart(2, "0")}-${year}`;
+
+  doc.setFontSize(16);
+  doc.text(`Reporte de Ventas por Mes - ${fecha}`, 10, 10);
+  doc.setFontSize(12);
+  doc.text(`Usuario: ${userName}`, 10, 20);
+
+  autoTable(doc, {
+    startY: 30,
+    head: [["Fecha", "Producto", "Cantidad", "Total"]],
+    body: ventas.map((v) => [
+      v.date || "Sin Fecha",
+      v.title,
+      v.quantity,
+      formatCLP(v.total_amount || 0),
+    ]),
+    foot: [
+      [
+        { content: "Total del Mes", colSpan: 3 },
+        formatCLP(totalVentas),
+      ],
+    ],
+    styles: { fontSize: 9, cellPadding: 2 },
+    theme: "striped",
+  });
+
+  doc.save(`Ventas_Mes_${userName}_${fecha}.pdf`);
+};
+
+// 🟧 Excel: Ventas por Mes
+export const exportarExcelPorMes = (
+  ventas: any[],
+  year: number,
+  month: number,
+  userName: string,
+  formatCLP: (value: number) => string
 ): void => {
   const worksheetData = [
-    ["ID", "Producto", "Cantidad", "Precio"],
-    ...data.map((venta: any) => [
-      venta.order_id,
+    ["Fecha", "Producto", "Cantidad", "Total"],
+    ...ventas.map((venta) => [
+      venta.date || "Sin Fecha",
       venta.title,
       venta.quantity,
-      venta.price,
+      formatCLP(venta.total_amount),
     ]),
   ];
 
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
   const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Ventas");
+  XLSX.utils.book_append_sheet(workbook, worksheet, "VentasPorMes");
 
-  const nombreArchivo =
-    tipo === "mes"
-      ? `Ventas_${userName}_${month}_${year}.xlsx`
-      : `Ventas_${userName}_${year}.xlsx`;
+  const fileName = `VentasMes_${userName}_${month
+    .toString()
+    .padStart(2, "0")}_${year}.xlsx`;
 
-  XLSX.writeFile(workbook, nombreArchivo);
+  XLSX.writeFile(workbook, fileName);
 };
 
-// 🟨 Exportar PDF para Ventas por Día
+// 🟨 PDF: Ventas por Día
 export const generarPDFPorDia = (
   fecha: string,
-  chartData: any,
+  ventas: any[],
   total: number,
-  userData: { nickname: string; profile_image: string } | null
+  userData: { nickname: string; profile_image: string },
+  formatCLP: (value: number) => string
 ): string => {
   const doc = new jsPDF();
   doc.setFontSize(16);
-  doc.text(`Reporte de Ventas - ${fecha}`, 10, 10);
-  
-  if (userData) {
-    doc.setFontSize(12);
-    doc.text(`Usuario: ${userData.nickname}`, 10, 20);
-  }
-
-  // Validar que exista quantityData
-  const ingresosData = chartData.datasets[0]?.data || [];
-  const cantidadData = chartData.datasets[0]?.quantityData || [];
+  doc.text(`Reporte de Ventas por Día - ${fecha}`, 10, 10);
+  doc.setFontSize(12);
+  doc.text(`Usuario: ${userData.nickname}`, 10, 20);
 
   autoTable(doc, {
     startY: 30,
-    head: [["Producto", "Cantidad", "Ingresos"]],
-    body: chartData.labels.map((label: string, index: number) => [
-      label,
-      cantidadData[index],
-      `$${ingresosData[index]?.toLocaleString("es-CL") || 0}`,
+    head: [["Producto", "Cantidad", "Total"]],
+    body: ventas.map((v) => [
+      v.title,
+      v.quantity,
+      formatCLP(v.total_amount || 0),
     ]),
     foot: [
       [
         { content: "Total del Día", colSpan: 2 },
-        `$ ${total.toLocaleString("es-CL")} CLP`,
+        formatCLP(total),
       ],
     ],
+    styles: { fontSize: 9, cellPadding: 2 },
+    theme: "striped",
   });
 
   return doc.output("datauristring");
 };
 
 
-// 🟦 Exportar PDF para Ventas por Año
+
+
+// 🟦 PDF: Ventas por Año
 export const generarPDFPorYear = (
   data: any[],
   year: string,
@@ -127,11 +166,14 @@ export const generarPDFPorYear = (
       d.month,
       `$${d.total_sales.toLocaleString("es-CL")}`,
     ]),
+    styles: { fontSize: 9 },
+    theme: "striped",
   });
 
   return doc.output("datauristring");
 };
 
+// 🟦 PDF Guardar: Año
 export const guardarPDFPorYear = (
   data: any[],
   year: string,
@@ -150,11 +192,14 @@ export const guardarPDFPorYear = (
       d.month,
       `$${d.total_sales.toLocaleString("es-CL")}`,
     ]),
+    styles: { fontSize: 9 },
+    theme: "striped",
   });
 
   doc.save(`Ventas_Anuales_${year}.pdf`);
 };
 
+// 🟦 Excel: Año
 export const exportarExcelPorYear = (
   data: any[],
   year: string,
@@ -171,94 +216,3 @@ export const exportarExcelPorYear = (
 
   XLSX.writeFile(workbook, `Ventas_${userName}_${year}.xlsx`);
 };
-// 🟧 Exportar PDF para Ventas por Mes (vista previa)
-export const generarPDFPorMes = (
-    ventas: any[],
-    year: number,
-    month: number,
-    userName: string,
-    totalVentas: number,
-    formatCLP: (value: number) => string
-  ): string => {
-    const doc = new jsPDF();
-    const fecha = `${month.toString().padStart(2, "0")}-${year}`;
-  
-    doc.setFontSize(16);
-    doc.text(`Reporte de Ventas por Mes - ${fecha}`, 10, 10);
-    doc.setFontSize(12);
-    doc.text(`Usuario: ${userName}`, 10, 20);
-  
-    autoTable(doc, {
-      startY: 30,
-      head: [["Producto", "Cantidad", "Precio"]],
-      body: ventas.map((v) => [v.title, v.quantity, formatCLP(v.price)]),
-      foot: [
-        [
-          { content: "Total del Mes", colSpan: 2 },
-          formatCLP(totalVentas),
-        ],
-      ],
-    });
-  
-    return doc.output("datauristring");
-  };
-  
-  // 🟧 Guardar PDF para Ventas por Mes (descarga directa)
-  export const guardarPDFPorMes = (
-    ventas: any[],
-    year: number,
-    month: number,
-    userName: string,
-    totalVentas: number,
-    formatCLP: (value: number) => string
-  ): void => {
-    const doc = new jsPDF();
-    const fecha = `${month.toString().padStart(2, "0")}-${year}`;
-  
-    doc.setFontSize(16);
-    doc.text(`Reporte de Ventas por Mes - ${fecha}`, 10, 10);
-    doc.setFontSize(12);
-    doc.text(`Usuario: ${userName}`, 10, 20);
-  
-    autoTable(doc, {
-      startY: 30,
-      head: [["Producto", "Cantidad", "Precio"]],
-      body: ventas.map((v) => [v.title, v.quantity, formatCLP(v.price)]),
-      foot: [
-        [
-          { content: "Total del Mes", colSpan: 2 },
-          formatCLP(totalVentas),
-        ],
-      ],
-    });
-  
-    doc.save(`Ventas_Mes_${userName}_${fecha}.pdf`);
-  };
-// 🟦 Exportar Excel para Ventas por Mes
-export const exportarExcelPorMes = (
-    ventas: any[],
-    year: number,
-    month: number,
-    userName: string,
-    formatCLP: (value: number) => string
-  ): void => {
-    const worksheetData = [
-      ["Producto", "Cantidad", "Precio"],
-      ...ventas.map((venta) => [
-        venta.title,
-        venta.quantity,
-        formatCLP(venta.price),
-      ]),
-    ];
-  
-    const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "VentasPorMes");
-  
-    const fileName = `VentasMes_${userName}_${month
-      .toString()
-      .padStart(2, "0")}_${year}.xlsx`;
-  
-    XLSX.writeFile(workbook, fileName);
-  };
-  

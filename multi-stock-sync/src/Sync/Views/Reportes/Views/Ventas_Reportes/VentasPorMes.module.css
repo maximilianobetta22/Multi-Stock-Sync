@@ -9,7 +9,6 @@
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
 }
 
-
 .titulo {
   text-align: center;
   font-size: 2.5rem;
@@ -43,19 +42,33 @@
 .botonContenedor {
   display: flex;
   justify-content: center;
+  gap: 1.2rem;
   margin-top: 2rem;
 }
 
-.botonPDF {
+.botonPDF,
+.botonExcel {
   padding: 0.8rem 1.8rem;
   font-size: 1rem;
-  background-color: #198754;
   color: white;
   border: none;
   border-radius: 0.8rem;
   transition: background-color 0.3s ease;
+  font-weight: 600;
+}
+
+.botonPDF {
+  background-color: #198754;
 }
 
 .botonPDF:hover {
   background-color: #146c43;
+}
+
+.botonExcel {
+  background-color: #213f99;
+}
+
+.botonExcel:hover {
+  background-color: #182d6f;
 }

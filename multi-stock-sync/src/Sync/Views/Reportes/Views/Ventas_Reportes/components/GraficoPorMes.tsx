@@ -19,31 +19,35 @@ interface Props {
   totalVentas: number;
   year: number;
   month: number;
-  formatCLP: (value: number) => string; 
 }
 
 const options: ChartOptions<"bar"> = {
   responsive: true,
   maintainAspectRatio: false,
-  indexAxis: "y",
+  indexAxis: "x",
   plugins: {
     legend: {
-      position: "top" as const,
+      display: false,
     },
     title: {
       display: true,
-      text: "Ventas por Mes",
+      text: "Top 10 Productos por Ingresos",
+      color: "#1e2949",
       font: {
         size: 18,
+        weight: "bold",
       },
     },
     datalabels: {
-      color: "#fff",
+      anchor: "end",
+      align: "top",
+      color: "#333",
       font: {
         weight: "bold",
+        size: 12,
       },
       formatter: (value: number) =>
-        `$ ${new Intl.NumberFormat("es-CL").format(value)} CLP`,
+        `$ ${new Intl.NumberFormat("es-CL").format(value)}`,
     },
     tooltip: {
       callbacks: {
@@ -52,31 +56,38 @@ const options: ChartOptions<"bar"> = {
       },
     },
   },
-};
-
-const GraficoPorMes: React.FC<Props> = ({ chartData, formatCLP }) => {
-    const opcionesConFormato: ChartOptions<"bar"> = {
-      ...options,
-      plugins: {
-        ...options.plugins,
-        datalabels: {
-          ...options.plugins?.datalabels,
-          formatter: (value: number) => formatCLP(value),
-        },
-        tooltip: {
-          callbacks: {
-            label: (context) => formatCLP(context.raw as number),
-          },
+  scales: {
+    x: {
+      ticks: {
+        color: "#4f5a95",
+        font: { size: 12 },
+      },
+    },
+    y: {
+      ticks: {
+        color: "#4f5a95",
+        font: { size: 12 },
+        callback: (value) => `$${Number(value).toLocaleString("es-CL")}`,
+      },
+      title: {
+        display: true,
+        text: "Ingresos (CLP)",
+        color: "#4f5a95",
+        font: {
+          size: 13,
+          weight: "bold",
         },
       },
-    };
-  
-    return (
-      <div style={{ position: "relative", height: "66vh", width: "100%" }}>
-        <Bar data={chartData} options={opcionesConFormato} />
-      </div>
-    );
-  };
-  
+    },
+  },
+};
+
+const GraficoPorMes: React.FC<Props> = ({ chartData }) => {
+  return (
+    <div style={{ position: "relative", height: "480px", width: "100%" }}>
+      <Bar data={chartData} options={options} />
+    </div>
+  );
+};
 
 export default GraficoPorMes;
