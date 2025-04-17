@@ -43,10 +43,10 @@ const HistorialDespacho: React.FC = () => {
       const res = await axiosInstance.get(
         `${
           import.meta.env.VITE_API_URL
-        }/mercadolibre/history-dispatch/${client_id}/${skuProduct}`,
+        }/mercadolibre/history-dispatch/${client_id}/${skuProduct}`, //se busca por sku en vez de por id
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`, //se define el token de acceso
           },
         }
       );
