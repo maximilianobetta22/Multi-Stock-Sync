@@ -12,82 +12,100 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
-// Registro de plugins
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
-// Props
 interface Props {
   chartData: any;
-  totalVentas: number;
   fecha: string;
+  formatCLP: (value: number) => string;
 }
 
-// Opciones del gráfico
 const options: ChartOptions<"bar"> = {
   responsive: true,
   maintainAspectRatio: false,
+  indexAxis: "x", // <-- barras verticales
   plugins: {
     legend: {
-      display: false, // Ocultamos la leyenda
+      display: false,
     },
     title: {
       display: true,
-      text: "Ingresos por Producto",
+      text: "Top 10 Productos más Vendidos del Día",
       font: {
         size: 18,
         weight: "bold",
       },
-      color: "#333",
+      color: "#213f99",
     },
     datalabels: {
-      color: "#000",
+      color: "#ffffff",
       anchor: "end",
-      align: "top",
-      formatter: (value: number) =>
-        `$ ${new Intl.NumberFormat("es-CL").format(value)}`,
+      align: "start",
       font: {
         weight: "bold",
+        size: 12,
       },
+      formatter: (value: number) => `$ ${new Intl.NumberFormat("es-CL").format(value)}`,
     },
     tooltip: {
       callbacks: {
-        label: (context) =>
-          `$ ${new Intl.NumberFormat("es-CL").format(context.raw as number)} CLP`,
+        label: (context: any) => {
+          const valor = context.raw ?? 0;
+          return `$ ${Number(valor).toLocaleString("es-CL")} CLP`;
+        },
       },
     },
   },
   scales: {
     x: {
-      title: {
-        display: true,
-        text: "Productos",
+      ticks: {
+        color: "#4f5a95",
         font: {
+          size: 12,
           weight: "bold",
         },
-      },
-      ticks: {
-        autoSkip: false,
         maxRotation: 45,
         minRotation: 0,
       },
+      grid: {
+        color: "rgba(0, 0, 0, 0.05)",
+      },
     },
     y: {
-      title: {
-        display: true,
-        text: "Ingresos (CLP)",
+      ticks: {
+        color: "#213f99",
         font: {
+          size: 12,
           weight: "bold",
         },
       },
-      beginAtZero: true,
+      grid: {
+        display: false,
+      },
     },
   },
 };
 
-const GraficoPorDia: React.FC<Props> = ({ chartData }) => {
+const GraficoPorDia: React.FC<Props> = ({ chartData, formatCLP }) => {
+  const opcionesConFormato: ChartOptions<"bar"> = {
+    ...options,
+    plugins: {
+      ...options.plugins,
+      datalabels: {
+        ...options.plugins?.datalabels,
+        formatter: (value: number) => formatCLP(value),
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => formatCLP(context.raw ?? 0),
+        },
+      },
+    },
+  };
+
   return (
-    <div style={{ position: "relative", height: "500px", width: "100%", padding: "2rem" }}>
-      <Bar data={chartData} options={options} />
+    <div style={{ position: "relative", height: "65vh", width: "100%" }}>
+      <Bar data={chartData} options={opcionesConFormato} />
     </div>
   );
 };

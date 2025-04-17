@@ -9,8 +9,8 @@ import styles from "./VentasPorDia.module.css";
 
 const VentasPorDia: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-
   const [fecha, setFecha] = useState<string>("2025-01-01");
+  const [ventas, setVentas] = useState<any[]>([]);
   const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -19,27 +19,28 @@ const VentasPorDia: React.FC = () => {
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
 
+  const formatCLP = (value: number) => `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
+
   const fetchIncomes = async () => {
     if (!client_id || !fecha) return;
-
     setLoading(true);
     try {
-      const response = await axiosInstance.get(
+      const res = await axiosInstance.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${client_id}?week_start_date=${fecha}&week_end_date=${fecha}`
       );
+      const soldProducts = res.data?.data?.sold_products || [];
 
-      const soldProducts = response.data?.data?.sold_products || [];
+      const ordenadas = [...soldProducts].sort((a, b) => b.total_amount - a.total_amount);
+      const top10 = ordenadas.slice(0, 10);
+      const resto = ordenadas.slice(10);
 
-      if (!soldProducts.length) {
-        setError("No hay ventas registradas para esta fecha.");
-        setChartData({ labels: [], datasets: [] });
-        setTotalIngresos(0);
-        return;
-      }
+      const totalOtros = resto.reduce((acc: any, curr: any) => acc + curr.total_amount, 0);
+      const total = ordenadas.reduce((acc: any, curr: any) => acc + curr.total_amount, 0);
+      setTotalIngresos(total);
+      setVentas(soldProducts);
 
-      const labels = soldProducts.map((p: any) => p.title || "Producto");
-      const ingresos = soldProducts.map((p: any) => p.total_amount || 0);
-      const cantidades = soldProducts.map((p: any) => p.quantity || 0);
+      const labels = [...top10.map(p => p.title), ...(resto.length ? ["Otros"] : [])];
+      const ingresos = [...top10.map(p => p.total_amount), ...(resto.length ? [totalOtros] : [])];
 
       setChartData({
         labels,
@@ -47,18 +48,16 @@ const VentasPorDia: React.FC = () => {
           {
             label: "Ingresos Totales",
             data: ingresos,
-            backgroundColor: "rgba(135, 206, 235, 0.6)",
-            borderColor: "rgba(70, 130, 180, 1)",
-            borderWidth: 2,
-            quantityData: cantidades,
+            backgroundColor: "#8d92ed",
+            borderColor: "#4f5a95",
+            borderWidth: 1.5,
+            borderRadius: 6,
           },
         ],
       });
 
-      const total = ingresos.reduce((acc: number, curr: number) => acc + curr, 0);
-      setTotalIngresos(total);
       setError(null);
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error al obtener ventas:", error);
       setError("Error al cargar datos del día.");
     } finally {
@@ -68,29 +67,24 @@ const VentasPorDia: React.FC = () => {
 
   const fetchUserData = async () => {
     if (!client_id) return;
-
     try {
-      const response = await axiosInstance.get(
+      const res = await axiosInstance.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`
       );
-      const { nickname, profile_image } = response.data.data;
+      const { nickname, profile_image } = res.data.data;
       setUserData({ nickname, profile_image });
-    } catch (error: any) {
-      console.error("Error al obtener datos del usuario:", error.message);
-      setError("No se pudo cargar el usuario.");
+    } catch (error) {
+      console.error("Error al obtener usuario:", error);
     }
   };
 
   useEffect(() => {
     fetchIncomes();
-  }, [fecha, client_id]);
-
-  useEffect(() => {
     fetchUserData();
-  }, [client_id]);
+  }, [client_id, fecha]);
 
   const handleExportPDF = () => {
-    const pdf = generarPDFPorDia(fecha, chartData, totalIngresos, userData);
+    const pdf = generarPDFPorDia(fecha, ventas, totalIngresos, userData || { nickname: "Desconocido", profile_image: "" }, formatCLP);
     setPdfDataUrl(pdf);
     setShowModal(true);
   };
@@ -98,7 +92,9 @@ const VentasPorDia: React.FC = () => {
   return (
     <div className={styles.container}>
       <h2 className={styles.titulo}>Ventas por Día</h2>
-      <p className={styles.subtitulo}>Usuario: <strong>{userData?.nickname || "Cargando..."}</strong></p>
+      <p className={styles.subtitulo}>
+        Usuario: <strong>{userData?.nickname || "Cargando..."}</strong>
+      </p>
 
       <div className={styles.fechaSelector}>
         <label htmlFor="fecha">Selecciona Fecha:</label>
@@ -118,11 +114,17 @@ const VentasPorDia: React.FC = () => {
         ) : chartData.labels.length === 0 ? (
           <p className="text-muted text-center">No hay datos para mostrar.</p>
         ) : (
-          <GraficoPorDia
-            chartData={chartData}
-            totalVentas={totalIngresos}
-            fecha={fecha}
-          />
+          <>
+            <GraficoPorDia
+              chartData={chartData}
+              fecha={fecha}
+              formatCLP={formatCLP}
+            />
+            <p className="text-muted text-center mt-2">
+              Gráfico basado en los 10 productos con mayor ingreso.  
+              El detalle completo está disponible en el PDF exportado.
+            </p>
+          </>
         )}
       </div>
 

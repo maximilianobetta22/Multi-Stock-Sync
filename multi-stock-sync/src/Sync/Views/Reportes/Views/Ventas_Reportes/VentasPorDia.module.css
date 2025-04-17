@@ -1,7 +1,7 @@
 .container {
-  max-width: 900px;
+  max-width: 1100px;
   margin: 3rem auto;
-  padding: 3rem 2rem;
+  padding: 3rem 2rem 5rem;
   background: rgba(255, 255, 255, 0.3);
   border-radius: 20px;
   backdrop-filter: blur(14px);
@@ -30,6 +30,7 @@
   margin-bottom: 2.2rem;
   font-size: 1rem;
   color: #333;
+  flex-wrap: wrap;
 }
 
 .fechaSelector input[type="date"] {
@@ -42,14 +43,14 @@
 .graficoContenedor {
   margin: 2rem auto;
   width: 100%;
-  max-width: 750px;
-  height: 450px;
+  max-width: 950px;
+  height: 480px;
 }
 
 .botonContenedor {
   display: flex;
   justify-content: center;
-  margin-top: 2rem;
+  margin-top: 2.5rem;
 }
 
 .botonPDF {
@@ -64,4 +65,19 @@
 
 .botonPDF:hover {
   background-color: #1b5e20;
+}
+.graficoContenedor {
+  width: 100%;
+  max-width: 950px;
+  height: auto;
+  min-height: 480px;
+  margin: 0 auto 3rem;
+  padding-bottom: 2rem;
+}
+
+.botonContenedor {
+  display: flex;
+  justify-content: center;
+  margin-top: 2rem;
+  padding-bottom: 2rem;
 }
