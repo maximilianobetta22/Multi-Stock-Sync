@@ -1,12 +1,17 @@
 import { useState, useEffect } from "react";
 import styles from "./HomeBodega.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faWarehouse } from "@fortawesome/free-solid-svg-icons";
+import {
+  faWarehouse,
+  faMapPin,
+  faCalendarPlus,
+} from "@fortawesome/free-solid-svg-icons";
 import { Link } from "react-router-dom";
 import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import { Warehouse } from "../../Types/warehouse.type";
 import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
+import DropdownFilter from "../../Components/dropdownFilter";
 
 const HomeBodega = () => {
   const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
@@ -17,7 +22,8 @@ const HomeBodega = () => {
     useWarehouseManagement();
 
   useEffect(() => {
-    fetchWarehouses();
+    //Traer todas las bodegas
+    fetchWarehouses(); //Función que trae las bodegas desde useWarehouseManagement
   }, []);
 
   useEffect(() => {
@@ -44,103 +50,95 @@ const HomeBodega = () => {
     setFilteredWarehouses(filtered);
   }, [warehouses, companyFilter, sortOrder]);
 
+  const companyOptions = [
+    { value: "", label: "Todas" },
+    ...Array.from(new Set(warehouses.map((w) => w.company?.name || "")))
+      .filter((name) => name) // Filter out empty names
+      .map((company) => ({
+        value: company,
+        label: company,
+      })),
+  ];
+
+  const sortOptions = [
+    { value: "", label: "Sin ordenar" },
+    { value: "asc", label: "Ascendente" },
+    { value: "desc", label: "Descendente" },
+  ];
+
   useEffect(() => {
     if (error) {
       setShowToast(true);
     }
   }, [error]);
 
-  const handleCompanyFilterChange = (
-    e: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    setCompanyFilter(e.target.value);
-  };
-
-  const handleSortOrderChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    setSortOrder(e.target.value);
-  };
-
   if (loading) {
     return <LoadingDinamico variant="fullScreen" />;
   }
 
   return (
-    <div>
-      <div className="container-fluid bg-body-tertiary">
-        <h1 className="mt-2">Lista de bodegas</h1>
-        <p>
-          En este apartado puedes ver la lista de todas las bodegas registradas
-          en el sistema, puedes filtrarlas por compañías u ordenarlas!
-        </p>
+    <div className="container-fluid bg-body-tertiary h-100">
+      <h1 className={styles.title}>Lista de bodegas</h1>
+      <div className={styles.menu}>
+        <DropdownFilter
+          id="companyFilter"
+          label="Filtrar por compañía:"
+          value={companyFilter}
+          options={companyOptions}
+          onChange={(e) => setCompanyFilter(e.target.value)}
+        />
 
-        <div className={styles.menu}>
-          <div className={styles.filter}>
-            <label htmlFor="companyFilter">Filtrar por compañía:</label>
-            <select
-              id="companyFilter"
-              value={companyFilter}
-              onChange={handleCompanyFilterChange}
-            >
-              <option value="">Todas</option>
-              {Array.from(new Set(warehouses.map((w) => w.company.name))).map(
-                (company) => (
-                  <option key={company} value={company}>
-                    {company}
-                  </option>
-                )
-              )}
-            </select>
-          </div>
-          <div className={styles.filter}>
-            <label htmlFor="sortOrder">Ordenar por fecha de creación:</label>
-            <select
-              id="sortOrder"
-              value={sortOrder}
-              onChange={handleSortOrderChange}
-            >
-              <option value="">Sin ordenar</option>
-              <option value="asc">Ascendente</option>
-              <option value="desc">Descendente</option>
-            </select>
-          </div>
-          <Link to="../crear" className={styles.btn__add}>
-            <FontAwesomeIcon className={styles.icon__add} icon={faPlus} />
-          </Link>
-        </div>
+        <DropdownFilter
+          id="sortOrder"
+          label="Ordenar por fecha de creación:"
+          value={sortOrder}
+          options={sortOptions}
+          onChange={(e) => setSortOrder(e.target.value)}
+        />
 
-        <div className={styles.format_container}>
-          {filteredWarehouses.length > 0
-            ? filteredWarehouses.map((warehouse) => (
-                <div className={styles.bodegas_box}>
-                  <div className={styles.bodega_item}>
-                    <Link
-                      to={`../DetalleBodega/${warehouse.id}`}
-                      className={styles.bodega_item_link}
-                    >
-                      <div className={styles.bodega_item_bg}></div>
-                      <div className={styles.bodega_item_title}>
-                        {warehouse.name}
-                      </div>
-                      <div className={styles.bodega_item_date_box}>
-                        Actualizado:{" "}
-                        <span className={styles.bodega_item_date}>
-                          {new Date(warehouse.updated_at).toLocaleDateString()}
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-              ))
-            : "hello"}
-        </div>
-        {showToast && (
-          <ToastComponent
-            message={error ? `Error: ${error}` : "No hay almacenes disponibles"}
-            type={error ? "danger" : "success"}
-            onClose={() => setShowToast(false)}
-          />
-        )}
+        <Link to="../crear" className={styles.create_button}>
+          Crear Bodega
+        </Link>
       </div>
+
+      <div className={styles.format_container}>
+        {filteredWarehouses.length > 0
+          ? filteredWarehouses.map((warehouse) => (
+              <div className={styles.bodegas_box} key={warehouse.id}>
+                <div className={styles.bodega_item}>
+                  <Link
+                    to={`../DetalleBodega/${warehouse.id}`}
+                    className={styles.bodega_item_link}
+                  >
+                    <div className={styles.bodega_item_bg}></div>
+                    <div className={styles.bodega_item_title}>
+                      <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
+                    </div>
+                    <div className={styles.bodega_item_date_box}>
+                      <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
+                      <span className={styles.bodega_item_date}>
+                        {new Date(warehouse.updated_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <div className={styles.bodega_item_date_box}>
+                      <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
+                      <span className={styles.bodega_item_date}>
+                        {warehouse.location}
+                      </span>
+                    </div>
+                  </Link>
+                </div>
+              </div>
+            ))
+          : "hello"}
+      </div>
+      {showToast && (
+        <ToastComponent
+          message={error ? `Error: ${error}` : "No hay almacenes disponibles"}
+          type={error ? "danger" : "success"}
+          onClose={() => setShowToast(false)}
+        />
+      )}
     </div>
   );
 };

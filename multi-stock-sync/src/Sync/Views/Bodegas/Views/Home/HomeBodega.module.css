@@ -16,9 +16,9 @@
 }
 
 .bodega_item {
-  -ms-flex-preferred-size: calc(33.33333% - 30px);
-  flex-basis: calc(33.33333% - 30px);
-  margin: 0 15px 30px;
+  -ms-flex-preferred-size: calc(33% - 10px);
+  flex-basis: calc(25% - 30px);
+  margin: 0 15px 15px;
   overflow: hidden;
   border-radius: 28px;
 }
@@ -59,7 +59,7 @@
 
 .bodega_item_date_box {
   font-size: 18px;
-  color: #fff;
+  color: #030303;
 
   z-index: 2;
   position: relative;
@@ -67,7 +67,7 @@
 
 .bodega_item_date {
   font-weight: bold;
-  color: #f9b234;
+  color: #ef4624;
 
   -webkit-transition: color 0.5s ease;
   -o-transition: color 0.5s ease;
@@ -77,7 +77,7 @@
 .bodega_item_bg {
   height: 128px;
   width: 128px;
-  background-color: #f9b234;
+  background-color: #ef4624;
 
   z-index: 1;
   position: absolute;
@@ -94,27 +94,62 @@
 .menu {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: start;
   margin-bottom: 1rem;
+  gap: 20px;
 }
 
-.filter {
+.dropdown {
+  margin: 0;
+  width: 250px;
+  position: relative;
+}
+
+.dropdown label {
+  display: block;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.dropdown select {
+  display: block;
+  width: 100%;
+  padding: 12px 15px;
+  background: #ffffff;
+  color: #555;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.create_button {
   display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
+  align-items: center;
+  margin-top: 30px;
+  height: 45px;
+  padding: 4px 8px;
+  background-color: #ef4624;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-decoration: none;
 }
 
-.filter label {
-  margin-bottom: 0.5rem;
+.create_button:hover {
+  background-color: #d43f1a;
 }
 
-.filter select,
-.filter input {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.icon {
-  height: 2rem;
-  width: 2rem;
+.title {
+  margin: 10px 0px 10px 0px;
+  text-align: start;
 }

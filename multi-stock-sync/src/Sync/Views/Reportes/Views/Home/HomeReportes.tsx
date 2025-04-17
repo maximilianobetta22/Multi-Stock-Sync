@@ -43,7 +43,7 @@ const HomeReportes: React.FC = () => {
     event: React.ChangeEvent<HTMLSelectElement>
   ) => {
     const clientId = event.target.value;
-    setSelectedConnection(clientId);
+    setSelectedConnection(clientId); // actualizamos el estado con el ID de cliente seleccionado
     if (clientId) fetchStoreSummary(clientId); // llamamos a la función para obtener el resumen de la tienda
   };
 
