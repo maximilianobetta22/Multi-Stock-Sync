@@ -1,3 +1,136 @@
-.noDecoration {
+/* Contenedor principal */
+.container {
+    padding: 2rem;
+    background-color: #f7f9fb;
+    border-radius: 16px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #2a2a2a;
+  }
+  
+  /* Títulos de secciones con separador */
+  .sectionTitle {
+    margin-top: 3rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1f1f1f;
+    padding-bottom: 0.3rem;
+    border-bottom: 1px solid #e0e0e0;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  /* Grid con espaciado, sin estirar feo */
+  .reportGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+  
+  /* Tarjetas limpias y modernas */
+  .reportCard {
+    background-color: #fafafa;
+    border: 1px solid #eaeaea;
+    border-radius: 10px;
+    padding: 1rem;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+    text-decoration: none;
+    color: #2a2a2a;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    height: 100%;
+  }
+  
+  .reportCard:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    transform: translateY(-1px);
+  }
+  
+  /* Íconos suaves */
+  .reportCardIcon {
+    font-size: 1.2rem;
+    color: #555;
+  }
+  
+  /* Lista de métodos de pago */
+  .noDecoration {
     list-style-type: none;
-}
+    font-size: 1rem;
+    margin: 0.5rem 0;
+    display: flex;
+    align-items: center;
+    color: #444;
+  }
+  
+  .noDecoration svg {
+    margin-right: 10px;
+    color: #1976d2;
+  }
+  
+  /* Selector de conexiones */
+  select.form-control {
+    border-radius: 8px;
+    padding: 0.5rem;
+    font-size: 1rem;
+    max-width: 400px;
+  }
+  
+  /* Cards generales */
+  .card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    margin-bottom: 2rem;
+  }
+  
+  /* Tipografía */
+  h1, h2, h3, h4 {
+    color: #2c3e50;
+    font-weight: 600;
+  }
+  
+  /* Texto general */
+  p {
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  /* Botones */
+  .btn-primary {
+    background-color: #1976d2;
+    border: none;
+    border-radius: 8px;
+    padding: 0.6rem 1.2rem;
+    font-weight: 500;
+    transition: background-color 0.2s ease;
+  }
+  
+  .btn-primary:hover {
+    background-color: #115293;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem;
+    }
+  
+    select.form-control {
+      width: 100%;
+    }
+  
+    .reportCard {
+      flex-direction: row;
+      justify-content: flex-start;
+    }
+  
+    .reportCardIcon {
+      font-size: 1.3rem;
+    }
+  }
+  
