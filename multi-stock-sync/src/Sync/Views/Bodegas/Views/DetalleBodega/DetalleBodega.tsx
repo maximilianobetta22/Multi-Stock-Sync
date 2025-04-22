@@ -4,57 +4,20 @@ import { useParams, Link } from "react-router-dom";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import { Product } from "../../Types/warehouse.type";
 import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
-import axiosInstance from "../../../../../axiosConfig";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
+import { Button, List } from "antd";
+import TablaProductoBodega from "../../Components/tablaProductoBodega";
 
 const DetalleBodega = () => {
   const { id } = useParams<{ id: string }>();
-  const [products, setProducts] = useState<Product[]>([]);
+
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  const { fetchWarehouse, warehouse } = useWarehouseManagement();
+  const { fetchWarehouse, warehouse, error, products, fetchProducts } =
+    useWarehouseManagement();
 
   const placeholderImage = "/assets/img/icons/image_notfound.svg";
-
-  // Función para obtener los productos de la bodega
-  const fetchProducts = async (id: string) => {
-    try {
-      const { data } = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/warehouse/${id}/stock`,
-        {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-          },
-        }
-      );
-
-      if (data?.ok && Array.isArray(data.data)) {
-        setProducts(data.data);
-        setFilteredProducts(data.data);
-        console.log(`Warehouse Product: ${data}`);
-      } else {
-        // Si llega una respuesta válida pero sin datos
-        setProducts([]);
-        setFilteredProducts([]);
-      }
-    } catch (err: any) {
-      console.error("Error al cargar productos:", err);
-
-      // Si el error es 204 (sin contenido)
-      if (err.response?.status === 204) {
-        setProducts([]);
-        setFilteredProducts([]);
-        return;
-      }
-
-      // Otros errores
-      setError(
-        err.response?.data?.message ||
-          err.message ||
-          "Ocurrió un error al obtener los productos."
-      );
-    }
-  };
 
   // Filtrar productos en tiempo real
   const filterProducts = () => {
@@ -90,111 +53,42 @@ const DetalleBodega = () => {
   }
 
   return (
-    <div className="container-fluid">
-      {/* Información de la bodega */}
-      <h1 className="mt-2 mb-2">Atributos de Bodega</h1>
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Nombre</th>
-              <th>Ubicación</th>
-              <th>Nombre Compañía</th>
-              <th>Fecha de creación</th>
-              <th>Fecha de modificación</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr key={warehouse.id}>
-              <td>{warehouse.id}</td>
-              <td>{warehouse.name}</td>
-              <td>{warehouse.location}</td>
-              <td>{warehouse.company?.name}</td>
-              <td>
-                {new Date(warehouse.created_at).toLocaleDateString("es-CL")}
-              </td>
-              <td>
-                {new Date(warehouse.updated_at).toLocaleDateString("es-CL")}
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      {/* Productos en la bodega */}
-      <h1 className="mt-2 mb-2">Productos en la Bodega</h1>
-      <input
-        type="text"
-        placeholder="Buscar por ID, Título o Código de Categoría"
-        value={searchTerm}
-        onChange={(e) => setSearchTerm(e.target.value)}
-        className={styles.searchInput}
-      />
-      <div className={styles.tableContainer}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>ID Base de Datos</th>
-              <th>Imágen</th>
-              <th>Título</th>
-              <th>ID MLC</th>
-              <th>Precio CLP</th>
-              <th>Stock MercadoLibre</th>
-              <th>Bodega Asignada</th>
-              <th>Stock Bodega</th>
-              <th>Fecha Creación</th>
-              <th>Fecha Actualización</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredProducts.length > 0 ? (
-              filteredProducts.map((product) => (
-                <tr key={product.id}>
-                  <td>{product.id}</td>
-                  <td style={{ textAlign: "center" }}>
-                    <img
-                      src={product.thumbnail}
-                      alt={product.title}
-                      style={{ width: "50px", height: "50px" }}
-                      onError={(e) => (e.currentTarget.src = placeholderImage)}
-                    />
-                  </td>
-                  <td>{product.title}</td>
-                  <td>{product.id_mlc}</td>
-                  <td>
-                    {new Intl.NumberFormat("es-CL", {
-                      style: "currency",
-                      currency: "CLP",
-                    }).format(Number(product.price_clp))}
-                  </td>
-                  <td>{product.warehouse_stock}</td>
-                  <td>{product.warehouse_id}</td>
-                  <td>{product.warehouse_stock}</td>
-                  <td>
-                    {new Date(product.created_at).toLocaleString("es-CL")}
-                  </td>
-                  <td>
-                    {new Date(product.updated_at).toLocaleString("es-CL")}
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={10} className="text-muted">
-                  No hay productos registrados en esta bodega.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Botón para volver */}
-      <div style={{ textAlign: "right" }}>
-        <Link to="/sync/bodegas/home" className="btn btn-secondary mt-3 mb-4">
-          Volver a bodegas
+    <div className="container-fluid bg-body-tertiary h-100">
+      {/* Botón para regresar */}
+      <Button htmlType="button" className="my-2">
+        <Link to="../homebodega">
+          <FontAwesomeIcon icon={faArrowLeft} /> regresar
         </Link>
+      </Button>
+      <div className="row mx-3">
+        <div
+          className={`col-md-6 py-4 px-4 ${styles.round_left} ${styles.own_bg_white}`}
+        >
+          <h3 className="my-2">Bodega</h3>
+          <List
+            itemLayout="horizontal"
+            dataSource={warehouse ? [warehouse] : []}
+            renderItem={(item) => (
+              <List.Item>
+                <div>
+                  <h5>Nombre: {item.name || "No especificado"}</h5>
+                  <p>Ubicación: {item.location || "No especificada"}</p>
+                  <p>compañia: {item.company?.name || "No especificada"}</p>
+                  <p>Estado: {item.updated_at || "No especificado"}</p>
+                </div>
+              </List.Item>
+            )}
+          />
+        </div>
+        <div
+          className={`col-md-6 py-4 px-4 ${styles.own_bg_white} ${styles.round_rigth}`}
+        >
+          <h3 className="my-2">Productos Bodega</h3>
+          <TablaProductoBodega
+            products={filteredProducts}
+            placeholderImage={placeholderImage}
+          />
+        </div>
       </div>
     </div>
   );
