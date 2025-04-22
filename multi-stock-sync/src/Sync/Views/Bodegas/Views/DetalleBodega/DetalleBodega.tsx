@@ -1,6 +1,6 @@
 import styles from "./DetalleBodega.module.css";
 import { useEffect, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useParams, Link } from "react-router-dom";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
 import { Product } from "../../Types/warehouse.type";
 import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
@@ -13,12 +13,11 @@ const DetalleBodega = () => {
   const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const { fetchWarehouse, warehouse } = useWarehouseManagement();
-  const navigate = useNavigate();
 
   const placeholderImage = "/assets/img/icons/image_notfound.svg";
 
   // Función para obtener los productos de la bodega
-  const fetchProducts = async () => {
+  const fetchProducts = async (id: string) => {
     try {
       const { data } = await axiosInstance.get(
         `${import.meta.env.VITE_API_URL}/warehouse/${id}/stock`,
@@ -32,6 +31,7 @@ const DetalleBodega = () => {
       if (data?.ok && Array.isArray(data.data)) {
         setProducts(data.data);
         setFilteredProducts(data.data);
+        console.log(`Warehouse Product: ${data}`);
       } else {
         // Si llega una respuesta válida pero sin datos
         setProducts([]);
@@ -68,9 +68,11 @@ const DetalleBodega = () => {
 
   // Efecto para cargar los datos iniciales
   useEffect(() => {
-    fetchWarehouse(id);
-    fetchProducts();
-  }, [id, fetchWarehouse]);
+    if (id) {
+      fetchWarehouse(id);
+      fetchProducts(id);
+    }
+  }, [id]);
 
   // Efecto para filtrar productos cuando cambia el término de búsqueda
   useEffect(() => {

@@ -56,15 +56,15 @@ export const useWarehouseManagement = () => {
         }
       );
 
-      console.log("Warehouse API response:", response.data);
+      console.log("Warehouse API response:", response.data.data);
 
-      if (!response.data || typeof response.data !== "object") {
+      if (!response.data.data || typeof response.data.data !== "object") {
         throw new Error(
           "La estructura de la respuesta de la API no es válida."
         );
       }
 
-      setWarehouse(response.data);
+      setWarehouse(response.data.data);
     } catch (error) {
       console.error("Error en useWarehouseManagement.fetchWarehouse:", error);
 
