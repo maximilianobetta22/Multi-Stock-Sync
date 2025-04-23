@@ -132,6 +132,48 @@ export const useWarehouseManagement = () => {
     }
   };
 
+  const createProduct = async (data: {
+    id_mlc: string;
+    warehouse_id: string;
+    stock: number;
+    client_id: string;
+  }) => {
+    setLoading(true); // Establecer estado de carga al inicio
+    setError(null); // Limpiar errores previos
+
+    try {
+      const response = await axiosInstance.post(
+        `${import.meta.env.VITE_API_URL}/warehouse-stock/${data.id_mlc}/${
+          data.warehouse_id
+        }/${data.stock}/${data.client_id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+
+      console.log("Respuesta del servidor:", response.data);
+
+      // Puedes devolver la respuesta al componente que llama a la función
+      return response.data;
+    } catch (error) {
+      console.error("Error en createProduct:", error);
+
+      // Manejar errores de Axios
+      if (axios.isAxiosError(error) && error.response) {
+        setError(error.response.data.message || "Error al crear el producto.");
+      } else {
+        setError("Ocurrió un error inesperado al crear el producto.");
+      }
+
+      // Devolver el error al componente que llama a la función
+      throw error;
+    } finally {
+      setLoading(false); // Restablecer estado de carga
+    }
+  };
+
   return {
     fetchWarehouses, //fetch de bodegas, trae todas las bodegas
     warehouses, //devolver bodegas
@@ -141,5 +183,6 @@ export const useWarehouseManagement = () => {
     fetchWarehouse, //fetch bodega según id
     products, //devuelve productos
     fetchProducts, //fetch de productos de bodega
+    createProduct, //Crear productos para bodega
   };
 };

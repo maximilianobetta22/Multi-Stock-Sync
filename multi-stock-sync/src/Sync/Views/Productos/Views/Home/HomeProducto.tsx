@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
   Container,
@@ -49,22 +49,25 @@ const HomeProducto = () => {
   } = useProductManagement();
 
   const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<"success" | "warning" | "error">("error");
-  const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
-  const [isEditing] = useState<{ [key: string]: boolean }>({});
-  const [searchQuery, setSearchQuery] = useState("");
-  const [limit] = useState(35);
-  const [offset, setOffset] = useState(0);
+  const [toastMessage, setToastMessage] = React.useState<string | null>(null);
+  const [toastType, setToastType] = React.useState<
+    "success" | "warning" | "error"
+  >("error");
+  const [stockEdit, setStockEdit] = React.useState<{ [key: string]: number }>(
+    {}
+  );
+  const [isEditing] = React.useState<{ [key: string]: boolean }>({});
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [limit] = React.useState(35);
+  const [offset, setOffset] = React.useState(0);
 
-  const [stockFilter, setStockFilter] = useState("todos");
-  const [estadoFilter, setEstadoFilter] = useState("todos");
-  const [categoriaFilter, setCategoriaFilter] = useState("todos");
-  const [ordenarPor, setOrdenarPor] = useState("nombre");
+  const [stockFilter, setStockFilter] = React.useState("todos");
+  const [estadoFilter, setEstadoFilter] = React.useState("todos");
+  const [categoriaFilter, setCategoriaFilter] = React.useState("todos");
+  const [ordenarPor, setOrdenarPor] = React.useState("nombre");
 
   const [searchParams] = useSearchParams();
   const urlStockFilter = searchParams.get("stock");
-
   const { isUpdating: isUpdatingStock, updateStock } = useStockManagement({
     connections,
     selectedConnection,
@@ -91,11 +94,11 @@ const HomeProducto = () => {
     },
   });
 
-  useEffect(() => {
+  React.useEffect(() => {
     fetchConnections();
   }, []);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (toastMessage) {
       MySwal.fire({
         icon: toastType,
@@ -106,7 +109,7 @@ const HomeProducto = () => {
     }
   }, [toastMessage]);
 
-  useEffect(() => {
+  React.useEffect(() => {
     if (urlStockFilter === "0") {
       setStockFilter("sin_stock");
     }
@@ -142,12 +145,16 @@ const HomeProducto = () => {
     if (stockFilter === "sin_stock") {
       filtrados = filtrados.filter((p) => (p.stock ?? 0) === 0);
     } else if (stockFilter === "bajo") {
-      filtrados = filtrados.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 5);
+      filtrados = filtrados.filter(
+        (p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 5
+      );
     }
 
     if (estadoFilter !== "todos") {
       filtrados = filtrados.filter((p) =>
-        estadoFilter === "activo" ? p.status === "active" : p.status !== "active"
+        estadoFilter === "activo"
+          ? p.status === "active"
+          : p.status !== "active"
       );
     }
 
@@ -188,15 +195,17 @@ const HomeProducto = () => {
 
   const totalPages = Math.ceil(totalProducts / limit);
   const currentPage = Math.floor(offset / limit);
-  const pageRange = Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + currentPage - 2).filter(
-    (page) => page >= 0 && page < totalPages
-  );
+  const pageRange = Array.from(
+    { length: Math.min(totalPages, 5) },
+    (_, i) => i + currentPage - 2
+  ).filter((page) => page >= 0 && page < totalPages);
 
   return (
     <Container className={styles.homeProductoContainer}>
-      {(loadingConnections || loading || isUpdatingStock || isUpdatingStatus) && (
-        <LoadingDinamico variant="fullScreen" />
-      )}
+      {(loadingConnections ||
+        loading ||
+        isUpdatingStock ||
+        isUpdatingStatus) && <LoadingDinamico variant="fullScreen" />}
 
       <section className={styles.contentSection}>
         <Row className="align-items-center mb-4">
@@ -204,7 +213,10 @@ const HomeProducto = () => {
             <h1 className={styles.titulo}>Gestión de Productos</h1>
           </Col>
           <Col className="text-end">
-            <Button variant="success" onClick={() => navigate("/sync/productos/crear")}>
+            <Button
+              variant="success"
+              onClick={() => navigate("/sync/productos/crear")}
+            >
               <FaPlus /> Crear Producto
             </Button>
           </Col>
@@ -236,29 +248,43 @@ const HomeProducto = () => {
         {/* FILTROS VISUALES */}
         <Row className="mb-4 g-2">
           <Col md={3}>
-            <Form.Select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}>
+            <Form.Select
+              value={stockFilter}
+              onChange={(e) => setStockFilter(e.target.value)}
+            >
               <option value="todos">Todos los stock</option>
               <option value="sin_stock">Sin Stock</option>
               <option value="bajo">Stock bajo (Menor a 5)</option>
             </Form.Select>
           </Col>
           <Col md={3}>
-            <Form.Select value={estadoFilter} onChange={(e) => setEstadoFilter(e.target.value)}>
+            <Form.Select
+              value={estadoFilter}
+              onChange={(e) => setEstadoFilter(e.target.value)}
+            >
               <option value="todos">Todos los estados</option>
               <option value="activo">Activos</option>
               <option value="inactivo">Inactivos</option>
             </Form.Select>
           </Col>
           <Col md={3}>
-            <Form.Select value={categoriaFilter} onChange={(e) => setCategoriaFilter(e.target.value)}>
+            <Form.Select
+              value={categoriaFilter}
+              onChange={(e) => setCategoriaFilter(e.target.value)}
+            >
               <option value="todos">Todas las categorías</option>
               {Object.entries(categories).map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
+                <option key={id} value={id}>
+                  {name}
+                </option>
               ))}
             </Form.Select>
           </Col>
           <Col md={3}>
-            <Form.Select value={ordenarPor} onChange={(e) => setOrdenarPor(e.target.value)}>
+            <Form.Select
+              value={ordenarPor}
+              onChange={(e) => setOrdenarPor(e.target.value)}
+            >
               <option value="nombre">Nombre A-Z</option>
               <option value="precio_asc">Precio: menor a mayor</option>
               <option value="precio_desc">Precio: mayor a menor</option>
@@ -315,7 +341,9 @@ const HomeProducto = () => {
           setStockEdit((prev) => ({ ...prev, [productId]: newStock }));
         }}
         stockEdit={stockEdit}
-        fetchProducts={() => fetchProducts(selectedConnection, searchQuery, limit, offset)}
+        fetchProducts={() =>
+          fetchProducts(selectedConnection, searchQuery, limit, offset)
+        }
         setModalContent={setModalContent}
       />
     </Container>

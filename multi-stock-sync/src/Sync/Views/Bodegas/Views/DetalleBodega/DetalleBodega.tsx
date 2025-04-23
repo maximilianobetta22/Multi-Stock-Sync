@@ -5,9 +5,9 @@ import { LoadingDinamico } from "../../../../../components/LoadingDinamico/Loadi
 import { Product } from "../../Types/warehouse.type";
 import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
-import { Button, List } from "antd";
-import TablaProductoBodega from "../../Components/tablaProductoBodega";
+import { faArrowLeft, faMapPin } from "@fortawesome/free-solid-svg-icons";
+import { Button, Card, Table, Input } from "antd";
+import DrawerCreateProduct from "../../Components/DrawerCreateProduct";
 
 const DetalleBodega = () => {
   const { id } = useParams<{ id: string }>();
@@ -16,8 +16,47 @@ const DetalleBodega = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const { fetchWarehouse, warehouse, error, products, fetchProducts } =
     useWarehouseManagement();
-
   const placeholderImage = "/assets/img/icons/image_notfound.svg";
+  const columns = [
+    //establece el nombre de las columnas en la tabla y los valores a presentar
+    { title: "Titulo", dataIndex: "title", key: "title" },
+    {
+      title: "ID MLC",
+      dataIndex: "id_mlc",
+      key: "id_mlc",
+    },
+    {
+      title: "Precio",
+      dataIndex: "price",
+      key: "price",
+      render: (price: string | undefined) => {
+        const numericPrice = parseFloat(price || ""); // Convertir el string a número
+        return !isNaN(numericPrice) ? `$${numericPrice.toFixed(2)}` : "N/A"; // Validar y formatear
+      },
+    },
+    {
+      title: "Imagen",
+      dataIndex: "image",
+      key: "image",
+      render: (image: string) => (
+        <img
+          src={image || placeholderImage} // Mostrar imagen o un placeholder si no hay imagen
+          alt="Producto"
+          style={{ width: "50px", height: "50px", objectFit: "cover" }}
+        />
+      ),
+    },
+    { title: "Stock bodega", dataIndex: "stock", key: "stock" },
+  ];
+  const dataSource = filteredProducts.map((product) => ({
+    key: product.id,
+    title: product.title,
+    id_mlc: product.id_mlc,
+    price: product.price_clp,
+    image: product.thumbnail,
+    stock: product.warehouse_stock,
+  }));
+  const { Search } = Input;
 
   // Filtrar productos en tiempo real
   const filterProducts = () => {
@@ -42,6 +81,17 @@ const DetalleBodega = () => {
     filterProducts();
   }, [searchTerm, products]);
 
+  const onSearch = (value: string) => {
+    setSearchTerm(value); // Actualizar el término de búsqueda
+    const filtered = products.filter((product) =>
+      [product.title, product.id_mlc]
+        .filter(Boolean) // Asegurarse de que los campos no sean null o undefined
+        .some((field) => field.toLowerCase().includes(value.toLowerCase()))
+    );
+
+    setFilteredProducts(filtered);
+  };
+
   // Renderizar errores
   if (error) {
     return <p className="text-danger">Error: {error}</p>;
@@ -60,34 +110,43 @@ const DetalleBodega = () => {
           <FontAwesomeIcon icon={faArrowLeft} /> regresar
         </Link>
       </Button>
-      <div className="row mx-3">
+      <div className="row mx-3 my-3">
         <div
           className={`col-md-6 py-4 px-4 ${styles.round_left} ${styles.own_bg_white}`}
         >
-          <h3 className="my-2">Bodega</h3>
-          <List
-            itemLayout="horizontal"
-            dataSource={warehouse ? [warehouse] : []}
-            renderItem={(item) => (
-              <List.Item>
-                <div>
-                  <h5>Nombre: {item.name || "No especificado"}</h5>
-                  <p>Ubicación: {item.location || "No especificada"}</p>
-                  <p>compañia: {item.company?.name || "No especificada"}</p>
-                  <p>Estado: {item.updated_at || "No especificado"}</p>
-                </div>
-              </List.Item>
-            )}
-          />
+          <Card style={{ width: "100%" }}>
+            <h2 className="my-4">Bodega</h2>
+            <Card title="Nombre de la Bodega" className="my-2">
+              {warehouse.name}
+            </Card>
+            <Card title="Compañia Asiganada" className="my-2">
+              {warehouse.company?.name}
+            </Card>
+            <Card title="Ubicación de Bodega" className="my-2">
+              <FontAwesomeIcon icon={faMapPin} /> {warehouse.location}
+            </Card>
+          </Card>
         </div>
         <div
           className={`col-md-6 py-4 px-4 ${styles.own_bg_white} ${styles.round_rigth}`}
         >
-          <h3 className="my-2">Productos Bodega</h3>
-          <TablaProductoBodega
-            products={filteredProducts}
-            placeholderImage={placeholderImage}
-          />
+          <Card className="h-100">
+            <div className="row">
+              <div className="col-sm-6">
+                <h2 className="my-4">Productos Bodega</h2>
+              </div>
+              <div className="col-sm-6 d-flex justify-content-end">
+                <DrawerCreateProduct />
+              </div>
+            </div>
+            <Search
+              placeholder="Buscar por Titulo o MLC"
+              onSearch={onSearch}
+              enterButton
+              className="my-2"
+            />
+            <Table dataSource={dataSource} columns={columns} />
+          </Card>
         </div>
       </div>
     </div>

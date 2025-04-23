@@ -54,19 +54,21 @@
   }
 }
 
-.btn__add {
-  position: absolute;
-  background-color: #ef4624;
-  color: #ffffff;
-  padding: 1rem;
+.btn_add {
   display: flex;
-  justify-content: center;
   align-items: center;
-  right: 3rem;
-  bottom: 3rem;
+  height: 45px;
+  width: 80px;
+  background-color: #ef4624;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
   border: none;
-  border-radius: 20rem;
-  cursor: pointer;
+}
+
+.btn_add:hover {
+  background-color: #d43f1a;
 }
 
 .icon__add {
@@ -111,9 +113,4 @@
 
 .round_left {
   border-radius: 20px 0px 0px 20px;
-}
-
-.divisor {
-  width: 0.01px;
-  background-color: #000000;
 }
