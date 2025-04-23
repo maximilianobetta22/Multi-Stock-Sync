@@ -12,9 +12,11 @@ export interface Product {
   permalink: string;
   status: string;
   status_translated: string;
-
+  category_name?: string;
+  group?: string;
   // alias para que puedas usar p.stock
   stock?: number; // esto no se envía al backend, lo calculamos al recibir los productos
+  
 }
 
 

@@ -1,324 +1,269 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  Container,
+  Typography,
+  Button,
+  Input,
+  Select,
+  Card,
+  Tabs,
+  Table,
+  Empty,
   Row,
   Col,
-  Pagination,
-  Button,
-  Alert,
-  Form,
-} from "react-bootstrap";
-import { FaPlus } from "react-icons/fa";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-import ProductTable from "../../components/ProductTable";
-import ProductModal from "../../components/ProductModal";
-import SearchBar from "../../components/SearchBar";
-import ConnectionDropdown from "../../components/ConnectionDropdown";
-import { Product } from "../../types/product.type";
-import { useModalManagement } from "../../hooks/useModalManagement";
+} from "antd";
+import { PlusOutlined } from "@ant-design/icons";
+import { useNavigate } from "react-router-dom";
 import { useProductManagement } from "../../hooks/useProductManagement";
-import { useStockManagement } from "../../hooks/useStockManagement";
-import { useStatusManagement } from "../../hooks/useStatusManagement";
-import styles from "./HomeProducto.module.css";
+import { Product } from "../../types/product.type";
+import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import EditProductModal from "../../components/EditProductModal";
 
-const MySwal = withReactContent(Swal);
+const { Title } = Typography;
+const { Option } = Select;
+const { Search } = Input;
 
 const HomeProducto = () => {
-  const {
-    modalIsOpen,
-    currentProduct,
-    modalContent,
-    setModalContent,
-    closeModal,
-  } = useModalManagement();
+  const navigate = useNavigate();
 
   const {
     connections,
     selectedConnection,
     allProducts,
-    categories,
     loading,
     loadingConnections,
-    totalProducts,
     setSelectedConnection,
     fetchConnections,
     fetchProducts,
   } = useProductManagement();
 
-  const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<"success" | "warning" | "error">("error");
-  const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
-  const [isEditing] = useState<{ [key: string]: boolean }>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [limit] = useState(35);
-  const [offset, setOffset] = useState(0);
-
   const [stockFilter, setStockFilter] = useState("todos");
   const [estadoFilter, setEstadoFilter] = useState("todos");
-  const [categoriaFilter, setCategoriaFilter] = useState("todos");
   const [ordenarPor, setOrdenarPor] = useState("nombre");
 
-  const [searchParams] = useSearchParams();
-  const urlStockFilter = searchParams.get("stock");
-
-  const { isUpdating: isUpdatingStock, updateStock } = useStockManagement({
-    connections,
-    selectedConnection,
-    onSuccess: (message) => {
-      setToastMessage(message);
-      setToastType("success");
-    },
-    onError: (message) => {
-      setToastMessage(message);
-      setToastType("error");
-    },
-  });
-
-  const { isUpdating: isUpdatingStatus, updateStatus } = useStatusManagement({
-    connections,
-    selectedConnection,
-    onSuccess: (message) => {
-      setToastMessage(message);
-      setToastType("success");
-    },
-    onError: (message) => {
-      setToastMessage(message);
-      setToastType("error");
-    },
-  });
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
   useEffect(() => {
     fetchConnections();
   }, []);
 
   useEffect(() => {
-    if (toastMessage) {
-      MySwal.fire({
-        icon: toastType,
-        title: toastMessage,
-        showConfirmButton: false,
-        timer: 3000,
-      }).then(() => setToastMessage(null));
+    if (selectedConnection) {
+      fetchProducts(selectedConnection, searchQuery);
     }
-  }, [toastMessage]);
+  }, [selectedConnection, searchQuery]);
 
-  useEffect(() => {
-    if (urlStockFilter === "0") {
-      setStockFilter("sin_stock");
-    }
-  }, [urlStockFilter]);
-
-  const handleConnectionChange = async (clientId: string) => {
-    setSelectedConnection(clientId);
+  const handleConnectionChange = (value: string) => {
+    setSelectedConnection(value);
     setSearchQuery("");
-    setOffset(0);
-    if (clientId) await fetchProducts(clientId);
   };
 
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    setOffset(0);
-    await fetchProducts(selectedConnection, query);
-  };
-
-  const handlePageChange = (newOffset: number) => {
-    setOffset(newOffset);
-    fetchProducts(selectedConnection, searchQuery, limit, newOffset);
-  };
-
-  const formatPriceCLP = (price: number) =>
-    new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(price);
-
-  const filtrarYOrdenarProductos = () => {
-    let filtrados = [...allProducts];
+  const filtrarYOrdenarProductos = (): Product[] => {
+    let productos = [...allProducts];
 
     if (stockFilter === "sin_stock") {
-      filtrados = filtrados.filter((p) => (p.stock ?? 0) === 0);
+      productos = productos.filter((p) => (p.stock ?? 0) === 0);
     } else if (stockFilter === "bajo") {
-      filtrados = filtrados.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 5);
+      productos = productos.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 5);
     }
 
     if (estadoFilter !== "todos") {
-      filtrados = filtrados.filter((p) =>
-        estadoFilter === "activo" ? p.status === "active" : p.status !== "active"
+      productos = productos.filter((p) =>
+        estadoFilter === "activo"
+          ? p.status === "active"
+          : p.status !== "active"
       );
-    }
-
-    if (categoriaFilter !== "todos") {
-      filtrados = filtrados.filter((p) => p.category_id === categoriaFilter);
     }
 
     switch (ordenarPor) {
       case "precio_asc":
-        filtrados.sort((a, b) => a.price - b.price);
+        productos.sort((a, b) => a.price - b.price);
         break;
       case "precio_desc":
-        filtrados.sort((a, b) => b.price - a.price);
+        productos.sort((a, b) => b.price - a.price);
         break;
       case "stock_asc":
-        filtrados.sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0));
+        productos.sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0));
         break;
       case "stock_desc":
-        filtrados.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
+        productos.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
         break;
       default:
-        filtrados.sort((a, b) => a.title.localeCompare(b.title));
+        productos.sort((a, b) => a.title.localeCompare(b.title));
     }
 
-    return filtrados;
+    return productos;
   };
 
-  const categorizedProducts = (() => {
-    const agrupado: { [key: string]: Product[] } = {};
-    const filtrados = filtrarYOrdenarProductos();
-    filtrados.forEach((p) => {
-      const cat = p.category_id ?? "sin_categoria";
-      if (!agrupado[cat]) agrupado[cat] = [];
-      agrupado[cat].push(p);
-    });
-    return agrupado;
-  })();
+  const productosFiltrados = filtrarYOrdenarProductos();
 
-  const totalPages = Math.ceil(totalProducts / limit);
-  const currentPage = Math.floor(offset / limit);
-  const pageRange = Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + currentPage - 2).filter(
-    (page) => page >= 0 && page < totalPages
-  );
+  const categoriaReducidaMap: Record<string, string> = {
+    pijama: "Ropa de Dormir",
+    calzón: "Ropa Interior",
+    sostén: "Ropa Interior",
+    boxer: "Ropa Interior",
+    toalla: "Accesorios",
+    calcetín: "Accesorios",
+    panty: "Ropa Interior",
+  };
+
+  const productosAgrupados: Record<string, Product[]> = {};
+  productosFiltrados.forEach((p) => {
+    const nombre = (p.category_name || "").toLowerCase();
+    const grupo =
+      Object.keys(categoriaReducidaMap).find((key) => nombre.includes(key)) || "Otros";
+
+    const finalGroup = categoriaReducidaMap[grupo] || "Otros";
+    if (!productosAgrupados[finalGroup]) productosAgrupados[finalGroup] = [];
+    productosAgrupados[finalGroup].push(p);
+  });
+
+  const tabsItems = Object.entries(productosAgrupados)
+    .filter(([, productos]) => productos.length > 0)
+    .map(([grupo, productos]) => ({
+      key: grupo,
+      label: grupo,
+      children: (
+        <Table
+          dataSource={productos}
+          rowKey="id"
+          pagination={false}
+          columns={[
+            {
+              title: "Nombre",
+              dataIndex: "title",
+              key: "title",
+            },
+            {
+              title: "Precio",
+              dataIndex: "price",
+              key: "price",
+              render: (p) => `$${p.toLocaleString("es-CL")}`,
+            },
+            {
+              title: "Stock",
+              dataIndex: "stock",
+              key: "stock",
+            },
+            {
+              title: "Estado",
+              dataIndex: "status_translated",
+              key: "status_translated",
+            },
+            {
+              title: "Acciones",
+              key: "acciones",
+              render: (_, record: Product) => (
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setSelectedProduct(record);
+                    setEditModalOpen(true);
+                  }}
+                >
+                  Editar
+                </Button>
+              ),
+            },
+          ]}
+        />
+      ),
+    }));
 
   return (
-    <Container className={styles.homeProductoContainer}>
-      {(loadingConnections || loading || isUpdatingStock || isUpdatingStatus) && (
-        <LoadingDinamico variant="fullScreen" />
+    <div style={{ maxWidth: "1600px", width: "100%", margin: "0 auto", padding: "2rem" }}>
+      {(loadingConnections || loading) && <LoadingDinamico variant="fullScreen" />}
+
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+        <Title level={2} style={{ margin: 0, color: "#213f99" }}>
+          Gestión de Productos
+        </Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/sync/productos/crear")}
+        >
+          Crear Producto
+        </Button>
+      </div>
+
+      <Card style={{ marginBottom: "1.5rem" }}>
+        <Row justify="center">
+          <Col xs={24} sm={16} md={8}>
+            <Select
+              placeholder="Selecciona una conexión"
+              value={selectedConnection || undefined}
+              onChange={handleConnectionChange}
+              style={{ width: "100%" }}
+            >
+              {connections.map((c) => (
+                <Option key={c.client_id} value={c.client_id}>
+                  {c.nickname}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+        </Row>
+      </Card>
+
+      {selectedConnection && (
+        <>
+          <Row justify="center" style={{ marginBottom: "1.5rem" }}>
+            <Col xs={24} sm={18} md={12}>
+              <Search
+                placeholder="Buscar producto..."
+                enterButton
+                allowClear
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Col>
+          </Row>
+
+          <Card style={{ marginBottom: "2rem" }}>
+            <Row gutter={[16, 16]} justify="center">
+              <Col xs={24} sm={12} md={6}>
+                <Select value={stockFilter} onChange={setStockFilter} style={{ width: "100%" }}>
+                  <Option value="todos">Todos los stock</Option>
+                  <Option value="sin_stock">Sin stock</Option>
+                  <Option value="bajo">Stock bajo</Option>
+                </Select>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Select value={estadoFilter} onChange={setEstadoFilter} style={{ width: "100%" }}>
+                  <Option value="todos">Todos los estados</Option>
+                  <Option value="activo">Activos</Option>
+                  <Option value="inactivo">Inactivos</Option>
+                </Select>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Select value={ordenarPor} onChange={setOrdenarPor} style={{ width: "100%" }}>
+                  <Option value="nombre">Nombre A-Z</Option>
+                  <Option value="precio_asc">Precio: menor a mayor</Option>
+                  <Option value="precio_desc">Precio: mayor a menor</Option>
+                  <Option value="stock_asc">Stock: menor a mayor</Option>
+                  <Option value="stock_desc">Stock: mayor a menor</Option>
+                </Select>
+              </Col>
+            </Row>
+          </Card>
+
+          {tabsItems.length > 0 ? (
+            <Tabs defaultActiveKey={tabsItems[0].key} items={tabsItems} />
+          ) : (
+            <Empty description="No se encontraron productos." style={{ marginTop: "2rem" }} />
+          )}
+        </>
       )}
 
-      <section className={styles.contentSection}>
-        <Row className="align-items-center mb-4">
-          <Col>
-            <h1 className={styles.titulo}>Gestión de Productos</h1>
-          </Col>
-          <Col className="text-end">
-            <Button variant="success" onClick={() => navigate("/sync/productos/crear")}>
-              <FaPlus /> Crear Producto
-            </Button>
-          </Col>
-        </Row>
-
-        <Row className="mb-4">
-          <Col md={4}>
-            <ConnectionDropdown
-              connections={connections}
-              selectedConnection={selectedConnection}
-              onChange={handleConnectionChange}
-            />
-            {!selectedConnection && (
-              <Alert variant="info" className="mt-3">
-                Selecciona una conexión para comenzar.
-              </Alert>
-            )}
-          </Col>
-          <Col md={8}>
-            <SearchBar
-              searchQuery={searchQuery}
-              onSearch={handleSearch}
-              suggestions={[]}
-              onSelectSuggestion={(s) => handleSearch(s)}
-            />
-          </Col>
-        </Row>
-
-        {/* FILTROS VISUALES */}
-        <Row className="mb-4 g-2">
-          <Col md={3}>
-            <Form.Select value={stockFilter} onChange={(e) => setStockFilter(e.target.value)}>
-              <option value="todos">Todos los stock</option>
-              <option value="sin_stock">Sin Stock</option>
-              <option value="bajo">Stock bajo (Menor a 5)</option>
-            </Form.Select>
-          </Col>
-          <Col md={3}>
-            <Form.Select value={estadoFilter} onChange={(e) => setEstadoFilter(e.target.value)}>
-              <option value="todos">Todos los estados</option>
-              <option value="activo">Activos</option>
-              <option value="inactivo">Inactivos</option>
-            </Form.Select>
-          </Col>
-          <Col md={3}>
-            <Form.Select value={categoriaFilter} onChange={(e) => setCategoriaFilter(e.target.value)}>
-              <option value="todos">Todas las categorías</option>
-              {Object.entries(categories).map(([id, name]) => (
-                <option key={id} value={id}>{name}</option>
-              ))}
-            </Form.Select>
-          </Col>
-          <Col md={3}>
-            <Form.Select value={ordenarPor} onChange={(e) => setOrdenarPor(e.target.value)}>
-              <option value="nombre">Nombre A-Z</option>
-              <option value="precio_asc">Precio: menor a mayor</option>
-              <option value="precio_desc">Precio: mayor a menor</option>
-              <option value="stock_asc">Stock: menor a mayor</option>
-              <option value="stock_desc">Stock: mayor a menor</option>
-            </Form.Select>
-          </Col>
-        </Row>
-
-        {selectedConnection && (
-          <>
-            <ProductTable
-              categorizedProducts={categorizedProducts}
-              categories={categories}
-              isEditing={isEditing}
-              stockEdit={stockEdit}
-              onStockChange={(productId, newStock) => {
-                setStockEdit((prev) => ({ ...prev, [productId]: newStock }));
-              }}
-              formatPriceCLP={formatPriceCLP}
-              onUpdateStatus={updateStatus}
-            />
-
-            {totalPages > 1 && (
-              <div className="d-flex flex-column align-items-center mt-4">
-                <Pagination>
-                  {pageRange.map((page) => (
-                    <Pagination.Item
-                      key={page}
-                      active={page === currentPage}
-                      onClick={() => handlePageChange(page * limit)}
-                    >
-                      {page + 1}
-                    </Pagination.Item>
-                  ))}
-                </Pagination>
-                <p className="text-muted">
-                  Página {currentPage + 1} de {totalPages}
-                </p>
-              </div>
-            )}
-          </>
-        )}
-      </section>
-
-      <ProductModal
-        show={modalIsOpen}
-        onHide={closeModal}
-        product={currentProduct}
-        modalContent={modalContent}
-        onUpdateStock={updateStock}
-        onUpdateStatus={updateStatus}
-        onStockChange={(productId, newStock) => {
-          setStockEdit((prev) => ({ ...prev, [productId]: newStock }));
-        }}
-        stockEdit={stockEdit}
-        fetchProducts={() => fetchProducts(selectedConnection, searchQuery, limit, offset)}
-        setModalContent={setModalContent}
+      <EditProductModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        product={selectedProduct}
+        onUpdate={() => fetchProducts(selectedConnection)}
       />
-    </Container>
+    </div>
   );
 };
 

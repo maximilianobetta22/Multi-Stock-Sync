@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from "react";
-import styles from "./HomeReportes.module.css";
-import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+import {
+  Card,
+  Row,
+  Col,
+  Typography,
+  Select,
+  Divider,
+  Spin,
+  Input,
+} from "antd";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -12,254 +20,213 @@ import {
   faComments,
   faUndo,
 } from "@fortawesome/free-solid-svg-icons";
-import {
-  faMoneyBillWave,
-  faCreditCard as faCreditCardIcon,
-  faUniversity,
-} from "@fortawesome/free-solid-svg-icons";
-import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import { LoadingOutlined } from "@ant-design/icons";
 import { useReceptionManagements } from "../../hooks/useReceptionManagements";
+import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+
+const { Title } = Typography;
+const { Option } = Select;
+const { Search } = Input;
+
+// Reportes con categoría incluida
+const reportLinks = [
+  { path: "ventas", label: "Ventas", icon: faChartLine, category: "Ventas" },
+  { path: "ingreso-semana", label: "Ingresos por semana", icon: faCalendarWeek, category: "Ventas" },
+  { path: "ingresos-categoria-producto", label: "Ingresos por categoría", icon: faTags, category: "Ventas" },
+  { path: "productos-mas-vendidos", label: "Más vendidos", icon: faStar, category: "Productos" },
+  { path: "plantillas", label: "Plantilla", icon: faClipboardList, category: "Productos" },
+  { path: "Despachar-Producto", label: "A despachar", icon: faClipboardList, category: "Productos" },
+  { path: "historial-Stock", label: "Historial Stock", icon: faChartLine, category: "Stock" },
+  { path: "stock-Critico", label: "Stock Crítico", icon: faChartLine, category: "Stock" },
+  { path: "Reporte-Disponible", label: "Disponibilidad", icon: faClipboardList, category: "Stock" },
+  { path: "Reporte-Recepcion", label: "Recepción", icon: faClipboardList, category: "Stock" },
+  { path: "opiniones-clientes", label: "Opiniones", icon: faComments, category: "Clientes" },
+  { path: "devoluciones-reembolsos", label: "Devoluciones", icon: faUndo, category: "Clientes" },
+  { path: "estados-ordenes-anual", label: "Estados de órdenes", icon: faClipboardList, category: "Órdenes" },
+  { path: "historial", label: "Historial despacho", icon: faClipboardList, category: "Órdenes" },
+];
+
+const categories = ["Todos", "Ventas", "Stock", "Clientes", "Productos", "Órdenes"];
 
 const HomeReportes: React.FC = () => {
   const [selectedConnection, setSelectedConnection] = useState<string>("");
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [loadingResumen, setLoadingResumen] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState<string>("Todos");
+
   const {
     fetchConnections,
     connections,
     fetchStoreSummary,
     storeSummary,
-    loading,
     toastType,
-  } = useReceptionManagements(); //hook para manejar la lógica de las conexiones y el resumen de la tienda
+  } = useReceptionManagements();
+
+  useEffect(() => {
+    fetchConnections();
+  }, [fetchConnections]);
+
+  const handleConnectionChange = async (value: string) => {
+    setSelectedConnection(value);
+    if (value) {
+      try {
+        setLoadingResumen(true);
+        await fetchStoreSummary(value);
+      } catch (e) {
+        setToastMessage("No se pudo obtener el resumen de la tienda.");
+      } finally {
+        setLoadingResumen(false);
+      }
+    }
+  };
 
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
   const currentYear = new Date().getFullYear();
 
-  useEffect(() => {
-    fetchConnections(); // llamamos a la función para obtener las conexiones al cargar el componente
-  }, [fetchConnections]);
+  const customIcon = <LoadingOutlined style={{ fontSize: 36, color: "#213f99" }} spin />;
 
-  const handleConnectionChange = (
-    event: React.ChangeEvent<HTMLSelectElement>
-  ) => {
-    const clientId = event.target.value;
-    setSelectedConnection(clientId); // actualizamos el estado con el ID de cliente seleccionado
-    if (clientId) fetchStoreSummary(clientId); // llamamos a la función para obtener el resumen de la tienda
-  };
+  // Filtrar reportes por categoría y búsqueda
+  const filteredReports = reportLinks
+    .filter((r) =>
+      selectedCategory === "Todos" || r.category === selectedCategory
+    )
+    .filter((r) => r.label.toLowerCase().includes(searchText.toLowerCase()))
+    .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
-    <>
-      {loading && <LoadingDinamico variant="container" />}
-      <div className={`${styles.container} container`}>
-        {toastMessage && (
-          <ToastComponent
-            message={toastMessage}
-            type={toastType}
-            timeout={2000}
-            onClose={() => setToastMessage(null)}
-          />
-        )}
-        {!loading && (
-          <>
-            <h1 className="text-center my-4">Estadísticas Generales</h1>
-            <p className="text-center mt-2 mb-2">
-              Selecciona una conexión para ver el resumen de la tienda
-            </p>
-            <div className="mb-4 d-flex justify-content-center">
-              <select
-                className="form-control w-50"
-                value={selectedConnection}
-                onChange={handleConnectionChange}
-              >
-                <option value="">Selecciona una conexión</option>
-                {connections &&
-                  connections.map((connection) => (
-                    <option
-                      key={connection.client_id}
-                      value={connection.client_id}
-                    >
-                      {connection.nickname} ({connection.client_id})
-                    </option>
-                  ))}
-              </select>
-            </div>
-            {storeSummary && (
-              <div className="card shadow-sm p-4 mb-4">
-                <h2 className="text-primary">Resumen de la Tienda</h2>
-                <p>
-                  <strong>Ventas Totales:</strong> $
-                  {storeSummary.total_sales.toLocaleString()}
-                </p>
-                <p>
-                  <strong>Ventas Mensuales ({currentMonth}):</strong> $
-                  {storeSummary.monthly_sales.toLocaleString()}
-                </p>
-                <p>
-                  <strong>Ventas Anuales ({currentYear}):</strong> $
-                  {storeSummary.annual_sales.toLocaleString()}
-                </p>
-                <h4 className="mt-4">Productos Más Vendidos</h4>
-                <ul className="list-group">
-                  {storeSummary.top_selling_products.length > 0 ? (
-                    storeSummary.top_selling_products.map((product, index) => (
-                      <li
-                        key={index}
-                        className="list-group-item d-flex justify-content-between align-items-center"
-                      >
-                        <span>
-                          {index + 1}. {product.title} - {product.quantity}{" "}
-                          vendidos
-                        </span>{" "}
-                        <span>${product.total_amount.toLocaleString()}</span>
-                      </li>
-                    ))
-                  ) : (
-                    <li className="list-group-item">
-                      No hay productos más vendidos
-                    </li>
-                  )}
-                  {storeSummary.top_selling_products.length > 0 && (
-                    <Link
-                      to={`/sync/reportes/productos-mas-vendidos/${selectedConnection}`}
-                      className="btn btn-primary mt-3"
-                    >
-                      Ver lista completa
-                    </Link>
-                  )}
-                </ul>
-                <h4 className="mt-4">Métodos de Pago Preferidos</h4>
-                <ul>
-                  <li className={styles.noDecoration}>
-                    <FontAwesomeIcon icon={faMoneyBillWave} className="mr-2" />
-                    Dinero en cuenta:{" "}
-                    {storeSummary.top_payment_methods.account_money ?? 0}
-                  </li>
-                  <li className={styles.noDecoration}>
-                    <FontAwesomeIcon icon={faUniversity} className="mr-2" />
-                    Tarjeta de débito:{" "}
-                    {storeSummary.top_payment_methods.debit_card ?? 0}
-                  </li>
-                  <li className={styles.noDecoration}>
-                    <FontAwesomeIcon icon={faCreditCardIcon} className="mr-2" />
-                    Tarjeta de crédito:{" "}
-                    {storeSummary.top_payment_methods.credit_card ?? 0}
-                  </li>
-                </ul>
-              </div>
-            )}
-            {selectedConnection && (
-              <>
-                <h3 className="mt-4">Reportes Disponibles</h3>
-                <div className="list-group mb-5">
-                  <Link
-                    to={`/sync/reportes/ventas/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faChartLine} className="mr-2" />{" "}
-                    Ventas
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/ingresos-categoria-producto/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faTags} className="mr-2" /> Ingresos
-                    por categoría de producto
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/productos-mas-vendidos/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faStar} className="mr-2" /> Productos
-                    más vendidos
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/ingreso-semana/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faCalendarWeek} className="mr-2" />{" "}
-                    Ingresos totales por semana
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/estados-ordenes-anual/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" />{" "}
-                    Estados de órdenes Finalizadas (Entregados, No entregados,
-                    Cancelados)
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/Reporte-Disponible/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" />{" "}
-                    Reporte de Disponibilidad
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/Reporte-Recepcion/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" />{" "}
-                    Reporte de Recepción
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/historial-Stock/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faChartLine} className="mr-2" />{" "}
-                    Historial Stock
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/stock-Critico/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faChartLine} className="mr-2" />{" "}
-                    Stock Critico
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/opiniones-clientes/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faComments} className="mr-2" />{" "}
-                    Opiniones de clientes por producto
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/devoluciones-reembolsos/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faUndo} className="mr-2" />{" "}
-                    Devoluciones o reembolsos por categoría
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/Despachar-Producto/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" />{" "}
-                    Productos a despachar
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/historial/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" />{" "}
-                    Historial despacho
-                  </Link>
-                  <Link
-                    to={`/sync/reportes/plantillas/${selectedConnection}`}
-                    className="list-group-item list-group-item-action"
-                  >
-                    <FontAwesomeIcon icon={faClipboardList} className="mr-2" />{" "}
-                    Plantilla
-                  </Link>
-                </div>
-              </>
-            )}
-            <Link to="/sync/home" className="btn btn-primary mb-5">
-              Volver a inicio
-            </Link>
-          </>
-        )}
+    <div style={{ maxWidth: "960px", margin: "0 auto", padding: "2rem" }}>
+      {toastMessage && (
+        <ToastComponent
+          message={toastMessage}
+          type={toastType}
+          timeout={2000}
+          onClose={() => setToastMessage(null)}
+        />
+      )}
+
+      <Title level={2} style={{ textAlign: "center", marginBottom: "2rem" }}>
+        Estadísticas Generales
+      </Title>
+
+      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
+        <p>Selecciona una conexión para ver el resumen de la tienda</p>
+        <Select
+          style={{ width: 300 }}
+          placeholder="Selecciona una conexión"
+          onChange={handleConnectionChange}
+          value={selectedConnection || undefined}
+        >
+          {connections.map(({ client_id, nickname }) => (
+            <Option key={client_id} value={client_id}>
+              {nickname} ({client_id})
+            </Option>
+          ))}
+        </Select>
       </div>
-    </>
+
+      {loadingResumen && (
+        <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", padding: "2rem" }}>
+          <Spin indicator={customIcon} />
+          <div style={{ marginTop: "1rem", color: "#213f99", fontWeight: 500 }}>
+            Cargando resumen de tienda...
+          </div>
+        </div>
+      )}
+
+      {!loadingResumen && storeSummary && (
+        <>
+          <Divider orientation="left">Resumen de la Tienda</Divider>
+          <Card style={{ marginBottom: "3rem" }}>
+            <p>
+              <strong>Ventas Totales:</strong> ${storeSummary.total_sales.toLocaleString()}
+            </p>
+            <p>
+              <strong>Ventas Mensuales ({currentMonth}):</strong> ${storeSummary.monthly_sales.toLocaleString()}
+            </p>
+            <p>
+              <strong>Ventas Anuales ({currentYear}):</strong> ${storeSummary.annual_sales.toLocaleString()}
+            </p>
+
+            <Divider orientation="left" style={{ marginTop: "2rem" }}>
+              Productos Más Vendidos
+            </Divider>
+            {storeSummary.top_selling_products.length > 0 ? (
+              <ul>
+                {storeSummary.top_selling_products.map((product, i) => (
+                  <li key={i}>
+                    {i + 1}. {product.title} - {product.quantity} vendidos (${product.total_amount.toLocaleString()})
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p>No hay productos más vendidos</p>
+            )}
+
+            <Divider orientation="left" style={{ marginTop: "2rem" }}>
+              Métodos de Pago Preferidos
+            </Divider>
+            <ul>
+              <li>Dinero en cuenta: {storeSummary.top_payment_methods.account_money ?? 0}</li>
+              <li>Tarjeta de débito: {storeSummary.top_payment_methods.debit_card ?? 0}</li>
+              <li>Tarjeta de crédito: {storeSummary.top_payment_methods.credit_card ?? 0}</li>
+            </ul>
+          </Card>
+        </>
+      )}
+
+      {selectedConnection && (
+        <>
+          <Divider orientation="left">Reportes Disponibles</Divider>
+
+          {/* Barra de búsqueda y filtro */}
+          <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+            <Search
+              placeholder="Buscar reporte..."
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 300 }}
+              allowClear
+            />
+            <Select
+              style={{ width: 200 }}
+              value={selectedCategory}
+              onChange={(value) => setSelectedCategory(value)}
+            >
+              {categories.map((cat) => (
+                <Option key={cat} value={cat}>
+                  {cat}
+                </Option>
+              ))}
+            </Select>
+          </div>
+
+          <Row gutter={[16, 16]}>
+            {filteredReports.map(({ path, label, icon }, index) => (
+              <Col xs={24} sm={12} md={8} lg={6} key={index}>
+                <Link to={`/sync/reportes/${path}/${selectedConnection}`}>
+                  <Card
+                    hoverable
+                    variant="borderless"
+                    style={{ borderRadius: 8, height: "100%" }}
+                  >
+                    <FontAwesomeIcon icon={icon} style={{ marginRight: 8 }} />
+                    {label}
+                  </Card>
+                </Link>
+              </Col>
+            ))}
+          </Row>
+        </>
+      )}
+
+      <Divider />
+
+      <div style={{ textAlign: "center", marginTop: "2rem" }}>
+        <Link to="/sync/home">
+          <button className="btn btn-primary">Volver a inicio</button>
+        </Link>
+      </div>
+    </div>
   );
 };
 
