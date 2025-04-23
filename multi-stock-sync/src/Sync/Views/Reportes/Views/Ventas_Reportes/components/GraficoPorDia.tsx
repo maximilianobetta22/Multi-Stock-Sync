@@ -1,44 +1,112 @@
 import React from "react";
-import { Card, List, Avatar, Typography } from "antd";
+import { Bar } from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend,
+  ChartOptions,
+} from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 
-const { Text } = Typography;
-
-interface ProductoIngreso {
-  nombre: string;
-  ingreso: number;
-  imagen: string;
-}
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
 interface Props {
-  data: ProductoIngreso[];
+  chartData: any;
+  fecha: string;
   formatCLP: (value: number) => string;
 }
 
-const GraficoPorDia: React.FC<Props> = ({ data, formatCLP }) => {
+const options: ChartOptions<"bar"> = {
+  responsive: true,
+  maintainAspectRatio: false,
+  indexAxis: "x", // <-- barras verticales
+  plugins: {
+    legend: {
+      display: false,
+    },
+    title: {
+      display: true,
+      text: "Top 10 Productos más Vendidos del Día",
+      font: {
+        size: 18,
+        weight: "bold",
+      },
+      color: "#213f99",
+    },
+    datalabels: {
+      color: "#ffffff",
+      anchor: "end",
+      align: "start",
+      font: {
+        weight: "bold",
+        size: 12,
+      },
+      formatter: (value: number) => `$ ${new Intl.NumberFormat("es-CL").format(value)}`,
+    },
+    tooltip: {
+      callbacks: {
+        label: (context: any) => {
+          const valor = context.raw ?? 0;
+          return `$ ${Number(valor).toLocaleString("es-CL")} CLP`;
+        },
+      },
+    },
+  },
+  scales: {
+    x: {
+      ticks: {
+        color: "#4f5a95",
+        font: {
+          size: 12,
+          weight: "bold",
+        },
+        maxRotation: 45,
+        minRotation: 0,
+      },
+      grid: {
+        color: "rgba(0, 0, 0, 0.05)",
+      },
+    },
+    y: {
+      ticks: {
+        color: "#213f99",
+        font: {
+          size: 12,
+          weight: "bold",
+        },
+      },
+      grid: {
+        display: false,
+      },
+    },
+  },
+};
+
+const GraficoPorDia: React.FC<Props> = ({ chartData, formatCLP }) => {
+  const opcionesConFormato: ChartOptions<"bar"> = {
+    ...options,
+    plugins: {
+      ...options.plugins,
+      datalabels: {
+        ...options.plugins?.datalabels,
+        formatter: (value: number) => formatCLP(value),
+      },
+      tooltip: {
+        callbacks: {
+          label: (context: any) => formatCLP(context.raw ?? 0),
+        },
+      },
+    },
+  };
+
   return (
-    <Card title="Top 10 productos por ingresos del día" style={{ marginBottom: 24 }}>
-      <List
-        itemLayout="horizontal"
-        dataSource={data}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={
-                item.imagen ? (
-                  <Avatar src={item.imagen} shape="square" size="large" />
-                ) : (
-                  <Avatar style={{ backgroundColor: "#8d92ed" }}>
-                    {item.nombre.slice(0, 2).toUpperCase()}
-                  </Avatar>
-                )
-              }
-              title={<Text strong>{item.nombre}</Text>}
-              description={<Text type="secondary">Ingreso: {formatCLP(item.ingreso)}</Text>}
-            />
-          </List.Item>
-        )}
-      />
-    </Card>
+    <div style={{ position: "relative", height: "65vh", width: "100%" }}>
+      <Bar data={chartData} options={opcionesConFormato} />
+    </div>
   );
 };
 
