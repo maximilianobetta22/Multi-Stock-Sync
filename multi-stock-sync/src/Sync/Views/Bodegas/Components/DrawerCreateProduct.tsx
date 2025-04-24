@@ -1,12 +1,18 @@
 import React from "react";
 import { Button, Drawer, Form, Input, Select } from "antd";
-import { useWarehouseManagement } from "../Hooks/useWarehouseManagement";
+import { useCreateManagements } from "../Hooks/useCreateManagements";
 import styles from "./../Views/Home/HomeBodega.module.css";
 import { Connection } from "../Types/warehouse.type";
 import axiosInstance from "../../../../axiosConfig";
 
-function DrawerCreateProduct() {
-  const { createProduct, loading } = useWarehouseManagement(); // Importar la función desde el hook
+interface DrawerCreateProductProps {
+  onProductCreated: () => void; // Callback para notificar la creación de un producto
+}
+
+const DrawerCreateProduct: React.FC<DrawerCreateProductProps> = ({
+  onProductCreated,
+}) => {
+  const { createWarehouse, loading } = useCreateManagements(); // Importar la función desde el hook
   const [open, setOpen] = React.useState(false);
   const [connections, setConnections] = React.useState<Connection[]>([]);
   const showDrawer = () => {
@@ -17,20 +23,24 @@ function DrawerCreateProduct() {
   };
   const onFinish = async (values: any) => {
     try {
-      await createProduct({
-        id_mlc: values.id_mlc,
-        warehouse_id: values.warehouse_id,
-        stock: values.stock,
-        client_id: values.client_id,
+      await createWarehouse({
+        name: values.name,
+        location: values.stock,
+        assigned_company_id: values.client_id,
       });
       console.log("Producto creado exitosamente");
       setOpen(false); // Cerrar el Drawer después de crear el producto
+      onProductCreated();
     } catch (error) {
       console.error("Error al crear el producto:", error);
     }
   };
 
   async function fetchConnections(): Promise<Connection[]> {
+    if (connections.length > 0) {
+      return connections;
+    }
+
     try {
       const url = `${process.env.VITE_API_URL}/mercadolibre/credentials`;
       console.log("URL generada:", url);
@@ -51,8 +61,10 @@ function DrawerCreateProduct() {
   }
 
   React.useEffect(() => {
-    fetchConnections();
-  });
+    if (connections.length === 0) {
+      fetchConnections();
+    }
+  }, [connections]);
 
   return (
     <>
@@ -110,13 +122,13 @@ function DrawerCreateProduct() {
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" loading={loading}>
-              Crear
+              Crear Producto
             </Button>
           </Form.Item>
         </Form>
       </Drawer>
     </>
   );
-}
+};
 
 export default DrawerCreateProduct;
