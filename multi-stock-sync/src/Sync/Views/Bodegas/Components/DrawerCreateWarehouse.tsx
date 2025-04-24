@@ -80,10 +80,7 @@ export const DrawerCreateWarehouse: React.FC<DrawerCreateWarehouseProps> = ({
           >
             <Select placeholder="Seleccione un cliente">
               {companies.map((company) => (
-                <Select.Option
-                  key={company.client_id}
-                  value={company.client_id}
-                >
+                <Select.Option key={company.id} value={company.id}>
                   {company.name}
                 </Select.Option>
               ))}

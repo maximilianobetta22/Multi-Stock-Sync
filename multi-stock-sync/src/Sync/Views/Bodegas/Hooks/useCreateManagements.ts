@@ -19,7 +19,7 @@ export const useCreateManagements = () => {
         `${process.env.VITE_API_URL}/warehouses`,
         values
       );
-      console.log(`Respuesta del servidor: ${response.data}`);
+      console.log(`Respuesta del servidor: `, response.data);
       return response.data;
     } catch (error) {
       console.error(`Error en CreateWarehouse: ${error}`);

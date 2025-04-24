@@ -142,6 +142,8 @@ const DetalleBodega = () => {
               </div>
               <div className="col-sm-6 d-flex justify-content-end">
                 <DrawerCreateProduct
+                  warehouseId={id ?? ""}
+                  warehouseCompanyId={warehouse.company?.client_id}
                   onProductCreated={() => id && fetchProducts(id)}
                 />
               </div>

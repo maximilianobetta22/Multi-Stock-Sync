@@ -106,7 +106,11 @@ const HomeBodega = () => {
           onChange={(e) => setSortOrder(e.target.value)}
         />
 
-        <DrawerCreateWarehouse onWarehouseCreated={fetchWarehouses} />
+        <DrawerCreateWarehouse
+          onWarehouseCreated={() => {
+            fetchWarehouses;
+          }}
+        />
       </div>
 
       <div className={styles.format_container}>
@@ -115,7 +119,7 @@ const HomeBodega = () => {
               <div className={styles.bodegas_box} key={warehouse.id}>
                 <div className={styles.bodega_item}>
                   <Link
-                    to={`../DetalleBodega/${warehouse.company?.client_id}`}
+                    to={`../DetalleBodega/${warehouse.id}`}
                     className={styles.bodega_item_link}
                   >
                     <div className={styles.bodega_item_bg}></div>
