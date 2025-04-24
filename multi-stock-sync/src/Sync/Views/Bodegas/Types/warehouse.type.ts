@@ -35,16 +35,3 @@ export interface DropdownFilterProps {
   onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void;
   className?: string;
 }
-
-export interface Connection {
-  client_id: string;
-  client_secret: string;
-  access_token: string;
-  refresh_token: string;
-  expires_at: string;
-  nickname: string;
-  email: string;
-  profile_image: string;
-  created_at: string;
-  updated_at: string;
-}
