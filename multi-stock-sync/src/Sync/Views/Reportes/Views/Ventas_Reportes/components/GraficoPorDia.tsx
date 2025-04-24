@@ -3,10 +3,10 @@ import { Card, List, Avatar, Typography } from "antd";
 
 const { Text } = Typography;
 
-interface ProductoIngreso {
-  nombre: string;
-  ingreso: number;
-  imagen: string;
+export interface ProductoIngreso {
+  title: string;
+  total_amount: number;
+  thumbnail: string;
 }
 
 interface Props {
@@ -24,16 +24,16 @@ const GraficoPorDia: React.FC<Props> = ({ data, formatCLP }) => {
           <List.Item>
             <List.Item.Meta
               avatar={
-                item.imagen ? (
-                  <Avatar src={item.imagen} shape="square" size="large" />
+                item.thumbnail ? (
+                  <Avatar src={item.thumbnail} shape="square" size="large" />
                 ) : (
                   <Avatar style={{ backgroundColor: "#8d92ed" }}>
-                    {item.nombre.slice(0, 2).toUpperCase()}
+                    {item.title.slice(0, 2).toUpperCase()}
                   </Avatar>
                 )
               }
-              title={<Text strong>{item.nombre}</Text>}
-              description={<Text type="secondary">Ingreso: {formatCLP(item.ingreso)}</Text>}
+              title={<Text strong>{item.title}</Text>}
+              description={<Text type="secondary">Ingreso: {formatCLP(item.total_amount)}</Text>}
             />
           </List.Item>
         )}

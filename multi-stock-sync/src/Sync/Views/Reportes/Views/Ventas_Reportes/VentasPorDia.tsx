@@ -39,25 +39,23 @@ const VentasPorDia: React.FC = () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-week/${client_id}?week_start_date=${fecha.format(
-          "YYYY-MM-DD"
-        )}&week_end_date=${fecha.format("YYYY-MM-DD")}`
+        `${import.meta.env.VITE_API_URL}/mercadolibre/daily-sales/${client_id}?date=${fecha.format("YYYY-MM-DD")}`
       );
-
+  
       const soldProducts = res.data?.data?.sold_products || [];
       const ordenadas = [...soldProducts].sort((a, b) => b.total_amount - a.total_amount);
       const top10 = ordenadas.slice(0, 10);
       const resto = ordenadas.slice(10);
-
-      const totalOtros = resto.reduce((acc: any, curr: any) => acc + curr.total_amount, 0);
-      const total = ordenadas.reduce((acc: any, curr: any) => acc + curr.total_amount, 0);
-
+  
+      const totalOtros = resto.reduce((acc, curr) => acc + curr.total_amount, 0);
+      const total = ordenadas.reduce((acc, curr) => acc + curr.total_amount, 0);
+  
       setVentas(soldProducts);
       setTotalIngresos(total);
-
+  
       const labels = [...top10.map(p => p.title), ...(resto.length ? ["Otros"] : [])];
       const ingresos = [...top10.map(p => p.total_amount), ...(resto.length ? [totalOtros] : [])];
-
+  
       setChartData({
         labels,
         datasets: [
@@ -77,6 +75,7 @@ const VentasPorDia: React.FC = () => {
       setLoading(false);
     }
   };
+  
 
   const fetchUserData = async () => {
     if (!client_id) return;
@@ -119,7 +118,8 @@ const VentasPorDia: React.FC = () => {
             <Text strong>Usuario:</Text>{" "}
             {userData?.nickname || <Text type="secondary">Cargando...</Text>}
             <br />
-            <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)}
+            <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)} 
+
           </Card>
         </Col>
 
@@ -148,11 +148,7 @@ const VentasPorDia: React.FC = () => {
         ) : (
           <>
             <GraficoPorDia
-  data={ventas.map((v) => ({
-    nombre: v.title,
-    ingreso: v.total_amount,
-    imagen: v.thumbnail || "", // Aquí aseguramos la imagen
-  }))}
+  data={ventas}
   formatCLP={formatCLP}
 />
 
