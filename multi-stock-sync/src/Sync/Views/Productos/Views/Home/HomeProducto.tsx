@@ -25,6 +25,7 @@ const { Search } = Input;
 const HomeProducto = () => {
   const navigate = useNavigate();
 
+  // Hook personalizado para conexiones y productos
   const {
     connections,
     selectedConnection,
@@ -36,29 +37,33 @@ const HomeProducto = () => {
     fetchProducts,
   } = useProductManagement();
 
+  // Estados locales para filtros y modal
   const [searchQuery, setSearchQuery] = useState("");
   const [stockFilter, setStockFilter] = useState("todos");
   const [estadoFilter, setEstadoFilter] = useState("todos");
   const [ordenarPor, setOrdenarPor] = useState("nombre");
-
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // Al cargar el componente, traer conexiones disponibles
   useEffect(() => {
     fetchConnections();
   }, []);
 
+  // Cada vez que cambia la conexión o búsqueda, traer productos
   useEffect(() => {
     if (selectedConnection) {
       fetchProducts(selectedConnection, searchQuery);
     }
   }, [selectedConnection, searchQuery]);
 
+  // Cambia la conexión activa y limpia el buscador
   const handleConnectionChange = (value: string) => {
     setSelectedConnection(value);
     setSearchQuery("");
   };
 
+  // Filtra y ordena los productos según estado, stock y orden seleccionado
   const filtrarYOrdenarProductos = (): Product[] => {
     let productos = [...allProducts];
 
@@ -98,6 +103,7 @@ const HomeProducto = () => {
 
   const productosFiltrados = filtrarYOrdenarProductos();
 
+  // Categorías agrupadas de forma amigable
   const categoriaReducidaMap: Record<string, string> = {
     pijama: "Ropa de Dormir",
     calzón: "Ropa Interior",
@@ -108,6 +114,7 @@ const HomeProducto = () => {
     panty: "Ropa Interior",
   };
 
+  // Agrupar productos en base a categorías mapeadas
   const productosAgrupados: Record<string, Product[]> = {};
   productosFiltrados.forEach((p) => {
     const nombre = (p.category_name || "").toLowerCase();
@@ -119,6 +126,7 @@ const HomeProducto = () => {
     productosAgrupados[finalGroup].push(p);
   });
 
+  // Tabs dinámicos basados en agrupación de productos
   const tabsItems = Object.entries(productosAgrupados)
     .filter(([, productos]) => productos.length > 0)
     .map(([grupo, productos]) => ({
@@ -175,6 +183,7 @@ const HomeProducto = () => {
     <div style={{ maxWidth: "1600px", width: "100%", margin: "0 auto", padding: "2rem" }}>
       {(loadingConnections || loading) && <LoadingDinamico variant="fullScreen" />}
 
+      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
         <Title level={2} style={{ margin: 0, color: "#213f99" }}>
           Gestión de Productos
@@ -188,6 +197,7 @@ const HomeProducto = () => {
         </Button>
       </div>
 
+      {/* Selector de conexión */}
       <Card style={{ marginBottom: "1.5rem" }}>
         <Row justify="center">
           <Col xs={24} sm={16} md={8}>
@@ -209,6 +219,7 @@ const HomeProducto = () => {
 
       {selectedConnection && (
         <>
+          {/* Buscador */}
           <Row justify="center" style={{ marginBottom: "1.5rem" }}>
             <Col xs={24} sm={18} md={12}>
               <Search
@@ -221,6 +232,7 @@ const HomeProducto = () => {
             </Col>
           </Row>
 
+          {/* Filtros */}
           <Card style={{ marginBottom: "2rem" }}>
             <Row gutter={[16, 16]} justify="center">
               <Col xs={24} sm={12} md={6}>
@@ -249,6 +261,7 @@ const HomeProducto = () => {
             </Row>
           </Card>
 
+          {/* Tabs o vacío */}
           {tabsItems.length > 0 ? (
             <Tabs defaultActiveKey={tabsItems[0].key} items={tabsItems} />
           ) : (
@@ -257,6 +270,7 @@ const HomeProducto = () => {
         </>
       )}
 
+      {/* Modal de edición */}
       <EditProductModal
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}

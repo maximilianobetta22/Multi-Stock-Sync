@@ -12,8 +12,10 @@ import {
 } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 
+// Registramos los componentes que necesita Chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend, ChartDataLabels);
 
+// Props que recibe el gráfico
 interface Props {
   chartData: any;
   totalVentas: number;
@@ -21,6 +23,7 @@ interface Props {
   month: number;
 }
 
+// Opciones del gráfico
 const options: ChartOptions<"bar"> = {
   responsive: true,
   maintainAspectRatio: false,
@@ -82,6 +85,7 @@ const options: ChartOptions<"bar"> = {
   },
 };
 
+// Componente de gráfico de barras
 const GraficoPorMes: React.FC<Props> = ({ chartData }) => {
   return (
     <div style={{ position: "relative", height: "480px", width: "100%" }}>
@@ -91,3 +95,5 @@ const GraficoPorMes: React.FC<Props> = ({ chartData }) => {
 };
 
 export default GraficoPorMes;
+// Este componente es un gráfico de barras que muestra los ingresos totales por producto en un mes específico. Utiliza Chart.js y React para renderizar el gráfico y permite la personalización de las opciones del gráfico, como etiquetas, colores y formato de moneda.
+// El componente recibe como props los datos del gráfico, el total de ventas, el año y el mes. Las opciones del gráfico incluyen la configuración de los ejes, las etiquetas y los estilos. El gráfico es responsivo y se adapta a diferentes tamaños de pantalla. Se utiliza un formato de moneda chilena (CLP) para mostrar los ingresos en el eje Y y en las etiquetas de los datos.

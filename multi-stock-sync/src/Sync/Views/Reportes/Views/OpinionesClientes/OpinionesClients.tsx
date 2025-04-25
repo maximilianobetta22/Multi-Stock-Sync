@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Container, Form, Spinner, Alert } from 'react-bootstrap';
 import styles from './OpinionesClients.module.css';
 
+// Tipos de datos
 interface Client {
   client_id: string;
   nickname: string;
@@ -27,6 +28,7 @@ const OpinionesClients = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Obtiene las credenciales de las tiendas conectadas
   const fetchClients = async () => {
     try {
       const token = localStorage.getItem('token');
@@ -39,6 +41,7 @@ const OpinionesClients = () => {
     }
   };
 
+  // Obtiene los productos con opiniones para el cliente seleccionado
   const fetchProductsWithReviews = async (clientId: string) => {
     setLoading(true);
     try {
@@ -80,10 +83,12 @@ const OpinionesClients = () => {
     }
   };
 
+  // Al iniciar, carga los clientes
   useEffect(() => {
     fetchClients();
   }, []);
 
+  // Cada vez que se selecciona un cliente, carga sus opiniones
   useEffect(() => {
     if (selectedClient) {
       fetchProductsWithReviews(selectedClient);
@@ -94,8 +99,10 @@ const OpinionesClients = () => {
     <Container className={styles.container}>
       <h2 className={styles.title}>Opiniones de Clientes</h2>
 
+      {/* Mensaje de error */}
       {error && <Alert variant="danger">{error}</Alert>}
 
+      {/* Selector de tienda */}
       <Form.Group className={styles.selectWrapper}>
         <Form.Label>Selecciona una tienda:</Form.Label>
         <Form.Select
@@ -112,6 +119,7 @@ const OpinionesClients = () => {
         </Form.Select>
       </Form.Group>
 
+      {/* Loader mientras carga opiniones */}
       {loading ? (
         <Spinner animation="border" />
       ) : (
@@ -137,3 +145,5 @@ const OpinionesClients = () => {
 };
 
 export default OpinionesClients;
+// Este componente muestra las opiniones de los clientes de Mercado Libre. Permite seleccionar una tienda y ver las opiniones de los productos vendidos en esa tienda. Las opiniones se cargan desde la API de Mercado Libre y se muestran en una cuadrícula. También maneja errores y estados de carga.
+// El componente utiliza Bootstrap para el diseño y Axios para las solicitudes HTTP. Se utilizan hooks de React para manejar el estado y los efectos secundarios. Las opiniones se muestran en tarjetas con el nombre del cliente, el título del producto, el comentario y la calificación.

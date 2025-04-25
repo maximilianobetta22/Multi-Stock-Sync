@@ -7,10 +7,12 @@ const { Title } = Typography;
 
 const ReporteStockCritico: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
+
   const [productos, setProductos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Al cargar el componente, traer productos en stock crítico
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -28,6 +30,7 @@ const ReporteStockCritico: React.FC = () => {
     fetchData();
   }, [client_id]);
 
+  // Definición de las columnas de la tabla
   const columns = [
     { title: "ID", dataIndex: "id", key: "id" },
     { title: "Título", dataIndex: "title", key: "title" },
@@ -57,8 +60,11 @@ const ReporteStockCritico: React.FC = () => {
 
   return (
     <div style={{ padding: 24 }}>
-      <Title level={3} style={{ marginBottom: 24 }}> Reporte de Stock Crítico</Title>
-     
+      <Title level={3} style={{ marginBottom: 24 }}>
+        Reporte de Stock Crítico
+      </Title>
+
+      {/* Manejo de estados: loading, error y éxito */}
       {loading ? (
         <Spin />
       ) : error ? (
@@ -77,3 +83,5 @@ const ReporteStockCritico: React.FC = () => {
 };
 
 export default ReporteStockCritico;
+//este componente es un reporte de stock crítico que muestra una tabla con los productos que tienen stock menor a 5. Se utiliza React y Ant Design para el diseño y la funcionalidad. El componente utiliza el hook useParams para obtener el ID del cliente de la URL. También se maneja el estado de carga, error y éxito al cargar los datos desde el servicio correspondiente.
+// Se utiliza el servicio stockCriticoService para obtener los datos de los productos y se muestra un mensaje de error si no se pueden cargar. La tabla muestra el ID, título, stock, precio y última venta de cada producto. Se utiliza la función Intl.NumberFormat para formatear el precio en pesos chilenos y la función toLocaleString para formatear la fecha de la última venta.

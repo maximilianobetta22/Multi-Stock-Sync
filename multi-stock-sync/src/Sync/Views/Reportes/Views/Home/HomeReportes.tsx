@@ -28,7 +28,7 @@ const { Title } = Typography;
 const { Option } = Select;
 const { Search } = Input;
 
-// Reportes con categoría incluida
+// Definición de los reportes disponibles junto con su categoría e ícono
 const reportLinks = [
   { path: "ventas", label: "Ventas", icon: faChartLine, category: "Ventas" },
   { path: "ingreso-semana", label: "Ingresos por semana", icon: faCalendarWeek, category: "Ventas" },
@@ -46,6 +46,7 @@ const reportLinks = [
   { path: "historial", label: "Historial despacho", icon: faClipboardList, category: "Órdenes" },
 ];
 
+// Categorías disponibles para filtrar reportes
 const categories = ["Todos", "Ventas", "Stock", "Clientes", "Productos", "Órdenes"];
 
 const HomeReportes: React.FC = () => {
@@ -63,10 +64,12 @@ const HomeReportes: React.FC = () => {
     toastType,
   } = useReceptionManagements();
 
+  // Cargar conexiones disponibles al iniciar
   useEffect(() => {
     fetchConnections();
   }, [fetchConnections]);
 
+  // Maneja cambio de conexión seleccionada y carga el resumen de tienda
   const handleConnectionChange = async (value: string) => {
     setSelectedConnection(value);
     if (value) {
@@ -83,19 +86,17 @@ const HomeReportes: React.FC = () => {
 
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
   const currentYear = new Date().getFullYear();
-
   const customIcon = <LoadingOutlined style={{ fontSize: 36, color: "#213f99" }} spin />;
 
-  // Filtrar reportes por categoría y búsqueda
+  // Filtrar los reportes por categoría seleccionada y por búsqueda
   const filteredReports = reportLinks
-    .filter((r) =>
-      selectedCategory === "Todos" || r.category === selectedCategory
-    )
+    .filter((r) => selectedCategory === "Todos" || r.category === selectedCategory)
     .filter((r) => r.label.toLowerCase().includes(searchText.toLowerCase()))
     .sort((a, b) => a.label.localeCompare(b.label));
 
   return (
     <div style={{ maxWidth: "960px", margin: "0 auto", padding: "2rem" }}>
+      {/* Mensaje de Toast para errores */}
       {toastMessage && (
         <ToastComponent
           message={toastMessage}
@@ -109,6 +110,7 @@ const HomeReportes: React.FC = () => {
         Estadísticas Generales
       </Title>
 
+      {/* Selector de conexión */}
       <div style={{ textAlign: "center", marginBottom: "2rem" }}>
         <p>Selecciona una conexión para ver el resumen de la tienda</p>
         <Select
@@ -125,6 +127,7 @@ const HomeReportes: React.FC = () => {
         </Select>
       </div>
 
+      {/* Spinner de carga del resumen */}
       {loadingResumen && (
         <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexDirection: "column", padding: "2rem" }}>
           <Spin indicator={customIcon} />
@@ -134,6 +137,7 @@ const HomeReportes: React.FC = () => {
         </div>
       )}
 
+      {/* Resumen de tienda */}
       {!loadingResumen && storeSummary && (
         <>
           <Divider orientation="left">Resumen de la Tienda</Divider>
@@ -148,6 +152,7 @@ const HomeReportes: React.FC = () => {
               <strong>Ventas Anuales ({currentYear}):</strong> ${storeSummary.annual_sales.toLocaleString()}
             </p>
 
+            {/* Sección de productos más vendidos */}
             <Divider orientation="left" style={{ marginTop: "2rem" }}>
               Productos Más Vendidos
             </Divider>
@@ -163,6 +168,7 @@ const HomeReportes: React.FC = () => {
               <p>No hay productos más vendidos</p>
             )}
 
+            {/* Sección de métodos de pago */}
             <Divider orientation="left" style={{ marginTop: "2rem" }}>
               Métodos de Pago Preferidos
             </Divider>
@@ -175,11 +181,12 @@ const HomeReportes: React.FC = () => {
         </>
       )}
 
+      {/* Sección de reportes disponibles */}
       {selectedConnection && (
         <>
           <Divider orientation="left">Reportes Disponibles</Divider>
 
-          {/* Barra de búsqueda y filtro */}
+          {/* Barra de búsqueda y filtros de categoría */}
           <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
             <Search
               placeholder="Buscar reporte..."
@@ -200,6 +207,7 @@ const HomeReportes: React.FC = () => {
             </Select>
           </div>
 
+          {/* Grilla de reportes */}
           <Row gutter={[16, 16]}>
             {filteredReports.map(({ path, label, icon }, index) => (
               <Col xs={24} sm={12} md={8} lg={6} key={index}>
@@ -221,6 +229,7 @@ const HomeReportes: React.FC = () => {
 
       <Divider />
 
+      {/* Botón para volver a inicio */}
       <div style={{ textAlign: "center", marginTop: "2rem" }}>
         <Link to="/sync/home">
           <button className="btn btn-primary">Volver a inicio</button>
@@ -231,3 +240,5 @@ const HomeReportes: React.FC = () => {
 };
 
 export default HomeReportes;
+// Este componente es la página principal de reportes, donde se pueden ver estadísticas generales de la tienda y acceder a diferentes reportes disponibles.
+// Utiliza hooks personalizados para manejar la lógica de negocio y la interacción con la API. También incluye un sistema de notificaciones para mostrar mensajes al usuario.
