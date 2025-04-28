@@ -3,6 +3,19 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+<<<<<<< HEAD
+import { Product } from "../../Types/warehouse.type";
+import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowLeft,
+  faMapPin,
+  faWarehouse,
+  faBuilding,
+} from "@fortawesome/free-solid-svg-icons";
+import { Button, Card, Table, Input } from "antd";
+import DrawerCreateProduct from "../../Components/DrawerCreateProduct";
+=======
 import { Warehouse, Product } from "../../Types/warehouse.type";
 
 interface ApiResponseWarehouse {
@@ -13,6 +26,7 @@ interface ApiResponseProducts {
   message: string;
   data: Product[];
 }
+>>>>>>> f9783009dd161be1be6515d1d6eb7c8532528219
 
 const DetalleBodega = () => {
   const { id } = useParams<{ id: string }>();
@@ -86,6 +100,56 @@ const DetalleBodega = () => {
   }
 
   return (
+<<<<<<< HEAD
+    <div className="container-fluid bg-body-tertiary h-100">
+      {/* Botón para regresar */}
+      <Button htmlType="button" className="my-2">
+        <Link to="../homebodega">
+          <FontAwesomeIcon icon={faArrowLeft} /> regresar
+        </Link>
+      </Button>
+      <div className="row mx-3 my-3">
+        <div
+          className={`col-md-6 py-4 px-4 ${styles.round_left} ${styles.own_bg_white}`}
+        >
+          <Card style={{ width: "100%" }}>
+            <h2 className="my-4">Bodega</h2>
+            <Card title="Nombre de la Bodega" className="my-2 px-2">
+              <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
+            </Card>
+            <Card title="Compañia Asiganada" className="my-2 px-2">
+              <FontAwesomeIcon icon={faBuilding} /> {warehouse.company?.name}
+            </Card>
+            <Card title="Ubicación de Bodega" className="my-2 px-2">
+              <FontAwesomeIcon icon={faMapPin} /> {warehouse.location}
+            </Card>
+          </Card>
+        </div>
+        <div
+          className={`col-md-6 py-4 px-4 ${styles.own_bg_white} ${styles.round_rigth}`}
+        >
+          <Card className="h-100">
+            <div className="row">
+              <div className="col-sm-6">
+                <h2 className="my-4">Productos Bodega</h2>
+              </div>
+              <div className="col-sm-6 d-flex justify-content-end">
+                <DrawerCreateProduct
+                  warehouseId={id ?? ""}
+                  warehouseCompanyId={warehouse.company?.client_id}
+                  onProductCreated={() => id && fetchProducts(id)}
+                />
+              </div>
+            </div>
+            <Search
+              placeholder="Buscar por Titulo o MLC"
+              onSearch={onSearch}
+              enterButton
+              className="my-2"
+            />
+            <Table dataSource={dataSource} columns={columns} size="small" />
+          </Card>
+=======
     <div>
       <div className="container-fluid">
         <h1 className="mt-2 mb-2">Atributos de Bodega</h1>
@@ -196,6 +260,7 @@ const DetalleBodega = () => {
           <Link to="/sync/bodegas/home" className="btn btn-secondary mt-3 mb-4">
             Volver a bodegas
           </Link>
+>>>>>>> f9783009dd161be1be6515d1d6eb7c8532528219
         </div>
       </div>
     </div>

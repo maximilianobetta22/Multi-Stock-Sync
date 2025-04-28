@@ -3,6 +3,7 @@ export interface Company {
   name: string;
   created_at: string;
   updated_at: string;
+  client_id: string;
 }
 
 export interface Warehouse {
