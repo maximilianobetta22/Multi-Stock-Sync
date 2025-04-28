@@ -4,23 +4,30 @@
 }
 
 .bodegas_box {
-  display: -webkit-box;
-  display: -ms-flexbox;
   display: flex;
-  -webkit-box-align: start;
-  -ms-flex-align: start;
-  align-items: flex-start;
-  -ms-flex-wrap: wrap;
   flex-wrap: wrap;
-  padding: 10px 0;
+  justify-content: space-between;
+  width: 100%; /* Asegúrate de que ocupe todo el ancho disponible */
 }
 
 .bodega_item {
-  -ms-flex-preferred-size: calc(33% - 10px);
-  flex-basis: calc(25% - 30px);
-  margin: 0 15px 15px;
+  flex-basis: calc(25% - 20px); /* Cuatro tarjetas por fila */
+  margin: 10px;
   overflow: hidden;
   border-radius: 28px;
+  box-sizing: border-box; /* Asegúrate de incluir padding y border en el cálculo del ancho */
+}
+
+@media (max-width: 768px) {
+  .bodega_item {
+    flex-basis: calc(50% - 20px);
+  }
+}
+
+@media (max-width: 480px) {
+  .bodega_item {
+    flex-basis: 100%;
+  }
 }
 
 .bodega_item_link {
@@ -89,6 +96,22 @@
   -webkit-transition: all 0.5s ease;
   -o-transition: all 0.5s ease;
   transition: all 0.5s ease;
+}
+
+.bodega_item:nth-child(2) .bodega_item_bg {
+  background-color: #4caf50; /* Verde */
+}
+
+.bodega_item:nth-child(3) .bodega_item_bg {
+  background-color: #2196f3; /* Azul */
+}
+
+.bodega_item:nth-child(4) .bodega_item_bg {
+  background-color: #ff9800; /* Naranja */
+}
+
+.bodega_item:nth-child(5n + 1) .bodega_item_bg {
+  background-color: #ef4624; /* Morado */
 }
 
 .menu {

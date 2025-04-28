@@ -108,41 +108,37 @@ const HomeBodega = () => {
 
         <DrawerCreateWarehouse
           onWarehouseCreated={() => {
-            fetchWarehouses;
+            fetchWarehouses();
           }}
         />
       </div>
 
-      <div className={styles.format_container}>
-        {filteredWarehouses.length > 0
-          ? filteredWarehouses.map((warehouse) => (
-              <div className={styles.bodegas_box} key={warehouse.id}>
-                <div className={styles.bodega_item}>
-                  <Link
-                    to={`../DetalleBodega/${warehouse.id}`}
-                    className={styles.bodega_item_link}
-                  >
-                    <div className={styles.bodega_item_bg}></div>
-                    <div className={styles.bodega_item_title}>
-                      <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
-                    </div>
-                    <div className={styles.bodega_item_date_box}>
-                      <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
-                      <span className={styles.bodega_item_date}>
-                        {new Date(warehouse.updated_at).toLocaleDateString()}
-                      </span>
-                    </div>
-                    <div className={styles.bodega_item_date_box}>
-                      <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
-                      <span className={styles.bodega_item_date}>
-                        {warehouse.location}
-                      </span>
-                    </div>
-                  </Link>
-                </div>
+      <div className={styles.bodegas_box}>
+        {filteredWarehouses.map((warehouse) => (
+          <div className={styles.bodega_item} key={warehouse.id}>
+            <Link
+              to={`../DetalleBodega/${warehouse.id}`}
+              className={styles.bodega_item_link}
+            >
+              <div className={styles.bodega_item_bg}></div>
+              <div className={styles.bodega_item_title}>
+                <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
               </div>
-            ))
-          : null}
+              <div className={styles.bodega_item_date_box}>
+                <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
+                <span className={styles.bodega_item_date}>
+                  {new Date(warehouse.updated_at).toLocaleDateString()}
+                </span>
+              </div>
+              <div className={styles.bodega_item_date_box}>
+                <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
+                <span className={styles.bodega_item_date}>
+                  {warehouse.location}
+                </span>
+              </div>
+            </Link>
+          </div>
+        ))}
       </div>
     </div>
   );
