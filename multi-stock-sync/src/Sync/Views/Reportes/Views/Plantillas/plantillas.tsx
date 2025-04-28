@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { Table, Button, Container, Row, Col } from "react-bootstrap";
+import { Table, Button, Container, Row, Col, Modal, Card } from "react-bootstrap"; // Agregado Card aquí
 import { PieChart, Pie, Cell, Tooltip, Legend } from "recharts";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
-import { Modal } from "react-bootstrap";
 
+// Datos de ejemplo
 const data = [
   {
     id: "MLC2498031396",
@@ -99,6 +99,7 @@ const data = [
   },
 ];
 
+// Constante para paginación
 const ITEMS_PER_PAGE = 5;
 
 // Colores para el gráfico
@@ -112,17 +113,17 @@ const COLORS = [
 ];
 
 const Plantilla: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState(1); // Estado para manejar la paginación
-  const [showModal, setShowModal] = useState(false); // Estado para mostrar el modal del PDF
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null); // Estado para almacenar la URL del PDF generado
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showModal, setShowModal] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
-  // Cálculo de los elementos que se mostrarán en la tabla según la página actual
+  // Calcular qué productos mostrar en la tabla según la página
   const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
   const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
   const currentData = data.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE); // Cálculo total de páginas
+  const totalPages = Math.ceil(data.length / ITEMS_PER_PAGE);
 
-  // Funciones para manejar la paginación
+  // Funciones para cambiar de página
   const handleNext = () => {
     if (currentPage < totalPages) setCurrentPage(currentPage + 1);
   };
@@ -130,100 +131,85 @@ const Plantilla: React.FC = () => {
     if (currentPage > 1) setCurrentPage(currentPage - 1);
   };
 
-  // Contar la cantidad de productos por variante para el gráfico de torta
+  // Contar productos por variante para el gráfico de torta
   const variantCounts = data.reduce((acc: { [key: string]: number }, item) => {
     acc[item.variante] = (acc[item.variante] || 0) + item.cantidad;
     return acc;
   }, {});
 
-  // Convertir los datos en un formato adecuado para el gráfico de torta
+  // Formatear los datos para el PieChart
   const pieData = Object.keys(variantCounts).map((key, index) => ({
     name: key,
     value: variantCounts[key],
     color: COLORS[index % COLORS.length],
   }));
 
-  // Función para exportar los datos a un archivo Excel
+  // Función para exportar a Excel
   const exportToExcel = () => {
-    const ws = XLSX.utils.json_to_sheet(data); // Convertir los datos en una hoja de Excel
+    const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Reporte");
-    XLSX.writeFile(wb, "reporte.xlsx"); // Descargar el archivo
+    XLSX.writeFile(wb, "reporte.xlsx");
   };
 
-  // Función para generar y previsualizar un PDF en el modal
+  // Función para generar y mostrar el PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text("Reporte de Productos", 14, 10);
     doc.autoTable({
-      head: [
-        [
-          "ID Producto",
-          "Producto",
-          "Variante",
-          "Cantidad",
-          "ID Orden",
-          "Servicio",
-          "Estado",
-        ],
-      ],
+      head: [["ID Producto", "Producto", "Variante", "Cantidad", "ID Orden", "Servicio", "Estado"]],
       body: data.map((item) => [
-        item.id,
-        item.producto,
-        item.variante,
-        item.cantidad,
-        item.orden,
-        item.servicio,
-        item.estado,
+        item.id, item.producto, item.variante, item.cantidad, item.orden, item.servicio, item.estado
       ]),
     });
 
     const pdfBlob = doc.output("blob");
-    const pdfUrl = URL.createObjectURL(pdfBlob); // Crear un URL temporal para visualizar el PDF
+    const pdfUrl = URL.createObjectURL(pdfBlob);
     setPdfUrl(pdfUrl);
     setShowModal(true);
   };
 
-  // Función para descargar el PDF generado
+  // Función para descargar directamente el PDF
   const handleDownload = () => {
     const doc = new jsPDF();
     doc.text("Reporte de Productos", 14, 10);
     doc.autoTable({
-      head: [
-        [
-          "ID Producto",
-          "Producto",
-          "Variante",
-          "Cantidad",
-          "ID Orden",
-          "Servicio",
-          "Estado",
-        ],
-      ],
+      head: [["ID Producto", "Producto", "Variante", "Cantidad", "ID Orden", "Servicio", "Estado"]],
       body: data.map((item) => [
-        item.id,
-        item.producto,
-        item.variante,
-        item.cantidad,
-        item.orden,
-        item.servicio,
-        item.estado,
+        item.id, item.producto, item.variante, item.cantidad, item.orden, item.servicio, item.estado
       ]),
     });
-    doc.save("reporte.pdf"); // Descargar el archivo PDF
+    doc.save("reporte.pdf");
     setShowModal(false);
   };
 
   return (
     <Container className="mt-4">
+
+      {/* Tarjeta que explica el propósito de esta plantilla */}
+      <Card className="mb-4">
+        <Card.Body>
+          <Card.Title>¿Qué es esta plantilla?</Card.Title>
+          <Card.Text>
+            Esta página es una plantilla de ejemplo que demuestra cómo construir tablas, 
+            gráficos de datos y exportaciones a Excel y PDF en una aplicación React. 
+            Sirve como referencia para implementar reportes interactivos y visualizaciones de datos.
+          </Card.Text>
+        </Card.Body>
+      </Card>
+
+      {/* Título principal */}
       <h2>Reporte de Productos</h2>
-      <h1>HOLA NUEVO EQUIPO DE FRONT</h1>
+
+      {/* Botones para exportar datos */}
       <Button variant="success" className="m-2" onClick={exportToExcel}>
         Descargar Excel (todos los datos)
       </Button>
       <Button variant="danger" className="m-2" onClick={exportToPDF}>
         Descargar PDF
       </Button>
+
+      {/* Modal para previsualizar el PDF */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Vista previa del PDF</Modal.Title>
@@ -237,6 +223,8 @@ const Plantilla: React.FC = () => {
           </Button>
         </Modal.Footer>
       </Modal>
+
+      {/* Tabla de productos */}
       <Table striped bordered hover className="mt-3" id="product-table">
         <thead className="table-dark">
           <tr>
@@ -263,7 +251,8 @@ const Plantilla: React.FC = () => {
           ))}
         </tbody>
       </Table>
-      q{/* Paginación */}
+
+      {/* Paginación */}
       <div className="d-flex justify-content-center align-items-center">
         <Button
           onClick={handlePrev}
@@ -290,7 +279,8 @@ const Plantilla: React.FC = () => {
           Siguiente
         </Button>
       </div>
-      {/* Gráfico de torta con texto al lado */}
+
+      {/* Gráfico de distribución por variante */}
       <Row className="mt-5">
         <Col md={6}>
           <h4>Distribución de Productos por Variante</h4>
@@ -326,3 +316,5 @@ const Plantilla: React.FC = () => {
 };
 
 export default Plantilla;
+// Este componente es una plantilla de ejemplo que muestra cómo construir tablas, gráficos de datos y exportaciones a Excel y PDF en una aplicación React.
+// Sirve como referencia para implementar reportes interactivos y visualizaciones de datos.

@@ -15,10 +15,12 @@ const Ventas: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
   const navigate = useNavigate();
 
+  // Redirigir a la ruta seleccionada
   const goTo = (path: string) => {
     if (client_id) navigate(`/sync/reportes/${path}/${client_id}`);
   };
 
+  // Opciones de reportes de ventas
   const options = [
     {
       title: "Ventas por Día",
@@ -40,6 +42,7 @@ const Ventas: React.FC = () => {
     },
   ];
 
+  // Opciones de comparaciones de ventas
   const comparisons = [
     {
       title: "Mes a Mes",
@@ -59,6 +62,7 @@ const Ventas: React.FC = () => {
     <div style={{ padding: "4rem 2rem", background: "#f5f7fa", minHeight: "100vh" }}>
       <Row justify="center">
         <Col xs={24} md={20} lg={16}>
+          {/* Título principal */}
           <Title level={2} style={{ textAlign: "center", marginBottom: 8 }}>
             Reporte de Ventas
           </Title>
@@ -66,6 +70,7 @@ const Ventas: React.FC = () => {
             Selecciona el tipo de análisis que deseas visualizar
           </Text>
 
+          {/* Reportes disponibles */}
           <Row gutter={[24, 24]} justify="center">
             {options.map((item) => (
               <Col xs={24} sm={12} md={8} key={item.path}>
@@ -97,6 +102,7 @@ const Ventas: React.FC = () => {
             ))}
           </Row>
 
+          {/* Comparaciones inteligentes */}
           <Title level={4} style={{ marginTop: 64, textAlign: "center", color: "#213f99" }}>
             Comparaciones inteligentes
           </Title>
@@ -132,6 +138,7 @@ const Ventas: React.FC = () => {
             ))}
           </Row>
 
+          {/* Footer */}
           <div style={{ textAlign: "center", marginTop: 64 }}>
             <Text type="secondary" style={{ fontSize: "0.85rem" }}>
               Multi Stock Sync • Reportes de ventas
@@ -144,3 +151,4 @@ const Ventas: React.FC = () => {
 };
 
 export default Ventas;
+// este componente es una vista de reportes de ventas, donde se pueden ver las ventas por día, mes y año, así como comparaciones entre meses y años. Se utiliza React y Ant Design para el diseño y la funcionalidad. El componente utiliza el hook useParams para obtener el ID del cliente de la URL y el hook useNavigate para navegar a otras rutas. También se utilizan iconos de Ant Design para mejorar la presentación visual.

@@ -30,10 +30,11 @@ const VentasPorDia: React.FC = () => {
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
 
+  // Función para formatear en CLP
   const formatCLP = (value: number) =>
     `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
 
-  // Fetch de ventas para la fecha seleccionada
+  // Obtener ventas del día seleccionado
   const fetchIncomes = async () => {
     if (!client_id || !fecha) return;
     setLoading(true);
@@ -41,21 +42,21 @@ const VentasPorDia: React.FC = () => {
       const res = await axiosInstance.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/daily-sales/${client_id}?date=${fecha.format("YYYY-MM-DD")}`
       );
-  
+
       const soldProducts = res.data?.data?.sold_products || [];
       const ordenadas = [...soldProducts].sort((a, b) => b.total_amount - a.total_amount);
       const top10 = ordenadas.slice(0, 10);
       const resto = ordenadas.slice(10);
-  
+
       const totalOtros = resto.reduce((acc, curr) => acc + curr.total_amount, 0);
       const total = ordenadas.reduce((acc, curr) => acc + curr.total_amount, 0);
-  
+
       setVentas(soldProducts);
       setTotalIngresos(total);
-  
+
       const labels = [...top10.map(p => p.title), ...(resto.length ? ["Otros"] : [])];
       const ingresos = [...top10.map(p => p.total_amount), ...(resto.length ? [totalOtros] : [])];
-  
+
       setChartData({
         labels,
         datasets: [
@@ -75,8 +76,8 @@ const VentasPorDia: React.FC = () => {
       setLoading(false);
     }
   };
-  
 
+  // Obtener datos del usuario (nickname, imagen)
   const fetchUserData = async () => {
     if (!client_id) return;
     try {
@@ -90,11 +91,13 @@ const VentasPorDia: React.FC = () => {
     }
   };
 
+  // Al cargar o cambiar la fecha
   useEffect(() => {
     fetchIncomes();
     fetchUserData();
   }, [client_id, fecha]);
 
+  // Generar y mostrar PDF
   const handleExportPDF = () => {
     const pdf = generarPDFPorDia(
       fecha.format("YYYY-MM-DD"),
@@ -111,15 +114,14 @@ const VentasPorDia: React.FC = () => {
     <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
       <Title level={2}>Ventas por Día</Title>
 
-      {/* Panel de resumen usuario y fecha */}
+      {/* Panel de resumen */}
       <Row gutter={[16, 16]} justify="center" align="middle" style={{ marginBottom: 24 }}>
         <Col xs={24} md={12}>
           <Card>
             <Text strong>Usuario:</Text>{" "}
             {userData?.nickname || <Text type="secondary">Cargando...</Text>}
             <br />
-            <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)} 
-
+            <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)}
           </Card>
         </Col>
 
@@ -148,10 +150,9 @@ const VentasPorDia: React.FC = () => {
         ) : (
           <>
             <GraficoPorDia
-  data={ventas}
-  formatCLP={formatCLP}
-/>
-
+              data={ventas}
+              formatCLP={formatCLP}
+            />
             <Text type="secondary">
               Basado en los 10 productos con mayor ingreso. Detalles adicionales en el PDF.
             </Text>
@@ -159,7 +160,7 @@ const VentasPorDia: React.FC = () => {
         )}
       </Card>
 
-      {/* Botón exportar */}
+      {/* Botón de exportar */}
       <div style={{ textAlign: "center", marginTop: 32 }}>
         <Button
           type="primary"
@@ -170,7 +171,7 @@ const VentasPorDia: React.FC = () => {
         </Button>
       </div>
 
-      {/* Modal PDF Preview */}
+      {/* Modal de vista previa PDF */}
       <Modal
         open={showModal}
         onCancel={() => setShowModal(false)}
@@ -202,3 +203,5 @@ const VentasPorDia: React.FC = () => {
 };
 
 export default VentasPorDia;
+// este componente es para mostrar un reporte de ventas por día en una aplicación de React.
+// utiliza la librería Ant Design para el diseño y la librería dayjs para manejar fechas.

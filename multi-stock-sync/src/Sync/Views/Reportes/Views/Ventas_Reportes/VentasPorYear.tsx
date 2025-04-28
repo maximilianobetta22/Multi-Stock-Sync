@@ -10,7 +10,7 @@ import {
 } from "./utils/exportUtils";
 import styles from "./VentasPorYear.module.css";
 
-// Interfaz para un producto vendido
+// Tipado para producto vendido
 interface ProductoVendido {
   order_id: number;
   title: string;
@@ -18,7 +18,7 @@ interface ProductoVendido {
   price: number;
 }
 
-// Interfaz para estructura de ventas por mes
+// Tipado para cada mes con su total de ventas
 interface Mes {
   month: string;
   total_sales: number;
@@ -28,26 +28,18 @@ interface Mes {
 const VentasPorYear: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
 
-  // Estado para almacenar ventas agrupadas por mes
+  // Estado principal
   const [salesData, setSalesData] = useState<Mes[]>([]);
-
-  // Estado para el año seleccionado
   const [selectedYear, setSelectedYear] = useState("2025");
-
-  // Nombre del usuario que aparece en el reporte
   const [userName, setUserName] = useState("");
-
-  // Control del modal de vista previa PDF
   const [showPDFModal, setShowPDFModal] = useState(false);
   const [pdfData, setPdfData] = useState<string | null>(null);
-
-  // Mostrar u ocultar tabla con detalle completo
   const [mostrarTablaDetalle, setMostrarTablaDetalle] = useState(false);
 
-  // Total de ventas del año seleccionado
+  // Total vendido en el año
   const totalSales = salesData.reduce((acc, mes) => acc + mes.total_sales, 0);
 
-  // Obtener datos de ventas por año y usuario
+  // Fetch de ventas y usuario al cargar o cambiar el año
   useEffect(() => {
     const fetchSalesData = async () => {
       try {
@@ -56,7 +48,6 @@ const VentasPorYear: React.FC = () => {
         );
         const rawData = response.data.data;
 
-        // Estructurar los datos para el gráfico y la tabla
         const parsed = Object.keys(rawData).map((month) => ({
           month,
           total_sales: rawData[month].total_amount,
@@ -89,7 +80,7 @@ const VentasPorYear: React.FC = () => {
     }
   }, [client_id, selectedYear]);
 
-  // Generar vista previa PDF en modal
+  // Generar PDF de vista previa
   const generatePDF = () => {
     const data = generarPDFPorYear(salesData, selectedYear, userName);
     setPdfData(data);
@@ -101,12 +92,12 @@ const VentasPorYear: React.FC = () => {
     guardarPDFPorYear(salesData, selectedYear, userName);
   };
 
-  // Exportar a archivo Excel
+  // Exportar Excel
   const generateExcel = () => {
     exportarExcelPorYear(salesData, selectedYear, userName);
   };
 
-  // Años disponibles en el selector (últimos 4 años)
+  // Opciones de años disponibles
   const years = Array.from({ length: 4 }, (_, i) => (2025 - i).toString());
 
   return (
@@ -117,7 +108,7 @@ const VentasPorYear: React.FC = () => {
         Usuario: <strong>{userName || "Cargando..."}</strong>
       </p>
 
-      {/* Selector de año */}
+      {/* Selector Año */}
       <div className={styles.fechaSelector}>
         <label>Selecciona Año:</label>
         <select
@@ -132,7 +123,7 @@ const VentasPorYear: React.FC = () => {
         </select>
       </div>
 
-      {/* Gráfico de ventas por año */}
+      {/* Gráfico de Ventas Anual */}
       <div className={styles.graficoContenedor}>
         <GraficoPorYear
           chartData={{
@@ -152,7 +143,7 @@ const VentasPorYear: React.FC = () => {
         />
       </div>
 
-      {/* Botones de exportación y detalle */}
+      {/* Botones de acción */}
       <div className={styles.botonContenedor}>
         <button className={styles.botonPDF} onClick={generatePDF}>
           Exportar a PDF
@@ -168,7 +159,7 @@ const VentasPorYear: React.FC = () => {
         </button>
       </div>
 
-      {/* Tabla con detalle de productos vendidos por mes */}
+      {/* Tabla de detalle */}
       {mostrarTablaDetalle && (
         <div className={styles.tablaDetalle}>
           <h4 className="text-center mt-4">Detalle de Ventas por Año</h4>
@@ -203,7 +194,7 @@ const VentasPorYear: React.FC = () => {
         </div>
       )}
 
-      {/* Modal de vista previa PDF */}
+      {/* Modal vista previa PDF */}
       {pdfData && (
         <Modal
           show={showPDFModal}
@@ -225,10 +216,7 @@ const VentasPorYear: React.FC = () => {
             <Button variant="primary" onClick={savePDF}>
               Guardar PDF
             </Button>
-            <Button
-              variant="secondary"
-              onClick={() => setShowPDFModal(false)}
-            >
+            <Button variant="secondary" onClick={() => setShowPDFModal(false)}>
               Cerrar
             </Button>
           </Modal.Footer>
@@ -239,3 +227,5 @@ const VentasPorYear: React.FC = () => {
 };
 
 export default VentasPorYear;
+//este componente es para mostrar las ventas por año, se puede exportar a pdf y excel, y tiene un gráfico de ventas anuales. Se utiliza axios para hacer peticiones a la API y react-bootstrap para los modales y botones. El estado se maneja con useState y useEffect para cargar los datos al inicio o al cambiar el año seleccionado. Se utiliza un tipado básico para los productos vendidos y los meses con sus totales de ventas.
+// Se utiliza CSS para el estilo del componente y se hace uso de un componente hijo para el gráfico. El componente es responsivo y permite ver el detalle de las ventas por mes.
