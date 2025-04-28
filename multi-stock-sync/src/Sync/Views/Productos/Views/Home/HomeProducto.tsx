@@ -1,276 +1,283 @@
 import { useEffect, useState } from "react";
+import {
+  Typography,
+  Button,
+  Input,
+  Select,
+  Card,
+  Tabs,
+  Table,
+  Empty,
+  Row,
+  Col,
+} from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-import { Container, Row, Col, Pagination, Button } from "react-bootstrap";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-import ProductTable from "../../components/ProductTable";
-import ProductModal from "../../components/ProductModal";
-import SearchBar from "../../components/SearchBar";
-import ConnectionDropdown from "../../components/ConnectionDropdown";
-import { Product } from "../../types/product.type";
-import { useModalManagement } from "../../hooks/useModalManagement";
 import { useProductManagement } from "../../hooks/useProductManagement";
-import { useStockManagement } from "../../hooks/useStockManagement";
-import { useStatusManagement } from "../../hooks/useStatusManagement";
+import { Product } from "../../types/product.type";
+import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
+import EditProductModal from "../../components/EditProductModal";
 
-const MySwal = withReactContent(Swal);
+const { Title } = Typography;
+const { Option } = Select;
+const { Search } = Input;
 
 const HomeProducto = () => {
-  const {
-    modalIsOpen,
-    currentProduct,
-    modalContent,
-    setModalContent,
-    openModal,
-    closeModal,
-  } = useModalManagement();
+  const navigate = useNavigate();
 
+  // Hook personalizado para conexiones y productos
   const {
     connections,
     selectedConnection,
     allProducts,
-    categories,
     loading,
     loadingConnections,
-    totalProducts,
     setSelectedConnection,
     fetchConnections,
     fetchProducts,
   } = useProductManagement();
 
-  const navigate = useNavigate();
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [toastType, setToastType] = useState<"success" | "warning" | "error">(
-    "error"
-  );
-  const [stockEdit, setStockEdit] = useState<{ [key: string]: number }>({});
-  const [isEditing] = useState<{ [key: string]: boolean }>({});
+  // Estados locales para filtros y modal
   const [searchQuery, setSearchQuery] = useState("");
-  const [limit] = useState(35);
-  const [offset, setOffset] = useState(0);
+  const [stockFilter, setStockFilter] = useState("todos");
+  const [estadoFilter, setEstadoFilter] = useState("todos");
+  const [ordenarPor, setOrdenarPor] = useState("nombre");
+  const [editModalOpen, setEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
+  // Al cargar el componente, traer conexiones disponibles
   useEffect(() => {
     fetchConnections();
-  }, [fetchConnections]);
+  }, []);
 
+  // Cada vez que cambia la conexión o búsqueda, traer productos
   useEffect(() => {
-    if (toastMessage) {
-      MySwal.fire({
-        icon: toastType,
-        title: toastMessage,
-        showConfirmButton: false,
-        timer: 3000,
-      }).then(() => setToastMessage(null));
+    if (selectedConnection) {
+      fetchProducts(selectedConnection, searchQuery);
     }
-  }, [toastMessage]);
+  }, [selectedConnection, searchQuery]);
 
-  const handleConnectionChange = (clientId: string) => {
-    setSelectedConnection(clientId);
+  // Cambia la conexión activa y limpia el buscador
+  const handleConnectionChange = (value: string) => {
+    setSelectedConnection(value);
     setSearchQuery("");
-    setOffset(0);
-    if (clientId) {
-      fetchProducts(clientId);
+  };
+
+  // Filtra y ordena los productos según estado, stock y orden seleccionado
+  const filtrarYOrdenarProductos = (): Product[] => {
+    let productos = [...allProducts];
+
+    if (stockFilter === "sin_stock") {
+      productos = productos.filter((p) => (p.stock ?? 0) === 0);
+    } else if (stockFilter === "bajo") {
+      productos = productos.filter((p) => (p.stock ?? 0) > 0 && (p.stock ?? 0) <= 5);
     }
+
+    if (estadoFilter !== "todos") {
+      productos = productos.filter((p) =>
+        estadoFilter === "activo"
+          ? p.status === "active"
+          : p.status !== "active"
+      );
+    }
+
+    switch (ordenarPor) {
+      case "precio_asc":
+        productos.sort((a, b) => a.price - b.price);
+        break;
+      case "precio_desc":
+        productos.sort((a, b) => b.price - a.price);
+        break;
+      case "stock_asc":
+        productos.sort((a, b) => (a.stock ?? 0) - (b.stock ?? 0));
+        break;
+      case "stock_desc":
+        productos.sort((a, b) => (b.stock ?? 0) - (a.stock ?? 0));
+        break;
+      default:
+        productos.sort((a, b) => a.title.localeCompare(b.title));
+    }
+
+    return productos;
   };
 
-  const handleSearch = async (query: string) => {
-    setSearchQuery(query);
-    setOffset(0);
-    await fetchProducts(selectedConnection, query);
+  const productosFiltrados = filtrarYOrdenarProductos();
+
+  // Categorías agrupadas de forma amigable
+  const categoriaReducidaMap: Record<string, string> = {
+    pijama: "Ropa de Dormir",
+    calzón: "Ropa Interior",
+    sostén: "Ropa Interior",
+    boxer: "Ropa Interior",
+    toalla: "Accesorios",
+    calcetín: "Accesorios",
+    panty: "Ropa Interior",
   };
 
-  const handlePageChange = (newOffset: number) => {
-    setOffset(newOffset);
-    fetchProducts(selectedConnection, searchQuery, limit, newOffset);
-  };
+  // Agrupar productos en base a categorías mapeadas
+  const productosAgrupados: Record<string, Product[]> = {};
+  productosFiltrados.forEach((p) => {
+    const nombre = (p.category_name || "").toLowerCase();
+    const grupo =
+      Object.keys(categoriaReducidaMap).find((key) => nombre.includes(key)) || "Otros";
 
-  const handleStockChange = (productId: string, newStock: number) => {
-    setStockEdit((prevStock) => ({
-      ...prevStock,
-      [productId]: newStock,
+    const finalGroup = categoriaReducidaMap[grupo] || "Otros";
+    if (!productosAgrupados[finalGroup]) productosAgrupados[finalGroup] = [];
+    productosAgrupados[finalGroup].push(p);
+  });
+
+  // Tabs dinámicos basados en agrupación de productos
+  const tabsItems = Object.entries(productosAgrupados)
+    .filter(([, productos]) => productos.length > 0)
+    .map(([grupo, productos]) => ({
+      key: grupo,
+      label: grupo,
+      children: (
+        <Table
+          dataSource={productos}
+          rowKey="id"
+          pagination={false}
+          columns={[
+            {
+              title: "Nombre",
+              dataIndex: "title",
+              key: "title",
+            },
+            {
+              title: "Precio",
+              dataIndex: "price",
+              key: "price",
+              render: (p) => `$${p.toLocaleString("es-CL")}`,
+            },
+            {
+              title: "Stock",
+              dataIndex: "stock",
+              key: "stock",
+            },
+            {
+              title: "Estado",
+              dataIndex: "status_translated",
+              key: "status_translated",
+            },
+            {
+              title: "Acciones",
+              key: "acciones",
+              render: (_, record: Product) => (
+                <Button
+                  size="small"
+                  onClick={() => {
+                    setSelectedProduct(record);
+                    setEditModalOpen(true);
+                  }}
+                >
+                  Editar
+                </Button>
+              ),
+            },
+          ]}
+        />
+      ),
     }));
-  };
-
-  const { isUpdating: isUpdatingStock, updateStock } = useStockManagement({
-    connections,
-    selectedConnection,
-    onSuccess: (message) => {
-      setToastMessage(message);
-      setToastType("success");
-    },
-    onError: (message) => {
-      setToastMessage(message);
-      setToastType("error");
-    },
-  });
-
-  const { isUpdating: isUpdatingStatus, updateStatus } = useStatusManagement({
-    connections,
-    selectedConnection,
-    onSuccess: (message) => {
-      setToastMessage(message);
-      setToastType("success");
-    },
-    onError: (message) => {
-      setToastMessage(message);
-      setToastType("error");
-    },
-  });
-
-  const formatPriceCLP = (price: number) => {
-    return new Intl.NumberFormat("es-CL", {
-      style: "currency",
-      currency: "CLP",
-    }).format(price);
-  };
-
-  const categorizeProducts = (products: Product[]) => {
-    const categories: { [key: string]: Product[] } = {};
-    products.forEach((product) => {
-      if (!categories[product.category_id]) {
-        categories[product.category_id] = [];
-      }
-      categories[product.category_id].push(product);
-    });
-    return categories;
-  };
-
-  const onSelectSuggestion = (suggestion: string) => {
-    setSearchQuery(suggestion);
-    fetchProducts(selectedConnection, suggestion, limit, 0);
-  };
-
-  const categorizedProducts = categorizeProducts(allProducts);
-
-  const totalPages = Math.ceil(totalProducts / limit);
-  const currentPage = Math.floor(offset / limit);
-  const maxPageNumbersToShow = 5;
-  const startPage = Math.max(
-    0,
-    currentPage - Math.floor(maxPageNumbersToShow / 2)
-  );
-  const endPage = Math.min(totalPages, startPage + maxPageNumbersToShow);
 
   return (
-    <>
-      {(loadingConnections ||
-        loading ||
-        isUpdatingStock ||
-        isUpdatingStatus) && <LoadingDinamico variant="container" />}
-      <Container>
-        {!loadingConnections &&
-          !loading &&
-          !isUpdatingStock &&
-          !isUpdatingStatus && (
-            <section>
-              <Row className="mb-3 mt-3">
-                <Col>
-                  <h1>Productos</h1>
-                </Col>
-              </Row>
-              <Row className="mb-3">
-                <Col md={4}>
-                  <ConnectionDropdown
-                    connections={connections}
-                    selectedConnection={selectedConnection}
-                    onChange={handleConnectionChange}
-                  />
-                  <br />
-                  <p>
-                    Por favor, seleccione una conexión para ver los productos.
-                  </p>
-                </Col>
-                <Col md={4}>
-                  <SearchBar
-                    searchQuery={searchQuery}
-                    onSearch={handleSearch}
-                    suggestions={[]}
-                    onSelectSuggestion={onSelectSuggestion}
-                  />
-                </Col>
-                <Col md={4} className="text-end">
-                  <Button
-                    variant="primary"
-                    onClick={() => navigate("/sync/productos/crear")}
-                  >
-                    Crear Producto
-                  </Button>
-                </Col>
-              </Row>
-              {!selectedConnection && <Row className="mb-3"></Row>}
-              {selectedConnection && (
-                <ProductTable
-                  categorizedProducts={categorizedProducts}
-                  categories={categories}
-                  isEditing={isEditing}
-                  stockEdit={stockEdit}
-                  onStockChange={handleStockChange}
-                  onUpdateStock={updateStock}
-                  onOpenModal={openModal}
-                  formatPriceCLP={formatPriceCLP}
-                  onUpdateStatus={updateStatus}
-                  onSelectProduct={setSelectedProduct}
-                  onEditProduct={(product) =>
-                    console.log("Edit product", product)
-                  } // Add onEditProduct handler
-                />
-              )}
-              <Row className="mt-3">
-                <Col>
-                  <Button
-                    variant="secondary"
-                    onClick={() => handlePageChange(offset - limit)}
-                    disabled={offset === 0}
-                  >
-                    Anterior
-                  </Button>
-                </Col>
-                <Col className="text-center">
-                  <Pagination>
-                    {Array.from({ length: endPage - startPage }, (_, index) => (
-                      <Pagination.Item
-                        key={startPage + index}
-                        active={startPage + index === currentPage}
-                        onClick={() =>
-                          handlePageChange((startPage + index) * limit)
-                        }
-                      >
-                        {startPage + index + 1}
-                      </Pagination.Item>
-                    ))}
-                  </Pagination>
-                </Col>
-                <Col className="text-end">
-                  <Button
-                    variant="secondary"
-                    onClick={() => handlePageChange(offset + limit)}
-                    disabled={offset + limit >= totalProducts}
-                  >
-                    Siguiente
-                  </Button>
-                </Col>
-              </Row>
-            </section>
-          )}
-      </Container>
+    <div style={{ maxWidth: "1600px", width: "100%", margin: "0 auto", padding: "2rem" }}>
+      {(loadingConnections || loading) && <LoadingDinamico variant="fullScreen" />}
 
-      <ProductModal
-        show={modalIsOpen}
-        onHide={closeModal}
-        product={selectedProduct || currentProduct}
-        modalContent={modalContent}
-        onUpdateStock={updateStock}
-        onUpdateStatus={updateStatus}
-        onStockChange={handleStockChange}
-        stockEdit={stockEdit}
-        fetchProducts={() =>
-          fetchProducts(selectedConnection, searchQuery, limit, offset)
-        }
-        setModalContent={setModalContent}
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+        <Title level={2} style={{ margin: 0, color: "#213f99" }}>
+          Gestión de Productos
+        </Title>
+        <Button
+          type="primary"
+          icon={<PlusOutlined />}
+          onClick={() => navigate("/sync/productos/crear")}
+        >
+          Crear Producto
+        </Button>
+      </div>
+
+      {/* Selector de conexión */}
+      <Card style={{ marginBottom: "1.5rem" }}>
+        <Row justify="center">
+          <Col xs={24} sm={16} md={8}>
+            <Select
+              placeholder="Selecciona una conexión"
+              value={selectedConnection || undefined}
+              onChange={handleConnectionChange}
+              style={{ width: "100%" }}
+            >
+              {connections.map((c) => (
+                <Option key={c.client_id} value={c.client_id}>
+                  {c.nickname}
+                </Option>
+              ))}
+            </Select>
+          </Col>
+        </Row>
+      </Card>
+
+      {selectedConnection && (
+        <>
+          {/* Buscador */}
+          <Row justify="center" style={{ marginBottom: "1.5rem" }}>
+            <Col xs={24} sm={18} md={12}>
+              <Search
+                placeholder="Buscar producto..."
+                enterButton
+                allowClear
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </Col>
+          </Row>
+
+          {/* Filtros */}
+          <Card style={{ marginBottom: "2rem" }}>
+            <Row gutter={[16, 16]} justify="center">
+              <Col xs={24} sm={12} md={6}>
+                <Select value={stockFilter} onChange={setStockFilter} style={{ width: "100%" }}>
+                  <Option value="todos">Todos los stock</Option>
+                  <Option value="sin_stock">Sin stock</Option>
+                  <Option value="bajo">Stock bajo</Option>
+                </Select>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Select value={estadoFilter} onChange={setEstadoFilter} style={{ width: "100%" }}>
+                  <Option value="todos">Todos los estados</Option>
+                  <Option value="activo">Activos</Option>
+                  <Option value="inactivo">Inactivos</Option>
+                </Select>
+              </Col>
+              <Col xs={24} sm={12} md={6}>
+                <Select value={ordenarPor} onChange={setOrdenarPor} style={{ width: "100%" }}>
+                  <Option value="nombre">Nombre A-Z</Option>
+                  <Option value="precio_asc">Precio: menor a mayor</Option>
+                  <Option value="precio_desc">Precio: mayor a menor</Option>
+                  <Option value="stock_asc">Stock: menor a mayor</Option>
+                  <Option value="stock_desc">Stock: mayor a menor</Option>
+                </Select>
+              </Col>
+            </Row>
+          </Card>
+
+          {/* Tabs o vacío */}
+          {tabsItems.length > 0 ? (
+            <Tabs defaultActiveKey={tabsItems[0].key} items={tabsItems} />
+          ) : (
+            <Empty description="No se encontraron productos." style={{ marginTop: "2rem" }} />
+          )}
+        </>
+      )}
+
+      {/* Modal de edición */}
+      <EditProductModal
+        open={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        product={selectedProduct}
+        onUpdate={() => fetchProducts(selectedConnection)}
       />
-    </>
+    </div>
   );
 };
 

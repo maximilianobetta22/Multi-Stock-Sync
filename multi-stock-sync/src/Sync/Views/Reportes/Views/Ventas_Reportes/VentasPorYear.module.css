@@ -1,0 +1,101 @@
+.container {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.1);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.titulo {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #4f5a95;
+  text-align: center;
+  margin-bottom: 0.5rem;
+}
+
+.subtitulo {
+  font-size: 1rem;
+  color: #333;
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.fechaSelector {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.fechaSelector label {
+  font-weight: 500;
+}
+
+.fechaSelector select {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.graficoContenedor {
+  width: 100%;
+  max-width: 900px;
+  height: auto;
+  margin-bottom: 3rem;
+}
+
+.botonContenedor {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+
+.botonPDF {
+  background-color: #213f99bb; /* Azul profesional */
+  border: none;
+  padding: 10px 20px;
+  font-weight: 600;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.botonExcel {
+  background-color: #2d6a4fce; /* Verde profesional */
+  border: none;
+  padding: 10px 20px;
+  font-weight: 600;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.botonDetalle {
+  background-color: #6C757D; /* Gris elegante */
+  border: none;
+  padding: 10px 20px;
+  font-weight: 600;
+  color: white;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.botonPDF:hover,
+.botonExcel:hover,
+.botonDetalle:hover {
+  opacity: 0.95;
+  transform: scale(1.03);
+}

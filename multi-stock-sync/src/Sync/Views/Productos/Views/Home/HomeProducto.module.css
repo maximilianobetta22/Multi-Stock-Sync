@@ -1,20 +1,36 @@
-/* Styles for the table container to enable scrolling */
-.table-container {
-  max-height: 300px;
-  overflow-y: auto;
+.homeProductoContainer {
+  background-color: #f8f9fa;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05);
 }
 
-/* Ensure the table header and rows have a fixed layout */
-.table-container thead,
-.table-container tbody tr {
-  display: table;
-  width: 100%;
-  table-layout: fixed;
+.titulo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #213f99;
 }
 
-/* Make the table header sticky */
-.table-container thead {
-  position: sticky;
-  top: 0;
-  z-index: 1;
+.contentSection {
+  background-color: #ffffff;
+  border-radius: 16px;
+  padding: 2rem;
+  box-shadow: 0 0 15px rgba(33, 63, 153, 0.1);
+}
+
+.paginationContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2rem;
+}
+
+.pagination :global(.page-item.active) .page-link {
+  background-color: #8d92ed;
+  border-color: #8d92ed;
+  color: #fff;
+}
+
+.pagination :global(.page-link) {
+  color: #213f99;
 }

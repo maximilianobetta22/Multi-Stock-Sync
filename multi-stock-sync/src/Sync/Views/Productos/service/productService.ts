@@ -100,4 +100,49 @@ export const productService = {
       }
     );
   },
+  // Al final de tu archivo productService.ts
+async updateProduct(producto: {
+  id: string;
+  title: string;
+  price: number;
+  available_quantity: number;
+}) {
+  try {
+    const response = await axiosInstance.put(
+      `${process.env.VITE_API_URL}/productos/${producto.id}`,
+      {
+        title: producto.title,
+        price: producto.price,
+        available_quantity: producto.available_quantity,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error al actualizar producto:", error);
+    throw error;
+  }
+},
+
+async deleteProduct(productId: string) {
+  try {
+    const response = await axiosInstance.delete(
+      `${process.env.VITE_API_URL}/productos/${productId}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error al eliminar producto:", error);
+    throw error;
+  }
+},
+
 };

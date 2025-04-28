@@ -1,103 +1,155 @@
-.cardStyle {
+.format_container {
   width: 100%;
-  height: auto;
-  margin-bottom: 1rem;
+  margin: 0 auto;
 }
 
-.bodega_img {
-  width: 150px;
-  height: auto;
+.bodegas_box {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: flex-start;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  padding: 10px 0;
 }
 
-.paragraphStyle {
-  margin-left: 0;
-  text-align: left;
-  color: #666;
+.bodega_item {
+  -ms-flex-preferred-size: calc(33% - 10px);
+  flex-basis: calc(25% - 30px);
+  margin: 0 15px 15px;
+  overflow: hidden;
+  border-radius: 28px;
+}
+
+.bodega_item_link {
+  display: block;
+  padding: 30px 20px;
+  background-color: #fff;
+  overflow: hidden;
+  position: relative;
+}
+
+.bodega_item_link:hover,
+.bodega_item_link:hover .bodega_item_date {
+  text-decoration: none;
+  color: #fff;
+}
+
+.bodega_item_link:hover .bodega_item_bg {
+  -webkit-transform: scale(10);
+  -ms-transform: scale(10);
+  transform: scale(10);
+}
+
+.bodega_item_title {
+  min-height: 87px;
+  margin: 0 0 25px;
+
+  overflow: hidden;
+
+  font-weight: bold;
+  font-size: 30px;
+  color: #000;
+
+  z-index: 2;
+  position: relative;
+}
+
+.bodega_item_date_box {
+  font-size: 18px;
+  color: #030303;
+
+  z-index: 2;
+  position: relative;
+}
+
+.bodega_item_date {
+  font-weight: bold;
+  color: #ef4624;
+
+  -webkit-transition: color 0.5s ease;
+  -o-transition: color 0.5s ease;
+  transition: color 0.5s ease;
+}
+
+.bodega_item_bg {
+  height: 128px;
+  width: 128px;
+  background-color: #ef4624;
+
+  z-index: 1;
+  position: absolute;
+  top: -75px;
+  right: -75px;
+
+  border-radius: 50%;
+
+  -webkit-transition: all 0.5s ease;
+  -o-transition: all 0.5s ease;
+  transition: all 0.5s ease;
 }
 
 .menu {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: start;
   margin-bottom: 1rem;
+  gap: 20px;
 }
 
-.filter {
-  display: flex;
-  flex-direction: column;
-  margin-bottom: 1rem;
+.dropdown {
+  margin: 0;
+  width: 250px;
+  position: relative;
 }
 
-.filter label {
-  margin-bottom: 0.5rem;
-}
-
-.filter select,
-.filter input {
-  padding: 0.5rem;
-  margin-bottom: 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .cardStyle {
-    width: 48%;
-  }
-}
-
-@media (min-width: 992px) {
-  .cardStyle {
-    width: 32%;
-  }
-}
-
-.tableContainer {
-  width: 100%;
-  overflow-x: auto;
-  border: 3px solid #ccc;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th,
-.table td {
-  padding: 0.5rem; 
-  text-align: left;
-  border-bottom: 1px solid #ddd;
-  font-size: 0.875rem; 
-}
-
-.table tbody {
+.dropdown label {
   display: block;
-  max-height: 300px;
-  overflow-y: auto;
+  margin-bottom: 8px;
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
 }
 
-.table thead,
-.table tbody tr {
-  display: table;
+.dropdown select {
+  display: block;
   width: 100%;
-  table-layout: fixed;
-}
-
-.btn__add {
-  position: absolute;
-  background-color: #EF4624;
-  color: #FFFFFF;
-  padding: 1rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  right: 3rem;
-  bottom: 3rem;
-  border: none;
-  border-radius: 20rem;
+  padding: 12px 15px;
+  background: #ffffff;
+  color: #555;
+  font-size: 14px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  outline: none;
   cursor: pointer;
+  transition: all 0.3s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-.icon__add{
-  height: 2rem;
-  width: 2rem;
+.create_button {
+  display: flex;
+  align-items: center;
+  margin-top: 30px;
+  height: 45px;
+  padding: 4px 8px;
+  background-color: #ef4624;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 6px;
+  text-decoration: none;
+}
+
+.create_button:hover {
+  background-color: #d43f1a;
+}
+
+.title {
+  margin: 10px 0px 10px 0px;
+  text-align: start;
 }
