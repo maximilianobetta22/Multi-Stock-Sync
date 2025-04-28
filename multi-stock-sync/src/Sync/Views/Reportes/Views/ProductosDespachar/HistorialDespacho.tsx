@@ -15,6 +15,7 @@ import jsPDF from "jspdf";
 import "jspdf-autotable";
 import styles from "./Despacho.module.css";
 
+// Tipo de datos para historial de despachos
 interface DispatchData {
   shipping_id: number;
   status: string;
@@ -26,6 +27,7 @@ interface DispatchData {
 
 const HistorialDespacho: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
+
   const [skuProduct, setSkuProduct] = useState("");
   const [data, setData] = useState<DispatchData[]>([]);
   const [loading, setLoading] = useState(false);
@@ -34,6 +36,7 @@ const HistorialDespacho: React.FC = () => {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
 
+  // Buscar historial por SKU
   const buscarHistorial = async () => {
     if (!skuProduct.trim()) return;
     setLoading(true);
@@ -41,12 +44,10 @@ const HistorialDespacho: React.FC = () => {
     setNotFound(false);
     try {
       const res = await axiosInstance.get(
-        `${
-          import.meta.env.VITE_API_URL
-        }/mercadolibre/history-dispatch/${client_id}/${skuProduct}`, //se busca por sku en vez de por id
+        `${import.meta.env.VITE_API_URL}/mercadolibre/history-dispatch/${client_id}/${skuProduct}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, //se define el token de acceso
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
@@ -63,6 +64,7 @@ const HistorialDespacho: React.FC = () => {
     }
   };
 
+  // Exportar datos a Excel
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(
       data.map((item) => ({
@@ -77,6 +79,7 @@ const HistorialDespacho: React.FC = () => {
     XLSX.writeFile(wb, `historial_producto_${skuProduct}.xlsx`);
   };
 
+  // Generar vista previa de PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text(`Historial de Producto ${skuProduct}`, 14, 10);
@@ -94,6 +97,7 @@ const HistorialDespacho: React.FC = () => {
     setShowModal(true);
   };
 
+  // Descargar PDF
   const handleDownload = () => {
     const doc = new jsPDF();
     doc.text(`Historial de Producto ${skuProduct}`, 14, 10);
@@ -114,6 +118,7 @@ const HistorialDespacho: React.FC = () => {
     <Container className={styles.container}>
       <h2 className={styles.titulo}>Historial de Despachos</h2>
 
+      {/* Formulario de búsqueda */}
       <Form
         className={styles.filtroContainer}
         onSubmit={(e) => {
@@ -132,6 +137,7 @@ const HistorialDespacho: React.FC = () => {
         </Button>
       </Form>
 
+      {/* Estados de carga y error */}
       {loading && <Spinner animation="border" className="d-block mx-auto" />}
       {error && <Alert variant="danger">{error}</Alert>}
       {notFound && (
@@ -140,6 +146,7 @@ const HistorialDespacho: React.FC = () => {
         </Alert>
       )}
 
+      {/* Tabla de resultados */}
       {data.length > 0 && (
         <>
           <Table responsive bordered hover className={styles.tabla}>
@@ -163,6 +170,7 @@ const HistorialDespacho: React.FC = () => {
             </tbody>
           </Table>
 
+          {/* Botones de exportación */}
           <div className={styles.exportaciones}>
             <Button variant="outline-success" onClick={exportToExcel}>
               Exportar Excel
@@ -174,6 +182,7 @@ const HistorialDespacho: React.FC = () => {
         </>
       )}
 
+      {/* Modal de vista previa PDF */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Vista previa PDF</Modal.Title>
@@ -199,3 +208,5 @@ const HistorialDespacho: React.FC = () => {
 };
 
 export default HistorialDespacho;
+// este componente es una vista de historial de despachos de productos en una aplicación React.
+// Permite buscar despachos por SKU, mostrar resultados en una tabla y exportar a Excel o PDF.

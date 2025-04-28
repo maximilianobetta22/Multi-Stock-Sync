@@ -3,6 +3,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 
+// Mapa de meses para representar numéricos como texto
 export const months: { [key: string]: string } = {
   "01": "Enero",
   "02": "Febrero",
@@ -18,12 +19,15 @@ export const months: { [key: string]: string } = {
   "12": "Diciembre"
 };
 
+// Arreglo de meses ordenados por número
 export const orderedMonths = Object.entries(months).sort(([a], [b]) => parseInt(a) - parseInt(b));
 
+// Devuelve un array de los últimos 10 años como strings
 export const getYears = (): string[] => {
   return Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
 };
 
+// Formatea un número a moneda chilena
 export const formatCurrency = (value: number): string => {
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
@@ -31,9 +35,11 @@ export const formatCurrency = (value: number): string => {
   }).format(value);
 };
 
+// Genera un PDF de comparación de ventas basado en meses o años
 export const generatePDF = (mode: 'month' | 'year', nickname: string, result: any): string => {
   const doc = new jsPDF();
 
+  // Header
   doc.setFillColor(0, 121, 191);
   doc.rect(0, 0, 210, 30, "F");
   doc.setFont("helvetica", "bold");
@@ -41,13 +47,16 @@ export const generatePDF = (mode: 'month' | 'year', nickname: string, result: an
   doc.setTextColor(255, 255, 255);
   doc.text("Reporte de Comparación de Ventas", 14, 20);
 
+  // Cliente
   doc.setFontSize(12);
   doc.setTextColor(0, 0, 0);
   doc.text(`Cliente: ${nickname}`, 14, 40);
 
+  // Obtener los datos de comparación
   const data1 = mode === 'month' ? result.data?.month1 : result.data?.year1;
   const data2 = mode === 'month' ? result.data?.month2 : result.data?.year2;
 
+  // Crear etiquetas de los períodos
   const label1 = mode === 'month'
     ? `${months[data1.month]} ${data1.year}`
     : `${data1.year}`;
@@ -62,14 +71,15 @@ export const generatePDF = (mode: 'month' | 'year', nickname: string, result: an
   const year2 = parseInt(data2?.year);
   const recentIs2 = year2 > year1;
 
+  // Cálculo de diferencias
   const recentLabel = recentIs2 ? label2 : label1;
   const previousLabel = recentIs2 ? label1 : label2;
-
   const recent = recentIs2 ? total2 : total1;
   const previous = recentIs2 ? total1 : total2;
   const difference = recent - previous;
   const percentage = previous === 0 ? 0 : ((difference / previous) * 100).toFixed(2);
 
+  // Interpretación textual de los resultados
   let interpretacion = '';
   if (previous === 0) {
     interpretacion = `En ${recentLabel} se registraron ventas por ${formatCurrency(recent)}, mientras que en ${previousLabel} no hubo ventas registradas. Esto indica el inicio de actividad comercial o una apertura significativa en el período actual.`;
@@ -81,6 +91,7 @@ export const generatePDF = (mode: 'month' | 'year', nickname: string, result: an
     interpretacion = `Las ventas ${cambio} un ${Math.abs(Number(percentage))}% en ${recentLabel} con respecto a ${previousLabel}, reflejando ${resultado} en el rendimiento.`;
   }
 
+  // Mostrar totales
   doc.setFont("helvetica", "bold");
   doc.text("Totales Comparados:", 14, 55);
   doc.setFont("helvetica", "normal");
@@ -89,13 +100,14 @@ export const generatePDF = (mode: 'month' | 'year', nickname: string, result: an
   doc.text(`Diferencia: ${formatCurrency(difference)}`, 14, 79);
   doc.text(`Cambio porcentual: ${percentage}%`, 14, 87);
 
+  // Mostrar interpretación
   doc.setFont("helvetica", "bold");
   doc.text("Interpretación:", 14, 97);
   doc.setFont("helvetica", "normal");
   const splitText = doc.splitTextToSize(interpretacion, 180);
   doc.text(splitText, 14, 105);
 
-  // Insertar productos por cada período
+  // Tabla de productos vendidos
   const labelProd1 = `Productos vendidos en ${label1}`;
   const labelProd2 = `Productos vendidos en ${label2}`;
   const startY1 = 105 + splitText.length * 7 + 10;
@@ -129,6 +141,7 @@ export const generatePDF = (mode: 'month' | 'year', nickname: string, result: an
   return doc.output("datauristring");
 };
 
+// Exporta los resultados de comparación a un archivo Excel (.xlsx)
 export const exportToExcel = (mode: 'month' | 'year', result: any) => {
   if (!result) return;
 
@@ -156,6 +169,7 @@ export const exportToExcel = (mode: 'month' | 'year', result: any) => {
   const label1 = mode === 'month' ? `${months[data1.month]} ${data1.year}` : data1.year;
   const label2 = mode === 'month' ? `${months[data2.month]} ${data2.year}` : data2.year;
 
+  // Crear hojas por cada período
   XLSX.utils.book_append_sheet(workbook, createSheet(data1), `Ventas ${label1}`);
   XLSX.utils.book_append_sheet(workbook, createSheet(data2), `Ventas ${label2}`);
 

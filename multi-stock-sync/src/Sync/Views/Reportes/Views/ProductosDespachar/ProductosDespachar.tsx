@@ -16,6 +16,7 @@ import styles from "./Despacho.module.css";
 
 const ProductosDespachar: React.FC = () => {
   const { client_id } = useParams();
+
   const [productos, setProductos] = useState<any[]>([]);
   const [productosOriginal, setProductosOriginal] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -25,15 +26,15 @@ const ProductosDespachar: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
   const [showModal, setShowModal] = useState(false);
+
   const itemsPerPage = 10;
 
+  // Cargar productos listos para despacho
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axiosInstance.get(
-          `${
-            import.meta.env.VITE_API_URL
-          }/mercadolibre/products-to-dispatch/${client_id}`,
+          `${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${client_id}`,
           {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -55,6 +56,7 @@ const ProductosDespachar: React.FC = () => {
     fetchData();
   }, [client_id]);
 
+  // Filtrar productos por SKU o nombre
   const handleFiltrar = () => {
     const filtrados = productosOriginal.filter(
       (p) =>
@@ -65,6 +67,7 @@ const ProductosDespachar: React.FC = () => {
     setCurrentPage(1);
   };
 
+  // Exportar datos a Excel
   const exportToExcel = () => {
     const datos = productos.map((p) => ({
       SKU: p.sku,
@@ -78,6 +81,7 @@ const ProductosDespachar: React.FC = () => {
     XLSX.writeFile(wb, "productos_despachar.xlsx");
   };
 
+  // Generar vista previa de PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text("Productos Listos para Despacho", 14, 10);
@@ -90,6 +94,7 @@ const ProductosDespachar: React.FC = () => {
     setShowModal(true);
   };
 
+  // Descargar directamente el PDF
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     doc.text("Productos Listos para Despacho", 14, 10);
@@ -101,6 +106,7 @@ const ProductosDespachar: React.FC = () => {
     setShowModal(false);
   };
 
+  // Traducción de campos de historial de envíos
   const traducirCampo = (campo: string): string => {
     const map: Record<string, string> = {
       date_created: "Creación",
@@ -116,6 +122,7 @@ const ProductosDespachar: React.FC = () => {
     return map[campo] || campo;
   };
 
+  // Paginación
   const totalPages = Math.ceil(productos.length / itemsPerPage);
   const currentData = productos.slice(
     (currentPage - 1) * itemsPerPage,
@@ -134,6 +141,7 @@ const ProductosDespachar: React.FC = () => {
     <Container className={styles.container}>
       <h2 className={styles.titulo}>Productos Listos para Despacho</h2>
 
+      {/* Formulario de búsqueda */}
       <Form
         className={styles.filtroContainer}
         onSubmit={(e) => {
@@ -152,6 +160,7 @@ const ProductosDespachar: React.FC = () => {
         </Button>
       </Form>
 
+      {/* Tabla de productos */}
       <Table responsive bordered hover className={styles.tabla}>
         <thead className="table-light text-center">
           <tr>
@@ -185,6 +194,7 @@ const ProductosDespachar: React.FC = () => {
         </tbody>
       </Table>
 
+      {/* Botones para exportar */}
       <div className={styles.exportaciones}>
         <Button variant="outline-success" onClick={exportToExcel}>
           Exportar Excel
@@ -194,6 +204,7 @@ const ProductosDespachar: React.FC = () => {
         </Button>
       </div>
 
+      {/* Navegación de páginas */}
       <div className="d-flex justify-content-center mt-3 gap-2 flex-wrap">
         <Button
           disabled={currentPage === 1}
@@ -218,6 +229,7 @@ const ProductosDespachar: React.FC = () => {
         </Button>
       </div>
 
+      {/* Modal de vista previa del PDF */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Vista previa PDF</Modal.Title>
@@ -234,6 +246,7 @@ const ProductosDespachar: React.FC = () => {
         </Modal.Footer>
       </Modal>
 
+      {/* Modal de historial de envío */}
       <Modal
         show={!!selectedProduct}
         onHide={() => setSelectedProduct(null)}
@@ -245,12 +258,9 @@ const ProductosDespachar: React.FC = () => {
         <Modal.Body>
           {selectedProduct?.shipment_history?.date_history ? (
             <ul>
-              {Object.entries(
-                selectedProduct.shipment_history.date_history
-              ).map(([key, value], i) => (
+              {Object.entries(selectedProduct.shipment_history.date_history).map(([key, value], i) => (
                 <li key={i}>
-                  <strong>{traducirCampo(key)}:</strong>{" "}
-                  {String(value) || "No disponible"}
+                  <strong>{traducirCampo(key)}:</strong> {String(value) || "No disponible"}
                 </li>
               ))}
             </ul>
@@ -269,3 +279,5 @@ const ProductosDespachar: React.FC = () => {
 };
 
 export default ProductosDespachar;
+//este componente es para mostrar los productos que están listos para ser despachados a un cliente específico. Se utiliza React y Bootstrap para la interfaz de usuario, y se hace uso de axios para realizar peticiones a una API. El componente permite filtrar productos, exportar datos a Excel y PDF, y ver el historial de envíos de cada producto.
+// El componente también maneja la paginación de los productos mostrados en la tabla.

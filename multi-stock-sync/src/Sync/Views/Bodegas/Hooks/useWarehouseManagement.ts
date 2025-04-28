@@ -49,18 +49,17 @@ export const useWarehouseManagement = () => {
 
     try {
       const response = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/warehouses/${id}}`,
+        `${import.meta.env.VITE_API_URL}/warehouses/${id}}}`,
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("access_token")}`, //key de autorización. ¡No eliminar!
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
 
-      console.log("Warehouse API response:", response.data.data); //se demuestra que hay datos dentro
+      console.log("Warehouse API response:", response.data.data);
 
       if (!response.data.data || typeof response.data.data !== "object") {
-        //respuesta de error
         throw new Error(
           "La estructura de la respuesta de la API no es válida."
         );

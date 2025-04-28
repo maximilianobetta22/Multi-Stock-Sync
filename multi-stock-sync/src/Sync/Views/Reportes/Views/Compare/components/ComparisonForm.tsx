@@ -14,6 +14,7 @@ interface Props {
   onSubmit: (e: React.FormEvent) => void;
 }
 
+// Meses del año ordenados
 const orderedMonths = [
   ["01", "Enero"],
   ["02", "Febrero"],
@@ -29,6 +30,7 @@ const orderedMonths = [
   ["12", "Diciembre"]
 ];
 
+// Últimos 10 años para selección en formulario
 const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
 
 const ComparisonForm: React.FC<Props> = ({
@@ -46,6 +48,7 @@ const ComparisonForm: React.FC<Props> = ({
   return (
     <form onSubmit={onSubmit}>
       <div className={styles.formSection}>
+        {/* Año 1 */}
         <div>
           <label>Año 1</label>
           <select className="form-control" value={year1} onChange={(e) => setYear1(e.target.value)} required>
@@ -55,6 +58,8 @@ const ComparisonForm: React.FC<Props> = ({
             ))}
           </select>
         </div>
+
+        {/* Mes 1 (solo si se compara por mes) */}
         {mode === "month" && (
           <div>
             <label>Mes 1</label>
@@ -66,6 +71,8 @@ const ComparisonForm: React.FC<Props> = ({
             </select>
           </div>
         )}
+
+        {/* Año 2 */}
         <div>
           <label>Año 2</label>
           <select className="form-control" value={year2} onChange={(e) => setYear2(e.target.value)} required>
@@ -75,6 +82,8 @@ const ComparisonForm: React.FC<Props> = ({
             ))}
           </select>
         </div>
+
+        {/* Mes 2 (solo si se compara por mes) */}
         {mode === "month" && (
           <div>
             <label>Mes 2</label>
@@ -87,12 +96,18 @@ const ComparisonForm: React.FC<Props> = ({
           </div>
         )}
       </div>
+
+      {/* Botones de acción */}
       <div className={styles.buttonContainer}>
         <button type="submit" className="btn btn-primary">Comparar</button>
-        <button type="button" className="btn btn-secondary" onClick={() => window.history.back()}>Volver</button>
+        <button type="button" className="btn btn-secondary" onClick={() => window.history.back()}>
+          Volver
+        </button>
       </div>
     </form>
   );
 };
 
 export default ComparisonForm;
+// Este componente es un formulario para comparar ventas entre dos años o meses. Permite seleccionar los años y meses a comparar y envía la información al evento onSubmit.
+// Se utiliza en la vista de comparación de ventas entre meses o años. El formulario incluye validaciones para asegurar que se seleccionen los valores requeridos antes de enviar el formulario.

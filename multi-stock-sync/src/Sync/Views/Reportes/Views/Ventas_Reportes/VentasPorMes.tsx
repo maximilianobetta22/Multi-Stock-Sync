@@ -9,6 +9,7 @@ import styles from "./VentasPorMes.module.css";
 
 const VentasPorMes: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
+
   const currentDate = new Date();
   const [year, setYear] = useState<number>(currentDate.getFullYear());
   const [month, setMonth] = useState<number>(currentDate.getMonth() + 1);
@@ -21,21 +22,18 @@ const VentasPorMes: React.FC = () => {
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
 
+  // Formateador de moneda CLP
   const formatCLP = (value: number) =>
     `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
 
+  // Fetch de ventas agrupadas por mes
   const fetchVentas = async () => {
     if (!client_id) return;
     setLoading(true);
     try {
       const { data } = await axiosInstance.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`,
-        {
-          params: {
-            year: year.toString(),
-            month: month.toString().padStart(2, "0"),
-          },
-        }
+        { params: { year: year.toString(), month: month.toString().padStart(2, "0") } }
       );
 
       const rawData = data.data[`${year}-${month.toString().padStart(2, "0")}`]?.orders || [];
@@ -90,6 +88,7 @@ const VentasPorMes: React.FC = () => {
     }
   };
 
+  // Fetch de información del usuario (nickname, imagen)
   const fetchUserData = async () => {
     if (!client_id) return;
     try {
@@ -108,6 +107,7 @@ const VentasPorMes: React.FC = () => {
     fetchUserData();
   }, [client_id, year, month]);
 
+  // Exportar a PDF
   const handleExportPDF = () => {
     const pdf = generarPDFPorMes(
       ventas,
@@ -121,6 +121,7 @@ const VentasPorMes: React.FC = () => {
     setShowModal(true);
   };
 
+  // Exportar a Excel
   const handleExportExcel = () => {
     exportarExcelPorMes(
       ventas,
@@ -138,6 +139,7 @@ const VentasPorMes: React.FC = () => {
         Usuario: <strong>{userData?.nickname || "Cargando..."}</strong>
       </p>
 
+      {/* Selección año y mes */}
       <div className={styles.fechaSelector}>
         <label htmlFor="year">Año:</label>
         <select id="year" value={year} onChange={(e) => setYear(Number(e.target.value))}>
@@ -156,6 +158,7 @@ const VentasPorMes: React.FC = () => {
         </select>
       </div>
 
+      {/* Gráfico o loading */}
       <div className={styles.graficoContenedor}>
         {loading ? (
           <LoadingDinamico variant="fullScreen" />
@@ -169,16 +172,17 @@ const VentasPorMes: React.FC = () => {
               chartData={chartData}
               totalVentas={totalIngresos}
               year={year}
-              month={month}             
+              month={month}
             />
             <p className="text-center text-muted mt-2">
-              Gráfico basado en los 10 productos con mayor ingreso.  
+              Gráfico basado en los 10 productos con mayor ingreso.
               El detalle completo está disponible en el PDF o Excel exportado.
             </p>
           </>
         )}
       </div>
 
+      {/* Botones de exportación */}
       <div className={styles.botonContenedor}>
         <button
           className={styles.botonPDF}
@@ -196,6 +200,7 @@ const VentasPorMes: React.FC = () => {
         </button>
       </div>
 
+      {/* Modal vista previa del PDF */}
       {pdfDataUrl && (
         <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
           <Modal.Header closeButton>
@@ -225,3 +230,4 @@ const VentasPorMes: React.FC = () => {
 };
 
 export default VentasPorMes;
+//este componente es una vista de ventas por mes en una aplicación React. Utiliza axios para obtener datos de ventas y muestra un gráfico con los ingresos totales por producto. También permite exportar los datos a PDF y Excel. El diseño es responsivo y utiliza Bootstrap para la interfaz de usuario.
