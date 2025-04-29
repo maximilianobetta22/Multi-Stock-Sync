@@ -27,7 +27,7 @@ export const Login: React.FC = () => {
       localStorage.setItem('token', response.data.token);
       localStorage.setItem('user', JSON.stringify(response.data.user));
       setUser(response.data.user);
-      navigate('/sync/home');
+      navigate("/sync/seleccionar-conexion"); // Redirigir a la página de selección de conexión
     } catch (err) {
       setError((err as any).response?.data?.message || 'Credenciales inválidas');
       console.log(err);

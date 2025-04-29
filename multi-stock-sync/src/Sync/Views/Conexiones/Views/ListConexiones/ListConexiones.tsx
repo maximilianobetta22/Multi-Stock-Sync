@@ -1,189 +1,121 @@
 import React, { useEffect, useState } from "react";
-import "react-datepicker/dist/react-datepicker.css";
-import { Link } from "react-router-dom";
-import styles from "./ListConexiones.module.css";
-import Swal from "sweetalert2";
-import withReactContent from "sweetalert2-react-content";
-import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-import ItemTableConexion from "../../Components/ItemTableConexion";
-import { SyncData } from "../../interface";
-import { copyToClipboard } from "../../helpers";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faList } from "@fortawesome/free-solid-svg-icons";
-import axiosInstance from "../../../../../axiosConfig";
-const MySwal = withReactContent(Swal);
+import { Card, Button, List, message, Typography, Spin } from "antd";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../../../../axiosConfig"; // Ajusta si tu ruta es distinta
 
-const ListConexiones: React.FC = () => {
-  const [conexiones, setConexiones] = useState<SyncData[]>([]);
+const { Title, Text } = Typography;
+
+const SeleccionConexion: React.FC = () => {
+  const navigate = useNavigate();
+  const [conexiones, setConexiones] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [loadingRowId, setLoadingRowId] = useState<number | null>(null);
-  const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
-  const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials`;
-
-  const confirmDisconnect = async (clientId: string, rowId: number) => {
-    const result = await MySwal.fire({
-      title: '¿Está seguro que desea desconectar esta conexión?',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, desconectar',
-      cancelButtonText: 'Cancelar',
-    });
-
-    if (result.isConfirmed) {
-      setLoadingRowId(rowId);
-      await disconnectConexion(clientId);
-    }
-  };
-
-  const disconnectConexion = async (clientId: string) => {
-    if (!clientId) return;
-    const url = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${clientId}`;
-    MySwal.fire({
-      title: 'Desconectando',
-      text: 'Por favor, espere mientras se desconecta la conexión...',
-      icon: 'info',
-      showConfirmButton: false,
-      allowOutsideClick: false
-    });
-
-    try {
-      const response = await axiosInstance.delete(url);
-      if (response.data.status === "success") {
-        setConexiones(conexiones.filter(conexion => conexion.client_id !== clientId));
-        await MySwal.fire({
-          title: 'Éxito',
-          text: response.data.message,
-          icon: 'success'
-        });
-      } else {
-        await MySwal.fire({
-          title: 'Error',
-          text: response.data.error,
-          icon: 'error'
-        });
-      }
-    } catch (error) {
-      console.error("Error al desconectar la conexión:", error);
-      await MySwal.fire({
-        title: 'Error',
-        text: 'Error al desconectar la conexión',
-        icon: 'error'
-      });
-    } finally {
-      setLoadingRowId(null);
-      setLoading(true);
-      window.location.reload();
-    }
-  };
-
-  const testConnection = async (clientId: string) => {
-    const url = `${import.meta.env.VITE_API_URL}/mercadolibre/test-connection/${clientId}`;
-    MySwal.fire({
-      title: 'Refrescar Conexión',
-      text: 'Refrescando la conexión...',
-      icon: 'info',
-      showConfirmButton: false,
-      allowOutsideClick: false
-    });
-    try {
-      const response = await axiosInstance.get(url);
-      if (response.data.status === "success") {
-        MySwal.fire({
-          title: 'Éxito',
-          text: response.data.message,
-          icon: 'success'
-        });
-      } else {
-        MySwal.fire({
-          title: 'Error',
-          text: `Error en la conexión: ${response.data.message}`,
-          icon: 'error'
-        });
-      }
-    } catch (error) {
-      console.error("Error al probar la conexión:", error);
-      MySwal.fire({
-        title: 'Error',
-        text: 'Ocurrió un error al intentar probar la conexión.',
-        icon: 'error'
-      });
-    }
-  };
-
-  const handleMenuToggle = (id: number) => {
-    setOpenDropdownId(openDropdownId === id ? null : id);
-  };
 
   useEffect(() => {
-    const fetchConexiones = async () => {
+    async function fetchConexiones() {
       try {
+        const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/conexion`;
+
         const response = await axiosInstance.get(API_URL);
-        if (response.data.status === "success") {
+
+        console.log("Respuesta del backend:", response.data);
+
+        if (Array.isArray(response.data)) {
+          setConexiones(response.data);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
           setConexiones(response.data.data);
+        } else {
+          console.error("❌ Formato inesperado:", response.data);
+          throw new Error("Respuesta inesperada del servidor.");
         }
       } catch (error) {
-        console.error("Error al obtener conexiones:", error);
+        console.error("Error al cargar conexiones:", error);
+
+        // Modo Mock - Tiendas de prueba mientras el backend no responde
+        setConexiones([
+          {
+            id: 1,
+            nickname: "TiendaTest1",
+            email: "test1@correo.com",
+            tokenVigente: true,
+          },
+          {
+            id: 2,
+            nickname: "TiendaTest2",
+            email: "test2@correo.com",
+            tokenVigente: false,
+          },
+        ]);
+
+        message.warning("⚠️ No se pudo cargar desde backend. Usando datos de prueba.");
       } finally {
         setLoading(false);
       }
-    };
+    }
 
     fetchConexiones();
   }, []);
 
+  const handleSeleccion = (conexion: any) => {
+    if (conexion.tokenVigente) {
+      localStorage.setItem("conexionSeleccionada", JSON.stringify(conexion));
+      message.success(`Conexión seleccionada: ${conexion.nickname}`);
+      navigate("/sync/home");
+    } else {
+      message.error("No puedes seleccionar una conexión con el token vencido.");
+    }
+  };
+
   if (loading) {
-    return <LoadingDinamico variant="container" />;
+    return (
+      <div style={{ textAlign: "center", marginTop: "4rem" }}>
+        <Spin size="large" />
+      </div>
+    );
   }
 
   return (
-    <div className={styles.main__container}>
-      <header className={styles.container__header}>
-        <h1 className={styles.header__title}>Lista de conexiones a MercadoLibre</h1>
-      </header>
+    <div style={{ padding: "2rem" }}>
+      <Title level={2} style={{ textAlign: "center" }}>
+        Selecciona la tienda para trabajar
+      </Title>
+
       {conexiones.length === 0 ? (
-        <div className={styles.container__table}>
-          <img src="/assets/img/icons/link_notfound.svg" alt="No Connections" />
-          <strong className="mb-5">No se han encontrado conexiones guardadas en el sistema, por favor, cree una nueva conexión.</strong>
+        <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <Text>No hay conexiones disponibles.</Text>
         </div>
       ) : (
-        <div className={styles.container__table}>
-          <table className={styles.table}>
-            <thead className={styles.table__tHead}>
-              <tr className={styles.tHead__row}>
-                <th className={styles.rowHead__item1}>ID</th>
-                <th className={styles.rowHead__item2}>Profile</th>
-                <th className={styles.rowHead__item3}>Client ID</th>
-                <th className={styles.rowHead__item4}>Nickname</th>
-                <th className={styles.rowHead__item5}>Email</th>
-                <th className={styles.rowHead__item6}>Updated At</th>
-                <th className={styles.rowHead__item7}>
-                  <FontAwesomeIcon className={styles.item__icon} icon={faList} />
-                </th>
-              </tr>
-            </thead>
-            <tbody className={styles.table__tBody}>
-              {conexiones.map((conexion) => (
-                <ItemTableConexion
-                  key={conexion.id}
-                  conexion={conexion}
-                  loadingRowId={loadingRowId}
-                  copyToClipboard={copyToClipboard}
-                  confirmDisconnect={confirmDisconnect}
-                  testConnection={testConnection}
-                  isOpen={openDropdownId === conexion.id}
-                  handleMenuToggle={() => handleMenuToggle(conexion.id)}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <List
+          grid={{ gutter: 16, column: 2 }}
+          dataSource={conexiones}
+          renderItem={(conexion) => (
+            <List.Item>
+              <Card
+                title={conexion.nickname}
+                bordered
+                actions={[
+                  <Button 
+                    type="primary" 
+                    disabled={!conexion.tokenVigente} 
+                    onClick={() => handleSeleccion(conexion)}
+                  >
+                    Seleccionar
+                  </Button>
+                ]}
+              >
+                <p><Text strong>Email:</Text> {conexion.email}</p>
+                <p>
+                  <Text strong>Estado del Token:</Text>{" "}
+                  <Text type={conexion.tokenVigente ? "success" : "danger"}>
+                    {conexion.tokenVigente ? "Vigente" : "Vencido"}
+                  </Text>
+                </p>
+              </Card>
+            </List.Item>
+          )}
+        />
       )}
-      <footer className={styles.container__footer}>
-        <Link to="/sync/conexiones/login" className="btn btn-primary">Agregar Conexiones</Link>
-        <Link to="/sync/home" className="btn btn-secondary ms-2">Volver al Inicio</Link>
-      </footer>
     </div>
   );
 };
 
-export default ListConexiones;
+export default SeleccionConexion;
