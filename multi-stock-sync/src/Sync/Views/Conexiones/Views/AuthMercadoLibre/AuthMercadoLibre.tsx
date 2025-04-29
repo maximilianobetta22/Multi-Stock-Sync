@@ -1,175 +1,104 @@
-import { useState } from "react";
-import axiosInstance from "../../../../../axiosConfig";
-import styles from "./AuthMercadoLibre.module.css";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Link } from "react-router-dom";
-import { faLock, faLockOpen, faAddressCard } from "@fortawesome/free-solid-svg-icons";
-import { Modal, Button } from "react-bootstrap";
-import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+import React, { useEffect, useState } from "react";
+import { Card, Button, List, message, Typography, Spin } from "antd";
+import { useNavigate } from "react-router-dom";
+import axiosInstance from "../../../../../axiosConfig"; // Ajusta el path si hace falta
 
-const AuthMercadoLibre = () => {
-  const [clientId, setClientId] = useState("");
-  const [clientSecret, setClientSecret] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState("");
-  const [status, setStatus] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showModal, setShowModal] = useState(false);
+const { Title, Text } = Typography;
 
-  const togglePasswordVisibility = () => {
-    setShowPassword((prev) => !prev);
-  };
+const SeleccionConexion: React.FC = () => {
+  const navigate = useNavigate();
+  const [conexiones, setConexiones] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleClose = () => setShowModal(false);
-  const handleShow = () => setShowModal(true);
+  useEffect(() => {
+    async function fetchConexiones() {
+      try {
+        const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/conexion`;
 
-  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-    setMessage("");
-    setStatus("");
+        const response = await axiosInstance.get(API_URL);
 
-    const payload = {
-      client_id: clientId,
-      client_secret: clientSecret,
-    };
+        console.log("Respuesta del backend:", response.data);
 
-    try {
-      const response = await axiosInstance.post(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/login`,
-        payload,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
+        if (Array.isArray(response.data)) {
+          setConexiones(response.data);
+        } else if (response.data.data && Array.isArray(response.data.data)) {
+          setConexiones(response.data.data);
+        } else {
+          console.error("❌ Formato inesperado:", response.data);
+          message.error("La respuesta del servidor no tiene el formato esperado.");
         }
-      );
-
-      const data = response.data;
-
-      if (response.status === 200) {
-        setStatus(data.status || "success");
-        setMessage(data.message || "URL generada correctamente. Redirigiendo...");
-
-        if (data.redirect_url) {
-          window.open(data.redirect_url, "_blank");
-        }
-      } else {
-        setStatus("error");
-        setMessage(data.message || "Error: No se pudieron validar las credenciales.");
+      } catch (error) {
+        console.error("Error al cargar conexiones:", error);
+        message.error("Error de red al cargar las conexiones.");
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      console.error(err);
-      setStatus("error");
-      setMessage((err as any).response?.data?.message || "Error: Ocurrió un problema inesperado. Inténtalo de nuevo.");
-    } finally {
-      setLoading(false);
+    }
+
+    fetchConexiones();
+  }, []);
+
+  const handleSeleccion = (conexion: any) => {
+    if (conexion.tokenVigente) {
+      localStorage.setItem("conexionSeleccionada", JSON.stringify(conexion));
+      message.success(`Conexión seleccionada: ${conexion.nickname}`);
+      navigate("/sync/home");
+    } else {
+      message.error("No puedes seleccionar una conexión con el token vencido.");
     }
   };
 
+  if (loading) {
+    return (
+      <div style={{ textAlign: "center", marginTop: "4rem" }}>
+        <Spin size="large" />
+      </div>
+    );
+  }
+
   return (
-    <div className={styles.loginContainer}>
-      <form onSubmit={handleLogin} className={styles.formContainer}>
-        <div className={styles.formControl}>
-          <div>
-            <h3 className={styles.title}>Agregar Conexión</h3>
-            <p className={styles.subtitle}>
-              Ingrese las credenciales para generar la URL de autenticación.
-            </p>
-          </div>
+    <div style={{ padding: "2rem" }}>
+      <Title level={2} style={{ textAlign: "center" }}>
+        Selecciona la tienda para trabajar
+      </Title>
 
-          <div className={styles.inputContainer}>
-            <FontAwesomeIcon
-              icon={faAddressCard}
-              className={styles.inputIcon}
-            />
-            <input
-              id="clientId"
-              type="text"
-              onChange={(e) => setClientId(e.target.value)}
-              className={styles.inputField}
-              placeholder=" "
-              value={clientId}
-              required
-            />
-            <label htmlFor="clientId" className={styles.floatingLabel}>
-              ID del Cliente
-            </label>
-          </div>
-          <div className={styles.inputContainer}>
-            <FontAwesomeIcon
-              icon={showPassword ? faLockOpen : faLock}
-              className={styles.lockIcon}
-              onClick={togglePasswordVisibility}
-            />
-            <input
-              id="clientSecret"
-              type={showPassword ? "text" : "password"}
-              onChange={(e) => setClientSecret(e.target.value)}
-              className={styles.inputField}
-              placeholder=" "
-              value={clientSecret}
-              required
-            />
-            <label htmlFor="clientSecret" className={styles.floatingLabel}>
-              Client Secret
-            </label>
-          </div>
-
-            <p onClick={handleShow} className={`${styles.helpLink} mt-3`}>¿Qué es esto? </p>
-
-          {message && (
-            <ToastComponent
-              message={message}
-              type={status === "success" ? "success" : "danger"}
-              onClose={() => setMessage("")}
-              timeout={5000}
-            />
+      {conexiones.length === 0 ? (
+        <div style={{ textAlign: "center", marginTop: "2rem" }}>
+          <Text>No hay conexiones disponibles.</Text>
+        </div>
+      ) : (
+        <List
+          grid={{ gutter: 16, column: 2 }}
+          dataSource={conexiones}
+          renderItem={(conexion) => (
+            <List.Item>
+              <Card
+                title={conexion.nickname}
+                bordered
+                actions={[
+                  <Button 
+                    type="primary" 
+                    disabled={!conexion.tokenVigente} 
+                    onClick={() => handleSeleccion(conexion)}
+                  >
+                    Seleccionar
+                  </Button>
+                ]}
+              >
+                <p><Text strong>Email:</Text> {conexion.email}</p>
+                <p>
+                  <Text strong>Estado del Token:</Text>{" "}
+                  <Text type={conexion.tokenVigente ? "success" : "danger"}>
+                    {conexion.tokenVigente ? "Vigente" : "Vencido"}
+                  </Text>
+                </p>
+              </Card>
+            </List.Item>
           )}
-
-            <div className={`mt-5 d-flex flex-column flex-md-row`}>  
-            <button
-              type="submit"
-              className={`btn btn-primary mx-3 mb-2 mb-md-0`}
-              disabled={loading}
-            >
-              {loading ? "Generando URL..." : "Conectarse a MercadoLibre"}
-            </button>
-            <Link to="/sync/conexiones/home" className="btn btn-secondary mx-3 mb-2 mb-md-0" >Volver a conexiones</Link>
-          </div>
-
-        </div>
-      </form>
-
-      <Modal show={showModal} onHide={handleClose}>
-        <Modal.Header closeButton>
-          <Modal.Title>Instrucciones</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
-          <p>Para obtener las credenciales de MercadoLibre, sigue estos pasos:</p>
-          <ol>
-            <li>Visita la <a href="https://developers.mercadolibre.cl/devcenter/" target="_blank">página de desarrolladores de MercadoLibre</a> e inicia sesión.</li>
-            <li>Crea una nueva aplicación para obtener el Client ID y Client Secret.</li>
-            <img src="/assets/img/form_login/form_image1.png" className={styles.modalImage} alt="Instrucciones 1" />
-            <li>Copia el Client ID y Client Secret en el formulario principal y presiona "Conectarse a MercadoLibre".</li>
-            <img src="/assets/img/form_login/form_image2.png" className={styles.modalImage} alt="Instrucciones 2" />
-          </ol>
-        </Modal.Body>
-        <Modal.Footer>
-          <Button variant="secondary" onClick={handleClose}>
-            Cerrar
-          </Button>
-        </Modal.Footer>
-      </Modal>
-
-      {loading && (
-        <div className={styles.loadingOverlay}>
-          <div className={styles.loadingSpinner}></div>
-          <p className={styles.loadingMessage}>Procesando...</p>
-        </div>
+        />
       )}
     </div>
   );
 };
 
-export default AuthMercadoLibre;
+export default SeleccionConexion;

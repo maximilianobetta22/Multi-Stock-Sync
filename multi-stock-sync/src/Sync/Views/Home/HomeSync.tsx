@@ -1,11 +1,21 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "bootstrap/dist/css/bootstrap.min.css";
 import styles from "./HomeSync.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faBoxOpen, faWarehouse, faPlug, faFolderOpen, faServer } from "@fortawesome/free-solid-svg-icons";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const HomeSync: React.FC = () => {
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
+        if (!conexionSeleccionada) {
+            // 🔒 Redirigir a Selección de Conexión si no hay conexión activa
+            navigate("/sync/seleccionar-conexion");
+        }
+    }, [navigate]);
+
     const cards = [
         { 
             title: "Productos", 
