@@ -39,6 +39,16 @@ const EnviosFinalizados: React.FC = () => {
             dataIndex: ["shipment_history", "status"],
             key: "estado",
         },
+        // {
+        //     title: "Fecha Finalización",
+        //     dataIndex: ["shipment_history", "date_delivered"],
+        //     key: "fechaFinalizacion",
+        //     render: (dateString: string | undefined) => {
+        //         if (!dateString) return 'N/A';
+        //         const date = dayjs(dateString);
+        //         return date.isValid() ? date.format('YYYY-MM-DD HH:mm') : 'Fecha inválida';
+        //     },
+        // },
     ];
 
     const handleTableChange = (pagination: any) => {
