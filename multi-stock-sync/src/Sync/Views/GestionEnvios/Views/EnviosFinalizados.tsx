@@ -1,105 +1,87 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { Table, Spin, Alert } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import dayjs from "dayjs";
+import 'dayjs/locale/es';
+dayjs.locale('es');
+import useObtenerEnviosPorCliente from "../Hooks/EnviosporCliente";
 
-interface EnvioFinalizado {
-  id: string;
-  title: string;
-  quantity: number;
-  size: string;
-  sku: string;
-  shipment_history: {
-    status: string;
-    date?: string;
-  };
+interface Envio {
+    id: string;
+    title: string;
+    quantity: number;
+    size: string;
+    sku: string;
+    shipment_history: {
+        status: string;
+        date_created?: string;
+    };
 }
 
 const EnviosFinalizados: React.FC = () => {
-  const [data, setData] = useState<EnvioFinalizado[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
 
-  const fetchEnvios = async () => {
-    setLoading(true);
-    setError(null);
+    const { data: allShipments, loading, error, totalItems } = useObtenerEnviosPorCliente(currentPage, pageSize);
 
-    const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
-    const clientId = conexionSeleccionada ? JSON.parse(conexionSeleccionada).client_id : null;
+    const enviosFinalizados = allShipments.filter((item: Envio) =>
+        item.shipment_history?.status?.toLowerCase() === "entregado"
+    );
 
-    if (!clientId) {
-      setError("No se encontró el client_id en la conexión seleccionada.");
-      setLoading(false);
-      return;
-    }
+    const columns: ColumnsType<Envio> = [
+        { title: "ID Producto", dataIndex: "id", key: "id" },
+        { title: "Título", dataIndex: "title", key: "title" },
+        { title: "SKU", dataIndex: "sku", key: "sku" },
+        { title: "Cantidad", dataIndex: "quantity", key: "quantity" },
+        { title: "Tamaño", dataIndex: "size", key: "size" },
+        {
+            title: "Estado de Envío",
+            dataIndex: ["shipment_history", "status"],
+            key: "estado",
+        },
+    ];
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${clientId}`);
-      const result = await res.json();
+    const handleTableChange = (pagination: any) => {
+        setCurrentPage(pagination.current);
+    };
 
-      if (result.status === "success") {
-        const finalizados = result.data.filter((item: any) =>
-          item.shipment_history?.status?.toLowerCase() === "entregado"
-        );
-        setData(finalizados);
-      } else {
-        setError(result.message || "Error desconocido al cargar los envíos.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Error al conectar con el servidor.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEnvios();
-  }, []);
-
-  const columns: ColumnsType<EnvioFinalizado> = [
-    {
-      title: "ID Producto",
-      dataIndex: "id",
-      key: "id",
-    },
-    {
-      title: "Título",
-      dataIndex: "title",
-      key: "title",
-    },
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      key: "sku",
-    },
-    {
-      title: "Cantidad",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Tamaño",
-      dataIndex: "size",
-      key: "size",
-    },
-    {
-      title: "Estado de Envío",
-      dataIndex: ["shipment_history", "status"],
-      key: "estado",
-    },
-  ];
-
-  return (
-    <div>
-      <h3>Pedidos Finalizados</h3>
-      {loading ? (
-        <Spin tip="Cargando envíos finalizados..." />
-      ) : error ? (
-        <Alert type="error" message={error} />
-      ) : (
-        <Table rowKey="id" columns={columns} dataSource={data} pagination={{ pageSize: 10 }} />
-      )}
-    </div>
-  );
+    return (
+        <div>
+            <h3>Pedidos Finalizados</h3>
+            {loading ? (
+                <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                    <Spin tip="Cargando envíos finalizados..." size="large" />
+                </div>
+            ) : error ? (
+                <div style={{ marginTop: '20px' }}>
+                    <Alert type="error" message={`Error al cargar envíos: ${error}`} />
+                </div>
+            ) : (
+                <>
+                    {enviosFinalizados.length === 0 && totalItems === 0 ? (
+                        <Alert type="info" message="No hay envíos finalizados para mostrar." />
+                    ) : (
+                        <Table
+                            rowKey="id"
+                            columns={columns}
+                            dataSource={enviosFinalizados}
+                            pagination={{
+                                current: currentPage,
+                                pageSize: pageSize,
+                                total: totalItems,
+                                showSizeChanger: false,
+                                showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} de ${total} ítems`,
+                            }}
+                            onChange={handleTableChange}
+                        />
+                    )}
+                    {enviosFinalizados.length === 0 && totalItems > 0 && !loading && !error && (
+                         <Alert type="warning" message="No hay envíos 'entregado' en esta página." />
+                    )}
+                </>
+            )}
+        </div>
+    );
 };
 
 export default EnviosFinalizados;
