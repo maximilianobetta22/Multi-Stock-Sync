@@ -5,7 +5,7 @@ import HomeBodega from "../Views/Home/HomeBodega";
 function RouterBodegas() {
   return (
     <Routes>
-      <Route path="/home" element={<HomeBodega />} />      
+      <Route path="/home" element={<HomeBodega />} />
       <Route path="/*" element={<Navigate to="/sync/bodegas/home" />} />
     </Routes>
   );
