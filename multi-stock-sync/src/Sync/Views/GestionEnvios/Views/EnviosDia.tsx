@@ -1,18 +1,17 @@
-import React from "react";
+import React, { useState } from "react";
 import { Table, Spin, Alert, Select } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import dayjs from "dayjs";
 import 'dayjs/locale/es';
 dayjs.locale('es');
 
-// Importamos los dos hooks necesarios
 import useObtenerEnviosPorCliente from "../Hooks/EnviosporCliente";
-import useObtenerDetallesEnvio from "../Hooks/DetallesEnvio";
+import useObtenerDetallesEnvio, { ShipmentDetails } from "../Hooks/DetallesEnvio";
 
 
 interface Envio {
-    id: string; 
-    order_id: string; 
+    id: string;
+    order_id: string;
     title: string;
     quantity: number;
     size: string;
@@ -20,48 +19,45 @@ interface Envio {
     shipment_history: {
         status: string;
         date_created?: string;
-        
     };
-    
-    clientName?: string;
-    address?: string;
-    receiver_name?: string;
-
-
-
-     date_delivered?: string;
 }
 
 
-const ShipmentDetailsLoader: React.FC<{ orderId: string }> = ({ orderId }) => {
-    const { details, loadingDetails, errorDetails } = useObtenerDetallesEnvio(orderId);
+const ShipmentInfoLoader: React.FC<{ shipmentId: string }> = ({ shipmentId }) => {
+    const { details, loadingDetails, errorDetails }: { details: ShipmentDetails | null, loadingDetails: boolean, errorDetails: string | null } = useObtenerDetallesEnvio(shipmentId);
 
     if (loadingDetails) {
         return <Spin size="small" />;
     }
     if (errorDetails) {
-        return <span style={{ color: 'red' }}>Error</span>;
+        return <span style={{ color: 'red' }}>Error: {errorDetails}</span>;
     }
-    if (!details) {
-        return <span>Cargado...</span>; // O algún indicador mientras se espera
+
+    if (!details || !details.receiver_name || !details.direction) {
+        return <span>Datos incompletos</span>;
     }
+
+    const receiver = details.receiver_name;
+    const address = details.direction;
 
     return (
         <div>
-            Cliente: {details.clientName || 'N/A'}<br/>
-            Receptor: {details.receiver_name || 'N/A'}<br/>
-            Dirección: {details.address || 'N/A'}
+            Receptor: {receiver}<br/>
+            Dirección: {address}
         </div>
     );
 };
 
 
-
 const EnviosDia: React.FC = () => {
 
-    const page = 1;
-    const perPage = 1000;
-    const { data: allShipments, loading, error } = useObtenerEnviosPorCliente(page, perPage);
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSize = 10;
+
+    const hookPage = 1;
+    const hookPerPage = 1000;
+    const { data: allShipments, loading, error } = useObtenerEnviosPorCliente(hookPage, hookPerPage);
+
 
     const today = dayjs();
 
@@ -76,11 +72,10 @@ const EnviosDia: React.FC = () => {
         return shipmentDate.isSame(today, 'day');
     });
 
-     const clientId = 'ID_DEL_CLIENTE_AQUI';
+    const clientId = 'ID_DEL_CLIENTE_AQUI';
 
-     const handleUpdateStatus = async (shipmentId: string, newStatus: string) => {
+    const handleUpdateStatus = async (shipmentId: string, newStatus: string) => {
          console.log(`Intentando actualizar estado del envío ${shipmentId} a ${newStatus} para cliente ${clientId}`);
-         // Aquí iría la llamada a tu NUEVO endpoint de backend para actualizar el estado
          /*
          if (!clientId) {
              alert('Cliente no identificado.');
@@ -122,34 +117,40 @@ const EnviosDia: React.FC = () => {
                 return date.isValid() ? date.format('YYYY-MM-DD HH:mm') : 'Fecha inválida';
             },
         },
-        // *** COLUMNA PARA DATOS DEL CLIENTE/DIRECCIÓN/RECEPTOR (usa el componente auxiliar) ***
-        {
-            title: "Datos del Envío",
-            key: "detallesEnvio",
-            // Usamos _text para indicar que no usamos el primer argumento
-            render: (_text: any, record: Envio) => <ShipmentDetailsLoader orderId={record.order_id} />, // Le pasamos el order_id del item
-        },
-        // *** COLUMNA PARA ACTUALIZAR ESTADO (UI PENDIENTE DE BACKEND) ***
-        {
-            title: "Acciones",
-            key: "acciones",
-             // Usamos _text para indicar que no usamos el primer argumento
-            render: (_text: any, record: Envio) => (
+         {
+             title: "Datos del Envío",
+             key: "detallesEnvio",
+             render: (_text: any, record: Envio) => {
+                 if (record.order_id) {
+                      return <ShipmentInfoLoader shipmentId={record.order_id} />;
+                 } else {
+                      return 'ID de envío no disponible';
+                 }
+             }
+         },
+         {
+             title: "Acciones",
+             key: "acciones",
+             render: (_text: any, record: Envio) => (
                  <Select
-                     defaultValue={record.shipment_history?.status || 'pendiente'} // Estado actual del envío
+                     defaultValue={record.shipment_history?.status || 'pendiente'}
                      style={{ width: 150 }}
-                     onChange={(value) => handleUpdateStatus(record.id, value)} // Llama a la función al cambiar el selector
+                     onChange={(value) => handleUpdateStatus(record.id, value)}
                  >
                      <Select.Option value="pendiente">Pendiente</Select.Option>
                      <Select.Option value="ready_to_ship">Listo para enviar</Select.Option>
                      <Select.Option value="shipped">Enviado</Select.Option>
                      <Select.Option value="delivered">Entregado</Select.Option>
                      <Select.Option value="cancelled">Cancelado</Select.Option>
-                     {/* Añade más estados según necesites y tu API soporte */}
                  </Select>
             ),
         },
     ];
+
+    // Función para manejar el cambio de página en la tabla visual
+    const handleTableChange = (pagination: any) => {
+        setCurrentPage(pagination.current); // Usa setCurrentPage
+    };
 
     return loading ? (
         <div style={{ textAlign: 'center', marginTop: '20px' }}>
@@ -169,7 +170,14 @@ const EnviosDia: React.FC = () => {
                     rowKey="id"
                     columns={columns}
                     dataSource={enviosHoy}
-                    pagination={{ pageSize: 10 }}
+                    // Configuración de paginación para la tabla visual
+                    pagination={{
+                        current: currentPage, // Usa currentPage
+                        pageSize: pageSize,   // Usa pageSize
+                        showSizeChanger: false,
+                        showTotal: (total: number, range: [number, number]) => `${range[0]}-${range[1]} de ${total} ítems`,
+                    }}
+                    onChange={handleTableChange} // Usa handleTableChange
                 />
             )}
         </div>

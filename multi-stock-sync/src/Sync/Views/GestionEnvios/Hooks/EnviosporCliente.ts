@@ -2,10 +2,9 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../../../axiosConfig";
 import axios from "axios";
 
-
 interface Envio {
     id: string;
-    order_id: string; // Este campo debe contener el ID del ENVÍO, proporcionado por el backend principal
+    order_id: string;
     title: string;
     quantity: number;
     size: string;
@@ -16,7 +15,6 @@ interface Envio {
 
     };
 
-    // Estos campos son relevantes principalmente para los datos que trae el segundo hook de detalles
     clientName?: string;
     address?: string;
     receiver_name?: string;
@@ -90,7 +88,7 @@ const useObtenerEnviosPorCliente = (page: number, perPage: number, year?: number
 
                     const itemsWithOrderId = response.data.data.map((item: any) => ({
                         ...item,
-                        order_id: item.order_id // Intenta leer 'order_id' de la respuesta del backend
+                        order_id: item.order_id
                     }));
 
                     setData(itemsWithOrderId || []);
@@ -130,10 +128,10 @@ const useObtenerEnviosPorCliente = (page: number, perPage: number, year?: number
              setTotalItems(0);
         } else {
              if (!clientId) {
-                   setLoading(true);
-                   setError(null);
-                   setData([]);
-                   setTotalItems(0);
+                    setLoading(true);
+                    setError(null);
+                    setData([]);
+                    setTotalItems(0);
              }
         }
 
