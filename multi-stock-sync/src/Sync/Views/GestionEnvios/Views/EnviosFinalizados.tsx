@@ -11,22 +11,16 @@ import useObtenerDetallesEnvio, { ShipmentDetails } from "../Hooks/DetallesEnvio
 
 interface Envio {
     id: string;
-    order_id: string; // Este campo ahora viene del shipping_id del primer endpoint
+    order_id: string; 
     title: string;
     quantity: number;
     size: string;
     sku: string;
     shipment_history: {
-        status: string; // Este status es del primer endpoint
+        status: string; 
         date_created?: string;
     };
-    // Los siguientes campos (clientName, address, receiver_name, date_delivered)
-    // probablemente no son necesarios aquí si se obtienen en el segundo endpoint
-    // y se usan dentro del ShipmentSpecificDetailsLoader.
-    // clientName?: string;
-    // address?: string;
-    // receiver_name?: string;
-    // date_delivered?: string;
+
 }
 
 
@@ -41,16 +35,11 @@ const ShipmentSpecificDetailsLoader: React.FC<{ orderId: string }> = ({ orderId 
         return <span style={{ color: 'red' }}>Error: {errorDetails}</span>;
     }
 
-    // MODIFICACIÓN AQUÍ: Ajustar la condición para "Datos incompletos"
-    // Ahora verificamos que exista details, receptor, receiver_name, status_history y date_shipped
     if (!details || !details.receptor || !details.receptor.receiver_name || !details.status_history || !details.status_history.date_shipped) {
          return <span>Datos incompletos</span>;
     }
-
-    // MODIFICACIÓN AQUÍ: Obtener el nombre del receptor de la nueva estructura
     const receiver = details.receptor.receiver_name;
 
-    // MODIFICACIÓN AQUÍ: Obtener la fecha desde status_history.date_shipped
     const rawDate = details.status_history.date_shipped;
     // Formatear la fecha obtenida
     const formattedDate = rawDate ? (dayjs(rawDate).isValid() ? dayjs(rawDate).format('YYYY-MM-DD HH:mm') : 'Fecha inválida') : 'N/A';
@@ -68,7 +57,6 @@ const EnviosFinalizados: React.FC = () => {
     const [currentPage, setCurrentPage] = useState(1);
     const pageSize = 10;
 
-    // useObtenerEnviosPorCliente ya fue modificado para usar item.shipping_id
     const { data: allShipments, loading, error, totalItems } = useObtenerEnviosPorCliente(currentPage, pageSize);
 
     const enviosFinalizados = allShipments.filter((item: Envio) =>
