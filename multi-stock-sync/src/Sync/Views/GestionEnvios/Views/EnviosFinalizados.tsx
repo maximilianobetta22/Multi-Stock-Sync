@@ -1,75 +1,72 @@
 import React, { useEffect, useState } from "react";
-import { Table, Spin, Alert } from "antd";
-import type { ColumnsType } from "antd/es/table";
+import { Table, message, Spin } from "antd";
+import axios from "axios";
 
-interface EnvioFinalizado {
+interface Pedido {
   id: string;
   title: string;
   quantity: number;
   size: string;
   sku: string;
-  shipment_history: {
-    status: string;
-    date?: string;
-  };
+  estadoEnvio: string; // Puedes agregar más campos según el endpoint
 }
 
-const EnviosFinalizados: React.FC = () => {
-  const [data, setData] = useState<EnvioFinalizado[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+const PedidosFinalizados: React.FC = () => {
+  const [pedidos, setPedidos] = useState<Pedido[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const fetchEnvios = async () => {
-    setLoading(true);
-    setError(null);
+  const fetchPedidosFinalizados = async () => {
+    const token = localStorage.getItem("token");
+    const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
 
-    const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
-    const clientId = conexionSeleccionada ? JSON.parse(conexionSeleccionada).client_id : null;
-
-    if (!clientId) {
-      setError("No se encontró el client_id en la conexión seleccionada.");
-      setLoading(false);
+    if (!conexion?.client_id) {
+      message.error("No hay conexión seleccionada.");
       return;
     }
 
     try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${clientId}`);
-      const result = await res.json();
+      setLoading(true);
 
-      if (result.status === "success") {
-        const finalizados = result.data.filter((item: any) =>
-          item.shipment_history?.status?.toLowerCase() === "entregado"
-        );
-        setData(finalizados);
-      } else {
-        setError(result.message || "Error desconocido al cargar los envíos.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Error al conectar con el servidor.");
+      // Refrescamos la conexión antes de hacer cualquier otra cosa
+      await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/test-connection/${conexion.client_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      // Ahora pedimos los pedidos finalizados
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${conexion.client_id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+
+      setPedidos(response.data.data || []);
+
+    } catch (error) {
+      console.error("Error al cargar pedidos finalizados:", error);
+      message.error("No se pudieron cargar los pedidos finalizados.");
     } finally {
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchEnvios();
+    fetchPedidosFinalizados();
   }, []);
 
-  const columns: ColumnsType<EnvioFinalizado> = [
+  const columns = [
     {
       title: "ID Producto",
       dataIndex: "id",
       key: "id",
     },
     {
-      title: "Título",
+      title: "Nombre",
       dataIndex: "title",
       key: "title",
-    },
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      key: "sku",
     },
     {
       title: "Cantidad",
@@ -77,29 +74,38 @@ const EnviosFinalizados: React.FC = () => {
       key: "quantity",
     },
     {
-      title: "Tamaño",
+      title: "Talla",
       dataIndex: "size",
       key: "size",
     },
     {
-      title: "Estado de Envío",
+      title: "SKU",
+      dataIndex: "sku",
+      key: "sku",
+    },
+    {
+      title: "Estado Envío",
       dataIndex: ["shipment_history", "status"],
-      key: "estado",
+      key: "estadoEnvio",
+      render: (text: string) => text || "N/A",
     },
   ];
 
   return (
-    <div>
-      <h3>Pedidos Finalizados</h3>
+    <div style={{ padding: "2rem" }}>
       {loading ? (
-        <Spin tip="Cargando envíos finalizados..." />
-      ) : error ? (
-        <Alert type="error" message={error} />
+        <Spin size="large" />
       ) : (
-        <Table rowKey="id" columns={columns} dataSource={data} pagination={{ pageSize: 10 }} />
+        <Table
+          rowKey="id"
+          columns={columns}
+          dataSource={pedidos}
+          bordered
+          pagination={{ pageSize: 10 }}
+        />
       )}
     </div>
   );
 };
 
-export default EnviosFinalizados;
+export default PedidosFinalizados;
