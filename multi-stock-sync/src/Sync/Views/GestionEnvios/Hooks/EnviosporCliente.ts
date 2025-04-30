@@ -88,7 +88,7 @@ const useObtenerEnviosPorCliente = (page: number, perPage: number, year?: number
 
                     const itemsWithOrderId = response.data.data.map((item: any) => ({
                         ...item,
-                        order_id: item.order_id
+                        order_id: item.shipping_id
                     }));
 
                     setData(itemsWithOrderId || []);

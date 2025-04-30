@@ -2,14 +2,16 @@ import { useState, useEffect } from "react";
 import axiosInstance from "../../../../axiosConfig";
 
 export interface ShipmentDetails {
-    order_id?: string;
-    receiver_name?: string;
-    direction?: string;
-    date_status?: {
-        status: string;
-        date: string;
-    }[];
-    message?: string;
+    receptor?: {
+        receiver_id?: number;
+        receiver_name?: string;
+    };
+    status_history?: {
+        date_shipped?: string;
+        date_returned?: string | null;
+      
+    };
+    status?: string; 
 }
 
 interface UseObtenerDetallesEnvioResult {
@@ -53,7 +55,8 @@ const useObtenerDetallesEnvio = (shipmentId: string | null): UseObtenerDetallesE
                  return;
             }
 
-            const endpointUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/information-dispatch-deliveries/${id}/${shipmentId}`;
+            // La URL ya la corregimos a 'delivered'
+            const endpointUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/information-dispatch-delivered/${id}/${shipmentId}`;
 
             try {
                 const response = await axiosInstance.get(
@@ -66,13 +69,15 @@ const useObtenerDetallesEnvio = (shipmentId: string | null): UseObtenerDetallesE
                     }
                 );
 
+                // Aseguramos que la respuesta tenga status success y datos
                 if (response.data && response.data.status === "success" && response.data.data) {
+                     // Asignamos los datos a details. TypeScript ahora los validará contra la nueva interfaz.
                      setDetails(response.data.data as ShipmentDetails);
                  } else {
+                     // Manejo de error si el status no es success o data es nulo
                      setErrorDetails(response.data?.message || "Error al obtener detalles del envío (respuesta exitosa pero con status no 'success').");
                      setDetails(null);
                  }
-
 
             } catch (err: any) {
                 console.error(`Error fetching details for shipment ${shipmentId}:`, err);
