@@ -1,69 +1,94 @@
-import { useState, useEffect } from 'react'; // Eliminamos useCallback si estaba importado
+import { useState, useEffect } from 'react';
+import axiosInstance from "../../../../axiosConfig";// Asegúrate de que la ruta de importación sea correcta
+import axios from 'axios'; // Importa axios para el manejo de errores
 
-// Interfaz para un producto según la API de 'products-by-company'
-export interface ProductoAPI { // <--- Añadimos 'export' aquí
-id: number | string; // O string
-title: string; // Parece ser el nombre del producto
-order: number; // Algún tipo de orden, no relevante para la venta
-available_quantity: number; // Cantidad disponible
-warehouse_name: string; // Nombre de la bodega
-company_name: string; // Nombre de la empresa
-client_id: number | string; // ID del cliente (raro en un producto, quizás para filtrar? - Asegura tipo compatible)
-price: number; // Mantenemos esto, pero CONFIRMA con backend si existe y es number
+export interface ProductoAPI {
+  id: number | string;
+  title: string;
+  order: number;
+  available_quantity: number;
+  warehouse_name: string;
+  company_name: string;
+  client_id: number | string;
+  price: number;
 }
 
 export const useProductosPorEmpresa = (idEmpresa?: string | number | null) => {
-const [productos, setProductos] = useState<ProductoAPI[]>([]);
-const [cargandoProductos, setCargandoProductos] = useState<boolean>(false);
-const [errorProductos, setErrorProductos] = useState<string | undefined>(undefined);
+  const [productos, setProductos] = useState<ProductoAPI[]>([]);
+  const [cargandoProductos, setCargandoProductos] = useState<boolean>(false);
+  const [errorProductos, setErrorProductos] = useState<string | undefined>(undefined);
 
-// Usamos useEffect para cargar productos cuando cambie el idEmpresa
-useEffect(() => {
-// Solo cargar si idEmpresa está definido y no es nulo
-if (idEmpresa !== undefined && idEmpresa !== null) {
-const cargarProductos = async () => {
-setCargandoProductos(true);
-setErrorProductos(undefined);
-try {
-// URL del endpoint, usando el id de la empresa
-const url = `http://127.0.0.1:8000/api/v1/products-by-company/${idEmpresa}`; 
-const response = await fetch(url); // O usa axios.get(url)
+  useEffect(() => {
+    if (idEmpresa !== undefined && idEmpresa !== null) {
+      const cargarProductos = async () => {
+        setCargandoProductos(true);
+        setErrorProductos(undefined);
+        try {
+          // Usa la URL relativa a la baseURL configurada
+          const url = `products-by-company`; // Endpoint es solo 'products-by-company'
+          // Pasa el ID de empresa como parámetro de consulta 'company_id'
+          const response = await axiosInstance.get(url, {
+              params: { company_id: idEmpresa }
+          });
 
-if (!response.ok) {
-const errorData = await response.json();
- throw new Error(errorData.message || `Error ${response.status}: ${response.statusText}`);
-}
+          // --- Verifica que la respuesta tenga el formato esperado: { message: ..., data: [...] } ---
+          if (!response.data || !Array.isArray(response.data.data)) {
+               console.error("Formato inesperado en respuesta de productos:", response.data);
+               // Lanza un error si el formato no es el esperado
+               throw new Error("Formato de respuesta de productos inesperado: La API no devolvió los datos esperados.");
+          }
+          const data: { message: string, data: ProductoAPI[] } = response.data;
+          const productosRecibidos = data.data;
+          // ------------------------------------------------------------------------------------------
 
-const data: { message: string, data: ProductoAPI[] } = await response.json();
 
-if (!data.data || !Array.isArray(data.data)) {
-throw new Error("Formato de respuesta de productos inesperado.");
-}
+          setProductos(productosRecibidos); // Actualiza con la lista de productos
 
-setProductos(data.data);
+        } catch (err: any) {
+          console.error(`Error al cargar productos para empresa ${idEmpresa}:`, err);
+           let errorMessage = `Error al cargar productos para empresa ${idEmpresa}.`;
 
-} catch (err: any) {
-console.error(`Error al cargar productos para empresa ${idEmpresa}:`, err);
-setErrorProductos(err.message || `Error al cargar productos para empresa ${idEmpresa}`);
-setProductos([]);
-} finally {
-setCargandoProductos(false);
-}
+          if (axios.isAxiosError(err)) {
+              if (err.response) {
+                   // Error de respuesta del servidor (ej: 401, 404, 500)
+                  errorMessage = err.response.data?.message || `Error del servidor: ${err.response.status}`;
+                   // Si el error es 401 o 403, el mensaje de 'Acceso no autorizado' es útil
+                   if (err.response.status === 401 || err.response.status === 403) {
+                       errorMessage = "Acceso no autorizado para cargar productos. Verifica tu token y la conexión seleccionada.";
+                   }
+              } else if (err.request) {
+                   // La petición fue hecha pero no se recibió respuesta (error de red, CORS, etc.)
+                   errorMessage = 'Error de red: No se recibió respuesta del servidor al cargar productos.';
+              } else {
+                   // Algo pasó al configurar la petición
+                   errorMessage = err.message || 'Error al configurar la petición.';
+              }
+          } else {
+               // Otros tipos de errores (como el que lanzamos si el formato es incorrecto)
+               errorMessage = err.message || 'Error inesperado en la carga de productos.';
+          }
+
+
+          setErrorProductos(errorMessage);
+          setProductos([]); // <--- Asegura que el estado siempre sea un array vacío en caso de error
+        } finally {
+          setCargandoProductos(false);
+        }
+      };
+
+      cargarProductos();
+    } else {
+      setProductos([]); // Limpiar productos si no hay ID de empresa
+      setErrorProductos(undefined); // Limpiar error si no hay ID de empresa
+    }
+
+  }, [idEmpresa]);
+
+  return {
+    productos,
+    cargandoProductos,
+    errorProductos,
+  };
 };
 
-cargarProductos();
-} else {
-setProductos([]);
-setErrorProductos(undefined);
-}
-
-}, [idEmpresa]);
-
-return {
-productos,
-cargandoProductos,
-errorProductos,
-};
-};
-
-export default useProductosPorEmpresa; // <--- Añadimos export default aquí
+export default useProductosPorEmpresa;

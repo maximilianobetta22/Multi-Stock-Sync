@@ -1,24 +1,20 @@
 import React, { useState, useMemo } from 'react';
 import {Typography,Row,Col,Input,Button,Table,Space,Form,InputNumber,Select, Card,Divider,Spin,Alert,Grid} from 'antd';
 import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
-import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta';
-import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
+import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta'; 
+import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta'; 
 import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta';
 const { Title } = Typography;
 const { Search } = Input;
 const { useBreakpoint } = Grid;
-
 interface NuevaVentaProps {
-  companyId: string | number | null;
+  companyId: string | number | null; // Prop para recibir el ID de la empresa
 }
-
 const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
   const screens = useBreakpoint();
-
   const [textoBusquedaProducto, setTextoBusquedaProducto] = useState('');
-
-  const { clientes, cargandoClientes, errorClientes } = useClientes();
-  const { productos: productosDisponiblesAPI, cargandoProductos, errorProductos } = useProductosPorEmpresa(companyId);
+  const { clientes, cargandoClientes, errorClientes } = useClientes(); // Llamada sin parámetro
+  const { productos: productosDisponiblesAPI, cargandoProductos, errorProductos } = useProductosPorEmpresa(companyId); // Pasar companyId aquí
   const {
     notaVenta,
     subtotal,
@@ -34,21 +30,18 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     generarNotaVentaFinal,
     limpiarNotaVenta,
   } = useGestionNotaVentaActual();
-
   const opcionesClientes = useMemo(() => {
-    return clientes.map((cliente: ClienteAPI) => ({
+    return clientes ? clientes.map((cliente: ClienteAPI) => ({
       value: String(cliente.id),
       label: `${cliente.nombre || cliente.razon_social || 'Sin Nombre'} (${cliente.rut})`,
-    }));
+    })) : [];
   }, [clientes]);
-
   const productosDisponiblesFiltrados = useMemo(() => {
     if (!productosDisponiblesAPI) return [];
     return productosDisponiblesAPI.filter((producto: ProductoAPI) =>
       producto.title.toLowerCase().includes(textoBusquedaProducto.toLowerCase())
     );
   }, [productosDisponiblesAPI, textoBusquedaProducto]);
-
   const columnasItems = useMemo(() => {
     return [
       { title: 'Producto', dataIndex: 'nombre', key: 'nombre' },
@@ -84,11 +77,9 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
       },
     ];
   }, [actualizarCantidadItem, eliminarItem, screens]);
-
   const handleSeleccionarCliente = (valorIdCliente?: string | number | null) => {
     establecerIdCliente(valorIdCliente);
   };
-
   return (
     <div style={{ padding: "20px" }}>
       <Title level={3}>Generar Nueva Nota de Venta</Title>
@@ -103,13 +94,15 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
               onChange={(e) => setTextoBusquedaProducto(e.target.value)}
               enterButton={<SearchOutlined />}
               loading={cargandoProductos}
-              disabled={!companyId || cargandoProductos}
+              disabled={!companyId || cargandoProductos || !!errorProductos}
             />
             <div style={{ marginTop: '15px', maxHeight: '400px', overflowY: 'auto', border: '1px solid #f0f0f0', padding: '10px', borderRadius: '4px' }}>
               {cargandoProductos ? (
                 <div style={{ textAlign: 'center' }}><Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} /></div>
+              ) : errorProductos ? (
+                 <Typography.Text type="secondary">{errorProductos}</Typography.Text>
               ) : !companyId ? (
-                <Typography.Text type="secondary">La empresa no ha sido seleccionada correctamente. No se pueden cargar productos.</Typography.Text>
+                 <Typography.Text type="secondary">La empresa no ha sido seleccionada correctamente. No se pueden cargar productos.</Typography.Text>
               ) : productosDisponiblesFiltrados.length > 0 ? (
                 <Space direction="vertical" style={{ width: '100%' }}>
                   {productosDisponiblesFiltrados.map((producto: ProductoAPI) => (
@@ -159,17 +152,18 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
                       onSearch={(texto) => console.log("Buscar cliente (si API soporta):", texto)}
                       onChange={handleSeleccionarCliente}
                       value={notaVenta.idCliente}
-                      notFoundContent={cargandoClientes ? <Spin size="small" /> : 'No encontrado'}
+                      notFoundContent={cargandoClientes ? <Spin size="small" /> : errorClientes ? errorClientes : 'No encontrado'}
                       filterOption={(input, option) =>
                         (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
                       }
                       options={opcionesClientes}
                       allowClear
                       style={{ width: '100%' }}
+                       disabled={cargandoClientes || !!errorClientes}
                     >
                     </Select>
                   </Form.Item>
-                  {notaVenta.idCliente && clientes.length > 0 && (() => {
+                  {notaVenta.idCliente && clientes && clientes.length > 0 && (() => {
                     const clienteSel = clientes.find((c: ClienteAPI) => String(c.id) === String(notaVenta.idCliente));
                     return clienteSel ? (
                       <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
