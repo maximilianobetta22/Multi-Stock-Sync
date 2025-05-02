@@ -14,7 +14,7 @@ import Logout from "../../Auth/Pages/Logout";
 import SeleccionConexion from "../Views/SeleccionConexion/SeleccionConexion";
 import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; // ✅ Nuevo
 import RouterGestionEnvio from "../Views/GestionEnvios/Router/RouterGestionEnvio";
-
+import RouterPuntodeVenta from "../Views/PuntoVenta/Router/RouterPuntodeVenta"
 
 function RouterSync() {
   return (
@@ -30,6 +30,8 @@ function RouterSync() {
 
         {/* 👇 Nuevo módulo de envíos */}
         <Route path="/envios" element={<GestionEnvios />} />
+        {/* 👇 Nuevo módulo de Punto de Venta */}
+        <Route path="/punto-de-venta/*" element={<RouterPuntodeVenta />} />
 
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
