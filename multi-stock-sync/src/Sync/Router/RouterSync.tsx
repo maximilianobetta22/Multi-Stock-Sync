@@ -14,8 +14,8 @@ import Logout from "../../Auth/Pages/Logout";
 import SeleccionConexion from "../Views/SeleccionConexion/SeleccionConexion";
 import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; // ✅ Nuevo
 import RouterGestionEnvio from "../Views/GestionEnvios/Router/RouterGestionEnvio";
-
-
+import GestionVentas from "../Views/GestionVentas/GestionVentas"; // ✅ Nuevo
+import RouterGestionVentas from "../Views/GestionVentas/Router/RouterGestionVentas"; // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 function RouterSync() {
   return (
     <LayoutSync>
@@ -27,10 +27,11 @@ function RouterSync() {
         <Route path="/bodegas/*" element={<RouterBodegas />} />
         <Route path="/reportes/*" element={<RouterReportes />} />
         <Route path="/info" element={<Info />} />
-
+        <Route path="/punto-de-venta" element={<GestionVentas />} />
+        <Route path="/punto-de-venta/*" element={<RouterGestionVentas />} />
         {/* 👇 Nuevo módulo de envíos */}
         <Route path="/envios" element={<GestionEnvios />} />
-
+        
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/logout" element={<Logout />} />
