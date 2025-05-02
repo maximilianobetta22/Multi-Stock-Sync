@@ -1,7 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Form, Input, Button, InputNumber, Select, message, Card, Typography, Space, Switch } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
+import { useEffect } from "react"; // ya debería estar, pero asegúrate
+
+
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -13,87 +16,94 @@ const CrearProducto: React.FC = () => {
   const [atributosCategoria, setAtributosCategoria] = useState<any[]>([]);
   const [categoryId, setCategoryId] = useState<string>("");
   const [familyName, setFamilyName] = useState<string>("");
+  const [catalogProducts, setCatalogProducts] = useState<any[]>([]);
+  const [catalogProductId, setCatalogProductId] = useState<string>("");
 
-  // Función para limpiar caracteres especiales del título
-  const sanitizeTitle = (title: string) => {
-    return title.replace(/[^a-zA-Z0-9 ]/g, "").trim();  // Elimina caracteres no alfanuméricos
-  };
+  const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
+  const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
 
-  // Función para validar y asegurar que el título sea adecuado
+  const sanitizeTitle = (title: string) => title.replace(/[^a-zA-Z0-9 ]/g, "").trim();
+
   const validateTitle = (title: string) => {
-    let sanitizedTitle = sanitizeTitle(title);
-
-    // Limitar el título a 60 caracteres
-    if (sanitizedTitle.length > 60) {
-      sanitizedTitle = sanitizedTitle.slice(0, 60); // Truncar a 60 caracteres
+    let sanitized = sanitizeTitle(title);
+    if (sanitized.length > 60) {
+      sanitized = sanitized.slice(0, 60);
       message.warning("El título fue truncado a 60 caracteres.");
     }
-
-    return sanitizedTitle;
+    return sanitized;
   };
-
-  // Función para predecir la categoría del producto
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("🔑 Token actual:", token);
+  }, []);
+  
   const predecirCategoria = async (titulo: string) => {
     try {
+      const token = localStorage.getItem("token");
+  
       const response = await axios.get(
-        "https://api.mercadolibre.com/sites/MLC/domain_discovery/search",
+        `${import.meta.env.VITE_API_URL}/mercadolibre/products/${conexion.client_id}/catalogo`,
         {
-          params: { q: titulo, limit: 1 },
+          params: { title: titulo },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: "application/json",
+          },
         }
       );
-
-      if (response.data.length > 0) {
-        const categoria = response.data[0].category_id;
-        setCategoryId(categoria);
-        form.setFieldsValue({ category_id: categoria });
-
-        // Cargar atributos de la categoría
-        const atributosRes = await axios.get(
-          `https://api.mercadolibre.com/categories/${categoria}/attributes`
-        );
-        setAtributosCategoria(atributosRes.data);
-        message.success(`Categoría encontrada: ${categoria}`);
-
-        // Obtener el family_name de la categoría
-        const family = response.data[0].family_name || "default_family"; // Asignar valor predeterminado si no se obtiene
-        setFamilyName(family);
-      } else {
+  
+      const data = response.data;
+  
+      if (!data.category_id) {
         message.error("No se pudo predecir la categoría.");
+        return;
       }
-    } catch (error) {
-      console.error("Error al predecir la categoría:", error);
-      message.error("Error al predecir la categoría.");
+  
+      setCategoryId(data.category_id);
+      setFamilyName(data.family_name);
+      form.setFieldsValue({ category_id: data.category_id });
+  
+      const atributosRes = await axios.get(
+        `https://api.mercadolibre.com/categories/${data.category_id}/attributes`
+      );
+      setAtributosCategoria(atributosRes.data);
+  
+      if (data.products && data.products.length > 0) {
+        setCatalogProducts(data.products);
+        message.warning("⚠️ Esta categoría tiene catálogo disponible.");
+      } else {
+        setCatalogProducts([]);
+        message.success("✅ Categoría detectada sin catálogo obligatorio.");
+      }
+    } catch (error: any) {
+      console.error("❌ Error al predecir la categoría:", error);
+      if (error.response?.status === 422) {
+        message.error("El backend requiere el parámetro title.");
+      } else if (error.response?.data?.message) {
+        message.error(error.response.data.message);
+      } else {
+        message.error("Error al predecir la categoría.");
+      }
     }
   };
+  
+  
 
   const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const titulo = e.target.value;
-    if (titulo.length > 4) {
-      predecirCategoria(titulo);
-    }
+    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+    debounceTimeout.current = setTimeout(() => {
+      if (titulo.length > 4) predecirCategoria(titulo);
+    }, 500);
   };
 
   const onFinish = async (values: any) => {
-    const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
-    if (!conexion?.client_id) {
-      return message.error("No se ha seleccionado una tienda.");
-    }
-
-    const atributosPlano = Object.entries(values.attributes || {}).map(([id, value_name]) => ({
-      id,
-      value_name,
-    }));
-
-    // Validar y sanitizar el título
-    let titulo = validateTitle(values.title);
-
-    // Verificar que el título no esté vacío
-    if (!titulo || titulo.trim() === "") {
-      return message.error("El título del producto es obligatorio.");
-    }
-
-    const payload = {
-      title: titulo,  // Usar el título validado
+    if (!conexion?.client_id) return message.error("No se ha seleccionado una tienda.");
+    const titulo = validateTitle(values.title);
+  
+    const tieneCatalogo = !!catalogProductId?.length;
+  
+    let payload: any = {
       category_id: categoryId,
       condition: values.condition,
       price: values.price,
@@ -111,16 +121,25 @@ const CrearProducto: React.FC = () => {
         local_pick_up: values.local_pick_up || false,
         free_shipping: values.free_shipping || false,
       },
-      attributes: atributosPlano,
-      family_name: familyName || "default_family",  // Asegurándonos de que se pase el family_name correctamente
+      ...(familyName ? { family_name: familyName } : {}),
     };
-
-    console.log("Enviando solicitud con payload:", payload);  // Log de depuración
-
+  
+    if (!tieneCatalogo) {
+      payload.title = titulo;
+      payload.attributes = Object.entries(values.attributes || {}).map(([id, value_name]) => ({
+        id,
+        value_name,
+      }));
+    }
+  
+    if (tieneCatalogo) {
+      payload.catalog_product_id = catalogProductId;
+    }
+  
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
-
+  
       await axios.post(
         `${import.meta.env.VITE_API_URL}/mercadolibre/Products/${conexion.client_id}/crear-producto`,
         payload,
@@ -131,11 +150,13 @@ const CrearProducto: React.FC = () => {
           },
         }
       );
-
+  
       message.success("✅ Producto subido con éxito a Mercado Libre");
       form.resetFields();
       setImagenes([]);
       setAtributosCategoria([]);
+      setCatalogProducts([]);
+      setCatalogProductId("");
     } catch (error: any) {
       console.error("🔴 Error detallado:", error.response?.data || error);
       message.error("Hubo un error al subir el producto.");
@@ -143,6 +164,7 @@ const CrearProducto: React.FC = () => {
       setLoading(false);
     }
   };
+  
 
   const handleAgregarImagen = () => {
     const url = prompt("Ingresa el URL de la imagen (MercadoLibre solo acepta links públicos):");
@@ -154,16 +176,60 @@ const CrearProducto: React.FC = () => {
 
   return (
     <Card style={{ maxWidth: 800, margin: "0 auto" }}>
+      {conexion?.nickname && (
+        <p style={{ fontWeight: 500, marginBottom: 10 }}>
+          🛒 Estás subiendo un producto a: <strong>{conexion.nickname}</strong>
+        </p>
+      )}
       <Title level={3}>Subir Producto a Mercado Libre</Title>
 
       <Form layout="vertical" form={form} onFinish={onFinish}>
-        <Form.Item name="title" label="Título" rules={[{ required: true }]}>
-          <Input onChange={onTitleChange} />
+        <Form.Item name="title" label="Título" rules={[{ required: !catalogProductId }]}>
+          <Input onChange={onTitleChange} disabled={!!catalogProductId} />
+        </Form.Item>
+        <Form.Item name="category_id" label="Categoría (ID)">
+          <Input disabled />
         </Form.Item>
 
-        <Form.Item name="category_id" label="Categoría (ID)" rules={[{ required: true }]}>
-          <Input placeholder="Se completará automáticamente si es posible" disabled />
-        </Form.Item>
+        {catalogProducts.length > 0 && (
+          <>
+            <Form.Item
+              name="catalog_product_id"
+              label="Producto del catálogo"
+              rules={[{ required: true }]}
+            >
+              <Select
+                showSearch
+                onChange={setCatalogProductId}
+                optionFilterProp="children"
+                placeholder="Selecciona el producto del catálogo"
+              >
+                {catalogProducts.map((p) => (
+                  <Select.Option key={p.id} value={p.id}>
+                    {p.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </Form.Item>
+
+            {catalogProductId && (() => {
+              const selected = catalogProducts.find((p) => p.id === catalogProductId);
+              return selected ? (
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
+                  <img
+                    src={selected.thumbnail || selected.pictures?.[0]?.url}
+                    alt="Producto"
+                    width={60}
+                    style={{ borderRadius: 4 }}
+                  />
+                  <div>
+                    <strong>{selected.name}</strong>
+                  </div>
+                </div>
+              ) : null;
+            })()}
+          </>
+        )}
 
         <Form.Item name="condition" label="Condición" rules={[{ required: true }]}>
           <Select>
@@ -194,9 +260,11 @@ const CrearProducto: React.FC = () => {
           </Select>
         </Form.Item>
 
-        <Form.Item name="description" label="Descripción" rules={[{ required: true }]}>
-          <TextArea rows={4} />
-        </Form.Item>
+        {!catalogProductId && (
+          <Form.Item name="description" label="Descripción" rules={[{ required: true }]}>
+            <TextArea rows={4} />
+          </Form.Item>
+        )}
 
         <Form.Item label="Imágenes agregadas">
           <ul>
@@ -231,33 +299,35 @@ const CrearProducto: React.FC = () => {
           </Form.Item>
         </Space>
 
-        {atributosCategoria
-          .filter((attr) => attr.tags?.required || attr.tags?.catalog_required)
-          .map((attr) => {
-            const esLista = attr.value_type === "list" && attr.values?.length > 0;
-            return (
-              <Form.Item
-                key={attr.id}
-                name={['attributes', attr.id]}
-                label={attr.name}
-                rules={[{ required: true, message: `Este campo es obligatorio` }]} >
-                {esLista ? (
-                  <Select showSearch optionFilterProp="children">
-                    {attr.values.map((v: any) => (
-                      <Select.Option key={v.id} value={v.name}>
-                        {v.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                ) : (
-                  <Input placeholder={attr.hint || `Ingrese ${attr.name.toLowerCase()}`} />
-                )}
-              </Form.Item>
-            );
-          })}
+        {!catalogProductId &&
+          atributosCategoria
+            .filter((attr) => attr.tags?.required || attr.tags?.catalog_required)
+            .map((attr) => {
+              const esLista = attr.value_type === "list" && attr.values?.length > 0;
+              return (
+                <Form.Item
+                  key={attr.id}
+                  name={["attributes", attr.id]}
+                  label={attr.name}
+                  rules={[{ required: true }]}
+                >
+                  {esLista ? (
+                    <Select showSearch optionFilterProp="children">
+                      {attr.values.map((v: any) => (
+                        <Select.Option key={v.id} value={v.name}>
+                          {v.name}
+                        </Select.Option>
+                      ))}
+                    </Select>
+                  ) : (
+                    <Input placeholder={attr.hint || `Ingrese ${attr.name.toLowerCase()}`} />
+                  )}
+                </Form.Item>
+              );
+            })}
 
         <Form.Item>
-          <Button type="primary" htmlType="submit" loading={loading}>
+          <Button type="primary" htmlType="submit" loading={loading} disabled={!categoryId}>
             Subir producto
           </Button>
         </Form.Item>
