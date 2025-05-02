@@ -5,7 +5,35 @@ import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { useListCliente } from '../Hooks/useListCliente';
 import { ColumnsType } from 'antd/es/table';
 import { client } from '../Types/clienteTypes';
-
+const Toast = ({ message, type, onClose }) => {
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        onClose();
+      }, 5000);
+      
+      return () => clearTimeout(timer);
+    }, [onClose]);
+    
+    const backgroundColor = type === 'success' ? '#52c41a' : 
+                           type === 'error' ? '#f5222d' : '#1890ff';
+    
+    return (
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        right: '20px',
+        backgroundColor,
+        color: 'white',
+        padding: '10px 20px',
+        borderRadius: '4px',
+        boxShadow: '0 3px 6px rgba(0,0,0,0.2)',
+        zIndex: 1000,
+        maxWidth: '300px'
+      }}>
+        {message}
+      </div>
+    );};
+    
 const { Title } = Typography;
 
 const ListaClientes: React.FC = () => {

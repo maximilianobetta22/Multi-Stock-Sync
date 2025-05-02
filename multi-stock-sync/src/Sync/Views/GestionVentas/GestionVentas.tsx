@@ -1,8 +1,7 @@
 import React from "react"
-import  ClientForm from "./Views/agregarCliente"
 import { Tabs, TabsProps } from "antd";
 import ListaClientes from "./Views/ListaClientes"
-
+import { HistorialVentas } from "./Views/historialVentas";
 
 const GestionVentas: React.FC = () => {
     const items: TabsProps["items"] = [
@@ -17,7 +16,7 @@ const GestionVentas: React.FC = () => {
       },{
         key: "3",
         label: "Historial ventas",
-        children: <></>
+        children: <HistorialVentas/>
       },
       
       
