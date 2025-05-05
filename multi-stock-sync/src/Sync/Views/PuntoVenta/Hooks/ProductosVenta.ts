@@ -1,88 +1,98 @@
 import { useState, useEffect } from 'react';
-import axiosInstance from "../../../../axiosConfig";// Asegúrate de que la ruta de importación sea correcta
-import axios from 'axios'; // Importa axios para el manejo de errores
+import axiosInstance from '../../../../axiosConfig';
+import axios from 'axios';
 
 export interface ProductoAPI {
   id: number | string;
   title: string;
-  order: number;
-  available_quantity: number;
-  warehouse_name: string;
-  company_name: string;
-  client_id: number | string;
-  price: number;
+  order?: number | null;
+  available_quantity: number | null | undefined;
+  warehouse_name?: string | null;
+  company_name?: string | null;
+  client_id?: number | string | null;
+  price: number | string | null | undefined;
+  id_mlc?: string;
+  location?: string | null;
+  assigned_company_id?: number | string | null;
 }
 
-export const useProductosPorEmpresa = (idEmpresa?: string | number | null) => {
+export const useProductosPorEmpresa = (idWarehouse?: string | number | null) => {
   const [productos, setProductos] = useState<ProductoAPI[]>([]);
   const [cargandoProductos, setCargandoProductos] = useState<boolean>(false);
   const [errorProductos, setErrorProductos] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    if (idEmpresa !== undefined && idEmpresa !== null) {
+    if (idWarehouse !== undefined && idWarehouse !== null) {
       const cargarProductos = async () => {
         setCargandoProductos(true);
         setErrorProductos(undefined);
         try {
-          // Usa la URL relativa a la baseURL configurada
-          const url = `products-by-company`; // Endpoint es solo 'products-by-company'
-          // Pasa el ID de empresa como parámetro de consulta 'company_id'
-          const response = await axiosInstance.get(url, {
-              params: { company_id: idEmpresa }
-          });
+          const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+          const endpointUrl = `${baseUrl}/products-by-company/${idWarehouse}`;
 
-          // --- Verifica que la respuesta tenga el formato esperado: { message: ..., data: [...] } ---
+          const response = await axiosInstance.get(endpointUrl);
+
           if (!response.data || !Array.isArray(response.data.data)) {
                console.error("Formato inesperado en respuesta de productos:", response.data);
-               // Lanza un error si el formato no es el esperado
                throw new Error("Formato de respuesta de productos inesperado: La API no devolvió los datos esperados.");
           }
-          const data: { message: string, data: ProductoAPI[] } = response.data;
-          const productosRecibidos = data.data;
-          // ------------------------------------------------------------------------------------------
 
+          const productosRecibidosRaw: any[] = response.data.data;
 
-          setProductos(productosRecibidos); // Actualiza con la lista de productos
+          const productosProcesados: ProductoAPI[] = productosRecibidosRaw.map(item => {
+            const numericPrice = parseFloat(String(item.price)) || 0;
+
+            return {
+              ...item,
+              price: numericPrice
+            } as ProductoAPI;
+          });
+
+          setProductos(productosProcesados);
 
         } catch (err: any) {
-          console.error(`Error al cargar productos para empresa ${idEmpresa}:`, err);
-           let errorMessage = `Error al cargar productos para empresa ${idEmpresa}.`;
+          console.error(`Error al cargar productos para bodega ${idWarehouse}:`, err);
+           let errorMessage = `Error al cargar productos para bodega ${idWarehouse}.`;
 
           if (axios.isAxiosError(err)) {
               if (err.response) {
-                   // Error de respuesta del servidor (ej: 401, 404, 500)
-                  errorMessage = err.response.data?.message || `Error del servidor: ${err.response.status}`;
-                   // Si el error es 401 o 403, el mensaje de 'Acceso no autorizado' es útil
+                   errorMessage = err.response.data?.message || `Error del servidor: ${err.response.status}`;
                    if (err.response.status === 401 || err.response.status === 403) {
-                       errorMessage = "Acceso no autorizado para cargar productos. Verifica tu token y la conexión seleccionada.";
+                       errorMessage = "Acceso no autorizado para cargar productos. Verifica tu token.";
+                   } else if (err.response.status === 404) {
+                        const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+                        const endpointPath = `products-by-company/${idWarehouse}`;
+                        errorMessage = `Error 404: La ruta de productos no fue encontrada en ${baseUrl}/${endpointPath}`;
                    }
               } else if (err.request) {
-                   // La petición fue hecha pero no se recibió respuesta (error de red, CORS, etc.)
                    errorMessage = 'Error de red: No se recibió respuesta del servidor al cargar productos.';
               } else {
-                   // Algo pasó al configurar la petición
                    errorMessage = err.message || 'Error al configurar la petición.';
-              }
+               }
           } else {
-               // Otros tipos de errores (como el que lanzamos si el formato es incorrecto)
                errorMessage = err.message || 'Error inesperado en la carga de productos.';
           }
 
-
           setErrorProductos(errorMessage);
-          setProductos([]); // <--- Asegura que el estado siempre sea un array vacío en caso de error
+          setProductos([]);
         } finally {
           setCargandoProductos(false);
         }
       };
 
-      cargarProductos();
+      if (idWarehouse !== null && idWarehouse !== undefined) {
+           cargarProductos();
+      } else {
+           setProductos([]);
+           setErrorProductos(undefined);
+      }
+
     } else {
-      setProductos([]); // Limpiar productos si no hay ID de empresa
-      setErrorProductos(undefined); // Limpiar error si no hay ID de empresa
+      setProductos([]);
+      setErrorProductos(undefined);
     }
 
-  }, [idEmpresa]);
+  }, [idWarehouse]);
 
   return {
     productos,
