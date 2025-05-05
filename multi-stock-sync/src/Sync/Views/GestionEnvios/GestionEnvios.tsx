@@ -5,6 +5,7 @@ import EnviosDia from "./Views/EnviosDia";
 import EnviosProximos from "./Views/EnviosProximos";
 import EnviosTransito from "./Views/EnviosTransito";
 import EnviosFinalizados from "./Views/EnviosFinalizados";
+import EnviosCancelados from "./Views/EnviosCancelados";
 
 // Si tienes un componente separado para cambio de estado, descomenta esto:
 // import CambioEstadoEnvios from "./Views/CambioEstadoEnvios";
@@ -31,13 +32,11 @@ const GestionEnvios: React.FC = () => {
       label: "Finalizados",
       children: <EnviosFinalizados />,
     },
-    
-    // Si decides usar una vista separada para cambio de estado:
-    // {
-    //   key: "6",
-    //   label: "Cambio de Estado",
-    //   children: <CambioEstadoEnvios />,
-    // },
+    {
+      key: "5",
+      label: "Envios Cancelados",
+      children: <EnviosCancelados />,
+    },
   ];
 
   return (

@@ -1,105 +1,110 @@
-import React, { useEffect, useState } from "react";
-import { Table, Spin, Alert } from "antd";
+import React from "react";
+import { Table, Spin, Alert,Button, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { Enviostransito } from "../Types/EnviosProximos.Type";
+import { useEnviosTransito } from "../Hooks/useEnviosTransito";
 
-interface Envio {
-  id: string;
-  title: string;
-  quantity: number;
-  size: string;
-  sku: string;
-  shipment_history: {
-    status: string;
-    date?: string;
-  };
-}
 
-const EnviosTransito: React.FC = () => {
-  const [data, setData] = useState<Envio[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchEnvios = async () => {
-    setLoading(true);
-    setError(null);
 
-    const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
-    const clientId = conexionSeleccionada ? JSON.parse(conexionSeleccionada).client_id : null;
+/**
+ * Convierte la severidad del error a un tipo de alerta de Antd
+ */
+const getAlertType = (severity: string) => {
+  switch(severity) {
+    case 'high': return 'error';
+    case 'medium': return 'warning';
+    default: return 'info';
+  }
+};
 
-    if (!clientId) {
-      setError("No se encontró el client_id en la conexión seleccionada.");
-      setLoading(false);
-      return;
-    }
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${clientId}`);
-      const result = await res.json();
+const EnviosProximos: React.FC = () => {
+  
+  // Utilizamos el hook personalizado para obtener los datos y estado
+  const { data, loading, error, clearError } = useEnviosTransito();
+  
 
-      if (result.status === "success") {
-        const transito = result.data.filter((item: any) =>
-          item.shipment_history?.status?.toLowerCase() === "enviado"
+  if (loading) {
+    return <Spin tip="Cargando envíos en transito..." size="large" />;
+  }
+  const columns: ColumnsType<Enviostransito> = [
+    { title: "Id envio", dataIndex: "shipping_id", key: "id" },
+    { title: "Id producto", dataIndex: "productId", key: "id" },
+    { title: "Título", dataIndex: "title", key: "title" },
+    { title: "Cantidad", dataIndex: "quantity", key: "quantity" },
+   
+    { title: "Tamaño", dataIndex: "size", key: "size" },
+ 
+   {
+      title: "Dirección",
+      dataIndex: ["receptor","dirrection"],
+      key: "direccion",
+    },{
+      title: "N° Seguimiento",
+      dataIndex: "tracking_number",
+      key: "tracking_number",
+    },
+    { 
+      title: "Estado", 
+      dataIndex: "substatus", 
+      key: "status",
+      render: (substatus: string) => {
+        // Convertir "out of delivery" a "Enviado"
+        const displayText = substatus === "out_for_delivery" ? "Enviado" : "Por enviar hoy";
+        
+        // Opcional: agregar colores según el estado
+        let tagColor = '';
+        if (substatus === "out_for_delivery") tagColor = 'blue';
+        if (substatus === null || substatus === "soon_deliver") tagColor = 'red';
+        
+        return tagColor ? (
+          <Tag color={tagColor}>{displayText}</Tag>
+        ) : (
+          <span>{displayText}</span>
         );
-        setData(transito);
-      } else {
-        setError(result.message || "Error desconocido al cargar los envíos.");
       }
-    } catch (err: any) {
-      setError(err.message || "Error al conectar con el servidor.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEnvios();
-  }, []);
-
-  const columns: ColumnsType<Envio> = [
-    {
-      title: "ID Producto",
-      dataIndex: "id",
-      key: "id",
     },
-    {
-      title: "Título",
-      dataIndex: "title",
-      key: "title",
-    },
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      key: "sku",
-    },
-    {
-      title: "Cantidad",
-      dataIndex: "quantity",
-      key: "quantity",
-    },
-    {
-      title: "Tamaño",
-      dataIndex: "size",
-      key: "size",
-    },
-    {
-      title: "Estado de Envío",
-      dataIndex: ["shipment_history", "status"],
-      key: "estado",
-    },
+    
   ];
 
   return (
-    <div>
-      <h3>Envíos en Tránsito</h3>
-      {loading ? (
-        <Spin tip="Cargando envíos..." />
-      ) : error ? (
-        <Alert type="error" message={error} />
-      ) : (
-        <Table rowKey="id" columns={columns} dataSource={data} pagination={{ pageSize: 10 }} />
+    <div style={{ padding: '20px' }}>
+      {/* Muestra alerta de error si existe */}
+      {error && (
+        <Alert
+          message={error.message}
+          type={getAlertType(error.severity)}
+          showIcon
+          closable
+          onClose={clearError}
+          action={
+            // Para errores de servidor, ofrece botón de recarga de página
+            error.type === 'server' && (
+              <Button size="small" type="primary" onClick={() => window.location.reload()}>
+                Recargar
+              </Button>
+            )
+          }
+          style={{ marginBottom: '20px' }}
+        />
       )}
+
+      {/* Tabla de envíos próximos */}
+      <Table 
+        rowKey="id" 
+        columns={columns} 
+        dataSource={data} 
+        pagination={{ pageSize: 10 }}
+        locale={{
+          emptyText: error ? 'No se pudieron cargar los datos' : 'No hay envíos en transito'
+        }}
+      />
+      
+     
     </div>
   );
+  
 };
 
-export default EnviosTransito;
+export default EnviosProximos;
