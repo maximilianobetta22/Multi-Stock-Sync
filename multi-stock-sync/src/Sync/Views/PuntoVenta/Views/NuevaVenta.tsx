@@ -1,11 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import {Typography,Row,Col,Input,Button,Table,Space,Form,InputNumber,Select, Card,Divider,Spin,Alert,Grid} from 'antd';
+import { Typography, Row, Col, Input, Button, Table, Space, Form, InputNumber, Select, Card, Divider, Spin, Alert, Grid } from 'antd';
 import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta';
 import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
 import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta';
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
-
+import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 const { Title } = Typography;
 const { Search } = Input;
 const { useBreakpoint } = Grid;
@@ -16,12 +16,13 @@ interface NuevaVentaProps {
 
 const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
   const screens = useBreakpoint();
+  const [drawerClienteVisible, setDrawerClienteVisible] = useState(false);
   const [textoBusquedaProducto, setTextoBusquedaProducto] = useState('');
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | number | null>(null);
 
-  const { clientes, cargandoClientes, errorClientes } = useClientes();
+  const { clientes, cargandoClientes, errorClientes,recargarClientes } = useClientes();
 
-  const { bodegas, cargandoBodegas, errorBodegas } = useBodegasPorEmpresa(companyId); 
+  const { bodegas, cargandoBodegas, errorBodegas } = useBodegasPorEmpresa(companyId);
 
   const { productos: productosDisponiblesAPI, cargandoProductos, errorProductos } = useProductosPorEmpresa(selectedWarehouseId);
 
@@ -44,17 +45,17 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
   const opcionesClientes = useMemo(() => {
     return clientes ? clientes.map((cliente: ClienteAPI) => ({
       value: String(cliente.id),
-      label: `${cliente.nombre || cliente.razon_social || 'Sin Nombre'} (${cliente.rut})`,
+      label: `${cliente.nombres || cliente.razon_social || 'Sin Nombre'} (${cliente.rut})`,
     })) : [];
   }, [clientes]);
 
   const opcionesBodegas = useMemo(() => {
-    if (!bodegas) return []; 
-    return bodegas.map((bodega: BodegaAPI) => ({ 
+    if (!bodegas) return [];
+    return bodegas.map((bodega: BodegaAPI) => ({
       value: String(bodega.id),
       label: `${bodega.name} (${bodega.location || 'Sin Ubicación'})`,
     }));
-  }, [bodegas]); 
+  }, [bodegas]);
 
   const productosDisponiblesFiltrados = useMemo(() => {
     if (!productosDisponiblesAPI) return [];
@@ -97,7 +98,7 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     establecerIdCliente(valorIdCliente);
   };
 
-  
+
   const handleSeleccionarBodega = (valorIdBodega?: string | number | null | undefined) => {
     const nuevoIdBodega = valorIdBodega === undefined ? null : valorIdBodega;
     setSelectedWarehouseId(nuevoIdBodega);
@@ -105,17 +106,17 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
   };
 
   useEffect(() => {
-    if (bodegas && bodegas.length === 1) { 
-      setSelectedWarehouseId(bodegas[0].id); 
-    } else if (bodegas && bodegas.length > 1) { 
-        if (selectedWarehouseId === null) {
-             setSelectedWarehouseId(null);
-        }
-    } else if (bodegas && bodegas.length === 0) { 
-         setSelectedWarehouseId(null);
+    if (bodegas && bodegas.length === 1) {
+      setSelectedWarehouseId(bodegas[0].id);
+    } else if (bodegas && bodegas.length > 1) {
+      if (selectedWarehouseId === null) {
+        setSelectedWarehouseId(null);
+      }
+    } else if (bodegas && bodegas.length === 0) {
+      setSelectedWarehouseId(null);
     }
 
-  }, [bodegas, selectedWarehouseId]); 
+  }, [bodegas, selectedWarehouseId]);
 
   return (
     <div style={{ padding: "20px" }}>
@@ -126,29 +127,29 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
         <Col xs={24} lg={8}>
           <Card title="Productos Disponibles">
             <Title level={5}>Seleccionar Bodega</Title>
-             {cargandoBodegas ? (
-                <div style={{ textAlign: 'center' }}><Spin size="small" tip="Cargando bodegas..." /></div>
-             ) : errorBodegas ? (
-                 <Typography.Text type="danger">{errorBodegas}</Typography.Text>
-             ) : !companyId ? (
-                 <Typography.Text type="secondary">Selecciona una conexión para cargar bodegas.</Typography.Text>
-             ) : (
-                 <Select
-                   showSearch
-                   placeholder="Selecciona una bodega"
-                   optionFilterProp="children"
-                   onChange={handleSeleccionarBodega}
-                   value={selectedWarehouseId}
-                   notFoundContent={'No encontrado'}
-                   filterOption={(input, option) =>
-                     (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-                   }
-                   options={opcionesBodegas}
-                   allowClear
-                   style={{ width: '100%' }}
-                   disabled={!companyId || (bodegas && bodegas.length === 0) || cargandoBodegas} 
-                 />
-             )}
+            {cargandoBodegas ? (
+              <div style={{ textAlign: 'center' }}><Spin size="small" tip="Cargando bodegas..." /></div>
+            ) : errorBodegas ? (
+              <Typography.Text type="danger">{errorBodegas}</Typography.Text>
+            ) : !companyId ? (
+              <Typography.Text type="secondary">Selecciona una conexión para cargar bodegas.</Typography.Text>
+            ) : (
+              <Select
+                showSearch
+                placeholder="Selecciona una bodega"
+                optionFilterProp="children"
+                onChange={handleSeleccionarBodega}
+                value={selectedWarehouseId}
+                notFoundContent={'No encontrado'}
+                filterOption={(input, option) =>
+                  (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+                options={opcionesBodegas}
+                allowClear
+                style={{ width: '100%' }}
+                disabled={!companyId || (bodegas && bodegas.length === 0) || cargandoBodegas}
+              />
+            )}
 
             <Title level={5}>Buscar y Añadir Productos</Title>
             {errorProductos && <Typography.Text type="danger">{errorProductos}</Typography.Text>}
@@ -164,9 +165,9 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
               {cargandoProductos ? (
                 <div style={{ textAlign: 'center' }}><Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} /></div>
               ) : errorProductos ? (
-                   <Typography.Text type="secondary">{errorProductos}</Typography.Text>
+                <Typography.Text type="secondary">{errorProductos}</Typography.Text>
               ) : !selectedWarehouseId ? (
-                   <Typography.Text type="secondary">Selecciona una bodega para cargar productos.</Typography.Text>
+                <Typography.Text type="secondary">Selecciona una bodega para cargar productos.</Typography.Text>
               ) : productosDisponiblesFiltrados.length > 0 ? (
                 <Space direction="vertical" style={{ width: '100%' }}>
                   {productosDisponiblesFiltrados.map((producto: ProductoAPI) => (
@@ -213,6 +214,7 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
               <Card title="Cliente y Observaciones">
                 {errorClientes && <Typography.Text type="danger">{errorClientes}</Typography.Text>}
                 <Form layout="vertical">
+
                   <Form.Item label="Cliente">
                     <Select
                       showSearch
@@ -228,16 +230,30 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
                       options={opcionesClientes}
                       allowClear
                       style={{ width: '100%' }}
-                       disabled={cargandoClientes || !!errorClientes}
-                    >
-                    </Select>
+                      disabled={cargandoClientes || !!errorClientes}
+                      dropdownRender={(menu) => (
+                        <>
+                          {menu}
+                          <Divider style={{ margin: '8px 0' }} />
+                          <Button
+                            type="text"
+                            icon={<PlusOutlined />}
+                            onClick={() => setDrawerClienteVisible(true)}
+                            style={{ width: '100%', textAlign: 'left' }}
+                          >
+                            Crear nuevo cliente
+                          </Button>
+                        </>
+                      )}
+                    />
+
                   </Form.Item>
                   {notaVenta.idCliente && clientes && clientes.length > 0 && (() => {
                     const clienteSel = clientes.find((c: ClienteAPI) => String(c.id) === String(notaVenta.idCliente));
                     return clienteSel ? (
                       <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
-                        <Typography.Text strong>Cliente Seleccionado:</Typography.Text><br/>
-                        <Typography.Text>{clienteSel.nombre || clienteSel.razon_social}</Typography.Text><br/>
+                        <Typography.Text strong>Cliente Seleccionado:</Typography.Text><br />
+                        <Typography.Text>{clienteSel.nombre || clienteSel.razon_social}</Typography.Text><br />
                         <Typography.Text>RUT: {clienteSel.rut}</Typography.Text>
                       </div>
                     ) : null;
@@ -297,7 +313,20 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
           </Row>
         </Col>
       </Row>
+      <AgregarClienteDrawer
+        visible={drawerClienteVisible}
+        onClose={() => setDrawerClienteVisible(false)}
+        onSuccess={(nuevoCliente) => {
+          recargarClientes()
+          if (nuevoCliente.id) {
+            handleSeleccionarCliente(nuevoCliente.id);
+          }
+          setDrawerClienteVisible(false);
+        }}
+        companyId={companyId} // Pasa el companyId si es necesario
+      />
     </div>
+
   );
 };
 

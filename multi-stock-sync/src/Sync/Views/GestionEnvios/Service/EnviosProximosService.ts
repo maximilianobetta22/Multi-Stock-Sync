@@ -30,18 +30,11 @@ export const enviosProximosService = {
       
       // Manejo personalizado de errores según tipo y código HTTP
       if (axios.isAxiosError(error) && error.response) {
-        // Error 500 con mensaje específico sobre "Target class"
-        if (error.response?.status === 500 && 
-          error.response.data?.message?.includes("Target class")) {
-        throw new Error("Error en el servidor: Configuración incorrecta del controlador");
-        }
-        // Error de permisos
-        if (error.response.status === 403) {
-          throw new Error("Acceso denegado. Por favor verifique sus permisos.");
-        }
-        // Error de ruta no encontrada
-        if(error.response.status === 404) {
-          throw new Error("Error en el servidor: Configuración incorrecta del controlador, contacte al adminsitrador.");
+        const status=error.response?.status
+         console.log("Status:", status);
+        // Error personalizado con código de estado. El mensaje de error se setea en el hook
+        if (status === 500 || status ===404 || status ===403){
+          throw new Error(status.toString());
         }
         // Otro error con mensaje desde el servidor
         throw new Error(error.response.data.message || "Error al obtener envíos próximos");

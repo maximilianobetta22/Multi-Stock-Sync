@@ -25,7 +25,7 @@ export const useEnviosProximos = () => {
   const classifyError = (error: Error): EnviosError => {
     const message = error.message.toLowerCase();
     
-    if (message.includes("no route")) {
+    if (message.includes("500")) {
       return {
         message: "Error en el servidor. Por favor contacte al soporte técnico.",
         type: 'server',
@@ -33,15 +33,22 @@ export const useEnviosProximos = () => {
       };
     }
     
-    if (message.includes("no hay conexión")) {
+    if (message.includes("403")) {
       return {
         message: "Seleccione una conexión válida",
         type: 'validation',
         severity: 'medium'
       };
     }
+    if(message.includes("404")){
+      return{
+        message: "Error, ruta no enctrada",
+        type: 'auth',
+        severity: 'high'
+      }
+    }
     
-    if (message.includes("acceso denegado")) {
+    if (message.includes("401")) {
       return {
         message: "No tiene permisos para acceder a esta información",
         type: 'auth',
