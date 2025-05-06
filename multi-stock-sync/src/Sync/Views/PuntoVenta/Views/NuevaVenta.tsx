@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Typography, Row, Col, Input, Button, Table, Space, Form, InputNumber, Select, Card, Divider, Spin, Alert, Grid } from 'antd';
 import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
-import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta';
+import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta'; // Este hook nos ayuda a traer la lista de todos los clientes que podemos usar.
 import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
-import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta';
+import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta'; // Este hook maneja toda la información de la venta actual, como los productos, totales y... ¡el cliente seleccionado!
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 const { Title } = Typography;
@@ -19,13 +19,18 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
   const [drawerClienteVisible, setDrawerClienteVisible] = useState(false);
   const [textoBusquedaProducto, setTextoBusquedaProducto] = useState('');
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | number | null>(null);
-
-  const { clientes, cargandoClientes, errorClientes,recargarClientes } = useClientes();
-
+  // --- 1. Conseguimos la lista de clientes ---
+  // Aquí usamos el hook 'useClientes'. Él va y busca los clientes por detrás.
+  // 'clientes' guardará la lista que trae.
+  // 'cargandoClientes' nos dice si aún está trabajando.
+  // 'errorClientes' nos avisa si algo salió mal.
+  const { clientes, cargandoClientes, errorClientes, recargarClientes } = useClientes();
+  // Cosas de Bodegas y Productos (no son de Clientes, las dejamos como están)
   const { bodegas, cargandoBodegas, errorBodegas } = useBodegasPorEmpresa(companyId);
-
   const { productos: productosDisponiblesAPI, cargandoProductos, errorProductos } = useProductosPorEmpresa(selectedWarehouseId);
-
+  // De este hook sacamos la información de la nota de venta actual.
+  // 'notaVenta' tiene todos los detalles de la venta.
+  // 'establecerIdCliente' es la función que usaremos para decirle a 'notaVenta' quién es el cliente elegido.
   const {
     notaVenta,
     subtotal,
@@ -42,13 +47,21 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     limpiarNotaVenta,
   } = useGestionNotaVentaActual();
 
-  const opcionesClientes = useMemo(() => {
-    return clientes ? clientes.map((cliente: ClienteAPI) => ({
-      value: String(cliente.id),
-      label: `${cliente.nombres || cliente.razon_social || 'Sin Nombre'} (${cliente.rut})`,
-    })) : [];
-  }, [clientes]);
 
+  // --- 2. Preparamos las opciones para el selector (el desplegable) ---
+  // El selector (componente Select) necesita la lista de clientes en un formato especial.
+  // Con 'useMemo' transformamos nuestra lista 'clientes' en ese formato.
+  // Creamos un objeto { value: ID_cliente, label: Nombre_y_RUT } por cada cliente.
+  const opcionesClientes = useMemo(() => {
+    // Si tenemos clientes, los convertimos al formato que el selector entiende.
+    return clientes ? clientes.map((cliente: ClienteAPI) => ({
+      value: String(cliente.id), // El valor interno es el ID del cliente. Lo volvemos texto por si acaso.
+      label: `${cliente.nombres || cliente.razon_social || 'Sin Nombre'} (${cliente.rut})`, // El texto que se ve en la lista.
+    })) : []; // Si no hay clientes, la lista de opciones está vacía.
+  }, [clientes]); // Esta preparación se hace de nuevo si la lista 'clientes' cambia.
+
+
+  // Cosas de Bodegas (no son de Clientes, las dejamos como están de momento :v)
   const opcionesBodegas = useMemo(() => {
     if (!bodegas) return [];
     return bodegas.map((bodega: BodegaAPI) => ({
@@ -56,7 +69,6 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
       label: `${bodega.name} (${bodega.location || 'Sin Ubicación'})`,
     }));
   }, [bodegas]);
-
   const productosDisponiblesFiltrados = useMemo(() => {
     if (!productosDisponiblesAPI) return [];
     return productosDisponiblesAPI.filter((producto: ProductoAPI) =>
@@ -94,16 +106,23 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     ];
   }, [actualizarCantidadItem, eliminarItem, screens]);
 
+  // --- 3. Función para cuando el usuario elige un cliente ---
+  // El selector de clientes llama a esta función cuando seleccionan uno.
+  // 'valorIdCliente' es el ID del cliente que eligieron
   const handleSeleccionarCliente = (valorIdCliente?: string | number | null) => {
+    // Usamos la función que trajimos del hook de gestión para guardar este ID
+    // en la información de la nota de venta actual ('notaVenta').
     establecerIdCliente(valorIdCliente);
   };
 
-
+  // Cosas de Bodegas (no son de Clientes, las dejamos como están)
   const handleSeleccionarBodega = (valorIdBodega?: string | number | null | undefined) => {
     const nuevoIdBodega = valorIdBodega === undefined ? null : valorIdBodega;
     setSelectedWarehouseId(nuevoIdBodega);
     setTextoBusquedaProducto('');
   };
+
+
 
   useEffect(() => {
     if (bodegas && bodegas.length === 1) {
@@ -117,13 +136,12 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     }
 
   }, [bodegas, selectedWarehouseId]);
-
   return (
     <div style={{ padding: "20px" }}>
       <Title level={3}>Generar Nueva Nota de Venta</Title>
       {errorGuardado && <Alert message={`Error al guardar venta: ${errorGuardado}`} type="error" showIcon style={{ marginBottom: '20px' }} />}
-
       <Row gutter={[16, 16]}>
+        {/* Sección izquierda: Productos y Bodega */}
         <Col xs={24} lg={8}>
           <Card title="Productos Disponibles">
             <Title level={5}>Seleccionar Bodega</Title>
@@ -201,14 +219,15 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
         <Col xs={24} lg={16}>
           <Card title="Ítems de la Venta">
             <Table
-              dataSource={notaVenta.items}
-              columns={columnasItems}
-              pagination={false}
-              locale={{ emptyText: 'Agrega productos a la venta' }}
-              rowKey="key"
-              size="small"
+              dataSource={notaVenta.items} // La tabla muestra los ítems que están en el estado 'notaVenta.items'
+              columns={columnasItems} // Usa las columnas que definimos arriba para la tabla
+              pagination={false} // No queremos paginación para esta tabla pequeña
+              locale={{ emptyText: 'Agrega productos a la venta' }} // Mensaje si la tabla está vacía
+              rowKey="key" // Usa la propiedad 'key' de cada ítem para identificar las filas (importante para React)
+              size="small" // Tabla más compacta
             />
           </Card>
+
           <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
             <Col xs={24} lg={12}>
               <Card title="Cliente y Observaciones">
@@ -253,7 +272,7 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
                     return clienteSel ? (
                       <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
                         <Typography.Text strong>Cliente Seleccionado:</Typography.Text><br />
-                        <Typography.Text>{clienteSel.nombre || clienteSel.razon_social}</Typography.Text><br />
+                        <Typography.Text>{clienteSel.nombres || clienteSel.razon_social}</Typography.Text><br />
                         <Typography.Text>RUT: {clienteSel.rut}</Typography.Text>
                       </div>
                     ) : null;
