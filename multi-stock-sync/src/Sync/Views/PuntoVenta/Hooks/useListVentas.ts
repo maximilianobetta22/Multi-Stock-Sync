@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
-import { mockData,ListVentaService } from '../Services/listVentaService';
+import { ListVentaService, mockVentas } from '../Services/listVentaService';
 //datos a los que travez se va a filtrar
 interface FiltrosVenta {
   clienteId?: number;
@@ -25,14 +25,13 @@ export const useListVentas = () => {
     setError(null);
     try {
       //endpoint aun no terminada se cargan desde un json hardcode
-      //const response = ListVentaService.getListVenta();
-      //const ventasData = response.data;
-      //setAllData(ventasData);
-      //setData(ventasData);
+      const response = ListVentaService.getListVenta();
+      const ventasData = response.data;
+      setAllData(mockVentas);
+      setData(mockVentas);
 
       // datos hardcode cargados de la constante mockData en service
-      setAllData(mockData);
-      setData(mockData);
+     
     } catch (err) {
       setError(err instanceof Error ? err : new Error('Error desconocido al cargar las ventas'));
       console.error('Error al cargar ventas:', err);

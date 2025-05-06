@@ -1,22 +1,18 @@
 
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
-import {Venta} from '../Types/clienteTypes';
+import {VentaResponse} from '../Types/ventaTypes';
 //datos inventados
-export const mockData = [
+export const mockVentas: VentaResponse[] = [
   {
     id: 1,
-    fecha: '2023-05-01',
-    cliente: {
-      id: 1,
-      nombres: 'Juan',
-      apellidos: 'Pérez',
-      razon_social: '',
-      tipo_cliente_id: 2
-    },
-    estado: 'pagada',
-    total: 120000,
-    productos: [
+    warehouse_id: 101,
+    type_emission: "electronic",
+    amount_total_products: 3,
+    price_subtotal: 120000,
+    price_final: 142800,
+    client_id: 1,
+    products: JSON.stringify([
       {
         id: 101,
         nombre: 'Laptop Dell XPS 13',
@@ -31,21 +27,22 @@ export const mockData = [
         precio_unitario: 10000,
         subtotal: 20000
       }
-    ]
+    ]),
+    name_companies: "Tech Solutions Inc.",
+    observation: "Cliente preferencial con descuento",
+    shipping: "delivery",
+    created_at: new Date('2023-05-01'),
+    status_sale: "pagada"
   },
   {
     id: 2,
-    fecha: '2023-05-02',
-    cliente: {
-      id: 2,
-      nombres: '',
-      apellidos: '',
-      razon_social: 'Empresa ABC',
-      tipo_cliente_id: 1
-    },
-    estado: 'pendiente',
-    total: 350000,
-    productos: [
+    warehouse_id: 102,
+    type_emission: "ticket",
+    amount_total_products: 2,
+    price_subtotal: 350000,
+    price_final: 416500,
+    client_id: 2,
+    products: JSON.stringify([
       {
         id: 103,
         nombre: 'Monitor 27"',
@@ -60,21 +57,22 @@ export const mockData = [
         precio_unitario: 50000,
         subtotal: 50000
       }
-    ]
+    ]),
+    name_companies: "Empresa ABC",
+    observation: "Pedido para oficina central",
+    shipping: "pickup",
+    created_at: new Date('2023-05-02'),
+    status_sale: "pendiente"
   },
   {
     id: 3,
-    fecha: '2023-05-03',
-    cliente: {
-      id: 1,
-      nombres: 'Juan',
-      apellidos: 'Pérez',
-      razon_social: '',
-      tipo_cliente_id: 2
-    },
-    estado: 'cancelada',
-    total: 75000,
-    productos: [
+    warehouse_id: 101,
+    type_emission: "electronic",
+    amount_total_products: 1,
+    price_subtotal: 75000,
+    price_final: 89250,
+    client_id: 1,
+    products: JSON.stringify([
       {
         id: 105,
         nombre: 'Impresora multifuncional',
@@ -82,21 +80,22 @@ export const mockData = [
         precio_unitario: 75000,
         subtotal: 75000
       }
-    ]
+    ]),
+    name_companies: "Tech Solutions Inc.",
+    observation: "Cancelado por cliente",
+    shipping: "delivery",
+    created_at: new Date('2023-05-03'),
+    status_sale: "cancelada"
   },
   {
     id: 4,
-    fecha: '2023-05-04',
-    cliente: {
-      id: 3,
-      nombres: 'María',
-      apellidos: 'González',
-      razon_social: '',
-      tipo_cliente_id: 2
-    },
-    estado: 'pagada',
-    total: 230000,
-    productos: [
+    warehouse_id: 103,
+    type_emission: "electronic",
+    amount_total_products: 3,
+    price_subtotal: 230000,
+    price_final: 273700,
+    client_id: 3,
+    products: JSON.stringify([
       {
         id: 106,
         nombre: 'Tablet Samsung',
@@ -118,14 +117,19 @@ export const mockData = [
         precio_unitario: 35000,
         subtotal: 35000
       }
-    ]
+    ]),
+    name_companies: "Gadget World",
+    observation: "Entrega express solicitada",
+    shipping: "express",
+    created_at: new Date('2023-05-04'),
+    status_sale: "pagada"
   }
 ];
 export const ListVentaService ={
-    async getListVenta(): Promise<Venta[]> {
+    async getListVenta(): Promise<VentaResponse[]> {
         try {
           // Realizar una solicitud GET para obtener las ventas desde el backend, endpoin aun en proceso
-          const url = `${import.meta.env.VITE_API_URL}/ventas`;
+          const url = `${import.meta.env.VITE_API_URL}/history-sale`;
           const response = await axiosInstance.get(url, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("access_token")}`,

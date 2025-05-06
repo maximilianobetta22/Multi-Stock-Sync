@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { Button, Table, Card, Typography, Spin, message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, List, Divider } from 'antd';
-import { ReloadOutlined, SearchOutlined, EyeOutlined } from '@ant-design/icons';
+import React, { useState, } from 'react';
+import { Button, Table, Card, Typography,  message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, List, Divider } from 'antd';
+import {  SearchOutlined, EyeOutlined,EditOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { useListVentas } from '../Hooks/useListVentas';
 import type { Dayjs } from 'dayjs';
-import { Venta } from '../Types/clienteTypes';
+import { ClientType } from '../Types/clienteTypes';
+import { VentaResponse} from '../Types/ventaTypes'
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
+import { UrlWithStringQuery } from 'url';
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -31,7 +33,8 @@ const ListaVentas: React.FC = () => {
   const [form] = Form.useForm();
   const [detalleVisible, setDetalleVisible] = useState(false);
   const [ventaSeleccionada, setVentaSeleccionada] = useState<Venta | null>(null);
-
+  const [cambioEstadoVisible, setCambioEstadoVisible] = useState(false);
+  const [nuevoEstado, setNuevoEstado] = useState<string>('');
   // Hook personalizado para obtener las ventas
   const { data, loading, error, refetch, aplicarFiltros } = useListVentas();
 
@@ -54,6 +57,25 @@ const ListaVentas: React.FC = () => {
   if (loading) {
     return <LoadingDinamico variant="fullScreen" />;
   }
+    // Mostrar modal para cambiar estado
+    const mostrarModalCambioEstado = (id: number, estadoActual: string) => {
+      setVentaIdParaCambio(id);
+      setNuevoEstado(estadoActual);
+      setCambioEstadoVisible(true);
+    };
+  
+    // Función para confirmar cambio de estado
+    const confirmarCambioEstado = async () => {
+      if (ventaIdParaCambio && nuevoEstado) {
+        try {
+          await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado);
+          message.success('Estado de venta actualizado con éxito');
+          setCambioEstadoVisible(false);
+        } catch (error) {
+          message.error('Error al cambiar el estado de la venta');
+        }
+      }
+    };
   // Función para limpiar filtros
   const limpiarFiltros = () => {
     form.resetFields();
@@ -77,49 +99,73 @@ const ListaVentas: React.FC = () => {
     });
   }
 
+  const formatProductos = (productosString: string) => {
+    try {
+      const productos = JSON.parse(productosString);
+      if (!Array.isArray(productos)) return productosString;
+  
+      if (productos.length === 0) return 'No hay productos registrados';
+  
+      // Calcular el ancho máximo para alinear las columnas
+      const maxNombreLength = Math.max(...productos.map(p => p.nombre?.length || 0));
+      
+      return productos.map((p, index) => {
+        const nombre = p.nombre || 'Producto sin nombre';
+        const cantidad = p.cantidad?.toString() || '0';
+        const precio = p.precio_unitario?.toLocaleString('es-CL') || '0';
+        const subtotal = p.subtotal?.toLocaleString('es-CL') || '0';
+        
+        return `${(index + 1).toString().padStart(2, '0')}. ${nombre.padEnd(maxNombreLength + 2)} | ${cantidad.padStart(3)} x $${precio.padStart(8)} | Subtotal: $${subtotal.padStart(10)}`;
+      }).join('\n');
+    } catch (e) {
+      console.error('Error al formatear productos:', e);
+      return productosString; // Si hay error al parsear, mostrar el string original
+    }
+  };
   // Columnas para la tabla de ventas
-  const columns: ColumnsType<Venta> = [
+  const columns: ColumnsType<VentaResponse> = [
     {
-      title: 'ID',
-      dataIndex: 'id',
-      key: 'id',
+      title: "ID",
+      dataIndex: "id",
+      key: "id",
       width: 80,
     },
     {
-      title: 'Fecha',
-      dataIndex: 'fecha',
-      key: 'fecha',
+      title: "Fecha",
+      dataIndex: "created_at",
+      key: "fecha",
       render: (fecha: string) => new Date(fecha).toLocaleDateString(),
     },
     {
-      title: 'Cliente',
-      key: 'cliente',
-      render: (_, record: Venta) => (
+      title: "Cliente id",
+      dataIndex: "client_id",
+      key: "client_id",
+      /*render: (_, record: Venta) => (
         <span>
           {record.cliente.tipo_cliente_id === 2 
             ? `${record.cliente.nombres} ${record.cliente.apellidos}`
             : record.cliente.razon_social}
         </span>
-      ),
+      ),*/
     },
     {
-      title: 'Estado',
-      dataIndex: 'estado',
-      key: 'estado',
+      title: "Estado",
+      dataIndex: "status_sale",
+      key: "estado",
       render: (estado: string) => {
-        let color = 'default';
+        let color = "default";
         switch (estado) {
-          case 'pagada':
-            color = 'success';
+          case "pagada":
+            color = "success";
             break;
-          case 'pendiente':
-            color = 'warning';
+          case "pendiente":
+            color = "warning";
             break;
-          case 'cancelada':
-            color = 'error';
+          case "cancelada":
+            color = "error";
             break;
-          case 'parcial':
-            color = 'processing';
+          case "parcial":
+            color = "processing";
             break;
         }
         return (
@@ -130,26 +176,34 @@ const ListaVentas: React.FC = () => {
       },
     },
     {
-      title: 'Total',
-      dataIndex: 'total',
-      key: 'total',
-      render: (total: number) => `$${total.toLocaleString('es-CL')}`,
-      sorter: (a, b) => a.total - b.total,
+      title: "Total",
+      dataIndex: "price_final",
+      key: "final",
+      render: (price_final: number) => `$${price_final.toLocaleString("es-CL")}`,
+      sorter: (a, b) => a.price_final - b.price_final,
     },
     {
-      title: 'Acciones',
-      key: 'acciones',
+      title: "Acciones",
+      key: "acciones",
       render: (_, record) => (
         <Space>
-          <Button 
+          <Button
             type="primary"
             size="small"
-            icon={<EyeOutlined />} 
+            icon={<EyeOutlined />}
             onClick={() => verDetalleVenta(record.id)}
           >
             Ver detalle
           </Button>
+          <Button 
+            size="small"
+            icon={<EditOutlined />} 
+            onClick={() => mostrarModalCambioEstado(record.id, record.estado)}
+          >
+            Cambiar estado
+          </Button>
         </Space>
+        
       ),
     },
   ];
@@ -281,86 +335,74 @@ const ListaVentas: React.FC = () => {
 
       {/* Modal para mostrar detalles de la venta */}
       <Modal
-        title={`Detalle de Venta #${ventaSeleccionada?.id || ""}`}
-        open={detalleVisible}
-        onCancel={cerrarDetalle}
-        footer={[
-          <Button key="close" onClick={cerrarDetalle}>
-            Cerrar
-          </Button>,
-        ]}
-        width={600}
-      >
-        {ventaSeleccionada && (
-          <>
-            <Descriptions
-              bordered
-              column={{ xs: 1, sm: 2, md: 3 }}
-              size="small"
-            >
-              <Descriptions.Item label="Fecha">
-                {new Date(ventaSeleccionada.fecha).toLocaleDateString()}
-              </Descriptions.Item>
-              <Descriptions.Item label="Cliente">
-                {ventaSeleccionada.cliente.tipo_cliente_id === 2
-                  ? `${ventaSeleccionada.cliente.nombres} ${ventaSeleccionada.cliente.apellidos}`
-                  : ventaSeleccionada.cliente.razon_social}
-              </Descriptions.Item>
-              <Descriptions.Item label="Estado">
-                <Tag
-                  color={
-                    ventaSeleccionada.estado === "pagada"
-                      ? "success"
-                      : ventaSeleccionada.estado === "pendiente"
-                      ? "warning"
-                      : ventaSeleccionada.estado === "anulada"
-                      ? "error"
-                      : "processing"
-                  }
-                >
-                  {ventaSeleccionada.estado.charAt(0).toUpperCase() +
-                    ventaSeleccionada.estado.slice(1)}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Total" span={3}>
-                <Typography.Text strong>
-                  ${ventaSeleccionada.total.toLocaleString("es-CL")}
-                </Typography.Text>
-              </Descriptions.Item>
-            </Descriptions>
+  title={`Detalle de Venta #${ventaSeleccionada?.id || ""}`}
+  open={detalleVisible}
+  onCancel={cerrarDetalle}
+  footer={[
+    <Button key="close" onClick={cerrarDetalle}>
+      Cerrar
+    </Button>,
+  ]}
+  width={800}
+>
+  {ventaSeleccionada && (
+    <>
+      <Descriptions bordered column={2} size="small">
+        <Descriptions.Item label="Fecha">
+          {new Date(ventaSeleccionada.created_at).toLocaleDateString()}
+        </Descriptions.Item>
+        <Descriptions.Item label="Cliente ID">
+          {ventaSeleccionada.client_id}
+        </Descriptions.Item>
+        <Descriptions.Item label="Estado">
+          <Tag
+            color={
+              ventaSeleccionada.status_sale === "pagada"
+                ? "success"
+                : ventaSeleccionada.status_sale === "pendiente"
+                ? "warning"
+                : "error"
+            }
+          >
+            {ventaSeleccionada.status_sale.charAt(0).toUpperCase() +
+              ventaSeleccionada.status_sale.slice(1)}
+          </Tag>
+        </Descriptions.Item>
+        <Descriptions.Item label="Tipo Emisión">
+          {ventaSeleccionada.type_emission}
+        </Descriptions.Item>
+        <Descriptions.Item label="Subtotal">
+          <Typography.Text strong>
+            ${ventaSeleccionada.price_subtotal.toLocaleString("es-CL")}
+          </Typography.Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Total">
+          <Typography.Text strong>
+            ${ventaSeleccionada.price_final.toLocaleString("es-CL")}
+          </Typography.Text>
+        </Descriptions.Item>
+        <Descriptions.Item label="Observaciones" span={2}>
+          {ventaSeleccionada.observation || 'Ninguna'}
+        </Descriptions.Item>
+      </Descriptions>
 
-            <Divider orientation="left">Productos</Divider>
-
-            <List
-              itemLayout="horizontal"
-              dataSource={ventaSeleccionada.productos || []}
-              renderItem={(item) => (
-                <List.Item
-                  extra={
-                    <Typography.Text strong>
-                      ${item.subtotal.toLocaleString("es-CL")}
-                    </Typography.Text>
-                  }
-                >
-                  <List.Item.Meta
-                    title={item.nombre}
-                    description={`${
-                      item.cantidad
-                    } x ${item.precio_unitario.toLocaleString("es-CL")}`}
-                  />
-                </List.Item>
-              )}
-              footer={
-                <div style={{ textAlign: "right" }}>
-                  <Typography.Title level={5}>
-                    Total: ${ventaSeleccionada.total.toLocaleString("es-CL")}
-                  </Typography.Title>
-                </div>
-              }
-            />
-          </>
-        )}
-      </Modal>
+      <Divider orientation="left">Productos ({ventaSeleccionada.amount_total_products})</Divider>
+      
+      <Input.TextArea
+        rows={8}
+        value={formatProductos(ventaSeleccionada.products)}
+        readOnly
+        style={{
+          width: '100%',
+          backgroundColor: '#fafafa',
+          fontFamily: 'monospace',
+          whiteSpace: 'pre',
+          marginBottom: 16
+        }}
+      />
+    </>
+  )}
+</Modal>
     </Card>
   );
 };
