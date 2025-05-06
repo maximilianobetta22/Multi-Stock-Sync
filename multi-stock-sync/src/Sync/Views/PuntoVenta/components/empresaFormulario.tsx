@@ -1,11 +1,11 @@
 import React from 'react';
-import { Checkbox, Form, Input } from 'antd';
+import { Checkbox, CheckboxChangeEvent, Form, Input } from 'antd';
 import DireccionForm from './direccionFormulario';
 import {  validateTaxId } from '../utils/validations';
 
 const CompañiaForm: React.FC = () => {
   const [esExtranjero, setEsExtranjero]= React.useState(0);
-  const handleExtranjeroChange = (e) => {
+  const handleExtranjeroChange = (e: CheckboxChangeEvent) => {
     // e.target.checked es un booleano, lo convertimos a 0 o 1
     setEsExtranjero(e.target.checked ? 1 : 0);
   };
@@ -62,7 +62,7 @@ const CompañiaForm: React.FC = () => {
         label="Es empresa extranjera"
         name="extranjero"
         valuePropName="checked"
-        getValueFromEvent={(e) => e.target.checked ? 1 : 0}
+        getValueFromEvent={(e: CheckboxChangeEvent) => e.target.checked ? 1 : 0}
         initialValue={esExtranjero === 1}
       >
         <Checkbox onChange={handleExtranjeroChange}>

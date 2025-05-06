@@ -1,15 +1,14 @@
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Table, Card, Typography, Spin } from 'antd';
-import { PlusOutlined} from '@ant-design/icons';
+import { PlusOutlined } from '@ant-design/icons';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { useListCliente } from '../Hooks/useListCliente';
 import { ColumnsType } from 'antd/es/table';
 import { client } from '../Types/clienteTypes';
 
-
 const Toast = ({ message, type, onClose }: { 
   message: string; 
-  type: 'success' | 'error' | 'info'; 
+  type: 'success' | 'error' | 'info' | 'warning'; 
   onClose: () => void 
 }) => {
   useEffect(() => {
@@ -21,7 +20,8 @@ const Toast = ({ message, type, onClose }: {
   }, [onClose]);
   
   const backgroundColor = type === 'success' ? '#52c41a' : 
-                         type === 'error' ? '#f5222d' : '#1890ff';
+                          type === 'error' ? '#f5222d' : 
+                          type === 'warning' ? '#faad14' : '#1890ff';
   
   return (
     <div style={{
@@ -46,15 +46,19 @@ const { Title } = Typography;
 const ListaClientes: React.FC = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { data, loading, error, refetch } = useListCliente();
-  const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'info'} | null>(null);
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'info' | 'warning'} | null>(null);
+  
   // Función para abrir el drawer
   const showDrawer = () => {
     setDrawerVisible(true);
   };
 
-  const showToast = (message: string, type: 'success' | 'error' | 'info') => {
-    setToast({ message, type });
-    setTimeout(() => setToast(null), 5000);
+  // Función para mostrar notificaciones
+  const showToast = (message: string | null, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
+    if (message) {
+      setToast({ message, type });
+      // No necesitamos este timeout aquí ya que el componente Toast tiene su propio timeout
+    }
   };
 
   // Función para cerrar el drawer
@@ -63,16 +67,19 @@ const ListaClientes: React.FC = () => {
   };
 
   // Función que se ejecuta cuando se registra un cliente exitosamente
-  const handleClienteRegistrado = (result: any) => {
+  const handleClienteRegistrado = (result: unknown) => {
     console.log("Cliente registrado con éxito, refrescando lista...", result);
     showToast("Cliente registrado correctamente", 'success');
     refetch();
+    handleCloseDrawer(); // Cerrar el drawer después de registrar exitosamente
   };
 
   // Manejo de error en la carga de datos
-  if (error) {
-    showToast(`Error al cargar clientes: ${error.message}`, 'error');
-  }
+  useEffect(() => {
+    if (error) {
+      showToast(`Error al cargar clientes: ${error.message}`, 'error');
+    }
+  }, [error]);
 
   // Columnas para la tabla de clientes
   const columns: ColumnsType<client> = [
@@ -80,7 +87,7 @@ const ListaClientes: React.FC = () => {
       title: 'Nombre',
       dataIndex: 'nombres',
       key: 'nombres',
-      render: (text: string, record: any) => (
+      render: (text: string, record: client) => (
         <>
           {record.nombres} {record.apellidos}
         </>
@@ -157,4 +164,3 @@ const ListaClientes: React.FC = () => {
 };
 
 export default ListaClientes;
-
