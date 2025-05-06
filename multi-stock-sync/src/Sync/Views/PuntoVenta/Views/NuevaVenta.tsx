@@ -2,7 +2,9 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Typography, Row, Col, Input, Button, Table, Space, Form, InputNumber, Select, Card, Divider, Spin, Alert, Grid } from 'antd';
 import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta'; // Este hook nos ayuda a traer la lista de todos los clientes que podemos usar.
+import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta'; // Este hook nos ayuda a traer la lista de todos los clientes que podemos usar.
 import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
+import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta'; // Este hook maneja toda la información de la venta actual, como los productos, totales y... ¡el cliente seleccionado!
 import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta'; // Este hook maneja toda la información de la venta actual, como los productos, totales y... ¡el cliente seleccionado!
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
@@ -11,7 +13,7 @@ const { Search } = Input;
 const { useBreakpoint } = Grid;
 
 interface NuevaVentaProps {
-  companyId: string | number | null;
+  companyId: string | number | null;
 }
 
 const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
