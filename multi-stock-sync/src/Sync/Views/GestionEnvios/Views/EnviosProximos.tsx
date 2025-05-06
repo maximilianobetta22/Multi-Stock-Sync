@@ -4,6 +4,7 @@ import { Table, Spin, Alert, Button, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEnviosProximos } from '../Hooks/useEnviosProximos';
 import { Envio } from '../Types/EnviosProximos.Type';
+import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 
 /**
  * Definición de las columnas para la tabla de envíos próximos
@@ -70,7 +71,7 @@ const EnviosProximos: React.FC = () => {
 
   // Muestra un spinner durante la carga
   if (loading) {
-    return <Spin tip="Cargando envíos próximos..." size="large" />;
+    return <LoadingDinamico variant="fullScreen" />;
   }
 
   return (

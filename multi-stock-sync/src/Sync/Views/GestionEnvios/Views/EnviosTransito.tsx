@@ -3,6 +3,7 @@ import { Table, Spin, Alert,Button, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Enviostransito } from "../Types/EnviosProximos.Type";
 import { useEnviosTransito } from "../Hooks/useEnviosTransito";
+import { LoadingDinamico } from "../../../../components/LoadingDinamico/LoadingDinamico";
 
 
 
@@ -26,7 +27,7 @@ const EnviosProximos: React.FC = () => {
   
 
   if (loading) {
-    return <Spin tip="Cargando envíos en transito..." size="large" />;
+    return <LoadingDinamico variant="fullScreen" />;
   }
   const columns: ColumnsType<Enviostransito> = [
     { title: "Id envio", dataIndex: "shipping_id", key: "id" },

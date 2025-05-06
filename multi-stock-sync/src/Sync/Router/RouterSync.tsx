@@ -29,8 +29,6 @@ function RouterSync() {
         <Route path="/bodegas/*" element={<RouterBodegas />} />
         <Route path="/reportes/*" element={<RouterReportes />} />
         <Route path="/info" element={<Info />} />
-        <Route path="/punto-de-venta" element={<GestionVentas />} />
-        <Route path="/punto-de-venta/*" element={<RouterGestionVentas />} />
         <Route path="/envios" element={<GestionEnvios />} />
         <Route path="/punto-de-venta/*" element={<RouterPuntodeVenta />} />
         <Route path="/login" element={<Login />} />
