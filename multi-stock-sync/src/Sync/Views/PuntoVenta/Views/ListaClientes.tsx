@@ -1,6 +1,6 @@
 import React, { useState,useEffect } from 'react';
-import { Button, Table, Card, Typography, Spin, message } from 'antd';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { Button, Table, Card, Typography, Spin } from 'antd';
+import { PlusOutlined} from '@ant-design/icons';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { useListCliente } from '../Hooks/useListCliente';
 import { ColumnsType } from 'antd/es/table';

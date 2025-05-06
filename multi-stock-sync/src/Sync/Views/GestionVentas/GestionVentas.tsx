@@ -1,7 +1,7 @@
 import React from "react"
 import { Tabs, TabsProps } from "antd";
 import ListaClientes from "./Views/ListaClientes"
-import { HistorialVentas } from "./Views/historialVentas";
+import  ListaVentas  from "./Views/ListaVentas";
 
 const GestionVentas: React.FC = () => {
     const items: TabsProps["items"] = [
@@ -16,7 +16,7 @@ const GestionVentas: React.FC = () => {
       },{
         key: "3",
         label: "Historial ventas",
-        children: <HistorialVentas/>
+        children: <ListaVentas/>
       },
       
       

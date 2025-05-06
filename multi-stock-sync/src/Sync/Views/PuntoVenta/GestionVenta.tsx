@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
-import { Tabs, Typography, Card } from "antd";
+import { Tabs, Typography} from "antd";
 import type { TabsProps } from "antd";
 import NuevaVenta from "./Views/NuevaVenta";
-import HistorialVentas from "./Views/HistorialVentas";
+import  ListaVentas from "./Views/ListaVentas";
 import BorradoresVenta from "./Views/BorradoresVenta";
-
+import ListaClientes from "./Views/ListaClientes";
 const { Title } = Typography;
 
 const GestionVenta: React.FC = () => {
@@ -28,25 +28,23 @@ const GestionVenta: React.FC = () => {
         {
             key: "historial-ventas",
             label: "Historial de Ventas",
-            children: <HistorialVentas />,
+            children: <ListaVentas />,
         },
         {
             key: "borradores",
             label: "Borradores",
             children: <BorradoresVenta />,
-        },
+        },{
+            key:"clientes",
+            label:"Clientes",
+            children:<ListaClientes/>
+        }
     ];
 
     return (
         <div style={{ padding: "20px" }}>
             <Title level={2} style={{ marginBottom: "20px" }}>Punto de Venta</Title>
-            <Card>
-                <Tabs
-                    defaultActiveKey="nueva-venta"
-                    items={items}
-                    size="large"
-                />
-            </Card>
+            <Tabs defaultActiveKey="1" items={items} />
         </div>
     );
 };

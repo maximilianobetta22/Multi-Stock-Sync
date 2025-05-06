@@ -25,7 +25,7 @@ export const useEnviosTransito = () => {
   const classifyError = (error: Error): EnviosError => {
     const message = error.message.toLowerCase();
     
-    if (message.includes("404")) {
+    if (message.includes("500")) {
       return {
         message: "Error en el servidor. Por favor contacte al soporte técnico.",
         type: 'server',
@@ -33,15 +33,22 @@ export const useEnviosTransito = () => {
       };
     }
     
-    if (message.includes("301")) {
+    if (message.includes("403")) {
       return {
         message: "Seleccione una conexión válida",
         type: 'validation',
         severity: 'medium'
       };
     }
+    if(message.includes("404")){
+      return{
+        message: "Error, ruta no enctrada",
+        type: 'auth',
+        severity: 'high'
+      }
+    }
     
-    if (message.includes("acceso denegado")) {
+    if (message.includes("401")) {
       return {
         message: "No tiene permisos para acceder a esta información",
         type: 'auth',
@@ -73,7 +80,7 @@ export const useEnviosTransito = () => {
 
       const response = await enviosTransitoService.fetchAviableReception(clientId);
       
-      if (response.status === "success") {
+      if (response.status === "success" || response.status === "No hay envios en transito") {
         setData(response.data);
       } else {
         throw new Error(response.message || "Error al procesar los envíos");

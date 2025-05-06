@@ -11,8 +11,8 @@ export interface ClienteAPI {
   giro: string | null;
   comuna: string | null;
   direccion: string | null;
-  apellicos: string | null;
-  nombre: string | null;
+  apellidos: string | null;
+  nombres: string | null;
   region: string | null;
   ciudad: string | null;
   created_at: string;
