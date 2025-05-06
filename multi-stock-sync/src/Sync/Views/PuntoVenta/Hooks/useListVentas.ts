@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
-import { ListVentaService, mockVentas } from '../Services/listVentaService';
+
+import { ListVentaService,  } from '../Services/listVentaService';
+import { VentaResponse } from '../Types/ventaTypes';
+
 //datos a los que travez se va a filtrar
 interface FiltrosVenta {
   clienteId?: number;
@@ -12,8 +14,8 @@ interface FiltrosVenta {
 }
 
 export const useListVentas = () => {
-  const [allData, setAllData] = useState<any[]>([]);
-  const [data, setData] = useState<any[]>([]);
+  const [allData, setAllData] = useState<VentaResponse[]>([]);
+  const [data, setData] = useState<VentaResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -25,10 +27,13 @@ export const useListVentas = () => {
     setError(null);
     try {
       //endpoint aun no terminada se cargan desde un json hardcode
-      const response = ListVentaService.getListVenta();
-      const ventasData = response.data;
-      setAllData(mockVentas);
-      setData(mockVentas);
+      const response = await ListVentaService.getListVenta();
+      // Ensure we're working with an array
+      const ventasData = Array.isArray(response) ? response : [];
+      
+      setAllData(ventasData);
+      setData(ventasData);
+      
 
       // datos hardcode cargados de la constante mockData en service
      
@@ -101,6 +106,41 @@ export const useListVentas = () => {
     }
   };
 
+  const cambiarEstadoVenta = async (ventaId: number, nuevoEstado: string) => {
+    setLoading(true);
+    try {
+      // En un entorno real, aquí se haría una llamada al API
+      // const response = await ListVentaService.actualizarEstadoVenta(ventaId, nuevoEstado);
+      
+      // Actualización local para datos de muestra
+      const ventasActualizadas = allData.map(venta => {
+        if (venta.id === ventaId) {
+          return { ...venta, status_sale: nuevoEstado };
+        }
+        return venta;
+      });
+      
+      setAllData(ventasActualizadas);
+      
+      // Actualizar también los datos filtrados
+      const dataActualizada = data.map(venta => {
+        if (venta.id === ventaId) {
+          return { ...venta, estado: nuevoEstado };
+        }
+        return venta;
+      });
+      
+      setData(dataActualizada);
+      return true;
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Error al cambiar el estado de la venta'));
+      console.error('Error al cambiar estado de venta:', err);
+      throw err;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Cargar datos al iniciar
   useEffect(() => {
     fetchVentas();
@@ -111,6 +151,7 @@ export const useListVentas = () => {
     loading,
     error,
     refetch: fetchVentas,
-    aplicarFiltros
+    aplicarFiltros,
+    cambiarEstadoVenta,
   };
 };

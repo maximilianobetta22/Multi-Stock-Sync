@@ -13,9 +13,9 @@ export const ListClienteService ={
               Authorization: `Bearer ${localStorage.getItem("access_token")}`,
             },
           });
-    
+          
           console.log("Response data:", response.data);
-    
+          
           if (!response.data) {
             throw new Error("Estructura de respuesta inválida.");
           }

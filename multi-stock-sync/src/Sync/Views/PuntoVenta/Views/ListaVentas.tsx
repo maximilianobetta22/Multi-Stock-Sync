@@ -1,13 +1,12 @@
 import React, { useState, } from 'react';
-import { Button, Table, Card, Typography,  message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, List, Divider } from 'antd';
-import {  SearchOutlined, EyeOutlined,EditOutlined } from '@ant-design/icons';
+import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, List, Divider } from 'antd';
+import { SearchOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
 import { ColumnsType } from 'antd/es/table';
 import { useListVentas } from '../Hooks/useListVentas';
-import type { Dayjs } from 'dayjs';
-import { ClientType } from '../Types/clienteTypes';
-import { VentaResponse} from '../Types/ventaTypes'
+
+import { VentaResponse } from '../Types/ventaTypes'
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
-import { UrlWithStringQuery } from 'url';
+
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -22,7 +21,7 @@ const ESTADOS_VENTA = [
 
 // view para lista de ventas
 const ListaVentas: React.FC = () => {
-  const [filtros, setFiltros] = useState({
+  const  setFiltros = useState({
     clienteId: undefined,
     fechaInicio: undefined,
     fechaFin: undefined,
@@ -32,16 +31,17 @@ const ListaVentas: React.FC = () => {
   });
   const [form] = Form.useForm();
   const [detalleVisible, setDetalleVisible] = useState(false);
-  const [ventaSeleccionada, setVentaSeleccionada] = useState<Venta | null>(null);
+  const [ventaSeleccionada, setVentaSeleccionada] = useState<VentaResponse | null>(null);
   const [cambioEstadoVisible, setCambioEstadoVisible] = useState(false);
   const [nuevoEstado, setNuevoEstado] = useState<string>('');
+  const [ventaIdParaCambio, setVentaIdParaCambio] = useState<number | null>(null);
   // Hook personalizado para obtener las ventas
-  const { data, loading, error, refetch, aplicarFiltros } = useListVentas();
+  const { data, loading, error, aplicarFiltros, cambiarEstadoVenta } = useListVentas();
 
   // Función para aplicar filtros
   const handleAplicarFiltros = (values: any) => {
     const { cliente, fechaRango, estado, totalRango } = values;
-    
+
     const nuevosFiltros = {
       clienteId: cliente,
       fechaInicio: fechaRango?.[0]?.format('YYYY-MM-DD'),
@@ -50,32 +50,37 @@ const ListaVentas: React.FC = () => {
       totalMin: totalRango?.[0],
       totalMax: totalRango?.[1],
     };
-    
+
     setFiltros(nuevosFiltros);
     aplicarFiltros(nuevosFiltros);
   };
   if (loading) {
     return <LoadingDinamico variant="fullScreen" />;
   }
-    // Mostrar modal para cambiar estado
-    const mostrarModalCambioEstado = (id: number, estadoActual: string) => {
-      setVentaIdParaCambio(id);
-      setNuevoEstado(estadoActual);
-      setCambioEstadoVisible(true);
-    };
-  
-    // Función para confirmar cambio de estado
-    const confirmarCambioEstado = async () => {
-      if (ventaIdParaCambio && nuevoEstado) {
-        try {
-          await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado);
-          message.success('Estado de venta actualizado con éxito');
-          setCambioEstadoVisible(false);
-        } catch (error) {
-          message.error('Error al cambiar el estado de la venta');
+  // Mostrar modal para cambiar estado
+  const mostrarModalCambioEstado = (id: number, estadoActual: string) => {
+    setVentaIdParaCambio(id);
+    setNuevoEstado(estadoActual);
+    setCambioEstadoVisible(true);
+  };
+
+  // Función para confirmar cambio de estado
+  const confirmarCambioEstado = async () => {
+    if (ventaIdParaCambio && nuevoEstado) {
+      try {
+        await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado);
+        message.success('Estado de venta actualizado con éxito');
+        setCambioEstadoVisible(false);
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          message.error(error.message || 'Error al cambiar el estado de la venta');
+        } else {
+          message.error('Error desconocido');
         }
+        message.error('Error al cambiar el estado de la venta');
       }
-    };
+    }
+  };
   // Función para limpiar filtros
   const limpiarFiltros = () => {
     form.resetFields();
@@ -98,23 +103,23 @@ const ListaVentas: React.FC = () => {
       key: 'ventas-list-error'
     });
   }
-
+  // ordena la forma en que se muestran los productos en el modal detalle
   const formatProductos = (productosString: string) => {
     try {
       const productos = JSON.parse(productosString);
       if (!Array.isArray(productos)) return productosString;
-  
+
       if (productos.length === 0) return 'No hay productos registrados';
-  
+
       // Calcular el ancho máximo para alinear las columnas
       const maxNombreLength = Math.max(...productos.map(p => p.nombre?.length || 0));
-      
+
       return productos.map((p, index) => {
         const nombre = p.nombre || 'Producto sin nombre';
         const cantidad = p.cantidad?.toString() || '0';
         const precio = p.precio_unitario?.toLocaleString('es-CL') || '0';
         const subtotal = p.subtotal?.toLocaleString('es-CL') || '0';
-        
+
         return `${(index + 1).toString().padStart(2, '0')}. ${nombre.padEnd(maxNombreLength + 2)} | ${cantidad.padStart(3)} x $${precio.padStart(8)} | Subtotal: $${subtotal.padStart(10)}`;
       }).join('\n');
     } catch (e) {
@@ -151,10 +156,10 @@ const ListaVentas: React.FC = () => {
     {
       title: "Estado",
       dataIndex: "status_sale",
-      key: "estado",
-      render: (estado: string) => {
+      key: "status_sale",
+      render: (status_sale: string) => {
         let color = "default";
-        switch (estado) {
+        switch (status_sale) {
           case "pagada":
             color = "success";
             break;
@@ -170,7 +175,7 @@ const ListaVentas: React.FC = () => {
         }
         return (
           <Tag color={color}>
-            {estado.charAt(0).toUpperCase() + estado.slice(1)}
+            {status_sale.charAt(0).toUpperCase() + status_sale.slice(1)}
           </Tag>
         );
       },
@@ -195,15 +200,15 @@ const ListaVentas: React.FC = () => {
           >
             Ver detalle
           </Button>
-          <Button 
+          <Button
             size="small"
-            icon={<EditOutlined />} 
-            onClick={() => mostrarModalCambioEstado(record.id, record.estado)}
+            icon={<EditOutlined />}
+            onClick={() => mostrarModalCambioEstado(record.id, record.status_sale)}
           >
             Cambiar estado
           </Button>
         </Space>
-        
+
       ),
     },
   ];
@@ -326,7 +331,7 @@ const ListaVentas: React.FC = () => {
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={data}
+        dataSource={Array.isArray(data) ? data : []}
         pagination={{ pageSize: 10 }}
         locale={{
           emptyText: "No hay ventas registradas",
@@ -335,74 +340,98 @@ const ListaVentas: React.FC = () => {
 
       {/* Modal para mostrar detalles de la venta */}
       <Modal
-  title={`Detalle de Venta #${ventaSeleccionada?.id || ""}`}
-  open={detalleVisible}
-  onCancel={cerrarDetalle}
-  footer={[
-    <Button key="close" onClick={cerrarDetalle}>
-      Cerrar
-    </Button>,
-  ]}
-  width={800}
->
-  {ventaSeleccionada && (
-    <>
-      <Descriptions bordered column={2} size="small">
-        <Descriptions.Item label="Fecha">
-          {new Date(ventaSeleccionada.created_at).toLocaleDateString()}
-        </Descriptions.Item>
-        <Descriptions.Item label="Cliente ID">
-          {ventaSeleccionada.client_id}
-        </Descriptions.Item>
-        <Descriptions.Item label="Estado">
-          <Tag
-            color={
-              ventaSeleccionada.status_sale === "pagada"
-                ? "success"
-                : ventaSeleccionada.status_sale === "pendiente"
-                ? "warning"
-                : "error"
-            }
-          >
-            {ventaSeleccionada.status_sale.charAt(0).toUpperCase() +
-              ventaSeleccionada.status_sale.slice(1)}
-          </Tag>
-        </Descriptions.Item>
-        <Descriptions.Item label="Tipo Emisión">
-          {ventaSeleccionada.type_emission}
-        </Descriptions.Item>
-        <Descriptions.Item label="Subtotal">
-          <Typography.Text strong>
-            ${ventaSeleccionada.price_subtotal.toLocaleString("es-CL")}
-          </Typography.Text>
-        </Descriptions.Item>
-        <Descriptions.Item label="Total">
-          <Typography.Text strong>
-            ${ventaSeleccionada.price_final.toLocaleString("es-CL")}
-          </Typography.Text>
-        </Descriptions.Item>
-        <Descriptions.Item label="Observaciones" span={2}>
-          {ventaSeleccionada.observation || 'Ninguna'}
-        </Descriptions.Item>
-      </Descriptions>
+        title={`Detalle de Venta #${ventaSeleccionada?.id || ""}`}
+        open={detalleVisible}
+        onCancel={cerrarDetalle}
+        footer={[
+          <Button key="close" onClick={cerrarDetalle}>
+            Cerrar
+          </Button>,
+        ]}
+        width={800}
+      >
+        {ventaSeleccionada && (
+          <>
+            <Descriptions bordered column={2} size="small">
+              <Descriptions.Item label="Fecha">
+                {new Date(ventaSeleccionada.created_at).toLocaleDateString()}
+              </Descriptions.Item>
+              <Descriptions.Item label="Cliente ID">
+                {ventaSeleccionada.client_id}
+              </Descriptions.Item>
+              <Descriptions.Item label="Estado">
+                <Tag
+                  color={
+                    ventaSeleccionada.status_sale === "pagada"
+                      ? "success"
+                      : ventaSeleccionada.status_sale === "pendiente"
+                        ? "warning"
+                        : "error"
+                  }
+                >
+                  {ventaSeleccionada.status_sale.charAt(0).toUpperCase() +
+                    ventaSeleccionada.status_sale.slice(1)}
+                </Tag>
+              </Descriptions.Item>
+              <Descriptions.Item label="Tipo Emisión">
+                {ventaSeleccionada.type_emission}
+              </Descriptions.Item>
+              <Descriptions.Item label="Subtotal">
+                <Typography.Text strong>
+                  ${ventaSeleccionada.price_subtotal.toLocaleString("es-CL")}
+                </Typography.Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Total">
+                <Typography.Text strong>
+                  ${ventaSeleccionada.price_final.toLocaleString("es-CL")}
+                </Typography.Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Observaciones" span={2}>
+                {ventaSeleccionada.observation || 'Ninguna'}
+              </Descriptions.Item>
+            </Descriptions>
 
-      <Divider orientation="left">Productos ({ventaSeleccionada.amount_total_products})</Divider>
-      
-      <Input.TextArea
-        rows={8}
-        value={formatProductos(ventaSeleccionada.products)}
-        readOnly
-        style={{
-          width: '100%',
-          backgroundColor: '#fafafa',
-          fontFamily: 'monospace',
-          whiteSpace: 'pre',
-          marginBottom: 16
-        }}
-      />
-    </>
-  )}
-</Modal>
+            <Divider orientation="left">Productos ({ventaSeleccionada.amount_total_products})</Divider>
+
+            <Input.TextArea
+              rows={8}
+              value={formatProductos(ventaSeleccionada.products)}
+              readOnly
+              style={{
+                width: '100%',
+                backgroundColor: '#fafafa',
+                fontFamily: 'monospace',
+                whiteSpace: 'pre',
+                marginBottom: 16
+              }}
+            />
+          </>
+        )}
+      </Modal>
+      <Modal
+        title="Cambiar Estado de Venta"
+        open={cambioEstadoVisible}
+        onCancel={() => setCambioEstadoVisible(false)}
+        onOk={confirmarCambioEstado}
+        okText="Confirmar"
+        cancelText="Cancelar"
+      >
+        <Form layout="vertical">
+          <Form.Item label="Nuevo Estado">
+            <Select
+              value={nuevoEstado}
+              onChange={(value) => setNuevoEstado(value)}
+              style={{ width: '100%' }}
+            >
+              {ESTADOS_VENTA.map((estado) => (
+                <Option key={estado.value} value={estado.value}>
+                  {estado.label}
+                </Option>
+              ))}
+            </Select>
+          </Form.Item>
+        </Form>
+      </Modal>
     </Card>
   );
 };
