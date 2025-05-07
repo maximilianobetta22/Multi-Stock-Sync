@@ -17,6 +17,7 @@ export interface VentaResponse {
   }
 export interface VentaCliente{
     cliente:client;
+    venta:VentaResponse;
 
 }
 /*id int(11) PK 

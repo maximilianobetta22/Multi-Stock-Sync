@@ -6,9 +6,14 @@ import CompanyForm from './empresaFormulario';
 import { ClientFormData, ClientType } from '../Types/clienteTypes';
 import { UseAgregarCliente } from '../Hooks/useAgregarCliente';
 
+interface AgregarClienteDrawerProps {
+  visible: boolean;
+  onClose: () => void;
+  onSuccess?: (data?: unknown) => void;
+  showToast?: (message: string | null, type: 'success' | 'error' | 'info' | 'warning') => void;
+}
 
-
-const AgregarClienteDrawer: React.FC = ({
+const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
   visible,
   onClose,
   onSuccess,
@@ -21,10 +26,11 @@ const AgregarClienteDrawer: React.FC = ({
   // Reset estados cuando el drawer se abre/cierra
   useEffect(() => {
     if (visible) {
+      form.resetFields();
       clearError();
       clearSuccess();
     }
-  }, [visible, clearError, clearSuccess]);
+  }, [visible, clearError, clearSuccess, form]);
 
   const handleClose = () => {
     form.resetFields();
@@ -35,26 +41,26 @@ const AgregarClienteDrawer: React.FC = ({
 
   const onFinish = async (values: ClientFormData) => {
     try {
-      await registerNewClient(values, clientType);
-      form.resetFields();
-      if (showToast) {
-        showToast(getSuccessMessage(), 'success');
-      }
-      if (onSuccess) {
-        setTimeout(() => onSuccess({}), 500);
+      const result = await registerNewClient(values, clientType);
+      if (success) {
+        if (showToast) {
+          const clientTypeText = clientType === 2 ? 'Persona Natural' : 'Empresa';
+          showToast(`Cliente ${clientTypeText} registrado correctamente`, 'success');
+        }
+        if (onSuccess) {
+          // Pasamos los datos del cliente registrado al callback
+          onSuccess(result || values);
+        }
+        // No cerramos el drawer aquí - dejamos que el componente padre lo controle
       }
     } catch (err) {
       console.error('Error en el formulario:', err);
-      if (showToast) {
+      if (showToast && error) {
         showToast(`Error al registrar cliente: ${error}`, 'error');
+      } else if (showToast) {
+        showToast('Error al registrar cliente', 'error');
       }
     }
-  };
-
-  const getSuccessMessage = () => {
-    if (!success) return null;
-    const clientTypeText = clientType === 2 ? 'Persona Natural' : 'Empresa';
-    return `Cliente ${clientTypeText} registrado correctamente`;
   };
 
   return (
@@ -83,7 +89,7 @@ const AgregarClienteDrawer: React.FC = ({
           {success && (
             <Alert 
               message="Operación Exitosa" 
-              description={getSuccessMessage()} 
+              description="Cliente registrado correctamente" 
               type="success" 
               showIcon 
               closable 

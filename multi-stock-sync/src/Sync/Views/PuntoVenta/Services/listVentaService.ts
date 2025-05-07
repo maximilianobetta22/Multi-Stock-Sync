@@ -1,7 +1,7 @@
 
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
-import {VentaResponse} from '../Types/ventaTypes';
+import { VentaResponse } from '../Types/ventaTypes';
 //datos inventados
 export const mockVentas: VentaResponse[] = [
   {
@@ -31,7 +31,7 @@ export const mockVentas: VentaResponse[] = [
     name_companies: "Tech Solutions Inc.",
     observation: "Cliente preferencial con descuento",
     shipping: "delivery",
-    created_at: new Date('2023-05-01'),
+    created_at: new Date('2025-05-01'),
     status_sale: "pagada"
   },
   {
@@ -61,7 +61,7 @@ export const mockVentas: VentaResponse[] = [
     name_companies: "Empresa ABC",
     observation: "Pedido para oficina central",
     shipping: "pickup",
-    created_at: new Date('2023-05-02'),
+    created_at: new Date('2024-05-02'),
     status_sale: "pendiente"
   },
   {
@@ -84,7 +84,7 @@ export const mockVentas: VentaResponse[] = [
     name_companies: "Tech Solutions Inc.",
     observation: "Cancelado por cliente",
     shipping: "delivery",
-    created_at: new Date('2023-05-03'),
+    created_at: new Date('2024-05-03'),
     status_sale: "cancelada"
   },
   {
@@ -125,50 +125,93 @@ export const mockVentas: VentaResponse[] = [
     status_sale: "pagada"
   }
 ];
-export const ListVentaService ={
-    async getListVenta(): Promise<VentaResponse[]> {
-        try {
-          // Realizar una solicitud GET para obtener las ventas desde el backend, endpoin aun en proceso
-          const url = `${import.meta.env.VITE_API_URL}/history-sale`;
-          const response = await axiosInstance.get(url, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-            },
-          });
+export const ListVentaService = {
+  async getListVenta(): Promise<VentaResponse[]> {
+    try {
+      // Realizar una solicitud GET para obtener las ventas desde el backend, endpoin aun en proceso
+      const url = `${import.meta.env.VITE_API_URL}/history-sale`;
+      const response = await axiosInstance.get(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      });
 
-          console.log("Response data:", response.data);
+      console.log("Response data:", response.data);
 
-          if (!response.data) {
-            throw new Error("Estructura de respuesta inválida.");
-          }
+      if (!response.data || !response.data.data) {
+        throw new Error("Estructura de respuesta inválida.");
+      }
 
-         
-          return response.data;
-        } catch (error) {
-          console.error("Error al obtener Clientes:", error);
-          
-          // Manejo personalizado de errores según tipo y código HTTP
-          if (axios.isAxiosError(error) && error.response) {
-            // Error 500 con mensaje específico sobre "Target class"
-            if (error.response?.status === 500 && 
-              error.response.data?.message?.includes("Target class")) {
-            throw new Error("Error en el servidor: Configuración incorrecta del controlador");
-            }
-            // Error de permisos
-            if (error.response.status === 403) {
-              throw new Error("Acceso denegado. Por favor verifique sus permisos.");
-            }
-            // Error de ruta no encontrada
-            if(error.response.status === 404) {
-              throw new Error("Error en el servidor: Configuración incorrecta del controlador, contacte al adminsitrador.");
-            }
-            // Otro error con mensaje desde el servidor
-            throw new Error(error.response.data.message || "Error al obtener envíos próximos");
-          }
-          
-          // Error genérico (posiblemente de red)
-          throw new Error("Error inesperado al obtener envíos próximos");
+
+      return response.data.data;
+    } catch (error) {
+      console.error("Error al obtener Clientes:", error);
+
+      // Manejo personalizado de errores según tipo y código HTTP
+      if (axios.isAxiosError(error) && error.response) {
+        // Error 500 con mensaje específico sobre "Target class"
+        if (error.response?.status === 500 &&
+          error.response.data?.message?.includes("Target class")) {
+          throw new Error("Error en el servidor: Configuración incorrecta del controlador");
         }
-      },
-    
+        // Error de permisos
+        if (error.response.status === 403) {
+          throw new Error("Acceso denegado. Por favor verifique sus permisos.");
+        }
+        // Error de ruta no encontrada
+        if (error.response.status === 404) {
+          throw new Error("Error en el servidor: Configuración incorrecta del controlador, contacte al adminsitrador.");
+        }
+        // Otro error con mensaje desde el servidor
+        throw new Error(error.response.data.message || "Error al obtener envíos próximos");
+      }
+
+      // Error genérico (posiblemente de red)
+      throw new Error("Error inesperado al obtener envíos próximos");
+    }
+  },
+  async actualizarEstadoVenta(ventaId: number, nuevoEstado: string): Promise<VentaResponse | null> {
+    try {
+      const url = `${import.meta.env.VITE_API_URL}/ventas/${ventaId}/estado`;
+      const response = await axiosInstance.patch(
+        url,
+        { estado: nuevoEstado },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+            'Content-Type': 'application/json'
+          },
+        }
+      );
+
+      if (!response.data) {
+        throw new Error("Estructura de respuesta inválida.");
+      }
+
+      return response.data;
+    } catch (error) {
+      console.error("Error al actualizar estado de venta:", error);
+
+      // Manejo personalizado de errores según tipo y código HTTP
+      if (axios.isAxiosError(error) && error.response) {
+        // Error de permisos
+        if (error.response.status === 403) {
+          throw new Error("Acceso denegado. Por favor verifique sus permisos.");
+        }
+        // Error de entidad no encontrada
+        if (error.response.status === 404) {
+          throw new Error("Venta no encontrada.");
+        }
+        // Otro error con mensaje desde el servidor
+        throw new Error(error.response.data.message || "Error al actualizar estado de venta");
+      }
+
+      // Error genérico (posiblemente de red)
+      throw new Error("Error inesperado al actualizar estado de venta");
+    }
+  }
 }
+
+
+
+

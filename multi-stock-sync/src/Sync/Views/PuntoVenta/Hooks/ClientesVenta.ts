@@ -41,7 +41,7 @@ export const useClientes = () => {
 
       setClientes(data);
 
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Error al cargar clientes:", err);
       let errorMessage = 'Error desconocido al cargar clientes.';
 
@@ -61,7 +61,7 @@ export const useClientes = () => {
                 errorMessage = err.message || 'Error al configurar la petición.';
             }
        } else {
-           errorMessage = err.message || 'Error inesperado en la carga de clientes.';
+           errorMessage = 'Error inesperado en la carga de clientes.';
        }
 
       setErrorClientes(errorMessage);

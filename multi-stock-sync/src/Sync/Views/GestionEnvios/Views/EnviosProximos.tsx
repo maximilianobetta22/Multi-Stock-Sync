@@ -1,9 +1,9 @@
 // src/components/EnviosProximos.tsx
 import React from 'react';
-import { Table, Spin, Alert, Button, Tag } from 'antd';
+import { Table, Alert, Button, Tag } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { useEnviosProximos } from '../Hooks/useEnviosProximos';
-import { Envio } from '../Types/EnviosProximos.Type';
+import {  Enviostransito } from '../Types/EnviosProximos.Type';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 
 /**
@@ -11,7 +11,7 @@ import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingD
  */
 
 
-const columns: ColumnsType<Envio> = [
+const columns: ColumnsType<Enviostransito> = [
   { title: "Id orden", dataIndex: "order_id", key: "order_id" },
   { title: "Id de envio", dataIndex: "shipping_id", key: "shipping_id" },
   { title: "Fecha de envio limite", dataIndex: "fecha_envio_programada", key: "fecha_envio_programada" ,
@@ -67,7 +67,7 @@ const getAlertType = (severity: string) => {
 */
 const EnviosProximos: React.FC = () => {
   // Utilizamos el hook personalizado para obtener los datos y estado
-  const { data, loading, error, refetch, clearError } = useEnviosProximos();
+  const { data, loading, error, clearError } = useEnviosProximos();
 
   // Muestra un spinner durante la carga
   if (loading) {
