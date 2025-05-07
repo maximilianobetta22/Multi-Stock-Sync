@@ -9,8 +9,6 @@ interface FiltrosVenta {
   fechaInicio?: string;
   fechaFin?: string;
   estado?: string;
-  totalMin?: number;
-  totalMax?: number;
 }
 
 export const useListVentas = () => {
@@ -56,7 +54,7 @@ export const useListVentas = () => {
       // Filtrar por cliente
       if (filtros.clienteId) {
         resultados = resultados.filter(
-          (venta) => venta.cliente.id === filtros.clienteId
+          (venta) => venta.client_id === filtros.clienteId
         );
       }
 
@@ -64,7 +62,7 @@ export const useListVentas = () => {
       if (filtros.fechaInicio) {
         const fechaInicio = new Date(filtros.fechaInicio);
         resultados = resultados.filter(
-          (venta) => new Date(venta.fecha) >= fechaInicio
+          (venta) => new Date(venta.created_at) >= fechaInicio
         );
       }
 
@@ -73,30 +71,18 @@ export const useListVentas = () => {
         // Ajustar al final del día para incluir todas las ventas del día
         fechaFin.setHours(23, 59, 59, 999);
         resultados = resultados.filter(
-          (venta) => new Date(venta.fecha) <= fechaFin
+          (venta) => new Date(venta.created_at) <= fechaFin
         );
       }
 
       // Filtrar por estado
       if (filtros.estado) {
         resultados = resultados.filter(
-          (venta) => venta.estado === filtros.estado
+          (venta) => venta.status_sale === filtros.estado
         );
       }
 
-      // Filtrar por rango de total
-      if (filtros.totalMin !== undefined) {
-        resultados = resultados.filter(
-          (venta) => venta.total >= filtros.totalMin
-        );
-      }
-
-      if (filtros.totalMax !== undefined) {
-        resultados = resultados.filter(
-          (venta) => venta.total <= filtros.totalMax
-        );
-      }
-      // setea los nueos resultados
+  
       setData(resultados);
     } catch (error) {
       console.error("Error al aplicar filtros:", error);

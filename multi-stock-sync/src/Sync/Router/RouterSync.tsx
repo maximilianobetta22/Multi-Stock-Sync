@@ -15,8 +15,7 @@ import SeleccionConexion from "../Views/SeleccionConexion/SeleccionConexion";
 import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; // ✅ Nuevo
 import RouterGestionEnvio from "../Views/GestionEnvios/Router/RouterGestionEnvio";
 import RouterPuntodeVenta from "../Views/PuntoVenta/Router/RouterPuntodeVenta"
-import GestionVentas from "../Views/GestionVentas/GestionVentas"; // ✅ Nuevo
-import RouterGestionVentas from "../Views/GestionVentas/Router/RouterGestionVentas"; // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
+ // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 
 function RouterSync() {
   return (
