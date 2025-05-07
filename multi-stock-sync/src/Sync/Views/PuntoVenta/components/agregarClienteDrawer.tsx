@@ -3,14 +3,14 @@ import { Form, Button, Spin, Drawer, Space, Alert } from 'antd';
 import ClientTypeSelector from './seleccionTypeCliente';
 import NaturalPersonForm from './personaNaturalFormulario';
 import CompanyForm from './empresaFormulario';
-import { ClientFormData, ClientType } from '../Types/clienteTypes';
+import { ClientFormData, ClientType, client } from '../Types/clienteTypes';
 import { UseAgregarCliente } from '../Hooks/useAgregarCliente';
 
 interface AgregarClienteDrawerProps {
   visible: boolean;
   onClose: () => void;
-  onSuccess?: (data?: unknown) => void;
-  showToast?: (message: string | null, type: 'success' | 'error' | 'info' | 'warning') => void;
+  onSuccess?: (data: client) => void;
+  showToast?: (message: string, type: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
 const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
@@ -20,7 +20,7 @@ const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
   showToast
 }) => {
   const [clientType, setClientType] = useState<ClientType>(2);
-  const [form] = Form.useForm();
+  const [form] = Form.useForm<ClientFormData>();
   const { registerNewClient, isLoading, error, success, clearError, clearSuccess } = UseAgregarCliente();
 
   // Reset estados cuando el drawer se abre/cierra
@@ -42,23 +42,20 @@ const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
   const onFinish = async (values: ClientFormData) => {
     try {
       const result = await registerNewClient(values, clientType);
-      if (success) {
-        if (showToast) {
-          const clientTypeText = clientType === 2 ? 'Persona Natural' : 'Empresa';
-          showToast(`Cliente ${clientTypeText} registrado correctamente`, 'success');
-        }
-        if (onSuccess) {
-          // Pasamos los datos del cliente registrado al callback
-          onSuccess(result || values);
-        }
-        // No cerramos el drawer aquí - dejamos que el componente padre lo controle
+      form.resetFields();
+      
+      if (showToast) {
+        const clientTypeText = clientType === 2 ? 'Persona Natural' : 'Empresa';
+        showToast(`Cliente ${clientTypeText} registrado correctamente`, 'success');
+      }
+      
+      if (onSuccess && result) {
+        onSuccess(result);
       }
     } catch (err) {
       console.error('Error en el formulario:', err);
-      if (showToast && error) {
-        showToast(`Error al registrar cliente: ${error}`, 'error');
-      } else if (showToast) {
-        showToast('Error al registrar cliente', 'error');
+      if (showToast) {
+        showToast(error ? `Error al registrar cliente: ${error}` : 'Error al registrar cliente', 'error');
       }
     }
   };
@@ -109,7 +106,7 @@ const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
           )}
         </Space>
 
-        <Form
+        <Form<ClientFormData>
           form={form}
           layout="vertical"
           onFinish={onFinish}
@@ -117,7 +114,7 @@ const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
         >
           <ClientTypeSelector 
             value={clientType}
-            onChange={setClientType}
+            onChange={(value: ClientType) => setClientType(value)}
             disabled={isLoading}
           />
           

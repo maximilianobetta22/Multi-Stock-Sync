@@ -8,12 +8,13 @@ import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
 import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta'; // Este hook maneja toda la información de la venta actual, como los productos, totales y... ¡el cliente seleccionado!
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
+import { client } from '../Types/clienteTypes';
 const { Title } = Typography;
 const { Search } = Input;
 const { useBreakpoint } = Grid;
 
 interface NuevaVentaProps {
-  companyId: string | number | null;
+  companyId: string | number | null;
 }
 
 const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
@@ -124,7 +125,20 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     setTextoBusquedaProducto('');
   };
 
-
+  // Manejar el éxito al agregar un nuevo cliente
+  const handleClienteSuccess = (nuevoCliente: client) => {
+    // Primero recargamos la lista de clientes para que incluya el nuevo
+    recargarClientes();
+    
+    // Verificamos que el cliente tenga un id antes de seleccionarlo
+    if (nuevoCliente && nuevoCliente.id) {
+      // Convertimos el ID a string para asegurar consistencia
+      handleSeleccionarCliente(String(nuevoCliente.id));
+    }
+    
+    // Cerramos el drawer
+    setDrawerClienteVisible(false);
+  };
 
   useEffect(() => {
     if (bodegas && bodegas.length === 1) {
@@ -337,14 +351,7 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
       <AgregarClienteDrawer
         visible={drawerClienteVisible}
         onClose={() => setDrawerClienteVisible(false)}
-        onSuccess={(nuevoCliente) => {
-          recargarClientes()
-          if (nuevoCliente.id) {
-            handleSeleccionarCliente(nuevoCliente.id);
-          }
-          setDrawerClienteVisible(false);
-        }}
-        companyId={companyId} // Pasa el companyId si es necesario
+        onSuccess={handleClienteSuccess}
       />
     </div>
 

@@ -1,5 +1,5 @@
 import React from "react";
-import { Table, Spin, Alert,Button, Tag } from "antd";
+import { Table, Alert,Button, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
 import { Enviostransito } from "../Types/EnviosProximos.Type";
 import { useEnviosTransito } from "../Hooks/useEnviosTransito";

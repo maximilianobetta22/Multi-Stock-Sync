@@ -1,71 +1,91 @@
-import React, { useState, } from 'react';
-import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, List, Divider } from 'antd';
+import React, { useState } from 'react';
+import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, Divider } from 'antd';
 import { SearchOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
-import { ColumnsType } from 'antd/es/table';
+import type { ColumnsType } from 'antd/es/table';
 import { useListVentas } from '../Hooks/useListVentas';
-
-import { VentaResponse } from '../Types/ventaTypes'
+import type { Dayjs } from 'dayjs';
+import type { VentaResponse } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 
 const { Title } = Typography;
 const { RangePicker } = DatePicker;
 const { Option } = Select;
 
+// Interfaces para los filtros y estados
+interface FiltrosVenta {
+  clienteId: number | undefined;
+  fechaInicio: string | undefined;
+  fechaFin: string | undefined;
+  estado: string | undefined;
+}
 
+interface FormValues {
+  cliente?: number;
+  fechaRango?: [Dayjs, Dayjs];
+  estado?: string;
+  totalRango?: [number, number];
+}
+
+interface Producto {
+  nombre: string;
+  cantidad: number;
+  precio_unitario: number;
+  subtotal: number;
+}
 
 // Definir los estados posibles de una venta
 const ESTADOS_VENTA = [
   { value: 'pendiente', label: 'Pendiente' },
   { value: 'pagada', label: 'Pagada' },
-  { value: 'cancelada', label: 'Cancelada' }]
+  { value: 'cancelada', label: 'Cancelada' }
+];
 
 // view para lista de ventas
 const ListaVentas: React.FC = () => {
-  const  setFiltros = useState({
+  const [filtros, setFiltros] = useState<FiltrosVenta>({
     clienteId: undefined,
     fechaInicio: undefined,
     fechaFin: undefined,
     estado: undefined,
-    totalMin: undefined,
-    totalMax: undefined,
   });
-  const [form] = Form.useForm();
-  const [detalleVisible, setDetalleVisible] = useState(false);
+  const [form] = Form.useForm<FormValues>();
+  const [detalleVisible, setDetalleVisible] = useState<boolean>(false);
   const [ventaSeleccionada, setVentaSeleccionada] = useState<VentaResponse | null>(null);
-  const [cambioEstadoVisible, setCambioEstadoVisible] = useState(false);
+  const [cambioEstadoVisible, setCambioEstadoVisible] = useState<boolean>(false);
   const [nuevoEstado, setNuevoEstado] = useState<string>('');
   const [ventaIdParaCambio, setVentaIdParaCambio] = useState<number | null>(null);
+  console.log(filtros)
   // Hook personalizado para obtener las ventas
   const { data, loading, error, aplicarFiltros, cambiarEstadoVenta } = useListVentas();
-
+  
   // Función para aplicar filtros
-  const handleAplicarFiltros = (values: any) => {
-    const { cliente, fechaRango, estado, totalRango } = values;
+  const handleAplicarFiltros = (values: FormValues) => {
+    const { cliente, fechaRango, estado} = values;
 
-    const nuevosFiltros = {
+    const nuevosFiltros: FiltrosVenta = {
       clienteId: cliente,
       fechaInicio: fechaRango?.[0]?.format('YYYY-MM-DD'),
       fechaFin: fechaRango?.[1]?.format('YYYY-MM-DD'),
       estado,
-      totalMin: totalRango?.[0],
-      totalMax: totalRango?.[1],
     };
 
     setFiltros(nuevosFiltros);
     aplicarFiltros(nuevosFiltros);
   };
+  
   if (loading) {
     return <LoadingDinamico variant="fullScreen" />;
   }
+  
   // Mostrar modal para cambiar estado
-  const mostrarModalCambioEstado = (id: number, estadoActual: string) => {
+  const mostrarModalCambioEstado = (id: number, estadoActual: string): void => {
     setVentaIdParaCambio(id);
     setNuevoEstado(estadoActual);
     setCambioEstadoVisible(true);
   };
 
   // Función para confirmar cambio de estado
-  const confirmarCambioEstado = async () => {
+  const confirmarCambioEstado = async (): Promise<void> => {
     if (ventaIdParaCambio && nuevoEstado) {
       try {
         await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado);
@@ -77,20 +97,18 @@ const ListaVentas: React.FC = () => {
         } else {
           message.error('Error desconocido');
         }
-        message.error('Error al cambiar el estado de la venta');
       }
     }
   };
+  
   // Función para limpiar filtros
-  const limpiarFiltros = () => {
+  const limpiarFiltros = (): void => {
     form.resetFields();
-    const filtrosVacios = {
+    const filtrosVacios: FiltrosVenta = {
       clienteId: undefined,
       fechaInicio: undefined,
       fechaFin: undefined,
       estado: undefined,
-      totalMin: undefined,
-      totalMax: undefined,
     };
     setFiltros(filtrosVacios);
     aplicarFiltros(filtrosVacios);
@@ -103,10 +121,11 @@ const ListaVentas: React.FC = () => {
       key: 'ventas-list-error'
     });
   }
-  // ordena la forma en que se muestran los productos en el modal detalle
-  const formatProductos = (productosString: string) => {
+  
+  // Ordena la forma en que se muestran los productos en el modal detalle
+  const formatProductos = (productosString: string): string => {
     try {
-      const productos = JSON.parse(productosString);
+      const productos: Producto[] = JSON.parse(productosString);
       if (!Array.isArray(productos)) return productosString;
 
       if (productos.length === 0) return 'No hay productos registrados';
@@ -117,8 +136,8 @@ const ListaVentas: React.FC = () => {
       return productos.map((p, index) => {
         const nombre = p.nombre || 'Producto sin nombre';
         const cantidad = p.cantidad?.toString() || '0';
-        const precio = p.precio_unitario?.toLocaleString('es-CL') || '0';
-        const subtotal = p.subtotal?.toLocaleString('es-CL') || '0';
+        const precio = (p.precio_unitario || 0).toLocaleString('es-CL');
+        const subtotal = (p.subtotal || 0).toLocaleString('es-CL');
 
         return `${(index + 1).toString().padStart(2, '0')}. ${nombre.padEnd(maxNombreLength + 2)} | ${cantidad.padStart(3)} x $${precio.padStart(8)} | Subtotal: $${subtotal.padStart(10)}`;
       }).join('\n');
@@ -127,6 +146,7 @@ const ListaVentas: React.FC = () => {
       return productosString; // Si hay error al parsear, mostrar el string original
     }
   };
+  
   // Columnas para la tabla de ventas
   const columns: ColumnsType<VentaResponse> = [
     {
@@ -208,13 +228,12 @@ const ListaVentas: React.FC = () => {
             Cambiar estado
           </Button>
         </Space>
-
       ),
     },
   ];
 
   // Función para ver el detalle de una venta
-  const verDetalleVenta = (id: number) => {
+  const verDetalleVenta = (id: number): void => {
     const venta = data.find(v => v.id === id);
     if (venta) {
       setVentaSeleccionada(venta);
@@ -225,7 +244,7 @@ const ListaVentas: React.FC = () => {
   };
 
   // Función para cerrar el modal de detalle
-  const cerrarDetalle = () => {
+  const cerrarDetalle = (): void => {
     setDetalleVisible(false);
     setVentaSeleccionada(null);
   };

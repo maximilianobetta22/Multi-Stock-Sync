@@ -87,7 +87,7 @@ const ListaClientes: React.FC = () => {
       title: 'Nombre',
       dataIndex: 'nombres',
       key: 'nombres',
-      render: (text: string, record: client) => (
+      render: ( record: client) => (
         <>
           {record.nombres} {record.apellidos}
         </>
