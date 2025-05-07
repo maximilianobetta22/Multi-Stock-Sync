@@ -1,43 +1,38 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, Divider } from 'antd';
 import { SearchOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useListVentas } from '../Hooks/useListVentas';
-import type { Dayjs } from 'dayjs';
-import type { VentaResponse } from '../Types/ventaTypes';
+
+import type { VentaResponse, setVenta, products } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 
 const { Title } = Typography;
-const { RangePicker } = DatePicker;
 const { Option } = Select;
 
 // Interfaces para los filtros y estados
 interface FiltrosVenta {
   clienteId: number | undefined;
   fechaInicio: string | undefined;
-  fechaFin: string | undefined;
   estado: string | undefined;
+  allVenta: number | undefined;
 }
 
 interface FormValues {
-  cliente?: number;
-  fechaRango?: [Dayjs, Dayjs];
+  clienteId?: number;
+  fechaInicio?: string;
   estado?: string;
-  totalRango?: [number, number];
+  allVenta?: number;
 }
 
-interface Producto {
-  nombre: string;
-  cantidad: number;
-  precio_unitario: number;
-  subtotal: number;
-}
+
+
 
 // Definir los estados posibles de una venta
 const ESTADOS_VENTA = [
-  { value: 'pendiente', label: 'Pendiente' },
-  { value: 'pagada', label: 'Pagada' },
-  { value: 'cancelada', label: 'Cancelada' }
+  { value: 'Pendiente', label: 'Pendiente' },
+  { value: 'Finalizado', label: 'Finalizado' },
+  { value: 'Cancelada', label: 'Cancelada' },
 ];
 
 // view para lista de ventas
@@ -45,41 +40,77 @@ const ListaVentas: React.FC = () => {
   const [filtros, setFiltros] = useState<FiltrosVenta>({
     clienteId: undefined,
     fechaInicio: undefined,
-    fechaFin: undefined,
     estado: undefined,
+    allVenta: undefined,
   });
+  console.log(filtros.fechaInicio);
   const [form] = Form.useForm<FormValues>();
+  const [editVenta, setEditVenta] = useState<setVenta>({
+    type_emission: "",
+    warehouse_id: 0,
+    client_id: 0,
+    products: {
+      quantity: 0,
+      unit_price: 0
+    },
+    amount_total_products: 0,
+    price_subtotal: 0,
+    price_final: 0
+  });
   const [detalleVisible, setDetalleVisible] = useState<boolean>(false);
   const [ventaSeleccionada, setVentaSeleccionada] = useState<VentaResponse | null>(null);
   const [cambioEstadoVisible, setCambioEstadoVisible] = useState<boolean>(false);
   const [nuevoEstado, setNuevoEstado] = useState<string>('');
   const [ventaIdParaCambio, setVentaIdParaCambio] = useState<number | null>(null);
-  console.log(filtros)
   // Hook personalizado para obtener las ventas
-  const { data, loading, error, aplicarFiltros, cambiarEstadoVenta } = useListVentas();
-  
+  const { data, loading, error, success, resetSuccess, refetch, cambiarEstadoVenta } = useListVentas();
   // Función para aplicar filtros
   const handleAplicarFiltros = (values: FormValues) => {
-    const { cliente, fechaRango, estado} = values;
+    const { clienteId, fechaInicio, estado, allVenta } = values;
 
     const nuevosFiltros: FiltrosVenta = {
-      clienteId: cliente,
-      fechaInicio: fechaRango?.[0]?.format('YYYY-MM-DD'),
-      fechaFin: fechaRango?.[1]?.format('YYYY-MM-DD'),
-      estado,
+      clienteId: clienteId,
+      fechaInicio: fechaInicio,
+      estado: estado,
+      allVenta: allVenta
+      // ...nuevosFiltros,
     };
 
     setFiltros(nuevosFiltros);
-    aplicarFiltros(nuevosFiltros);
+    refetch(nuevosFiltros)
   };
-  
+  useEffect(() => {
+    if (success) {
+      message.success('Estado de venta actualizado con éxito');
+      resetSuccess(); // Reset the success state after consuming it
+    }
+  }, [success, resetSuccess])
+
   if (loading) {
     return <LoadingDinamico variant="fullScreen" />;
   }
-  
+
   // Mostrar modal para cambiar estado
-  const mostrarModalCambioEstado = (id: number, estadoActual: string): void => {
+  const mostrarModalCambioEstado = (
+    id: number,
+    estadoActual: string,
+    warehouse_id: number, Products: string, client_id: number, price_final: number, price_subtotal: number
+    , type_emission: string
+  ): void => {
+
+    const products: products = formatProductostoEdit(Products)
+    console.log(Products);
+    const venta: setVenta = {
+      warehouse_id: warehouse_id,
+      client_id: client_id,
+      products: products,
+      price_final,
+      price_subtotal,
+      amount_total_products: products.quantity,
+      type_emission: type_emission
+    };
     setVentaIdParaCambio(id);
+    setEditVenta(venta);
     setNuevoEstado(estadoActual);
     setCambioEstadoVisible(true);
   };
@@ -88,7 +119,7 @@ const ListaVentas: React.FC = () => {
   const confirmarCambioEstado = async (): Promise<void> => {
     if (ventaIdParaCambio && nuevoEstado) {
       try {
-        await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado);
+        await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado, editVenta);
         message.success('Estado de venta actualizado con éxito');
         setCambioEstadoVisible(false);
       } catch (error: unknown) {
@@ -100,18 +131,18 @@ const ListaVentas: React.FC = () => {
       }
     }
   };
-  
+
   // Función para limpiar filtros
   const limpiarFiltros = (): void => {
     form.resetFields();
     const filtrosVacios: FiltrosVenta = {
       clienteId: undefined,
       fechaInicio: undefined,
-      fechaFin: undefined,
       estado: undefined,
+      allVenta: undefined,
     };
     setFiltros(filtrosVacios);
-    aplicarFiltros(filtrosVacios);
+    refetch(filtrosVacios);
   };
 
   // Manejo de error en la carga de datos
@@ -121,32 +152,63 @@ const ListaVentas: React.FC = () => {
       key: 'ventas-list-error'
     });
   }
-  
-  // Ordena la forma en que se muestran los productos en el modal detalle
   const formatProductos = (productosString: string): string => {
     try {
-      const productos: Producto[] = JSON.parse(productosString);
-      if (!Array.isArray(productos)) return productosString;
+      const parsedData = JSON.parse(productosString);
 
-      if (productos.length === 0) return 'No hay productos registrados';
+      // Caso 1: Es un array de productos (ej: '[{"quantity":1,"price":15990}]')
+      if (Array.isArray(parsedData)) {
+        if (parsedData.length === 0) return "No hay productos";
 
-      // Calcular el ancho máximo para alinear las columnas
-      const maxNombreLength = Math.max(...productos.map(p => p.nombre?.length || 0));
+        return parsedData.map((producto, index) => (
+          `| Producto ${index + 1}: ${producto.quantity} | Precio unitario: $${producto.unit_price.toLocaleString('es-CL')} |`
+        )).join('\n');
+      }
 
-      return productos.map((p, index) => {
-        const nombre = p.nombre || 'Producto sin nombre';
-        const cantidad = p.cantidad?.toString() || '0';
-        const precio = (p.precio_unitario || 0).toLocaleString('es-CL');
-        const subtotal = (p.subtotal || 0).toLocaleString('es-CL');
+      // Caso 2: Es un objeto individual (ej: '{"quantity":1,"price":15990}')
+      if (typeof parsedData === 'object' && parsedData !== null) {
+        if (
+          parsedData.quantity !== undefined &&
+          parsedData.unit_price !== undefined
+        ) {
+          return `| Productos: ${parsedData.quantity
+            } | Precio unitario: $${parsedData.unit_price.toLocaleString(
+              "es-CL"
+            )} |`;
+        } else if (parsedData.price !== undefined) {
+          return `| Productos: ${parsedData.quantity
+            } | Precio unitario: $${parsedData.price.toLocaleString(
+              "es-CL"
+            )} |`;
+        }
 
-        return `${(index + 1).toString().padStart(2, '0')}. ${nombre.padEnd(maxNombreLength + 2)} | ${cantidad.padStart(3)} x $${precio.padStart(8)} | Subtotal: $${subtotal.padStart(10)}`;
-      }).join('\n');
+      }
+
+      // Si no coincide con ningún formato esperado
+      return "Formato de productos no reconocido";
+
     } catch (e) {
       console.error('Error al formatear productos:', e);
-      return productosString; // Si hay error al parsear, mostrar el string original
+      return productosString; // Devuelve el string original si hay error
     }
   };
-  
+  // Ordena la forma en que se muestran los productos en el modal detalle
+
+  const formatProductostoEdit = (productosString: string): products => {
+    console.log(JSON.parse(productosString))
+    const parsedData: products = JSON.parse(productosString);
+    if (typeof parsedData === 'object' && !Array.isArray(parsedData)) {
+      return parsedData;
+    }
+
+
+    if (Array.isArray(parsedData)) {
+      return parsedData[0]; // Si el array está vacío, devuelve null
+    }
+
+    return parsedData;
+  }
+
   // Columnas para la tabla de ventas
   const columns: ColumnsType<VentaResponse> = [
     {
@@ -178,19 +240,22 @@ const ListaVentas: React.FC = () => {
       dataIndex: "status_sale",
       key: "status_sale",
       render: (status_sale: string) => {
+        if (status_sale === null || status_sale === undefined)
+          status_sale = "Sin estado";
         let color = "default";
         switch (status_sale) {
-          case "pagada":
-            color = "success";
-            break;
-          case "pendiente":
-            color = "warning";
-            break;
-          case "cancelada":
+          case "Cancelada":
             color = "error";
             break;
-          case "parcial":
-            color = "processing";
+          case "Finalizado":
+            color = "success";
+            break;
+          case "Pendiente":
+            color = "warning";
+            break;
+
+          case "borrador":
+            color = "grey";
             break;
         }
         return (
@@ -223,7 +288,10 @@ const ListaVentas: React.FC = () => {
           <Button
             size="small"
             icon={<EditOutlined />}
-            onClick={() => mostrarModalCambioEstado(record.id, record.status_sale)}
+            onClick={() => mostrarModalCambioEstado(record.id, record.status_sale, record.warehouse_id,
+              record.products,
+              record.client_id, record.price_final,
+              record.price_subtotal, record.type_emission)}
           >
             Cambiar estado
           </Button>
@@ -260,14 +328,14 @@ const ListaVentas: React.FC = () => {
       >
         <Title level={4}>Historial de Ventas</Title>
         {/*
-        boton para recargar la lista de ventas solo en desarrollo
+        boton para recargar la lista de ventas solo en DESARROLLO*/}
         <Button
-          icon={<ReloadOutlined />}
+          icon={<EditOutlined />}
           onClick={() => refetch()}
           disabled={loading}
         >
           Actualizar
-        </Button>*/}
+        </Button>
       </div>
       {/* Formulario de filtros */}
       <Form
@@ -278,13 +346,13 @@ const ListaVentas: React.FC = () => {
       >
         <Row gutter={16}>
           <Col xs={24} sm={12} md={6}>
-            <Form.Item name="cliente" label="Cliente">
+            <Form.Item name="clientId" label="Cliente">
               <Select
                 placeholder="Seleccionar cliente"
                 allowClear
                 showSearch
                 optionFilterProp="children"
-              >
+              >{/*datos hardcode mientras */}
                 <Option value={1}>Juan Pérez</Option>
                 <Option value={2}>Empresa ABC</Option>
                 <Option value={3}>María González</Option>
@@ -292,8 +360,18 @@ const ListaVentas: React.FC = () => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Form.Item name="fechaRango" label="Rango de Fecha">
-              <RangePicker style={{ width: "100%" }} />
+            <Form.Item name="fechaInicio" label="Fecha">
+              <DatePicker
+                style={{ width: "100%" }}
+                format="YYYY-MM-DD"
+                placeholder="Seleccione una fecha"
+                onChange={(date, dateString) => {
+                  // dateString contendrá la fecha en formato 'YYYY-MM-DD'
+                  form.setFieldsValue({
+                    fechaInicio: dateString.toString(),
+                  });
+                }}
+              />
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
@@ -308,9 +386,9 @@ const ListaVentas: React.FC = () => {
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
-            <Form.Item label="Rango de Total">
+            <Form.Item label="Cantidad de ventas">
               <Space style={{ width: "100%" }}>
-                <Form.Item name={["totalRango", 0]} noStyle>
+                <Form.Item name={["allVenta", 0]} noStyle>
                   <Input
                     placeholder="Mínimo"
                     type="number"
@@ -318,13 +396,7 @@ const ListaVentas: React.FC = () => {
                   />
                 </Form.Item>
                 <span>-</span>
-                <Form.Item name={["totalRango", 1]} noStyle>
-                  <Input
-                    placeholder="Máximo"
-                    type="number"
-                    style={{ width: 120 }}
-                  />
-                </Form.Item>
+
               </Space>
             </Form.Item>
           </Col>
@@ -350,7 +422,7 @@ const ListaVentas: React.FC = () => {
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={Array.isArray(data) ? data : []}
+        dataSource={data}
         pagination={{ pageSize: 10 }}
         locale={{
           emptyText: "No hay ventas registradas",
@@ -381,15 +453,17 @@ const ListaVentas: React.FC = () => {
               <Descriptions.Item label="Estado">
                 <Tag
                   color={
-                    ventaSeleccionada.status_sale === "pagada"
+                    (ventaSeleccionada.status_sale ?? "desconocido") === "Finalizado"
                       ? "success"
-                      : ventaSeleccionada.status_sale === "pendiente"
+                      : (ventaSeleccionada.status_sale ?? "desconocido") === "Pendiente"
                         ? "warning"
-                        : "error"
+                        : (ventaSeleccionada.status_sale ?? "desconocido") === "borrador"
+                          ?
+                          "grey" : "error"
                   }
                 >
-                  {ventaSeleccionada.status_sale.charAt(0).toUpperCase() +
-                    ventaSeleccionada.status_sale.slice(1)}
+                  {(ventaSeleccionada.status_sale ?? "desconocido").charAt(0).toUpperCase() +
+                    (ventaSeleccionada.status_sale ?? "desconocido").slice(1)}
                 </Tag>
               </Descriptions.Item>
               <Descriptions.Item label="Tipo Emisión">

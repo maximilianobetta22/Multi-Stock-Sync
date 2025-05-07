@@ -13,13 +13,6 @@ export const UseAgregarCliente = () => {
         setError(null);
         setSuccess(false);
         
-        const clientId = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}")?.client_id;
-        if (!clientId) {
-            setError("No hay conexión seleccionada");
-            setIsLoading(false);
-            throw new Error("No hay conexión seleccionada");
-        }
-        
         try {
             const registeredClient = await registerClient(clientData, clienteType);
    

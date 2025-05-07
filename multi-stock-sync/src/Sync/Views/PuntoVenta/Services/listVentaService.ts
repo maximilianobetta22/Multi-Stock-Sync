@@ -1,8 +1,8 @@
 
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
-import { VentaResponse } from '../Types/ventaTypes';
-//datos inventados
+import { EstadoReceive, VentaResponse, setVenta } from '../Types/ventaTypes';
+
 export const mockVentas: VentaResponse[] = [
   {
     id: 1,
@@ -125,28 +125,48 @@ export const mockVentas: VentaResponse[] = [
     status_sale: "pagada"
   }
 ];
+
+
+
+interface FiltrosBackend {
+  clientId?: number;
+  dateStart?: string;
+  state?: string;
+  allSale?: number;
+}
 export const ListVentaService = {
-  async getListVenta(): Promise<VentaResponse[]> {
+  async getListVenta(client_id:string,filters: FiltrosBackend = {}): Promise<VentaResponse> {
     try {
+      // Preparar URL base
+      let url = `${import.meta.env.VITE_API_URL}/history-sale/${client_id}`;
+      console.log(filters);
+      // Si hay un client_id específico, lo agregamos a la ruta
+    
+      const queryParams = new URLSearchParams();
+      if(filters.clientId!== undefined) queryParams.append('clientId', filters.clientId.toString());
+      if (filters.dateStart) queryParams.append('dateStart', filters.dateStart);
+      if (filters.state) queryParams.append('state', filters.state);
+      if (filters.allSale !== undefined) queryParams.append('allSale', filters.allSale.toString());
+      
+      // Añadir los parámetros a la URL si existen
+      const queryString = queryParams.toString();
+      if (queryString) {
+        url += `?${queryString}`;
+      }
       // Realizar una solicitud GET para obtener las ventas desde el backend, endpoin aun en proceso
-      const url = `${import.meta.env.VITE_API_URL}/history-sale`;
+
       const response = await axiosInstance.get(url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
-
       console.log("Response data:", response.data);
-
       if (!response.data || !response.data.data) {
         throw new Error("Estructura de respuesta inválida.");
       }
-
-
       return response.data.data;
     } catch (error) {
       console.error("Error al obtener Clientes:", error);
-
       // Manejo personalizado de errores según tipo y código HTTP
       if (axios.isAxiosError(error) && error.response) {
         // Error 500 con mensaje específico sobre "Target class"
@@ -170,12 +190,11 @@ export const ListVentaService = {
       throw new Error("Error inesperado al obtener envíos próximos");
     }
   },
-  async actualizarEstadoVenta(ventaId: number, nuevoEstado: string): Promise<VentaResponse | null> {
+  async actualizarEstadoVenta(saleId: number, status: string, setventa: setVenta):Promise<EstadoReceive> {
     try {
-      const url = `${import.meta.env.VITE_API_URL}/ventas/${ventaId}/estado`;
+      const url = `${import.meta.env.VITE_API_URL}/generated-sale-note/${saleId}/${status}`;
       const response = await axiosInstance.patch(
-        url,
-        { estado: nuevoEstado },
+        url,setventa,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -183,7 +202,7 @@ export const ListVentaService = {
           },
         }
       );
-
+      console.log("Response data:", response.data);
       if (!response.data) {
         throw new Error("Estructura de respuesta inválida.");
       }

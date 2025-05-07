@@ -20,21 +20,23 @@ export interface VentaCliente{
     venta:VentaResponse;
 
 }
-/*id int(11) PK 
-warehouse_id bigint(20) UN 
-products  
-amount_total_products int(11) 
-price_subtotal int(11) 
-price_final int(11) 
-client_id bigint(20) fk?
-type_emission varchar(20) 
-name_companies varchar(50) 
-observation varchar(255) 
-shipping longtext 
-created_at timestamp 
-status_sale varchar(10)*/
+export interface EstadoReceive{
+    data:VentaResponse;
+    message: string;
+}
+export interface products{
+  quantity:number;
+  unit_price:number;
+}
+export interface setVenta{
+  type_emission:string;
+  warehouse_id:number;
+  client_id:number;
+  products:products;
+  amount_total_products:number;
+  price_subtotal:number;
+  price_final:number;
+}
 
 
-/*table product_sale
-id bigint(20) PK 
-warehouse_id bigint(20) */
+

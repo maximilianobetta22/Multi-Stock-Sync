@@ -20,7 +20,7 @@ export const validateEmail = (_: unknown, value: string) => {
     if (!value || dniRegex.test(value)) {
       return Promise.resolve();
     }
-    return Promise.reject('Ingrese un DNI/RUT válido');
+    return Promise.reject('Ingrese un RUT válido');
   };
   
   export const validateTaxId = (_: unknown, value: string) => {
