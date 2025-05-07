@@ -28,7 +28,7 @@ const PersonaNatForm: React.FC = () => {
       </Form.Item>
 
       <Form.Item
-        label="DNI/RUT"
+        label="RUT"
         name="rut"
         rules={[
           { required: true, message: 'Ingrese el documento de identidad' },

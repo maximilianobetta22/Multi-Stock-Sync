@@ -48,6 +48,7 @@ export interface client{
   tipo_cliente_id: number;
   updated_at: string;
 }
+
 export interface ClientesResponse {
   status: "success" | "error";
   data: client[];

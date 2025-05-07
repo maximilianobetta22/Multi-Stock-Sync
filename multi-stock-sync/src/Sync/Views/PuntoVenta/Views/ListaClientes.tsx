@@ -6,23 +6,23 @@ import { useListCliente } from '../Hooks/useListCliente';
 import { ColumnsType } from 'antd/es/table';
 import { client } from '../Types/clienteTypes';
 
-const Toast = ({ message, type, onClose }: { 
-  message: string; 
-  type: 'success' | 'error' | 'info' | 'warning'; 
-  onClose: () => void 
+const Toast = ({ message, type, onClose }: {
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+  onClose: () => void
 }) => {
   useEffect(() => {
     const timer = setTimeout(() => {
       onClose();
     }, 5000);
-    
+
     return () => clearTimeout(timer);
   }, [onClose]);
-  
-  const backgroundColor = type === 'success' ? '#52c41a' : 
-                          type === 'error' ? '#f5222d' : 
-                          type === 'warning' ? '#faad14' : '#1890ff';
-  
+
+  const backgroundColor = type === 'success' ? '#52c41a' :
+    type === 'error' ? '#f5222d' :
+      type === 'warning' ? '#faad14' : '#1890ff';
+
   return (
     <div style={{
       position: 'fixed',
@@ -46,8 +46,8 @@ const { Title } = Typography;
 const ListaClientes: React.FC = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
   const { data, loading, error, refetch } = useListCliente();
-  const [toast, setToast] = useState<{message: string, type: 'success' | 'error' | 'info' | 'warning'} | null>(null);
-  
+  const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
+  console.log(data)
   // Función para abrir el drawer
   const showDrawer = () => {
     setDrawerVisible(true);
@@ -84,47 +84,55 @@ const ListaClientes: React.FC = () => {
   // Columnas para la tabla de clientes
   const columns: ColumnsType<client> = [
     {
-      title: 'Nombre',
-      dataIndex: 'nombres',
-      key: 'nombres',
-      render: ( record: client) => (
-        <>
-          {record.nombres} {record.apellidos}
-        </>
-      ),
+      title: "Nombre",
+      dataIndex: "nombres",
+      key: "nombres",
     },
     {
-      title: 'Tipo',
-      key: 'tipo_cliente_id',
-      dataIndex: 'tipo_cliente_id',
+      title: "Tipo",
+      key: "tipo_cliente_id",
+      dataIndex: "tipo_cliente_id",
       render: (tipo: number) => (
-        <span>{tipo === 2 ? 'Persona Natural' : 'Empresa'}</span>
+        <span>{tipo === 2 ? "Persona Natural" : "Empresa"}</span>
       ),
     },
     {
-      title: 'RUT',
-      dataIndex: 'rut',
-      key: 'rut',
+      title: "RUT",
+      dataIndex: "rut",
+      key: "rut",
     },
     {
-      title: 'Razon social',
-      dataIndex: 'razon_social',
-      key: 'razon_social',
+      title: "Razon social",
+      dataIndex: "razon_social",
+      key: "razon_social",
+      render: (razonS: string) => (
+        <span>
+          {razonS !== null || razonS !== "" || razonS !== undefined
+            ? razonS : "No aplica"}
+        </span>
+      ),
     },
     {
-      title: 'Giro',
-      dataIndex: 'giro',
-      key: 'giro',
+      title: "Giro",
+      dataIndex: "giro",
+      key: "giro",
+      render: (razonS: string) => (
+        <span>
+          {razonS !== null || razonS !== "" || razonS !== undefined
+            ? razonS : "No aplica"}
+        </span>
+      ),
     },
+
   ];
 
   return (
     <Card>
       {toast && (
-        <Toast 
-          message={toast.message} 
-          type={toast.type} 
-          onClose={() => setToast(null)} 
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
         />
       )}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
