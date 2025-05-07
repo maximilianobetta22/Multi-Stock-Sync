@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { enviosProximosService } from "../Service/EnviosProximosService";
-import { Enviostransito } from "../Types/EnviosProximos.Type";
+import { Envio } from "../Types/EnviosProximos.Type";
 
 /**
  * Tipo de error para el hook useEnviosProximos
@@ -15,7 +15,7 @@ export type EnviosError = {
  * Hook para gestionar la obtención y estado de los envíos próximos
  */
 export const useEnviosProximos = () => {
-  const [data, setData] = useState<Enviostransito[]>([]);
+  const [data, setData] = useState<Envio[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<EnviosError | null>(null);
 

@@ -28,9 +28,9 @@ export interface receptor{
 
 
 export interface EnviosTransitoResponse {
-  status: "success" | "error";
+  status: "success" | "No hay envios en transito";
   data: Enviostransito[];
-  message?: string;
+  message: Enviostransito[];
 }
   
 export interface Enviostransito {

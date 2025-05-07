@@ -1,6 +1,6 @@
 import axiosInstance from "../../../../axiosConfig";
 import axios from "axios";
-import { EnviosTransitoResponse } from "../Types/EnviosProximos.Type";
+import { EnviosResponse } from "../Types/EnviosProximos.Type";
 
 /**
  * Servicio para gestionar operaciones relacionadas con envíos próximos
@@ -9,7 +9,7 @@ export const enviosProximosService = {
   /**
    * Obtiene los envíos próximos desde la API
    */
-  async fetchUpcomingShipments(clientId: string): Promise<EnviosTransitoResponse> {
+  async fetchUpcomingShipments(clientId: string): Promise<EnviosResponse> {
     try {
       const url = `${import.meta.env.VITE_API_URL}/mercadolibre/upcoming-shipments/${clientId}`;
       const response = await axiosInstance.get(url, {
