@@ -3,24 +3,23 @@ import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Fo
 import { SearchOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useListVentas } from '../Hooks/useListVentas';
-
-import type { VentaResponse, setVenta, products } from '../Types/ventaTypes';
+//import type { DatePickerProps } from 'antd';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+import { useListCliente } from '../Hooks/useListCliente';
+// Importa el tipo Dayjs
+import dayjs from 'dayjs';
+import type { VentaResponse, setVenta, products, FiltrosBackend } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 // Interfaces para los filtros y estados
-interface FiltrosVenta {
-  clienteId: number | undefined;
-  fechaInicio: string | undefined;
-  estado: string | undefined;
-  allVenta: number | undefined;
-}
+
 
 interface FormValues {
-  clienteId?: number;
-  fechaInicio?: string;
+  clientId?: number;
+  fechaStart?: string;
   estado?: string;
   allVenta?: number;
 }
@@ -37,13 +36,15 @@ const ESTADOS_VENTA = [
 
 // view para lista de ventas
 const ListaVentas: React.FC = () => {
-  const [filtros, setFiltros] = useState<FiltrosVenta>({
-    clienteId: undefined,
-    fechaInicio: undefined,
-    estado: undefined,
-    allVenta: undefined,
+  const { clientes } = useListCliente();
+  
+  const [filtros, setFiltros] = useState<FiltrosBackend>({
+    client_id: undefined,
+    date_start: undefined,
+    status_sale: undefined,
+    all_sale: undefined,
   });
-  console.log(filtros.fechaInicio);
+  console.log(filtros.date_start);
   const [form] = Form.useForm<FormValues>();
   const [editVenta, setEditVenta] = useState<setVenta>({
     type_emission: "",
@@ -65,14 +66,15 @@ const ListaVentas: React.FC = () => {
   // Hook personalizado para obtener las ventas
   const { data, loading, error, success, resetSuccess, refetch, cambiarEstadoVenta } = useListVentas();
   // Función para aplicar filtros
+  const [fechaInicio, setFechaInicio] = useState<string>('');
   const handleAplicarFiltros = (values: FormValues) => {
-    const { clienteId, fechaInicio, estado, allVenta } = values;
-
-    const nuevosFiltros: FiltrosVenta = {
-      clienteId: clienteId,
-      fechaInicio: fechaInicio,
-      estado: estado,
-      allVenta: allVenta
+    const { clientId, fechaStart, estado, allVenta } = values;
+    console.log('Fecha recibida:', fechaStart);
+    const nuevosFiltros: FiltrosBackend = {
+      client_id: clientId,
+      date_start: fechaInicio,
+      status_sale: estado,
+      all_sale: allVenta
       // ...nuevosFiltros,
     };
 
@@ -94,7 +96,7 @@ const ListaVentas: React.FC = () => {
   const mostrarModalCambioEstado = (
     id: number,
     estadoActual: string,
-    warehouse_id: number, Products: string, client_id: number, price_final: number, price_subtotal: number
+    warehouse_id: number,total_amount: number, Products: string, client_id: number, price_final: number, price_subtotal: number
     , type_emission: string
   ): void => {
 
@@ -106,7 +108,7 @@ const ListaVentas: React.FC = () => {
       products: products,
       price_final,
       price_subtotal,
-      amount_total_products: products.quantity,
+      amount_total_products: total_amount,
       type_emission: type_emission
     };
     setVentaIdParaCambio(id);
@@ -114,6 +116,16 @@ const ListaVentas: React.FC = () => {
     setNuevoEstado(estadoActual);
     setCambioEstadoVisible(true);
   };
+
+  dayjs.extend(customParseFormat);
+
+
+
+
+
+
+
+
 
   // Función para confirmar cambio de estado
   const confirmarCambioEstado = async (): Promise<void> => {
@@ -135,11 +147,11 @@ const ListaVentas: React.FC = () => {
   // Función para limpiar filtros
   const limpiarFiltros = (): void => {
     form.resetFields();
-    const filtrosVacios: FiltrosVenta = {
-      clienteId: undefined,
-      fechaInicio: undefined,
-      estado: undefined,
-      allVenta: undefined,
+    const filtrosVacios: FiltrosBackend = {
+      client_id: undefined,
+      date_start: undefined,
+      status_sale: undefined,
+      all_sale: undefined,
     };
     setFiltros(filtrosVacios);
     refetch(filtrosVacios);
@@ -152,6 +164,7 @@ const ListaVentas: React.FC = () => {
       key: 'ventas-list-error'
     });
   }
+  // Ordena la forma en que se muestran los productos en el modal detalle
   const formatProductos = (productosString: string): string => {
     try {
       const parsedData = JSON.parse(productosString);
@@ -160,9 +173,16 @@ const ListaVentas: React.FC = () => {
       if (Array.isArray(parsedData)) {
         if (parsedData.length === 0) return "No hay productos";
 
-        return parsedData.map((producto, index) => (
-          `| Producto ${index + 1}: ${producto.quantity} | Precio unitario: $${producto.unit_price.toLocaleString('es-CL')} |`
-        )).join('\n');
+        return parsedData
+          .map(
+            (producto) =>
+              `nombre  ${producto.nombre}| Cantidad: ${
+                producto.quantity
+              } | Precio unitario: ${producto.unit_price.toLocaleString(
+                "es-CL"
+              )} |`
+          )
+          .join("\n");
       }
 
       // Caso 2: Es un objeto individual (ej: '{"quantity":1,"price":15990}')
@@ -187,12 +207,14 @@ const ListaVentas: React.FC = () => {
       // Si no coincide con ningún formato esperado
       return "Formato de productos no reconocido";
 
-    } catch (e) {
-      console.error('Error al formatear productos:', e);
+    } catch (error) {
+      console.error('Error al formatear productos:', error);
       return productosString; // Devuelve el string original si hay error
     }
   };
-  // Ordena la forma en que se muestran los productos en el modal detalle
+
+
+  // Ordena la forma en que se envian los productos a la api al momento de editar estado
 
   const formatProductostoEdit = (productosString: string): products => {
     console.log(JSON.parse(productosString))
@@ -208,7 +230,16 @@ const ListaVentas: React.FC = () => {
 
     return parsedData;
   }
+  const getClientName = (clientId: number): string => {
+    const cliente = clientes.find(c => c.id === clientId);
+    if (!cliente) return `Cliente #${clientId}`;
 
+    // Si es persona natural (tipo_cliente_id === 2), devuelve nombre y apellido
+    // Si es empresa, devuelve razón social
+    return cliente.tipo_cliente_id === 2
+      ? `${cliente.nombres} ${cliente.apellidos}`
+      : cliente.razon_social || `Cliente #${clientId}`;
+  };
   // Columnas para la tabla de ventas
   const columns: ColumnsType<VentaResponse> = [
     {
@@ -224,16 +255,10 @@ const ListaVentas: React.FC = () => {
       render: (fecha: string) => new Date(fecha).toLocaleDateString(),
     },
     {
-      title: "Cliente id",
+      title: "Cliente",
       dataIndex: "client_id",
       key: "client_id",
-      /*render: (_, record: Venta) => (
-        <span>
-          {record.cliente.tipo_cliente_id === 2 
-            ? `${record.cliente.nombres} ${record.cliente.apellidos}`
-            : record.cliente.razon_social}
-        </span>
-      ),*/
+      render: (clientId: number) => getClientName(clientId),
     },
     {
       title: "Estado",
@@ -289,7 +314,7 @@ const ListaVentas: React.FC = () => {
             size="small"
             icon={<EditOutlined />}
             onClick={() => mostrarModalCambioEstado(record.id, record.status_sale, record.warehouse_id,
-              record.products,
+              record.amount_total_products,record.products,
               record.client_id, record.price_final,
               record.price_subtotal, record.type_emission)}
           >
@@ -316,6 +341,8 @@ const ListaVentas: React.FC = () => {
     setDetalleVisible(false);
     setVentaSeleccionada(null);
   };
+   
+
 
   return (
     <Card>
@@ -327,15 +354,7 @@ const ListaVentas: React.FC = () => {
         }}
       >
         <Title level={4}>Historial de Ventas</Title>
-        {/*
-        boton para recargar la lista de ventas solo en DESARROLLO*/}
-        <Button
-          icon={<EditOutlined />}
-          onClick={() => refetch()}
-          disabled={loading}
-        >
-          Actualizar
-        </Button>
+
       </div>
       {/* Formulario de filtros */}
       <Form
@@ -352,24 +371,35 @@ const ListaVentas: React.FC = () => {
                 allowClear
                 showSearch
                 optionFilterProp="children"
-              >{/*datos hardcode mientras */}
-                <Option value={1}>Juan Pérez</Option>
-                <Option value={2}>Empresa ABC</Option>
-                <Option value={3}>María González</Option>
+              >
+                {clientes.map((cliente) => (
+                  <Option key={cliente.id} value={cliente.id}>
+                    {cliente.tipo_cliente_id === 2
+                      ? `${cliente.nombres} ${cliente.apellidos}`
+                      : cliente.razon_social}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Form.Item name="fechaInicio" label="Fecha">
-              <DatePicker
-                style={{ width: "100%" }}
-                format="YYYY-MM-DD"
-                placeholder="Seleccione una fecha"
+              <DatePicker 
+                placeholder="Seleccionar fecha"
+                format="DD-MM-YYYY"
+                style={{ width: '100%' }}
                 onChange={(date, dateString) => {
-                  // dateString contendrá la fecha en formato 'YYYY-MM-DD'
-                  form.setFieldsValue({
-                    fechaInicio: dateString.toString(),
-                  });
+                  if (date) {
+                    const format =
+                      dateString.toString().split("-")[2] +
+                      "-" +
+                      dateString.toString().split("-")[1] +
+                      "-" +
+                      dateString.toString().split("-")[0];
+                    setFechaInicio(format);
+                  } else {
+                    setFechaInicio("");
+                  }
                 }}
               />
             </Form.Item>
@@ -388,15 +418,13 @@ const ListaVentas: React.FC = () => {
           <Col xs={24} sm={12} md={6}>
             <Form.Item label="Cantidad de ventas">
               <Space style={{ width: "100%" }}>
-                <Form.Item name={["allVenta", 0]} noStyle>
+                <Form.Item name="allVenta" noStyle>
                   <Input
                     placeholder="Mínimo"
                     type="number"
                     style={{ width: 120 }}
                   />
                 </Form.Item>
-                <span>-</span>
-
               </Space>
             </Form.Item>
           </Col>
@@ -453,16 +481,21 @@ const ListaVentas: React.FC = () => {
               <Descriptions.Item label="Estado">
                 <Tag
                   color={
-                    (ventaSeleccionada.status_sale ?? "desconocido") === "Finalizado"
+                    (ventaSeleccionada.status_sale ?? "desconocido") ===
+                      "Finalizado"
                       ? "success"
-                      : (ventaSeleccionada.status_sale ?? "desconocido") === "Pendiente"
+                      : (ventaSeleccionada.status_sale ?? "desconocido") ===
+                        "Pendiente"
                         ? "warning"
-                        : (ventaSeleccionada.status_sale ?? "desconocido") === "borrador"
-                          ?
-                          "grey" : "error"
+                        : (ventaSeleccionada.status_sale ?? "desconocido") ===
+                          "borrador"
+                          ? "grey"
+                          : "error"
                   }
                 >
-                  {(ventaSeleccionada.status_sale ?? "desconocido").charAt(0).toUpperCase() +
+                  {(ventaSeleccionada.status_sale ?? "desconocido")
+                    .charAt(0)
+                    .toUpperCase() +
                     (ventaSeleccionada.status_sale ?? "desconocido").slice(1)}
                 </Tag>
               </Descriptions.Item>
@@ -480,22 +513,24 @@ const ListaVentas: React.FC = () => {
                 </Typography.Text>
               </Descriptions.Item>
               <Descriptions.Item label="Observaciones" span={2}>
-                {ventaSeleccionada.observation || 'Ninguna'}
+                {ventaSeleccionada.observation || "Ninguna"}
               </Descriptions.Item>
             </Descriptions>
 
-            <Divider orientation="left">Productos ({ventaSeleccionada.amount_total_products})</Divider>
+            <Divider orientation="left">
+              Productos ({ventaSeleccionada.amount_total_products})
+            </Divider>
 
             <Input.TextArea
               rows={8}
               value={formatProductos(ventaSeleccionada.products)}
               readOnly
               style={{
-                width: '100%',
-                backgroundColor: '#fafafa',
-                fontFamily: 'monospace',
-                whiteSpace: 'pre',
-                marginBottom: 16
+                width: "100%",
+                backgroundColor: "#fafafa",
+                fontFamily: "monospace",
+                whiteSpace: "pre",
+                marginBottom: 16,
               }}
             />
           </>
@@ -514,7 +549,7 @@ const ListaVentas: React.FC = () => {
             <Select
               value={nuevoEstado}
               onChange={(value) => setNuevoEstado(value)}
-              style={{ width: '100%' }}
+              style={{ width: "100%" }}
             >
               {ESTADOS_VENTA.map((estado) => (
                 <Option key={estado.value} value={estado.value}>

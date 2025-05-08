@@ -1,8 +1,10 @@
 
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
-import { EstadoReceive, VentaResponse, setVenta } from '../Types/ventaTypes';
+import { EstadoReceive, VentaResponse, setVenta, FiltrosBackend } from '../Types/ventaTypes';
+ 
 
+/*  Datos de prueba descomentar en caso de necesitar
 export const mockVentas: VentaResponse[] = [
   {
     id: 1,
@@ -125,36 +127,32 @@ export const mockVentas: VentaResponse[] = [
     status_sale: "pagada"
   }
 ];
+*/
 
 
 
-interface FiltrosBackend {
-  clientId?: number;
-  dateStart?: string;
-  state?: string;
-  allSale?: number;
-}
 export const ListVentaService = {
   async getListVenta(client_id:string,filters: FiltrosBackend = {}): Promise<VentaResponse> {
     try {
       // Preparar URL base
       let url = `${import.meta.env.VITE_API_URL}/history-sale/${client_id}`;
-      console.log(filters);
+    
       // Si hay un client_id específico, lo agregamos a la ruta
     
       const queryParams = new URLSearchParams();
-      if(filters.clientId!== undefined) queryParams.append('clientId', filters.clientId.toString());
-      if (filters.dateStart) queryParams.append('dateStart', filters.dateStart);
-      if (filters.state) queryParams.append('state', filters.state);
-      if (filters.allSale !== undefined) queryParams.append('allSale', filters.allSale.toString());
+      if(filters.client_id!== undefined) queryParams.append('client_id', filters.client_id.toString());
+      if (filters.date_start) queryParams.append('date_start', filters.date_start);
+      if (filters.status_sale) queryParams.append('status_sale', filters.status_sale);
+      if (filters.all_sale !== undefined) queryParams.append('all_sale', filters.all_sale.toString());
       
       // Añadir los parámetros a la URL si existen
       const queryString = queryParams.toString();
       if (queryString) {
         url += `?${queryString}`;
       }
+    
       // Realizar una solicitud GET para obtener las ventas desde el backend, endpoin aun en proceso
-
+      console.log("URL:", url);
       const response = await axiosInstance.get(url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,

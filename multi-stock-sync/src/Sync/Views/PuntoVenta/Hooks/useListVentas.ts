@@ -1,16 +1,10 @@
 import { useState, useEffect } from 'react';
 
 import { ListVentaService, } from '../Services/listVentaService';
-import { VentaResponse, setVenta } from '../Types/ventaTypes';
+import { VentaResponse, setVenta,FiltrosBackend } from '../Types/ventaTypes';
 
 //datos a los que travez se va a filtrar
-interface FiltrosVenta {
-  clienteId?: number;
-  fechaInicio?: string;
-  fechaFin?: string;
-  estado?: string;
-  allSale?: number;
-}
+
 
 export const useListVentas = () => {
   const [allData, setAllData] = useState<VentaResponse[]>([]);
@@ -21,11 +15,12 @@ export const useListVentas = () => {
 
 
   // funcion para traer los datos desde el service y setear el loading y el error
-  const fetchVentas = async (filtros: FiltrosVenta = {}) => {
+  const fetchVentas = async (filtros: FiltrosBackend = {}) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
     try {
+      console.log(allData)
       const clientId = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}")?.client_id;
 
       if (!clientId) {
@@ -51,53 +46,7 @@ export const useListVentas = () => {
   };
 
   // Función para aplicar filtros en el frontend
-  const aplicarFiltros = (filtros: FiltrosVenta) => {
-    setLoading(true);
 
-    try {
-      //crea copia de los datos originales
-      let resultados = [...allData];
-
-      // Filtrar por cliente
-      if (filtros.clienteId) {
-        resultados = resultados.filter(
-          (venta) => venta.client_id === filtros.clienteId
-        );
-      }
-
-      // Filtrar por rango de fechas
-      if (filtros.fechaInicio) {
-        const fechaInicio = new Date(filtros.fechaInicio);
-        resultados = resultados.filter(
-          (venta) => new Date(venta.created_at) >= fechaInicio
-        );
-      }
-
-      if (filtros.fechaFin) {
-        const fechaFin = new Date(filtros.fechaFin);
-        // Ajustar al final del día para incluir todas las ventas del día
-        fechaFin.setHours(23, 59, 59, 999);
-        resultados = resultados.filter(
-          (venta) => new Date(venta.created_at) <= fechaFin
-        );
-      }
-
-      // Filtrar por estado
-      if (filtros.estado) {
-        resultados = resultados.filter(
-          (venta) => venta.status_sale === filtros.estado
-        );
-      }
-
-
-      setData(resultados);
-    } catch (error) {
-      console.error("Error al aplicar filtros:", error);
-      setData(allData); // En caso de error, mostrar todos los datos
-    } finally {
-      setLoading(false);
-    }
-  };
 
   const cambiarEstadoVenta = async (ventaId: number, nuevoEstado: string, setventa:setVenta) => {
     setLoading(true);
@@ -150,7 +99,6 @@ export const useListVentas = () => {
     success,
     resetSuccess,
     refetch: fetchVentas,
-    aplicarFiltros,
     cambiarEstadoVenta,
   };
 };

@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Button, Table, Card, Typography, Spin } from 'antd';
+import { Button, Table, Card, Typography } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { useListCliente } from '../Hooks/useListCliente';
 import { ColumnsType } from 'antd/es/table';
 import { client } from '../Types/clienteTypes';
+import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 
 const Toast = ({ message, type, onClose }: {
   message: string;
@@ -45,19 +46,19 @@ const { Title } = Typography;
 
 const ListaClientes: React.FC = () => {
   const [drawerVisible, setDrawerVisible] = useState(false);
-  const { data, loading, error, refetch } = useListCliente();
+  const { clientes, loadCliente, errorCliente, refetch } = useListCliente();
   const [toast, setToast] = useState<{ message: string, type: 'success' | 'error' | 'info' | 'warning' } | null>(null);
-  console.log(data)
+  console.log(clientes)
   // Función para abrir el drawer
   const showDrawer = () => {
     setDrawerVisible(true);
   };
-
+  
   // Función para mostrar notificaciones
   const showToast = (message: string | null, type: 'success' | 'error' | 'info' | 'warning' = 'info') => {
     if (message) {
       setToast({ message, type });
-      // No necesitamos este timeout aquí ya que el componente Toast tiene su propio timeout
+      
     }
   };
 
@@ -76,10 +77,13 @@ const ListaClientes: React.FC = () => {
 
   // Manejo de error en la carga de datos
   useEffect(() => {
-    if (error) {
-      showToast(`Error al cargar clientes: ${error.message}`, 'error');
+    if (errorCliente) {
+      showToast(`Error al cargar clientes: ${errorCliente.message}`, 'error');
     }
-  }, [error]);
+  }, [errorCliente]);
+  if (loadCliente) {
+    return <LoadingDinamico variant="fullScreen" />;
+  }
 
   // Columnas para la tabla de clientes
   const columns: ColumnsType<client> = [
@@ -105,10 +109,10 @@ const ListaClientes: React.FC = () => {
       title: "Razon social",
       dataIndex: "razon_social",
       key: "razon_social",
-      render: (razonS: string) => (
+      render: (razonS: string, record: client) => (
         <span>
-          {razonS !== null || razonS !== "" || razonS !== undefined
-            ? razonS : "No aplica"}
+          {record.tipo_cliente_id === 2 || razonS === null || razonS === "" || razonS === undefined
+            ? "No aplica" : razonS}
         </span>
       ),
     },
@@ -116,14 +120,13 @@ const ListaClientes: React.FC = () => {
       title: "Giro",
       dataIndex: "giro",
       key: "giro",
-      render: (razonS: string) => (
+      render: (giro: string, record: client) => (
         <span>
-          {razonS !== null || razonS !== "" || razonS !== undefined
-            ? razonS : "No aplica"}
+          {record.tipo_cliente_id === 2 || giro === null || giro === "" || giro === undefined
+            ? "No aplica" : giro}
         </span>
       ),
     },
-
   ];
 
   return (
@@ -142,24 +145,23 @@ const ListaClientes: React.FC = () => {
             type="primary"
             icon={<PlusOutlined />}
             onClick={showDrawer}
-            disabled={loading}
+            disabled={loadCliente}
           >
             Nuevo Cliente
           </Button>
         </div>
       </div>
-
-      <Spin spinning={loading} tip="Cargando clientes...">
+    
         <Table
           rowKey="id"
           columns={columns}
-          dataSource={data}
+          dataSource={clientes}
           pagination={{ pageSize: 10 }}
           locale={{
             emptyText: 'No hay clientes registrados'
           }}
         />
-      </Spin>
+    
 
       <AgregarClienteDrawer
         visible={drawerVisible}
