@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { registerClient } from '../Services/agregarClienteService';
-import { ClientFormData, ClientType } from '../Types/ClienteTypes';
+import { ClientFormData, ClientType } from '../Types/clienteTypes';
 
 
 export const UseAgregarCliente = () => {

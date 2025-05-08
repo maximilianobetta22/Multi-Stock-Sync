@@ -1,6 +1,6 @@
 import axios from 'axios';
 import axiosInstance from '../../../../axiosConfig';
-import { ClientFormData, ClientType, client} from '../Types/ClienteTypes';
+import { ClientFormData, ClientType, client} from '../Types/clienteTypes';
 
 
 // funcion que registra un cliente en la API

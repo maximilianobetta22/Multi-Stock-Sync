@@ -4,7 +4,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { useListCliente } from '../Hooks/useListCliente';
 import { ColumnsType } from 'antd/es/table';
-import { client } from '../Types/ClienteTypes';
+import { client } from '../Types/clienteTypes';
 
 const Toast = ({ message, type, onClose }: {
   message: string;

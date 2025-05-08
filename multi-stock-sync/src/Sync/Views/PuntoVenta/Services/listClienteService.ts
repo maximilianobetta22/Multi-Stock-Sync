@@ -1,7 +1,7 @@
 
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
-import { client} from '../Types/ClienteTypes';
+import { client} from '../Types/clienteTypes';
 
 
 export const ListClienteService ={

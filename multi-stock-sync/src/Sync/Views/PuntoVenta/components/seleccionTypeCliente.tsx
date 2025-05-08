@@ -1,6 +1,6 @@
 import React from 'react';
 import { Radio, Card, RadioChangeEvent } from 'antd';
-import { ClientType } from '../Types/ClienteTypes';
+import { ClientType } from '../Types/clienteTypes';
 
 interface ClientTypeSelectorProps {
   value: ClientType;

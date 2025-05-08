@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { client } from "../Types/ClienteTypes";
+import { client } from "../Types/clienteTypes";
 import { ListClienteService } from "../Services/listClienteService";
 /**
  * Tipo de error para el hook useEnviosTransito

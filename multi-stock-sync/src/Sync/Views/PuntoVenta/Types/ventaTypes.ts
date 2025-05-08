@@ -1,5 +1,5 @@
 
-import { client } from './ClienteTypes'
+import { client } from './clienteTypes'
 export interface VentaResponse {
     id: number;
     warehouse_id: number;

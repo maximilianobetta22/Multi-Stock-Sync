@@ -8,7 +8,7 @@ import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
 import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta'; // Este hook maneja toda la información de la venta actual, como los productos, totales y... ¡el cliente seleccionado!
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
-import { client } from '../Types/ClienteTypes';
+import { client } from '../Types/clienteTypes';
 const { Title } = Typography;
 const { Search } = Input;
 const { useBreakpoint } = Grid;
@@ -59,7 +59,7 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     // Si tenemos clientes, los convertimos al formato que el selector entiende.
     return clientes ? clientes.map((cliente: ClienteAPI) => ({
       value: String(cliente.id), // El valor interno es el ID del cliente. Lo volvemos texto por si acaso.
-      label: `${cliente.nombre || cliente.razon_social || 'Sin Nombre'} (${cliente.rut})`, // El texto que se ve en la lista.
+      label: `${cliente.nombres || cliente.razon_social || 'Sin Nombre'} (${cliente.rut})`, // El texto que se ve en la lista.
     })) : []; // Si no hay clientes, la lista de opciones está vacía.
   }, [clientes]); // Esta preparación se hace de nuevo si la lista 'clientes' cambia.
 
@@ -288,7 +288,7 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
                     return clienteSel ? (
                       <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
                         <Typography.Text strong>Cliente Seleccionado:</Typography.Text><br />
-                        <Typography.Text>{clienteSel.nombre || clienteSel.razon_social}</Typography.Text><br />
+                        <Typography.Text>{clienteSel.nombres || clienteSel.razon_social}</Typography.Text><br />
                         <Typography.Text>RUT: {clienteSel.rut}</Typography.Text>
                       </div>
                     ) : null;
