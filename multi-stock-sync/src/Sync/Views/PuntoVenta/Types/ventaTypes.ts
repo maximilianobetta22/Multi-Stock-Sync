@@ -25,11 +25,9 @@ export interface EstadoReceive{
     message: string;
 }
 export interface products {
-  quantity: number;
-  unit_price: number;
-  nombre: string;
-  cantidad: number;
-  unitPrice:number;
+  nombre?: string;
+  cantidad?: number;
+  unitPrice?:number;
 }
 export interface setVenta{
   type_emission:string;

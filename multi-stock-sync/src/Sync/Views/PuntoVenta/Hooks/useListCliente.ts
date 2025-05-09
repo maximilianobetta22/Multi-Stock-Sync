@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { client } from "../Types/clienteTypes";
+import { ClientFormData, ClientType, client } from "../Types/clienteTypes";
 import { ListClienteService } from "../Services/listClienteService";
+import { registrarClienteService } from "../Services/agregarClienteService";
 /**
  * Tipo de error para el hook useEnviosTransito
  */
@@ -16,7 +17,10 @@ export type ClientesError = {
 export const useListCliente = () => {
   const [data, setData] = useState<client[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<ClientesError | null>(null);
+  const [error, setError] = useState<ClientesError |  null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [success, setSuccess] = useState<boolean>(false);
+  const [errorCliente,setErrorCliente] = useState<string | null>(null)
 
   /**
    * Clasifica un error en una estructura ClientesError para mejor manejo en la UI
@@ -75,6 +79,31 @@ export const useListCliente = () => {
       setLoading(false);
     }
   };
+
+  const registerNewClient = async (clientData: ClientFormData, clienteType: ClientType) => {
+    setIsLoading(true);
+    setError(null);
+    setSuccess(false);
+    
+    try {
+      // registrar cliente con el servicio registrarClienteService que llama a a la api
+      const registeredClient = await registrarClienteService.registerClient(
+        clientData,
+        clienteType
+      );
+
+      setSuccess(true);
+      return registeredClient;
+    } catch (err) {
+        console.log("Error en useAgregarCliente:", err);
+        const errorMessage = err instanceof Error ? err.message : 'Error desconocido';
+        setErrorCliente(errorMessage);
+
+        throw err;
+    } finally {
+        setIsLoading(false);
+    }
+};
   //aqui se llama a la funcion para cargar los datos
   useEffect(() => {
     fetchClientes();
@@ -83,7 +112,11 @@ export const useListCliente = () => {
   return {
     clientes: data,
     loadCliente: loading,
-    errorCliente: error,
+    errorListCliente: error,
+    errorCliente,
+    isLoading,
+    success,
+    registerNewClient,
     refetch: fetchClientes,
     clearError: () => setError(null),
   };
