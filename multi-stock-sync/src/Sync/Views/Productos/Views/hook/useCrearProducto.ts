@@ -29,52 +29,57 @@ export const useCrearProducto = (form: FormInstance) => {
     return sanitized;
   };
 
-  const obtenerCondicionesYAtributosDesdeBackend = async (categoryId: string) => {
+  const obtenerInfoCategoria = async (category: string, domainId: string) => {
     try {
       const token = localStorage.getItem("token");
-
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/categorias/${categoryId}/attributes`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-          params: { client_id: conexion.client_id },
-        }
-      );
-
-      const data = response.data;
+      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
 
       if (data.settings?.catalog_domain_required) {
         setCategoriasConCatalogoObligatorio((prev) =>
-          prev.includes(categoryId) ? prev : [...prev, categoryId]
+          prev.includes(category) ? prev : [...prev, category]
         );
       }
 
-      setCondicionesCategoria(data.item_conditions || ["Nuevo", "Usado"]);
-      setAtributosCategoria(data.attributes || []);
-      setSpecsDominio(data.specs || []);
+      setCondicionesCategoria(data.settings?.item_conditions || ["new", "used"]);
 
-    } catch (error) {
-      console.error("❌ Error al obtener categoría, atributos o specs:", error);
-      message.error("No se pudo cargar los datos de la categoría.");
+      if (domainId) {
+        const specsRes = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/specs/${domainId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (specsRes.data?.attributes) setSpecsDominio(specsRes.data.attributes);
+      }
+    } catch (err) {
+      console.error("❌ Error al obtener categoría o specs:", err);
+      message.error("Error al cargar la categoría o especificaciones técnicas.");
+    }
+  };
+
+  const obtenerAtributos = async (category: string) => {
+    try {
+      const token = localStorage.getItem("token");
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}/atributos`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setAtributosCategoria(data);
+    } catch (err) {
+      console.error("❌ Error al obtener atributos:", err);
+      message.error("Error al cargar los atributos de la categoría.");
     }
   };
 
   const predecirCategoria = async (titulo: string) => {
     try {
       const token = localStorage.getItem("token");
-
-      const response = await axios.get(
+      const { data } = await axios.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/products/${conexion.client_id}/catalogo`,
         {
           params: { title: titulo },
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
-
-      const data = response.data;
 
       if (!data.category_id) {
         message.error("No se pudo predecir la categoría.");
@@ -86,7 +91,8 @@ export const useCrearProducto = (form: FormInstance) => {
       setDomainName(data.domain_id || "");
       form.setFieldsValue({ category_id: data.category_id });
 
-      await obtenerCondicionesYAtributosDesdeBackend(data.category_id);
+      await obtenerInfoCategoria(data.category_id, data.domain_id || "");
+      await obtenerAtributos(data.category_id);
 
       if (data.products?.length > 0) {
         setCatalogProducts(data.products);
@@ -150,10 +156,7 @@ export const useCrearProducto = (form: FormInstance) => {
       family_name: domainName || familyName,
     };
 
-    if (!catalogProductId && titulo) {
-      payload.title = titulo;
-    }
-
+    if (!catalogProductId && titulo) payload.title = titulo;
     if (catalogProductId && catalogProductId !== "undefined") {
       payload.catalog_product_id = catalogProductId;
       payload.catalog_listing = true;
