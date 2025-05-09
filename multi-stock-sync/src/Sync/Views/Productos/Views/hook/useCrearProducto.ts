@@ -32,6 +32,7 @@ export const useCrearProducto = (form: FormInstance) => {
   const obtenerInfoCategoria = async (category: string, domainId: string) => {
     try {
       const token = localStorage.getItem("token");
+
       const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -59,10 +60,12 @@ export const useCrearProducto = (form: FormInstance) => {
   const obtenerAtributos = async (category: string) => {
     try {
       const token = localStorage.getItem("token");
+
       const { data } = await axios.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}/atributos`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
       setAtributosCategoria(data);
     } catch (err) {
       console.error("❌ Error al obtener atributos:", err);
@@ -73,13 +76,16 @@ export const useCrearProducto = (form: FormInstance) => {
   const predecirCategoria = async (titulo: string) => {
     try {
       const token = localStorage.getItem("token");
-      const { data } = await axios.get(
+
+      const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/mercadolibre/products/${conexion.client_id}/catalogo`,
         {
           params: { title: titulo },
           headers: { Authorization: `Bearer ${token}` },
         }
       );
+
+      const data = response.data;
 
       if (!data.category_id) {
         message.error("No se pudo predecir la categoría.");
@@ -157,6 +163,7 @@ export const useCrearProducto = (form: FormInstance) => {
     };
 
     if (!catalogProductId && titulo) payload.title = titulo;
+
     if (catalogProductId && catalogProductId !== "undefined") {
       payload.catalog_product_id = catalogProductId;
       payload.catalog_listing = true;
