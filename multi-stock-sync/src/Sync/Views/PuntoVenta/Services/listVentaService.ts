@@ -1,4 +1,3 @@
-
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
 import { EstadoReceive, VentaResponse, setVenta, FiltrosBackend } from '../Types/ventaTypes';
@@ -284,7 +283,5 @@ export const ListVentaService = {
     }
   },
 }
-
-
 
 
