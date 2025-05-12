@@ -31,6 +31,7 @@ const ESTADOS_VENTA = [
   { value: 'Pendiente', label: 'Pendiente' },
   { value: 'Finalizado', label: 'Finalizado' },
   { value: 'Cancelada', label: 'Cancelada' },
+  { value: 'Emitido', label: 'Emitido' },
 ];
 
 // view para lista de ventas
@@ -283,9 +284,8 @@ const ListaVentas: React.FC = () => {
           case "Pendiente":
             color = "warning";
             break;
-
-          case "borrador":
-            color = "grey";
+          case "Emitido":
+            color = "success";
             break;
         }
         return (

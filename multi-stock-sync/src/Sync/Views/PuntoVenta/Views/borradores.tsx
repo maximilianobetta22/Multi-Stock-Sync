@@ -1,16 +1,17 @@
-/*import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, Divider } from 'antd';
-import { SearchOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
+import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
-import { useListVentas } from '../Hooks/useListVentas';
-import { ItemVenta } from './GestionNuevaVenta';
+import { useListBorradores } from '../Hooks/useListBorradores';
+
 //import type { DatePickerProps } from 'antd';
-import NuevaVentaModal from '../components/modalNuevaVenta'
+//import NuevaVentaModal from '../components/modalNuevaVenta'
 import { useListCliente } from '../Hooks/useListCliente';
 
-import type { VentaResponse, setVenta, products, FiltrosBackend } from '../Types/ventaTypes';
+import type { VentaResponse, FiltrosBackend, NotaVentaActual } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 import { ItemVenta } from '../Hooks/GestionNuevaVenta';
+import NuevaVentaModal from '../components/modalNuevaVenta';
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -21,7 +22,7 @@ const { Option } = Select;
 interface FormValues {
   clientId?: number;
   fechaStart?: string;
-  estado?: string;
+ 
   allVenta?: number;
 }
 
@@ -29,50 +30,73 @@ interface FormValues {
 
 
 // Definir los estados posibles de una venta
-const ESTADOS_VENTA = [
-  { value: 'Pendiente', label: 'Pendiente' },
-  { value: 'Finalizado', label: 'Finalizado' },
-  { value: 'Cancelada', label: 'Cancelada' },
-];
+;
 
 // view para lista de ventas
-const ListaVentas: React.FC = () => {
+const ListaBorradores: React.FC = () => {
   const { clientes } = useListCliente();
+  //se establecen los filtros por defecto en indefinidos
   const [filtros, setFiltros] = useState<FiltrosBackend>({
     client_id: undefined,
     date_start: undefined,
-    status_sale: undefined,
+  
     all_sale: undefined,
   });
-
   console.log(filtros.date_start);
   const [form] = Form.useForm<FormValues>();
+  const [confirmDeleteModal, setConfirmDeleteModal] = useState<{
+    visible: boolean;
+    idToDelete: string | null;
+  }>({
+    visible: false,
+    idToDelete: null,
+  });
 
   const [detalleVisible, setDetalleVisible] = useState<boolean>(false);
-  const [ventaSeleccionada, setVentaSeleccionada] = useState<ItemVenta | null>(null);
-  const [modalPuntoVentaVisible, setModalPuntoVentaVisible] = useState<boolean>(false);
+  const [ventaSeleccionada, setVentaSeleccionada] = useState<VentaResponse | null>(null);
+  const [nuevaVentaModalVisible, setNuevaVentaModalVisible] = useState<boolean>(false);
+  const [borradorSeleccionado, setBorradorSeleccionado] =
+    useState<NotaVentaActual>({
+      idCliente: null,
+      items: [],
+      observaciones: "",
+      warehouseId: null,
+    });
 
   // Hook personalizado para obtener las ventas
-  const { data, loading, error, success, resetSuccess, refetch, clientId } = useListVentas();
+  const {
+    data,
+    loading,
+    error,
+    success,
+    clientId,
+    resetSuccess,
+    refetch,
+    successMessage,
+    deleteBorradores,
+
+  } = useListBorradores();
+  console.log("lista de ventas pendientes:", data)
+  console.log("successMessage", successMessage)
+
   // Función para aplicar filtros
   const [fechaInicio, setFechaInicio] = useState<string>('');
   const handleAplicarFiltros = (values: FormValues) => {
-    const { clientId, fechaStart, estado, allVenta } = values;
+    const { clientId, fechaStart, allVenta } = values;
     console.log('Fecha recibida:', fechaStart);
     const nuevosFiltros: FiltrosBackend = {
       client_id: clientId,
       date_start: fechaInicio,
-      status_sale: estado,
+
       all_sale: allVenta
       // ...nuevosFiltros,
     };
-    
+
     setFiltros(nuevosFiltros);
     refetch(nuevosFiltros)
   };
   useEffect(() => {
     if (success) {
-      message.success('Estado de venta actualizado con éxito');
       resetSuccess(); // Reset the success state after consuming it
     }
   }, [success, resetSuccess])
@@ -81,31 +105,73 @@ const ListaVentas: React.FC = () => {
     return <LoadingDinamico variant="fullScreen" />;
   }
 
-  // Mostrar modal para cambiar estado y cargar datos para ser enviados a la api
-  const mostrarModalCambioEstado = (
-    id: number,
-    estadoActual: string,
-    warehouse_id: number,total_amount: number, Products: string, client_id: number, price_final: number, price_subtotal: number
-    , type_emission: string
-  ): void => {
-    //se formatea el string de productos para enviarlo a la api  
-    const products: products = formatProductostoEdit(Products);
-    //se creala venta a enviar
-    const venta: setVenta = {
-      warehouse_id: warehouse_id,
-      client_id: client_id,
-      products: products,
-      price_final,
-      price_subtotal,
-      amount_total_products: total_amount,
-      type_emission: type_emission,
+  const abrirBorradorEnModal = (borrador: VentaResponse) => {
+    // Convertir los productos del borrador al formato esperado por el modal
+    let itemsVenta: ItemVenta[] = [];
+    try {
+      const productosParseados = JSON.parse(borrador.products);
+      console.log("Productos parseados:", productosParseados);
+      // Manejar diferentes formatos de productos
+      if (Array.isArray(productosParseados)) {
+        itemsVenta = productosParseados.map((producto, index) => ({
+          key: `${index}`,
+          idProducto: producto.id || '',
+          nombre: producto.nombre || '',
+          cantidad: producto.quantity || producto.cantidad || 1,
+          precioUnitario: producto.unit_price || producto.unitPrice || 0,
+          total: (producto.quantity || producto.cantidad || 1) * (producto.unit_price || producto.unitPrice || 0)
+        }));
+      } else if (typeof productosParseados === 'object') {
+        itemsVenta = [{
+          key: '0',
+          idProducto: productosParseados.id || '',
+          nombre: productosParseados.nombre || '',
+          cantidad: productosParseados.quantity || productosParseados.cantidad || 1,
+          precioUnitario: productosParseados.unit_price || productosParseados.unitPrice || 0,
+          total: (productosParseados.quantity || productosParseados.cantidad || 1) * (productosParseados.unit_price || productosParseados.unitPrice || 0)
+        }];
+      }
+    } catch (error) {
+      console.error('Error al parsear productos del borrador:', error);
+    }
+
+    // Preparar la venta para el modal
+    const ventaParaModal: NotaVentaActual = {
+      idCliente: String(borrador.client_id),
+      warehouseId: borrador.warehouse_id,
+      observaciones: borrador.observation || '',
+      items: itemsVenta
     };
-    //se cargan los diferentes estados encesarios para el enevio a la api
-    setVentaIdParaCambio(id);
-    setEditVenta(venta);
-    setNuevoEstado(estadoActual);
-    //se muestra el modal
-    setVentaIdParaCambio(id)
+
+    // Establecer el borrador seleccionado y abrir el modal
+    setBorradorSeleccionado(ventaParaModal);
+    setNuevaVentaModalVisible(true);
+  };
+
+  // Mostrar modal para cambiar estado y cargar datos para ser enviados a la api
+
+  const handleDeleteVenta = (id: string) => {
+    setConfirmDeleteModal({
+      visible: true,
+      idToDelete: id
+    });
+  };
+
+  const handleConfirmDelete = () => {
+    if (confirmDeleteModal.idToDelete) {
+      deleteBorradores(confirmDeleteModal.idToDelete);
+      setConfirmDeleteModal({
+        visible: false,
+        idToDelete: null
+      });
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setConfirmDeleteModal({
+      visible: false,
+      idToDelete: null
+    });
   };
 
 
@@ -116,18 +182,12 @@ const ListaVentas: React.FC = () => {
 
 
 
-
-
-  // Función para confirmar cambio de estado
-
-
   // Función para limpiar filtros
   const limpiarFiltros = (): void => {
     form.resetFields();
     const filtrosVacios: FiltrosBackend = {
       client_id: undefined,
       date_start: undefined,
-      status_sale: undefined,
       all_sale: undefined,
     };
     setFiltros(filtrosVacios);
@@ -153,8 +213,7 @@ const ListaVentas: React.FC = () => {
         return parsedData
           .map(
             (producto) =>
-              `nombre  ${producto.nombre}| Cantidad: ${
-                producto.quantity
+              `nombre  ${producto.nombre}| Cantidad: ${producto.quantity
               } | Precio unitario: ${producto.unit_price.toLocaleString(
                 "es-CL"
               )} |`
@@ -193,20 +252,7 @@ const ListaVentas: React.FC = () => {
 
   // Ordena la forma en que se envian los productos a la api al momento de editar estado
 
-  const formatProductostoEdit = (productosString: string): products => {
-    console.log(JSON.parse(productosString))
-    const parsedData: products = JSON.parse(productosString);
-    if (typeof parsedData === 'object' && !Array.isArray(parsedData)) {
-      return parsedData;
-    }
 
-
-    if (Array.isArray(parsedData)) {
-      return parsedData[0]; // Si el array está vacío, devuelve null
-    }
-
-    return parsedData;
-  }
   const getClientName = (clientId: number): string => {
     const cliente = clientes.find(c => c.id === clientId);
     if (!cliente) return `Cliente #${clientId}`;
@@ -231,7 +277,8 @@ const ListaVentas: React.FC = () => {
       dataIndex: "created_at",
       key: "fecha",
       render: (fecha: string) => new Date(fecha).toLocaleDateString(),
-      sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
+      sorter: (a, b) =>
+        new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     },
     {
       title: "Cliente",
@@ -257,9 +304,8 @@ const ListaVentas: React.FC = () => {
           case "Pendiente":
             color = "warning";
             break;
-
-          case "borrador":
-            color = "grey";
+          case "Emitido":
+            color = "success";
             break;
         }
         return (
@@ -273,12 +319,14 @@ const ListaVentas: React.FC = () => {
       title: "Total",
       dataIndex: "price_final",
       key: "final",
-      render: (price_final: number) => `$${price_final.toLocaleString("es-CL")}`,
+      render: (price_final: number) =>
+        `$${price_final.toLocaleString("es-CL")}`,
       sorter: (a, b) => a.price_final - b.price_final,
     },
     {
       title: "Acciones",
       key: "acciones",
+      width: 150,
       render: (_, record) => (
         <Space>
           <Button
@@ -287,17 +335,22 @@ const ListaVentas: React.FC = () => {
             icon={<EyeOutlined />}
             onClick={() => verDetalleVenta(record.id)}
           >
-            Ver detalle
+            detalle
           </Button>
-          <Button
+          <Button 
+          type="primary"
             size="small"
             icon={<EditOutlined />}
-            onClick={() => mostrarModalCambioEstado(record.id, record.status_sale, record.warehouse_id,
-              record.amount_total_products,record.products,
-              record.client_id, record.price_final,
-              record.price_subtotal, record.type_emission)}
+            onClick={() => abrirBorradorEnModal(record)}
           >
-            Cambiar estado
+            venta
+          </Button>
+          <Button danger
+            size="small"
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteVenta(record.id.toString())}
+          >
+            eliminar
           </Button>
         </Space>
       ),
@@ -320,11 +373,24 @@ const ListaVentas: React.FC = () => {
     setDetalleVisible(false);
     setVentaSeleccionada(null);
   };
-   
+
 
 
   return (
     <Card>
+      <Modal
+        title="Confirmar Eliminación"
+        open={confirmDeleteModal.visible}
+        onOk={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        okText="Eliminar"
+        cancelText="Cancelar"
+        okButtonProps={{ danger: true }}
+      >
+        <Typography.Text>
+          ¿Estás seguro que deseas eliminar este borrador? Esta acción no se puede deshacer.
+        </Typography.Text>
+      </Modal>
       <div
         style={{
           display: "flex",
@@ -332,10 +398,10 @@ const ListaVentas: React.FC = () => {
           marginBottom: 16,
         }}
       >
-        <Title level={4}>Historial de Ventas</Title>
+        <Title level={4}>Borradores</Title>
 
       </div>
-      {/* Formulario de filtros 
+      {/* Formulario de filtros */}
       <Form
         form={form}
         layout="vertical"
@@ -363,7 +429,7 @@ const ListaVentas: React.FC = () => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Form.Item name="fechaInicio" label="Fecha">
-              <DatePicker 
+              <DatePicker
                 placeholder="Seleccionar fecha"
                 format="DD-MM-YYYY"
                 style={{ width: '100%' }}
@@ -383,17 +449,7 @@ const ListaVentas: React.FC = () => {
               />
             </Form.Item>
           </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Form.Item name="estado" label="Estado">
-              <Select placeholder="Seleccionar estado" allowClear>
-                {ESTADOS_VENTA.map((estado) => (
-                  <Option key={estado.value} value={estado.value}>
-                    {estado.label}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-          </Col>
+
           <Col xs={24} sm={12} md={6}>
             <Form.Item label="Cantidad de ventas">
               <Space style={{ width: "100%" }}>
@@ -425,7 +481,7 @@ const ListaVentas: React.FC = () => {
         </Row>
       </Form>
 
-      {/*tabla que muestra la lista de ventas 
+      {/*tabla que muestra la lista de ventas */}
       <Table
         rowKey="id"
         columns={columns}
@@ -436,7 +492,8 @@ const ListaVentas: React.FC = () => {
         }}
       />
 
-      {/* Modal para mostrar detalles de la venta       <Modal
+      {/* Modal para mostrar detalles de la venta */}
+      <Modal
         title={`Detalle de Venta #${ventaSeleccionada?.id || ""}`}
         open={detalleVisible}
         onCancel={cerrarDetalle}
@@ -514,21 +571,22 @@ const ListaVentas: React.FC = () => {
           </>
         )}
       </Modal>
-      <NuevaVentaModal
-        clientId={clientId}
-        venta={ventaSeleccionada}
-        visible={modalPuntoVentaVisible}
-        onCancel={() => setModalPuntoVentaVisible(false)}
-        onSuccess={() => {
-          
-          console.log('Venta creada con éxito');
-          setModalPuntoVentaVisible(false)
-        }}
-      />
+      {nuevaVentaModalVisible && (
+        <NuevaVentaModal
+          clientId={clientId}
+          venta={borradorSeleccionado}
+          visible={nuevaVentaModalVisible}
+          onCancel={() => {
+            setNuevaVentaModalVisible(false);
+
+          }}
+          onSuccess={() => {
+            setNuevaVentaModalVisible(false);
+            refetch(filtros); // Recargar la lista de ventas
+          }}
+        />)}
     </Card>
-    
-   
   );
 };
 
-/*export default ListaVentas;*/
+export default ListaBorradores;

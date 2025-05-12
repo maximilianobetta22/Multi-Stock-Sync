@@ -33,7 +33,7 @@ export const enviosProximosService = {
         const status=error.response?.status
          console.log("Status:", status);
         // Error personalizado con código de estado. El mensaje de error se setea en el hook
-        if (status === 500 || status ===404 || status ===403){
+        if (status === 500 || status ===404 || status ===403|| status ===401){
           throw new Error(status.toString());
         }
         // Otro error con mensaje desde el servidor

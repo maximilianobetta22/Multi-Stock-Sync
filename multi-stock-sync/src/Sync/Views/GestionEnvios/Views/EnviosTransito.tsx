@@ -34,13 +34,12 @@ const EnviosProximos: React.FC = () => {
       title: "Id envio", 
       dataIndex: "shipping_id", 
       key: "id",
-      sorter: (a, b) => a.shipping_id.localeCompare(b.shipping_id)
     },
     { 
       title: "Id producto", 
       dataIndex: "productId", 
       key: "id",
-      sorter: (a, b) => a.productId.localeCompare(b.productId)
+      
     },
     { 
       title: "Título", 
@@ -58,39 +57,20 @@ const EnviosProximos: React.FC = () => {
       title: "Tamaño", 
       dataIndex: "size", 
       key: "size",
-      sorter: (a, b) => {
-        // Handle empty values
-        if (!a.size && !b.size) return 0;
-        if (!a.size) return -1;
-        if (!b.size) return 1;
-        return a.size.localeCompare(b.size);
-      }
+     
+      
     },
     {
       title: "Dirección",
       dataIndex: ["receptor", "dirrection"],
       key: "direccion",
-      sorter: (a, b) => {
-        // Check if receptor exists
-        if (!a.receptor && !b.receptor) return 0;
-        if (!a.receptor) return -1;
-        if (!b.receptor) return 1;
-        
-        // Compare direction
-        return a.receptor.dirrection.localeCompare(b.receptor.dirrection);
-      }
+      
     },
     {
       title: "N° Seguimiento",
       dataIndex: "tracking_number",
       key: "tracking_number",
-      sorter: (a, b) => {
-        // Handle empty tracking numbers
-        if (!a.tracking_number && !b.tracking_number) return 0;
-        if (!a.tracking_number) return -1;
-        if (!b.tracking_number) return 1;
-        return a.tracking_number.localeCompare(b.tracking_number);
-      }
+      
     },
     {
       title: "Estado",

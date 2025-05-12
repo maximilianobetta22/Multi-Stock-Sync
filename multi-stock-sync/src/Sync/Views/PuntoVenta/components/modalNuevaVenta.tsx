@@ -3,19 +3,19 @@ import { Modal, Typography, Row, Col, Input, Button, Table, Space, Form, InputNu
 import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
 import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta';
 import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
-import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta';
+import useGestionNotaVentaActual from '../Hooks/GestionNuevaVenta';
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { client } from '../Types/clienteTypes';
-import { VentaCliente } from '../Types/ventaTypes'
+import { NotaVentaActual, ItemVenta } from '../Types/ventaTypes'
 
 const { Title } = Typography;
 const { Search } = Input;
 const { useBreakpoint } = Grid;
 
 interface NuevaVentaModalProps {
-    clientId: string;
-    venta: VentaCliente;
+    clientId: string | number | null | undefined;
+    venta: NotaVentaActual;
     visible: boolean;
     onCancel: () => void;
     onSuccess?: () => void;
@@ -32,7 +32,7 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
     const screens = useBreakpoint();
     const [drawerClienteVisible, setDrawerClienteVisible] = useState(false);
     const [textoBusquedaProducto, setTextoBusquedaProducto] = useState('');
-    const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | number | null>(null);
+    const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | number | null | undefined>(null);
 
     const { clientes, cargandoClientes, errorClientes, recargarClientes } = useClientes();
     const { bodegas, cargandoBodegas, errorBodegas } = useBodegasPorEmpresa(clientId);
@@ -135,17 +135,16 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
         }
     };
 
+
+
     useEffect(() => {
-        if (bodegas && bodegas.length === 1) {
-            setSelectedWarehouseId(bodegas[0].id);
-        } else if (bodegas && bodegas.length > 1) {
-            if (selectedWarehouseId === null) {
-                setSelectedWarehouseId(null);
-            }
-        } else if (bodegas && bodegas.length === 0) {
-            setSelectedWarehouseId(null);
-        }
-    }, [bodegas, selectedWarehouseId]);
+        setSelectedWarehouseId(venta.warehouseId)
+        establecerIdCliente(venta.idCliente)
+        for (let i = 0; i < venta.items.length; i++) {
+            const producto = venta.items[i];
+            agregarItem({ id: producto.idProducto, title: producto.nombre, price: producto.precioUnitario });
+        };
+    }, [])
 
     return (
         <Modal
@@ -349,7 +348,7 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
                 visible={drawerClienteVisible}
                 onClose={() => setDrawerClienteVisible(false)}
                 onSuccess={handleClienteSuccess}
-                //companyId={clienteId}
+            //companyId={clienteId}
             />
         </Modal>
     );

@@ -1,5 +1,4 @@
 
-import { client } from './clienteTypes'
 export interface VentaResponse {
     id: number;
     warehouse_id: number;
@@ -15,11 +14,7 @@ export interface VentaResponse {
     created_at: Date;
     status_sale: string;
   }
-export interface VentaCliente{
-    cliente:client;
-    venta:VentaResponse;
 
-}
 export interface EstadoReceive{
     data:VentaResponse;
     message: string;
@@ -46,4 +41,24 @@ export interface FiltrosBackend {
   all_sale?: number;
 }
 
+export interface ApiResponse {
+  status: string;
+  message: string;
+  data: number | string | null | [] | VentaResponse[];
+}
 
+export interface ItemVenta {
+  key: string;
+  idProducto: string | number;
+  nombre: string;
+  cantidad: number;
+  precioUnitario: number;
+  total: number;
+}
+
+export interface NotaVentaActual {
+  idCliente: string | number | null ;
+  observaciones: string;
+  items: ItemVenta[];
+  warehouseId: string | number |null;
+}
