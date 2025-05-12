@@ -6,8 +6,8 @@ import { SaleService } from '../Services/saleService';
 import { ColumnsType } from 'antd/es/table';
 import useClientes from '../Hooks/ClientesVenta';
 import { ClienteAPI } from '../Hooks/ClientesVenta';
-
 import { generateSaleDocumentPdf } from '../utils/pdfGenerator';
+
 
 
 const { Title } = Typography;
@@ -161,7 +161,7 @@ const EmitirDocumento: React.FC<EmitirDocumentoProps> = ({ companyId }) => {
                 documentType,
                 documentType === 'factura' ? facturaData : undefined,
                 companyId,
-                sale.observation
+                sale.observation ?? null
             );
 
             message.success(`Documento (${documentType}) emitido con éxito para la venta ${sale.id}.`);

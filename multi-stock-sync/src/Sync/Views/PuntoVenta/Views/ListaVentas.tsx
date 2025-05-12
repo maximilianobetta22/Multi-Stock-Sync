@@ -290,8 +290,8 @@ const ListaVentas: React.FC = () => {
             icon={<EditOutlined />}
             onClick={() => mostrarModalCambioEstado(record.id, record.status_sale, record.warehouse_id,
               record.products,
-              record.client_id, record.price_final,
-              record.price_subtotal, record.type_emission)}
+              record.client_id ?? 0, record.price_final,
+              record.price_subtotal, record.type_emission ?? '')}
           >
             Cambiar estado
           </Button>
@@ -455,9 +455,9 @@ const ListaVentas: React.FC = () => {
                   color={
                     (ventaSeleccionada.status_sale ?? "desconocido") === "Finalizado"
                       ? "success"
-                      : (ventaSeleccionada.status_sale ?? "desconocido") === "Pendiente"
+                      : (ventaSeleccionada.status_sale ?? "desconocido").toLowerCase() === "pendiente"
                         ? "warning"
-                        : (ventaSeleccionada.status_sale ?? "desconocido") === "borrador"
+                        : (ventaSeleccionada.status_sale?.toLowerCase() ?? "desconocido") === "borrador"
                           ?
                           "grey" : "error"
                   }

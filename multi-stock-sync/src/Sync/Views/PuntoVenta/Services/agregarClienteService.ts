@@ -1,10 +1,10 @@
 import axios from 'axios';
 import axiosInstance from '../../../../axiosConfig';
-import { ClientFormData, ClientType, client} from '../Types/clienteTypes';
+import { ClientFormData, clientType, client} from '../Types/clienteTypes';
 
 
 // funcion que registra un cliente en la API
-export const registerClient = async (clientData: ClientFormData,clienteType: ClientType): Promise<client> => {
+export const registerClient = async (clientData: ClientFormData,clienteType: clientType): Promise<client> => {
   try {
     console.log("clientData: ",clientData)
     clientData.tipo_cliente_id=clienteType

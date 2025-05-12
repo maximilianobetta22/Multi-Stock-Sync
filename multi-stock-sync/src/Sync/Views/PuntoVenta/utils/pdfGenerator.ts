@@ -28,9 +28,18 @@ export const generateSaleDocumentPdf = (
     documentType: 'boleta' | 'factura',
     cliente: ClienteAPI | undefined,
     items: ParsedSaleItem[],
+    facturaData?: { razonSocial: string; rut: string }
 ) => {
     const doc = new jsPDF('p', 'pt', 'a4');
 
+     if (documentType === 'factura' && facturaData) {
+        console.log('Generando factura con datos:', facturaData);
+        // Puedes usar facturaData para agregar información al PDF
+        doc.setFontSize(10);
+        doc.text(`Razón Social: ${facturaData.razonSocial}`, 40, 100);
+        doc.text(`RUT: ${facturaData.rut}`, 40, 120);
+    }
+    
     const margin = 40;
     let y = margin; // Start Y position below top margin
     const lineHeight = 16;
