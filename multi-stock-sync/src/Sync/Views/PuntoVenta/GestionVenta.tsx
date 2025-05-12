@@ -1,4 +1,3 @@
-// GestionVenta.tsx
 import React, { useMemo } from "react";
 import { Tabs, Typography} from "antd";
 import type { TabsProps } from "antd";
@@ -6,7 +5,7 @@ import NuevaVenta from "./Views/NuevaVenta";
 import  ListaVentas from "./Views/ListaVentas";
 import BorradoresVenta from "./Views/BorradoresVenta";
 import ListaClientes from "./Views/ListaClientes";
-import EmitirDocumento from "./Views/EmitirDocumento"; // Importar la nueva vista
+import EmitirDocumento from "./Views/EmitirDocumento"; 
 
 
 const { Title } = Typography;
@@ -15,7 +14,7 @@ const GestionVenta: React.FC = () => {
     const selectedCompanyId = useMemo(() => {
         try {
             const conexionData = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
-            // Asumimos que el client_id de conexionSeleccionada es el companyId que necesita el backend
+           
             const id = conexionData?.client_id;
             return (typeof id === 'number' || typeof id === 'string') && String(id).length > 0 ? id : null;
         } catch (e) {
@@ -30,11 +29,11 @@ const GestionVenta: React.FC = () => {
             label: "Nueva Venta",
             children: <NuevaVenta companyId={selectedCompanyId} />,
         },
-        // Añadir la nueva pestaña para Emitir Documento
+        
         {
             key: "emitir-documento",
             label: "Emitir Documento",
-            // PASAR selectedCompanyId como prop a EmitirDocumento
+            
             children: <EmitirDocumento companyId={selectedCompanyId} />,
         },
         {
