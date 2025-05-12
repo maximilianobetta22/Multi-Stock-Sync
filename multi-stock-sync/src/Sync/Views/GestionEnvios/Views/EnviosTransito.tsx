@@ -1,105 +1,163 @@
-import React, { useEffect, useState } from "react";
-import { Table, Spin, Alert } from "antd";
+import React from "react";
+import { Table, Alert,Button, Tag } from "antd";
 import type { ColumnsType } from "antd/es/table";
+import { Enviostransito } from "../Types/EnviosProximos.Type";
+import { useEnviosTransito } from "../Hooks/useEnviosTransito";
+import { LoadingDinamico } from "../../../../components/LoadingDinamico/LoadingDinamico";
 
-interface Envio {
-  id: string;
-  title: string;
-  quantity: number;
-  size: string;
-  sku: string;
-  shipment_history: {
-    status: string;
-    date?: string;
-  };
-}
 
-const EnviosTransito: React.FC = () => {
-  const [data, setData] = useState<Envio[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
 
-  const fetchEnvios = async () => {
-    setLoading(true);
-    setError(null);
 
-    const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
-    const clientId = conexionSeleccionada ? JSON.parse(conexionSeleccionada).client_id : null;
+/**
+ * devuelve la severidad del error a la de alerta de Antd
+ */
+const getAlertType = (severity: string) => {
+  switch(severity) {
+    case 'high': return 'error';
+    case 'medium': return 'warning';
+    default: return 'info';
+  }
+};
 
-    if (!clientId) {
-      setError("No se encontró el client_id en la conexión seleccionada.");
-      setLoading(false);
-      return;
-    }
 
-    try {
-      const res = await fetch(`${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${clientId}`);
-      const result = await res.json();
+const EnviosProximos: React.FC = () => {
+  
+  // Utilizamos el hook personalizado para obtener los datos y estado
+  const { data, loading, error, clearError } = useEnviosTransito();
+  
 
-      if (result.status === "success") {
-        const transito = result.data.filter((item: any) =>
-          item.shipment_history?.status?.toLowerCase() === "enviado"
-        );
-        setData(transito);
-      } else {
-        setError(result.message || "Error desconocido al cargar los envíos.");
-      }
-    } catch (err: any) {
-      setError(err.message || "Error al conectar con el servidor.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchEnvios();
-  }, []);
-
-  const columns: ColumnsType<Envio> = [
-    {
-      title: "ID Producto",
-      dataIndex: "id",
+  if (loading) {
+    return <LoadingDinamico variant="fullScreen" />;
+  }
+  const columns: ColumnsType<Enviostransito> = [
+    { 
+      title: "Id envio", 
+      dataIndex: "shipping_id", 
       key: "id",
+      sorter: (a, b) => a.shipping_id.localeCompare(b.shipping_id)
     },
-    {
-      title: "Título",
-      dataIndex: "title",
+    { 
+      title: "Id producto", 
+      dataIndex: "productId", 
+      key: "id",
+      sorter: (a, b) => a.productId.localeCompare(b.productId)
+    },
+    { 
+      title: "Título", 
+      dataIndex: "title", 
       key: "title",
+      sorter: (a, b) => a.title.localeCompare(b.title)
     },
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      key: "sku",
-    },
-    {
-      title: "Cantidad",
-      dataIndex: "quantity",
+    { 
+      title: "Cantidad", 
+      dataIndex: "quantity", 
       key: "quantity",
+      sorter: (a, b) => a.quantity - b.quantity
     },
-    {
-      title: "Tamaño",
-      dataIndex: "size",
+    { 
+      title: "Tamaño", 
+      dataIndex: "size", 
       key: "size",
+      sorter: (a, b) => {
+        // Handle empty values
+        if (!a.size && !b.size) return 0;
+        if (!a.size) return -1;
+        if (!b.size) return 1;
+        return a.size.localeCompare(b.size);
+      }
     },
     {
-      title: "Estado de Envío",
-      dataIndex: ["shipment_history", "status"],
-      key: "estado",
+      title: "Dirección",
+      dataIndex: ["receptor", "dirrection"],
+      key: "direccion",
+      sorter: (a, b) => {
+        // Check if receptor exists
+        if (!a.receptor && !b.receptor) return 0;
+        if (!a.receptor) return -1;
+        if (!b.receptor) return 1;
+        
+        // Compare direction
+        return a.receptor.dirrection.localeCompare(b.receptor.dirrection);
+      }
+    },
+    {
+      title: "N° Seguimiento",
+      dataIndex: "tracking_number",
+      key: "tracking_number",
+      sorter: (a, b) => {
+        // Handle empty tracking numbers
+        if (!a.tracking_number && !b.tracking_number) return 0;
+        if (!a.tracking_number) return -1;
+        if (!b.tracking_number) return 1;
+        return a.tracking_number.localeCompare(b.tracking_number);
+      }
+    },
+    {
+      title: "Estado",
+      dataIndex: "substatus",
+      key: "status",
+      sorter: (a, b) => {
+        // Handle null values
+        if (!a.substatus && !b.substatus) return 0;
+        if (!a.substatus) return -1;
+        if (!b.substatus) return 1;
+        return a.substatus.localeCompare(b.substatus);
+      },
+      render: (substatus: string) => {
+        // Convertir "out of delivery" a "Enviado"
+        const displayText = substatus === "out_for_delivery" ? "Enviado" : "Por enviar hoy";
+        
+        // Opcional: agregar colores según el estado
+        let tagColor = '';
+        if (substatus === "out_for_delivery") tagColor = 'blue';
+        if (substatus === null || substatus === "soon_deliver") tagColor = 'red';
+        
+        return tagColor ? (
+          <Tag color={tagColor}>{displayText}</Tag>
+        ) : (
+          <span>{displayText}</span>
+        );
+      }
     },
   ];
 
   return (
-    <div>
-      <h3>Envíos en Tránsito</h3>
-      {loading ? (
-        <Spin tip="Cargando envíos..." />
-      ) : error ? (
-        <Alert type="error" message={error} />
-      ) : (
-        <Table rowKey="id" columns={columns} dataSource={data} pagination={{ pageSize: 10 }} />
+    <div style={{ padding: '20px' }}>
+      {/* Muestra alerta de error si existe */}
+      {error && (
+        <Alert
+          message={error.message}
+          type={getAlertType(error.severity)}
+          showIcon
+          closable
+          onClose={clearError}
+          action={
+            // Para errores de servidor, ofrece botón de recarga de página
+            error.type === 'server' && (
+              <Button size="small" type="primary" onClick={() => window.location.reload()}>
+                Recargar
+              </Button>
+            )
+          }
+          style={{ marginBottom: '20px' }}
+        />
       )}
+
+      {/* Tabla de envíos próximos */}
+      <Table 
+        rowKey="id" 
+        columns={columns} 
+        dataSource={data} 
+        pagination={{ pageSize: 10 }}
+        locale={{
+          emptyText: error ? 'No se pudieron cargar los datos' : 'No hay envíos en transito'
+        }}
+      />
+      
+     
     </div>
   );
+  
 };
 
-export default EnviosTransito;
+export default EnviosProximos;

@@ -1,17 +1,16 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import CrearProducto from "../Views/Crear/CrearProducto";
-import HomeProducto from "../Views/Home/HomeProducto";
-import EditarProducto from "../Views/Editar/EditarProducto";
+import { Route, Routes } from "react-router-dom";
+import GestionProducto from "../Views/GestionProducto";
+import CrearProducto from "../Views/components/CrearProducto"; // ✅ corregido
+import CargaMasiva from "../Views/CargaMasiva"; // ✅ corregido
 
-function RouterProductos() {
+const RouterProducto = () => {
   return (
     <Routes>
-      <Route path="/home" element={<HomeProducto />} />
+      <Route path="/" element={<GestionProducto />} />
       <Route path="/crear" element={<CrearProducto />} />
-      <Route path="/editar/:id" element={<EditarProducto />} />
-      <Route path="/*" element={<Navigate to="/sync/productos/home" />} />
+      <Route path="/carga-masiva" element={<CargaMasiva />} />
     </Routes>
   );
-}
+};
 
-export default RouterProductos;
+export default RouterProducto;
