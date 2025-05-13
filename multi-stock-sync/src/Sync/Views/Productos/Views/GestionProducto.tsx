@@ -11,7 +11,7 @@ const GestionProducto = () => {
       <Title level={2}>Gestión de Productos</Title>
 
       <Row gutter={[24, 24]}>
-        <Col xs={24} md={12}>
+        <Col xs={24} md={8}>
           <Card
             title="Subir producto individual"
             bordered
@@ -32,7 +32,7 @@ const GestionProducto = () => {
           </Card>
         </Col>
 
-        <Col xs={24} md={12}>
+        <Col xs={24} md={8}>
           <Card
             title="Carga masiva desde Excel"
             bordered
@@ -49,6 +49,27 @@ const GestionProducto = () => {
             <Paragraph>
               Sube múltiples productos a MercadoLibre mediante un archivo Excel con los
               datos estandarizados.
+            </Paragraph>
+          </Card>
+        </Col>
+
+        <Col xs={24} md={8}>
+          <Card
+            title="Productos publicados"
+            bordered
+            hoverable
+            actions={[
+              <Button
+                type="dashed"
+                onClick={() => navigate("/sync/productos/publicados")}
+              >
+                Ver productos
+              </Button>,
+            ]}
+          >
+            <Paragraph>
+              Revisa todos los productos que ya están publicados en tu cuenta de
+              MercadoLibre. Edita, elimina o gestiona desde aquí.
             </Paragraph>
           </Card>
         </Col>
