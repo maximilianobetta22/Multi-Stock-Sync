@@ -5,7 +5,7 @@ import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta';
 import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
 import useGestionNotaVentaActual from '../Hooks/GestionNuevaVenta';
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
-import AgregarClienteDrawer from '../components/agregarClienteDrawer';
+import AgregarClienteDrawer from './agregarClienteDrawer';
 import { client } from '../Types/clienteTypes';
 import { NotaVentaActual, ItemVenta } from '../Types/ventaTypes'
 

@@ -5,7 +5,7 @@ import NaturalPersonForm from './personaNaturalFormulario';
 import CompanyForm from './empresaFormulario';
 import { ClientFormData, ClientType, client } from '../Types/clienteTypes';
 
-import { useListCliente } from '../Hooks/useListCliente';
+import { useListCliente } from '../Hooks/useListCliente'
 
 interface AgregarClienteDrawerProps {
   visible: boolean;
