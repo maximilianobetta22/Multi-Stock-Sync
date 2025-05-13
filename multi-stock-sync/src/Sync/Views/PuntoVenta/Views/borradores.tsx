@@ -1,26 +1,26 @@
-import React, { useState, useEffect } from 'react';
+/*import React, { useState, useEffect } from 'react';
 import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Form, Space, Row, Col, Tag, Modal, Descriptions, Divider } from 'antd';
 import { SearchOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useListVentas } from '../Hooks/useListVentas';
+import { ItemVenta } from './GestionNuevaVenta';
+//import type { DatePickerProps } from 'antd';
+import NuevaVentaModal from '../components/modalNuevaVenta'
+import { useListCliente } from '../Hooks/useListCliente';
 
-import type { VentaResponse, setVenta, products } from '../Types/ventaTypes';
+import type { VentaResponse, setVenta, products, FiltrosBackend } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
+import { ItemVenta } from '../Hooks/GestionNuevaVenta';
 
 const { Title } = Typography;
 const { Option } = Select;
 
 // Interfaces para los filtros y estados
-interface FiltrosVenta {
-  clienteId: number | undefined;
-  fechaInicio: string | undefined;
-  estado: string | undefined;
-  allVenta: number | undefined;
-}
+
 
 interface FormValues {
-  clienteId?: number;
-  fechaInicio?: string;
+  clientId?: number;
+  fechaStart?: string;
   estado?: string;
   allVenta?: number;
 }
@@ -37,45 +37,36 @@ const ESTADOS_VENTA = [
 
 // view para lista de ventas
 const ListaVentas: React.FC = () => {
-  const [filtros, setFiltros] = useState<FiltrosVenta>({
-    clienteId: undefined,
-    fechaInicio: undefined,
-    estado: undefined,
-    allVenta: undefined,
+  const { clientes } = useListCliente();
+  const [filtros, setFiltros] = useState<FiltrosBackend>({
+    client_id: undefined,
+    date_start: undefined,
+    status_sale: undefined,
+    all_sale: undefined,
   });
-  console.log(filtros.fechaInicio);
-  const [form] = Form.useForm<FormValues>();
-  const [editVenta, setEditVenta] = useState<setVenta>({
-    type_emission: "",
-    warehouse_id: 0,
-    client_id: 0,
-    products: {
-      quantity: 0,
-      unit_price: 0
-    },
-    amount_total_products: 0,
-    price_subtotal: 0,
-    price_final: 0
-  });
-  const [detalleVisible, setDetalleVisible] = useState<boolean>(false);
-  const [ventaSeleccionada, setVentaSeleccionada] = useState<VentaResponse | null>(null);
-  const [cambioEstadoVisible, setCambioEstadoVisible] = useState<boolean>(false);
-  const [nuevoEstado, setNuevoEstado] = useState<string>('');
-  const [ventaIdParaCambio, setVentaIdParaCambio] = useState<number | null>(null);
-  // Hook personalizado para obtener las ventas
-  const { data, loading, error, success, resetSuccess, refetch, cambiarEstadoVenta } = useListVentas();
-  // Función para aplicar filtros
-  const handleAplicarFiltros = (values: FormValues) => {
-    const { clienteId, fechaInicio, estado, allVenta } = values;
 
-    const nuevosFiltros: FiltrosVenta = {
-      clienteId: clienteId,
-      fechaInicio: fechaInicio,
-      estado: estado,
-      allVenta: allVenta
+  console.log(filtros.date_start);
+  const [form] = Form.useForm<FormValues>();
+
+  const [detalleVisible, setDetalleVisible] = useState<boolean>(false);
+  const [ventaSeleccionada, setVentaSeleccionada] = useState<ItemVenta | null>(null);
+  const [modalPuntoVentaVisible, setModalPuntoVentaVisible] = useState<boolean>(false);
+
+  // Hook personalizado para obtener las ventas
+  const { data, loading, error, success, resetSuccess, refetch, clientId } = useListVentas();
+  // Función para aplicar filtros
+  const [fechaInicio, setFechaInicio] = useState<string>('');
+  const handleAplicarFiltros = (values: FormValues) => {
+    const { clientId, fechaStart, estado, allVenta } = values;
+    console.log('Fecha recibida:', fechaStart);
+    const nuevosFiltros: FiltrosBackend = {
+      client_id: clientId,
+      date_start: fechaInicio,
+      status_sale: estado,
+      all_sale: allVenta
       // ...nuevosFiltros,
     };
-
+    
     setFiltros(nuevosFiltros);
     refetch(nuevosFiltros)
   };
@@ -90,56 +81,54 @@ const ListaVentas: React.FC = () => {
     return <LoadingDinamico variant="fullScreen" />;
   }
 
-  // Mostrar modal para cambiar estado
+  // Mostrar modal para cambiar estado y cargar datos para ser enviados a la api
   const mostrarModalCambioEstado = (
     id: number,
     estadoActual: string,
-    warehouse_id: number, Products: string, client_id: number, price_final: number, price_subtotal: number
+    warehouse_id: number,total_amount: number, Products: string, client_id: number, price_final: number, price_subtotal: number
     , type_emission: string
   ): void => {
-
-    const products: products = formatProductostoEdit(Products)
-    console.log(Products);
+    //se formatea el string de productos para enviarlo a la api  
+    const products: products = formatProductostoEdit(Products);
+    //se creala venta a enviar
     const venta: setVenta = {
       warehouse_id: warehouse_id,
       client_id: client_id,
       products: products,
       price_final,
       price_subtotal,
-      amount_total_products: products.quantity,
-      type_emission: type_emission
+      amount_total_products: total_amount,
+      type_emission: type_emission,
     };
+    //se cargan los diferentes estados encesarios para el enevio a la api
     setVentaIdParaCambio(id);
     setEditVenta(venta);
     setNuevoEstado(estadoActual);
-    setCambioEstadoVisible(true);
+    //se muestra el modal
+    setVentaIdParaCambio(id)
   };
 
+
+
+
+
+
+
+
+
+
+
   // Función para confirmar cambio de estado
-  const confirmarCambioEstado = async (): Promise<void> => {
-    if (ventaIdParaCambio && nuevoEstado) {
-      try {
-        await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado, editVenta);
-        message.success('Estado de venta actualizado con éxito');
-        setCambioEstadoVisible(false);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          message.error(error.message || 'Error al cambiar el estado de la venta');
-        } else {
-          message.error('Error desconocido');
-        }
-      }
-    }
-  };
+
 
   // Función para limpiar filtros
   const limpiarFiltros = (): void => {
     form.resetFields();
-    const filtrosVacios: FiltrosVenta = {
-      clienteId: undefined,
-      fechaInicio: undefined,
-      estado: undefined,
-      allVenta: undefined,
+    const filtrosVacios: FiltrosBackend = {
+      client_id: undefined,
+      date_start: undefined,
+      status_sale: undefined,
+      all_sale: undefined,
     };
     setFiltros(filtrosVacios);
     refetch(filtrosVacios);
@@ -152,6 +141,7 @@ const ListaVentas: React.FC = () => {
       key: 'ventas-list-error'
     });
   }
+  // Ordena la forma en que se muestran los productos en el modal detalle
   const formatProductos = (productosString: string): string => {
     try {
       const parsedData = JSON.parse(productosString);
@@ -160,9 +150,16 @@ const ListaVentas: React.FC = () => {
       if (Array.isArray(parsedData)) {
         if (parsedData.length === 0) return "No hay productos";
 
-        return parsedData.map((producto, index) => (
-          `| Producto ${index + 1}: ${producto.quantity} | Precio unitario: $${producto.unit_price.toLocaleString('es-CL')} |`
-        )).join('\n');
+        return parsedData
+          .map(
+            (producto) =>
+              `nombre  ${producto.nombre}| Cantidad: ${
+                producto.quantity
+              } | Precio unitario: ${producto.unit_price.toLocaleString(
+                "es-CL"
+              )} |`
+          )
+          .join("\n");
       }
 
       // Caso 2: Es un objeto individual (ej: '{"quantity":1,"price":15990}')
@@ -187,12 +184,14 @@ const ListaVentas: React.FC = () => {
       // Si no coincide con ningún formato esperado
       return "Formato de productos no reconocido";
 
-    } catch (e) {
-      console.error('Error al formatear productos:', e);
+    } catch (error) {
+      console.error('Error al formatear productos:', error);
       return productosString; // Devuelve el string original si hay error
     }
   };
-  // Ordena la forma en que se muestran los productos en el modal detalle
+
+
+  // Ordena la forma en que se envian los productos a la api al momento de editar estado
 
   const formatProductostoEdit = (productosString: string): products => {
     console.log(JSON.parse(productosString))
@@ -208,7 +207,16 @@ const ListaVentas: React.FC = () => {
 
     return parsedData;
   }
+  const getClientName = (clientId: number): string => {
+    const cliente = clientes.find(c => c.id === clientId);
+    if (!cliente) return `Cliente #${clientId}`;
 
+    // Si es persona natural (tipo_cliente_id === 2), devuelve nombre y apellido
+    // Si es empresa, devuelve razón social
+    return cliente.tipo_cliente_id === 2
+      ? `${cliente.nombres} ${cliente.apellidos}`
+      : cliente.razon_social || `Cliente #${clientId}`;
+  };
   // Columnas para la tabla de ventas
   const columns: ColumnsType<VentaResponse> = [
     {
@@ -216,24 +224,20 @@ const ListaVentas: React.FC = () => {
       dataIndex: "id",
       key: "id",
       width: 80,
+      sorter: (a, b) => a.id - b.id,
     },
     {
       title: "Fecha",
       dataIndex: "created_at",
       key: "fecha",
       render: (fecha: string) => new Date(fecha).toLocaleDateString(),
+      sorter: (a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime(),
     },
     {
-      title: "Cliente id",
+      title: "Cliente",
       dataIndex: "client_id",
       key: "client_id",
-      /*render: (_, record: Venta) => (
-        <span>
-          {record.cliente.tipo_cliente_id === 2 
-            ? `${record.cliente.nombres} ${record.cliente.apellidos}`
-            : record.cliente.razon_social}
-        </span>
-      ),*/
+      render: (clientId: number) => getClientName(clientId),
     },
     {
       title: "Estado",
@@ -289,9 +293,9 @@ const ListaVentas: React.FC = () => {
             size="small"
             icon={<EditOutlined />}
             onClick={() => mostrarModalCambioEstado(record.id, record.status_sale, record.warehouse_id,
-              record.products,
-              record.client_id ?? 0, record.price_final,
-              record.price_subtotal, record.type_emission ?? '')}
+              record.amount_total_products,record.products,
+              record.client_id, record.price_final,
+              record.price_subtotal, record.type_emission)}
           >
             Cambiar estado
           </Button>
@@ -316,6 +320,8 @@ const ListaVentas: React.FC = () => {
     setDetalleVisible(false);
     setVentaSeleccionada(null);
   };
+   
+
 
   return (
     <Card>
@@ -327,17 +333,9 @@ const ListaVentas: React.FC = () => {
         }}
       >
         <Title level={4}>Historial de Ventas</Title>
-        {/*
-        boton para recargar la lista de ventas solo en DESARROLLO*/}
-        <Button
-          icon={<EditOutlined />}
-          onClick={() => refetch()}
-          disabled={loading}
-        >
-          Actualizar
-        </Button>
+
       </div>
-      {/* Formulario de filtros */}
+      {/* Formulario de filtros 
       <Form
         form={form}
         layout="vertical"
@@ -352,24 +350,35 @@ const ListaVentas: React.FC = () => {
                 allowClear
                 showSearch
                 optionFilterProp="children"
-              >{/*datos hardcode mientras */}
-                <Option value={1}>Juan Pérez</Option>
-                <Option value={2}>Empresa ABC</Option>
-                <Option value={3}>María González</Option>
+              >
+                {clientes.map((cliente) => (
+                  <Option key={cliente.id} value={cliente.id}>
+                    {cliente.tipo_cliente_id === 2
+                      ? `${cliente.nombres} ${cliente.apellidos}`
+                      : cliente.razon_social}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Form.Item name="fechaInicio" label="Fecha">
-              <DatePicker
-                style={{ width: "100%" }}
-                format="YYYY-MM-DD"
-                placeholder="Seleccione una fecha"
-                onChange={(dateString) => {
-                  // dateString contendrá la fecha en formato 'YYYY-MM-DD'
-                  form.setFieldsValue({
-                    fechaInicio: dateString.toString(),
-                  });
+              <DatePicker 
+                placeholder="Seleccionar fecha"
+                format="DD-MM-YYYY"
+                style={{ width: '100%' }}
+                onChange={(date, dateString) => {
+                  if (date) {
+                    const format =
+                      dateString.toString().split("-")[2] +
+                      "-" +
+                      dateString.toString().split("-")[1] +
+                      "-" +
+                      dateString.toString().split("-")[0];
+                    setFechaInicio(format);
+                  } else {
+                    setFechaInicio("");
+                  }
                 }}
               />
             </Form.Item>
@@ -388,15 +397,13 @@ const ListaVentas: React.FC = () => {
           <Col xs={24} sm={12} md={6}>
             <Form.Item label="Cantidad de ventas">
               <Space style={{ width: "100%" }}>
-                <Form.Item name={["allVenta", 0]} noStyle>
+                <Form.Item name="allVenta" noStyle>
                   <Input
                     placeholder="Mínimo"
                     type="number"
                     style={{ width: 120 }}
                   />
                 </Form.Item>
-                <span>-</span>
-
               </Space>
             </Form.Item>
           </Col>
@@ -418,7 +425,7 @@ const ListaVentas: React.FC = () => {
         </Row>
       </Form>
 
-      {/*tabla que muestra la lista de ventas */}
+      {/*tabla que muestra la lista de ventas 
       <Table
         rowKey="id"
         columns={columns}
@@ -429,8 +436,7 @@ const ListaVentas: React.FC = () => {
         }}
       />
 
-      {/* Modal para mostrar detalles de la venta */}
-      <Modal
+      {/* Modal para mostrar detalles de la venta       <Modal
         title={`Detalle de Venta #${ventaSeleccionada?.id || ""}`}
         open={detalleVisible}
         onCancel={cerrarDetalle}
@@ -453,16 +459,21 @@ const ListaVentas: React.FC = () => {
               <Descriptions.Item label="Estado">
                 <Tag
                   color={
-                    (ventaSeleccionada.status_sale ?? "desconocido") === "Finalizado"
+                    (ventaSeleccionada.status_sale ?? "desconocido") ===
+                      "Finalizado"
                       ? "success"
-                      : (ventaSeleccionada.status_sale ?? "desconocido").toLowerCase() === "pendiente"
+                      : (ventaSeleccionada.status_sale ?? "desconocido") ===
+                        "Pendiente"
                         ? "warning"
-                        : (ventaSeleccionada.status_sale?.toLowerCase() ?? "desconocido") === "borrador"
-                          ?
-                          "grey" : "error"
+                        : (ventaSeleccionada.status_sale ?? "desconocido") ===
+                          "borrador"
+                          ? "grey"
+                          : "error"
                   }
                 >
-                  {(ventaSeleccionada.status_sale ?? "desconocido").charAt(0).toUpperCase() +
+                  {(ventaSeleccionada.status_sale ?? "desconocido")
+                    .charAt(0)
+                    .toUpperCase() +
                     (ventaSeleccionada.status_sale ?? "desconocido").slice(1)}
                 </Tag>
               </Descriptions.Item>
@@ -480,53 +491,44 @@ const ListaVentas: React.FC = () => {
                 </Typography.Text>
               </Descriptions.Item>
               <Descriptions.Item label="Observaciones" span={2}>
-                {ventaSeleccionada.observation || 'Ninguna'}
+                {ventaSeleccionada.observation || "Ninguna"}
               </Descriptions.Item>
             </Descriptions>
 
-            <Divider orientation="left">Productos ({ventaSeleccionada.amount_total_products})</Divider>
+            <Divider orientation="left">
+              Productos ({ventaSeleccionada.amount_total_products})
+            </Divider>
 
             <Input.TextArea
               rows={8}
               value={formatProductos(ventaSeleccionada.products)}
               readOnly
               style={{
-                width: '100%',
-                backgroundColor: '#fafafa',
-                fontFamily: 'monospace',
-                whiteSpace: 'pre',
-                marginBottom: 16
+                width: "100%",
+                backgroundColor: "#fafafa",
+                fontFamily: "monospace",
+                whiteSpace: "pre",
+                marginBottom: 16,
               }}
             />
           </>
         )}
       </Modal>
-      <Modal
-        title="Cambiar Estado de Venta"
-        open={cambioEstadoVisible}
-        onCancel={() => setCambioEstadoVisible(false)}
-        onOk={confirmarCambioEstado}
-        okText="Confirmar"
-        cancelText="Cancelar"
-      >
-        <Form layout="vertical">
-          <Form.Item label="Nuevo Estado">
-            <Select
-              value={nuevoEstado}
-              onChange={(value) => setNuevoEstado(value)}
-              style={{ width: '100%' }}
-            >
-              {ESTADOS_VENTA.map((estado) => (
-                <Option key={estado.value} value={estado.value}>
-                  {estado.label}
-                </Option>
-              ))}
-            </Select>
-          </Form.Item>
-        </Form>
-      </Modal>
+      <NuevaVentaModal
+        clientId={clientId}
+        venta={ventaSeleccionada}
+        visible={modalPuntoVentaVisible}
+        onCancel={() => setModalPuntoVentaVisible(false)}
+        onSuccess={() => {
+          
+          console.log('Venta creada con éxito');
+          setModalPuntoVentaVisible(false)
+        }}
+      />
     </Card>
+    
+   
   );
 };
 
-export default ListaVentas;
+/*export default ListaVentas;*/

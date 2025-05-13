@@ -1,5 +1,5 @@
 //agregar cliente ------------------------
-export type ClientType = 1 | 2;
+export type clientType = 1 | 2;
 
    
 export interface NaturalPerson {

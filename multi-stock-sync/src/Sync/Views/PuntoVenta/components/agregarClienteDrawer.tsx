@@ -3,7 +3,7 @@ import { Form, Button, Spin, Drawer, Space, Alert } from 'antd';
 import ClientTypeSelector from './seleccionTypeCliente';
 import NaturalPersonForm from './personaNaturalFormulario';
 import CompanyForm from './empresaFormulario';
-import { ClientFormData, ClientType, client } from '../Types/clienteTypes';
+import { ClientFormData, clientType, client } from '../Types/clienteTypes';
 import { UseAgregarCliente } from '../Hooks/useAgregarCliente';
 
 interface AgregarClienteDrawerProps {
@@ -19,7 +19,7 @@ const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
   onSuccess,
   showToast
 }) => {
-  const [clientType, setClientType] = useState<ClientType>(2);
+  const [clientType, setClientType] = useState<clientType>(2);
   const [form] = Form.useForm<ClientFormData>();
   const { registerNewClient, isLoading, error, success, clearError, clearSuccess } = UseAgregarCliente();
 
@@ -114,7 +114,7 @@ const AgregarClienteDrawer: React.FC<AgregarClienteDrawerProps> = ({
         >
           <ClientTypeSelector 
             value={clientType}
-            onChange={(value: ClientType) => setClientType(value)}
+            onChange={(value: clientType) => setClientType(value)}
             disabled={isLoading}
           />
           

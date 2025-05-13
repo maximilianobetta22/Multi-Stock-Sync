@@ -113,7 +113,7 @@ export const useListVentas = () => {
       const actualizarVenta = (ventasList: VentaResponse[]): VentaResponse[] => {
         return ventasList.map(venta => {
           if (venta.id === ventaId) {
-            return { ...venta, status_sale: nuevoEstado };
+            return { ...venta, status_sale: nuevoEstado as "Finalizado" | "Borrador" | "Emitido" };
           }
           return venta;
         });
