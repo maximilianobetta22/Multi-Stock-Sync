@@ -62,7 +62,7 @@ const ListaBorradores: React.FC = () => {
       observaciones: "",
       warehouseId: null,
     });
-
+   
   // Hook personalizado para obtener las ventas
   const {
     data,
