@@ -1,7 +1,12 @@
 import React from 'react';
-import { Typography } from 'antd';
-const { Title } = Typography;
+
 const BorradoresVenta: React.FC = () => {
-  return <Title level={4}>Contenido de Nueva Venta</Title>;
+    return (
+        <div>
+            <h1>Borradores de Venta</h1>
+            <p>Esta página está en construcción.</p>
+        </div>
+    );
 };
+
 export default BorradoresVenta;
