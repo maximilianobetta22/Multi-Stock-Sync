@@ -134,7 +134,8 @@ const useGestionNotaVentaActual = () => {
 
     try {
       // Pasar saleData y warehouseId al servicio
-      const response = await SaleService.createSale(notaVenta, 'borrador', warehouseId); // Pasamos warehouseId aquí
+const response = await SaleService.createSale(notaVenta, 'Pendiente', warehouseId);
+ // Pasamos warehouseId aquí
       console.log("Borrador guardado exitosamente:", response);
        // Opcional: Mostrar un mensaje de éxito temporal
     } catch (error: any) {
