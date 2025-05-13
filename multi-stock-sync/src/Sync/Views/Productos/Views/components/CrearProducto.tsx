@@ -12,7 +12,6 @@ import {
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useCrearProducto } from "../hook/useCrearProducto";
-// ✅ Ruta corregida
 
 const { Title } = Typography;
 const { TextArea } = Input;
@@ -37,6 +36,8 @@ const CrearProducto: React.FC = () => {
   } = useCrearProducto(form);
 
   const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
+  
+  
 
   return (
     <Card style={{ maxWidth: 800, margin: "0 auto" }}>
@@ -77,7 +78,11 @@ const CrearProducto: React.FC = () => {
         </Form.Item>
 
         {catalogProducts.length > 0 && (
-          <Form.Item name="catalog_product_id" label="Producto del catálogo" rules={[{ required: true }]}>
+          <Form.Item
+            name="catalog_product_id"
+            label="Producto del catálogo"
+            rules={[{ required: true }]}
+          >
             <Select
               showSearch
               onChange={(value: string) => setCatalogProductId(value)}
@@ -138,6 +143,18 @@ const CrearProducto: React.FC = () => {
         <Form.Item name="quantity" label="Cantidad" rules={[{ required: true }]}>
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
+        {!categoriasConCatalogoObligatorio.includes(categoryId) && (
+  <Form.Item
+    name="family_name"
+    label="Nombre de Familia (family_name)"
+    tooltip="Este valor agrupa tus publicaciones similares. Usa palabras específicas como modelo, color, etc."
+    rules={[{ required: true, message: "Debes ingresar el nombre de familia" }]}
+  >
+    <Input placeholder="Ej: Celular" />
+  </Form.Item>
+)}
+
+
 
         <Form.Item name="listing_type_id" label="Tipo de publicación" rules={[{ required: true }]}>
           <Select>
@@ -148,7 +165,7 @@ const CrearProducto: React.FC = () => {
 
         {!catalogProductId && (
           <Form.Item name="description" label="Descripción" rules={[{ required: true }]}>
-            <TextArea rows={4} />
+            <TextArea rows={4} placeholder="Describe tu producto..." />
           </Form.Item>
         )}
 

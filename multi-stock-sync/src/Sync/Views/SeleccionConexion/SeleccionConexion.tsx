@@ -11,11 +11,34 @@ const SeleccionConexion: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const token = localStorage.getItem("token");
+    console.log("🧪 TOKEN ENCONTRADO:", token);
+
+    if (!token) {
+      navigate("/login");
+      return;
+    }
+
+    const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
+
+try {
+  const parsed = JSON.parse(conexionSeleccionada || "null");
+
+  // Siempre limpiar para forzar selección manual después de login
+  if (parsed && parsed.client_id) {
+    console.log("ℹ️ Limpieza de conexión previa para forzar nueva selección");
+    localStorage.removeItem("conexionSeleccionada");
+  }
+} catch {
+  localStorage.removeItem("conexionSeleccionada");
+}
+    if (!conexionSeleccionada) {
+      message.warning("⚠️ Debes seleccionar una conexión antes de continuar.");
+    }
+
+
     async function fetchConexiones() {
       try {
-        const token = localStorage.getItem("token");
-        console.log("🧪 TOKEN ENCONTRADO:", token);
-
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/conexionToken`, {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -24,6 +47,7 @@ const SeleccionConexion: React.FC = () => {
         });
 
         const conexionesCrudas = response.data;
+        let algunaConValida = false;
 
         const conexionesActualizadas = await Promise.all(
           conexionesCrudas.map(async (conexion: any) => {
@@ -38,28 +62,30 @@ const SeleccionConexion: React.FC = () => {
                 }
               );
 
-              if (refreshResponse.data.status === "success") {
-                return {
-                  ...conexion,
-                  tokenVigente: true,
-                };
-              } else {
-                return {
-                  ...conexion,
-                  tokenVigente: false,
-                };
+              const esValida = refreshResponse.data.status === "success";
+
+              if (refreshResponse.data.message?.includes("refrescar")) {
+                message.info(`🔄 Token actualizado para ${conexion.nickname}`);
               }
-            } catch (e) {
-              console.warn(`⚠️ Falló la conexión para ${conexion.nickname}`);
+
+              if (esValida) algunaConValida = true;
+
               return {
                 ...conexion,
-                tokenVigente: false,
+                tokenVigente: esValida,
               };
+            } catch (e) {
+              console.warn(`⚠️ Falló la conexión para ${conexion.nickname}`);
+              return { ...conexion, tokenVigente: false };
             }
           })
         );
 
         setConexiones(conexionesActualizadas);
+
+        if (!algunaConValida) {
+          message.warning("⚠️ Todas las conexiones tienen el token vencido. Debes volver a iniciar sesión en Mercado Libre.");
+        }
       } catch (error) {
         console.error("❌ Error al cargar conexiones:", error);
         message.error("Error al cargar las conexiones.");
@@ -109,7 +135,7 @@ const SeleccionConexion: React.FC = () => {
                   disabled={!conexion.tokenVigente}
                   onClick={() => handleSeleccion(conexion)}
                 >
-                  Seleccionar
+                  {conexion.tokenVigente ? "Seleccionar" : "Token vencido"}
                 </Button>,
               ]}
             >

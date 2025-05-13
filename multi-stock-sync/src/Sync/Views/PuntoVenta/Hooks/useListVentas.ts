@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react';
 
 import { ListVentaService, } from '../Services/listVentaService';
-import { VentaResponse, setVenta,FiltrosBackend } from '../Types/ventaTypes';
+import { VentaResponse, setVenta } from '../Types/ventaTypes';
 
 //datos a los que travez se va a filtrar
-
+interface FiltrosVenta {
+  clienteId?: number;
+  fechaInicio?: string;
+  fechaFin?: string;
+  estado?: string;
+  allSale?: number;
+}
 
 export const useListVentas = () => {
   const [allData, setAllData] = useState<VentaResponse[]>([]);
@@ -12,18 +18,16 @@ export const useListVentas = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [success, setSuccess] = useState<boolean>(false);
-  const [clientId, setClientId] = useState<string>("");
+
 
   // funcion para traer los datos desde el service y setear el loading y el error
-  const fetchVentas = async (filtros: FiltrosBackend = {}) => {
+  const fetchVentas = async (filtros: FiltrosVenta = {}) => {
     setLoading(true);
     setError(null);
     setSuccess(false);
-
     try {
-      console.log(allData)
       const clientId = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}")?.client_id;
-      setClientId(clientId)
+
       if (!clientId) {
         throw new Error("No hay conexión seleccionada");
       }
@@ -47,34 +51,77 @@ export const useListVentas = () => {
   };
 
   // Función para aplicar filtros en el frontend
+  const aplicarFiltros = (filtros: FiltrosVenta) => {
+    setLoading(true);
 
+    try {
+      //crea copia de los datos originales
+      let resultados = [...allData];
+
+      // Filtrar por cliente
+      if (filtros.clienteId) {
+        resultados = resultados.filter(
+          (venta) => venta.client_id === filtros.clienteId
+        );
+      }
+
+      // Filtrar por rango de fechas
+      if (filtros.fechaInicio) {
+        const fechaInicio = new Date(filtros.fechaInicio);
+        resultados = resultados.filter(
+          (venta) => new Date(venta.created_at) >= fechaInicio
+        );
+      }
+
+      if (filtros.fechaFin) {
+        const fechaFin = new Date(filtros.fechaFin);
+        // Ajustar al final del día para incluir todas las ventas del día
+        fechaFin.setHours(23, 59, 59, 999);
+        resultados = resultados.filter(
+          (venta) => new Date(venta.created_at) <= fechaFin
+        );
+      }
+
+      // Filtrar por estado
+      if (filtros.estado) {
+        resultados = resultados.filter(
+          (venta) => venta.status_sale === filtros.estado
+        );
+      }
+
+
+      setData(resultados);
+    } catch (error) {
+      console.error("Error al aplicar filtros:", error);
+      setData(allData); // En caso de error, mostrar todos los datos
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const cambiarEstadoVenta = async (ventaId: number, nuevoEstado: string, setventa:setVenta) => {
     setLoading(true);
     setSuccess(false);
     setError(null);
     try {
-      // aquí se se llama la funcion del service que llama a a la api
+      // En un entorno real, aquí se haría una llamada al API
       const response = await ListVentaService.actualizarEstadoVenta(
         ventaId,
-        nuevoEstado,
-        setventa
+        nuevoEstado,setventa
       );
-      // Actualizar el estado de la venta en el estado local
-      const actualizarVenta = (
-        ventasList: VentaResponse[]
-      ): VentaResponse[] => {
-        return ventasList.map((venta) => {
+
+      const actualizarVenta = (ventasList: VentaResponse[]): VentaResponse[] => {
+        return ventasList.map(venta => {
           if (venta.id === ventaId) {
-            return { ...venta, status_sale: nuevoEstado };
+            return { ...venta, status_sale: nuevoEstado as "Finalizado" | "Borrador" | "Emitido" };
           }
           return venta;
         });
       };
-
-      setAllData((prevAllData) => actualizarVenta(prevAllData));
-      setData((prevData) => actualizarVenta(prevData));
-
+      
+      setAllData(prevAllData => actualizarVenta(prevAllData));
+      setData(prevData => actualizarVenta(prevData));
+      
       setSuccess(true);
       return response.data;
     } catch (err) {
@@ -101,9 +148,9 @@ export const useListVentas = () => {
     loading,
     error,
     success,
-    clientId,
     resetSuccess,
     refetch: fetchVentas,
+    aplicarFiltros,
     cambiarEstadoVenta,
   };
 };
