@@ -32,10 +32,14 @@ export const useCrearProducto = (form: FormInstance) => {
   const obtenerInfoCategoria = async (category: string, domainId: string) => {
     try {
       const token = localStorage.getItem("token");
+      const client_id = conexion.client_id;
 
-      const { data } = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const { data } = await axios.get(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}?client_id=${client_id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       if (data.settings?.catalog_domain_required) {
         setCategoriasConCatalogoObligatorio((prev) =>
@@ -46,9 +50,13 @@ export const useCrearProducto = (form: FormInstance) => {
       setCondicionesCategoria(data.settings?.item_conditions || ["new", "used"]);
 
       if (domainId) {
-        const specsRes = await axios.get(`${import.meta.env.VITE_API_URL}/mercadolibre/specs/${domainId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const specsRes = await axios.get(
+          `${import.meta.env.VITE_API_URL}/mercadolibre/specs/${domainId}?client_id=${client_id}`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          }
+        );
+
         if (specsRes.data?.attributes) setSpecsDominio(specsRes.data.attributes);
       }
     } catch (err) {
@@ -60,10 +68,13 @@ export const useCrearProducto = (form: FormInstance) => {
   const obtenerAtributos = async (category: string) => {
     try {
       const token = localStorage.getItem("token");
+      const client_id = conexion.client_id;
 
       const { data } = await axios.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}/atributos`,
-        { headers: { Authorization: `Bearer ${token}` } }
+        `${import.meta.env.VITE_API_URL}/mercadolibre/categoria/${category}/atributos?client_id=${client_id}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
       );
 
       setAtributosCategoria(data);
@@ -93,7 +104,15 @@ export const useCrearProducto = (form: FormInstance) => {
       }
 
       setCategoryId(data.category_id);
-      setFamilyName(data.family_name || "");
+      if (data.family_name) {
+  setFamilyName(data.family_name);
+  form.setFieldsValue({ family_name: data.family_name });
+} else {
+  setFamilyName(""); // deja vacío para que lo escriba el usuario
+  form.setFieldsValue({ family_name: "" });
+  message.warning("ℹ️ Debes ingresar el nombre de familia manualmente.");
+}
+
       setDomainName(data.domain_id || "");
       form.setFieldsValue({ category_id: data.category_id });
 
@@ -119,13 +138,22 @@ export const useCrearProducto = (form: FormInstance) => {
     }
   };
 
-  const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const titulo = e.target.value;
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
-    debounceTimeout.current = setTimeout(() => {
-      if (titulo.length > 4) predecirCategoria(titulo);
-    }, 500);
-  };
+const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const titulo = e.target.value;
+
+  // Solo autocompletar family_name si está vacío
+  const currentFamilyName = form.getFieldValue("family_name");
+  if (!currentFamilyName) {
+    form.setFieldsValue({ family_name: titulo });
+  }
+
+  if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
+  debounceTimeout.current = setTimeout(() => {
+    if (titulo.length > 4) predecirCategoria(titulo);
+  }, 500);
+};
+
+
 
   const handleAgregarImagen = () => {
     const url = prompt("Ingresa el URL de la imagen:");
@@ -136,79 +164,99 @@ export const useCrearProducto = (form: FormInstance) => {
   };
 
   const onFinish = async (values: any) => {
-    if (!conexion?.client_id) return message.error("No hay tienda seleccionada.");
-    if (!categoryId) return message.error("No se detectó categoría.");
-    if (!values.condition) return message.error("Condición requerida.");
-    if (imagenes.length === 0) return message.error("Agrega al menos una imagen.");
-    if (!values.description) return message.error("Descripción requerida.");
-    if (!familyName && !domainName) return message.error("No se detectó un family_name válido.");
+  if (!conexion?.client_id) return message.error("No hay tienda seleccionada.");
+  if (!categoryId) return message.error("No se detectó categoría.");
+  if (!values.condition) return message.error("Condición requerida.");
+  if (imagenes.length === 0) return message.error("Agrega al menos una imagen.");
+  if (!values.description) return message.error("Descripción requerida.");
+  if (!values.price) return message.error("Precio requerido.");
+  if (!values.quantity) return message.error("Cantidad requerida.");
 
-    const titulo = validateTitle(values.title || "");
+  const tituloFinal = validateTitle(values.title || "");
 
-    const payload: any = {
-      category_id: categoryId,
-      condition: values.condition,
-      price: values.price,
-      currency_id: values.currency_id,
-      available_quantity: values.quantity,
-      description: { plain_text: values.description },
-      listing_type_id: values.listing_type_id,
-      pictures: imagenes.map((src) => ({ source: src })),
-      shipping: {
-        mode: "me2",
-        local_pick_up: values.local_pick_up || false,
-        free_shipping: values.free_shipping || false,
-      },
-      family_name: domainName || familyName,
-    };
-
-    if (!catalogProductId && titulo) payload.title = titulo;
-
-    if (catalogProductId && catalogProductId !== "undefined") {
-      payload.catalog_product_id = catalogProductId;
-      payload.catalog_listing = true;
-    }
-
-    const atributos = [
-      ...Object.entries(values.attributes || {}).map(([id, value_name]) => ({ id, value_name })),
-      ...Object.entries(values.specs || {}).map(([id, value_name]) => ({ id, value_name })),
-    ];
-    if (atributos.length > 0) payload.attributes = atributos;
-
-    payload.sale_terms = [
-      { id: "WARRANTY_TYPE", value_name: values.warranty_type || "Garantía del vendedor" },
-      { id: "WARRANTY_TIME", value_name: values.warranty_time || "90 días" },
-    ];
-
-    try {
-      setLoading(true);
-      const token = localStorage.getItem("token");
-
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/Products/${conexion.client_id}/crear-producto`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: "application/json",
-          },
-        }
-      );
-
-      message.success("✅ Producto subido exitosamente");
-      form.resetFields();
-      setImagenes([]);
-      setAtributosCategoria([]);
-      setCatalogProducts([]);
-      setCatalogProductId("");
-    } catch (error: any) {
-      console.error("❌ Error al crear producto:", error.response?.data || error);
-      const msg = error.response?.data?.message || "Hubo un error al subir el producto.";
-      message.error(msg);
-    } finally {
-      setLoading(false);
-    }
+  const payload: any = {
+    category_id: categoryId,
+    condition: values.condition,
+    price: values.price,
+    currency_id: values.currency_id,
+    available_quantity: values.quantity,
+    description: values.description,
+    listing_type_id: values.listing_type_id,
+    pictures: imagenes.map((src) => ({ source: src })),
+    shipping: {
+      mode: "me2",
+      local_pick_up: values.local_pick_up || false,
+      free_shipping: values.free_shipping || false,
+    },
   };
+
+  if (!catalogProductId && tituloFinal) {
+    payload.title = tituloFinal;
+  }
+
+  // ✅ Agregar family_name si NO se usa catálogo
+  if (!catalogProductId) {
+    payload.family_name = tituloFinal;
+  }
+
+  if (catalogProductId && catalogProductId !== "undefined") {
+    payload.catalog_product_id = catalogProductId;
+    payload.catalog_listing = true;
+  }
+
+  const atributos = [
+    ...Object.entries(values.attributes || {}).map(([id, value_name]) => ({ id, value_name })),
+    ...Object.entries(values.specs || {}).map(([id, value_name]) => ({ id, value_name })),
+  ];
+  if (atributos.length > 0) payload.attributes = atributos;
+
+  payload.sale_terms = [
+  { id: "WARRANTY_TYPE", value_name: "Garantía del vendedor" },
+  { id: "WARRANTY_TIME", value_name: "90 días" },
+];
+
+
+  try {
+    setLoading(true);
+    const token = localStorage.getItem("token");
+    console.log("📦 Payload final:", payload);
+    console.log("✅ family_name enviado:", payload.family_name);
+
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/mercadolibre/Products/${conexion.client_id}/crear-producto`,
+      payload,
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    );
+
+    message.success("✅ Producto subido exitosamente");
+    form.resetFields();
+    setImagenes([]);
+    setAtributosCategoria([]);
+    setCatalogProducts([]);
+    setCatalogProductId("");
+  } catch (error: any) {
+    const data = error.response?.data;
+    console.error("❌ Error al crear producto:", data);
+
+    if (data?.ml_error?.cause?.length) {
+      const errores = data.ml_error.cause.map((c: any) => `• ${c.message}`).join("\n");
+      message.error(`Mercado Libre rechazó el producto por:\n${errores}`);
+    } else {
+      const msg = data?.message || "Hubo un error al subir el producto.";
+      message.error(msg);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
 
   return {
     loading,
@@ -222,6 +270,7 @@ export const useCrearProducto = (form: FormInstance) => {
     catalogProductId,
     condicionesCategoria,
     categoriasConCatalogoObligatorio,
+    setFamilyName,
     setCatalogProductId,
     onTitleChange,
     handleAgregarImagen,
