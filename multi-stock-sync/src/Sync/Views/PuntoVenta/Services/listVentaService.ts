@@ -4,9 +4,6 @@ import axios from 'axios';
 import { EstadoReceive, VentaResponse, setVenta, FiltrosBackend, ApiResponse } from '../Types/ventaTypes';
 
 
-
-
-
 // Función para obtener la lista de ventas incluye lista de ventas filtradas
 
 export const ListVentaService = {
