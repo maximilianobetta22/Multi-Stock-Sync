@@ -1,10 +1,10 @@
 import React from 'react';
 import { Radio, Card, RadioChangeEvent } from 'antd';
-import { clientType } from '../Types/clienteTypes';
+import { ClientType } from '../Types/clienteTypes';
 
 interface ClientTypeSelectorProps {
-  value: clientType;
-  onChange: (type: clientType) => void;
+  value: ClientType;
+  onChange: (type: ClientType) => void;
   disabled?: boolean;
 }
 
