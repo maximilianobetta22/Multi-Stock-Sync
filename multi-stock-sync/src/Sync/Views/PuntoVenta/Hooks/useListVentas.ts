@@ -43,8 +43,8 @@ export const useListVentas = () => {
       // datos hardcode cargados de la constante mockData en service
 
     } catch (err) {
+      console.log("Error al cargar ventas:", err);
       setError(err instanceof Error ? err : new Error('Error desconocido al cargar las ventas'));
-      console.error('Error al cargar ventas:', err);
     } finally {
       setLoading(false);
     }

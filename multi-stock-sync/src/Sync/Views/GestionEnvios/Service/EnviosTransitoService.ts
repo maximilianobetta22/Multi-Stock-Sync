@@ -36,21 +36,10 @@ export const enviosTransitoService = {
         console.log(error.response?.status);
         // No hay envíos disponibles (esto no debería ser un error, sino un estado válido)
         // Errores comunes de HTTP
-        if (status === 401) {
-          throw new Error("401");
+        if (status === 500 || status ===404 || status ===403|| status ===401){
+          throw new Error(status.toString());
         }
-        
-        if (status === 403) {
-          throw new Error("403");
-        }
-        
-        if (status === 404) {
-          throw new Error("404");
-        }
-        
-        if (status === 500) {
-          throw new Error("500");
-        }
+        //
         
         // Otros errores con respuesta del servidor
         if (error.response?.data?.message) {
