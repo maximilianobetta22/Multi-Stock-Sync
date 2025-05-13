@@ -36,6 +36,8 @@ const CrearProducto: React.FC = () => {
   } = useCrearProducto(form);
 
   const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
+  
+  
 
   return (
     <Card style={{ maxWidth: 800, margin: "0 auto" }}>
@@ -141,6 +143,18 @@ const CrearProducto: React.FC = () => {
         <Form.Item name="quantity" label="Cantidad" rules={[{ required: true }]}>
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
+        {!categoriasConCatalogoObligatorio.includes(categoryId) && (
+  <Form.Item
+    name="family_name"
+    label="Nombre de Familia (family_name)"
+    tooltip="Este valor agrupa tus publicaciones similares. Usa palabras específicas como modelo, color, etc."
+    rules={[{ required: true, message: "Debes ingresar el nombre de familia" }]}
+  >
+    <Input placeholder="Ej: Celular" />
+  </Form.Item>
+)}
+
+
 
         <Form.Item name="listing_type_id" label="Tipo de publicación" rules={[{ required: true }]}>
           <Select>
