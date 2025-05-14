@@ -61,7 +61,7 @@ const GestionProducto = () => {
             actions={[
               <Button
                 type="dashed"
-                onClick={() => navigate("/sync/productos/publicados")}
+                onClick={() => navigate("/sync/productos/editar")}
               >
                 Ver productos
               </Button>,
