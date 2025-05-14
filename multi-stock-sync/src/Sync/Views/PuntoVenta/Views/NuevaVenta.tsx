@@ -1,17 +1,13 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react'; // Importa useCallback
-import { Typography, Row, Col, Input, Button, Table, Space, Form, InputNumber, Select, Card, Divider, Spin, Alert, Grid, Modal, message } from 'antd'; // Importa Modal y message
+import React, { useState, useMemo, useEffect, useCallback } from 'react'; 
+import { Typography, Row, Col, Input, Button, Table, Space, Form, InputNumber, Select, Card, Divider, Spin, Alert, Grid, Modal, message } from 'antd';
 import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
-// Este hook nos ayuda a traer la lista de todos los clientes que podemos usar.
-import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta'; // Este hook nos ayuda a traer la lista de todos los clientes que podemos usar.
-// Asegúrate de que useProductosPorEmpresa aún recibe solo el ID de la bodega
+import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta'; 
 import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
-// Este hook maneja toda la información de la venta actual, como los productos, totales y... ¡el cliente seleccionado!
-// Asegúrate de que este hook NO maneja internamente el warehouseId ahora
 import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta';
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { client } from '../Types/clienteTypes';
-import { ColumnsType } from 'antd/es/table'; // Importa ColumnsType si lo usas para tipar las columnas
+import { ColumnsType } from 'antd/es/table'; 
 
 
 const { Title } = Typography;
