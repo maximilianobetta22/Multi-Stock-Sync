@@ -3,11 +3,10 @@ import { Tabs, Typography } from "antd";
 import type { TabsProps } from "antd";
 import NuevaVenta from "./Views/NuevaVenta";
 import ListaVentas from "./Views/ListaVentas";
-import ListaBorradores from "./Views/borradores"; // <- se prioriza este nombre si ya está funcionando
-// import BorradoresVenta from "./Views/BorradoresVenta"; <- dejar comentado por si se usaba antes
+import ListaBorradores from "./Views/borradores"; 
 import ListaClientes from "./Views/ListaClientes";
 import EmitirDocumento from "./Views/EmitirDocumento";
-
+import ListaDocumentosEmitidos from "./Views/ListaDocumentosEmitidos"
 const { Title } = Typography;
 
 const GestionVenta: React.FC = () => {
@@ -34,6 +33,12 @@ const GestionVenta: React.FC = () => {
       children: <EmitirDocumento companyId={selectedCompanyId} />,
     },
     {
+        key: "documentos-emitidos", 
+        label: "Documentos Emitidos", 
+        children: <ListaDocumentosEmitidos companyId={selectedCompanyId} />, 
+    },
+    
+    {
       key: "historial-ventas",
       label: "Historial de Ventas",
       children: <ListaVentas />,
@@ -41,7 +46,7 @@ const GestionVenta: React.FC = () => {
     {
       key: "borradores",
       label: "Borradores",
-      children: <ListaBorradores />, // Se mantiene el nombre más actualizado
+      children: <ListaBorradores />, 
     },
     {
       key: "clientes",

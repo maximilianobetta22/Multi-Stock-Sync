@@ -22,14 +22,16 @@ interface ParsedSaleItem {
  * @param documentType - El tipo de documento a generar ('boleta' o 'factura').
  * @param cliente - Los datos del cliente asociado (ClienteAPI | undefined).
  * @param items - Los ítems de la venta parseados (ParsedSaleItem[]).
+ * @param facturaData - Datos adicionales para facturas (razonSocial, rut).
+ * @returns Una Promise que resuelve con un Blob que contiene el PDF generado.
  */
-export const generateSaleDocumentPdf = (
+export const generateSaleDocumentPdf = async ( 
     sale: VentaResponse,
     documentType: 'boleta' | 'factura',
     cliente: ClienteAPI | undefined,
     items: ParsedSaleItem[],
     facturaData?: { razonSocial: string; rut: string }
-) => {
+): Promise<Blob> => { // Especificar que devuelve una Promise<Blob>
     const doc = new jsPDF('p', 'pt', 'a4');
 
     if (documentType === 'factura' && facturaData) {
@@ -144,9 +146,9 @@ export const generateSaleDocumentPdf = (
         y += lineHeight;
     }
 
-    y += largeLineHeight; // Espacio antes de la tabla
+    y += largeLineHeight;
 
-    drawLine(y); // Line before table
+    drawLine(y); 
     y += lineHeight;
 
 
@@ -166,7 +168,7 @@ export const generateSaleDocumentPdf = (
     }));
 
     const autoTableOptions: any = {
-        startY: y, // Start table at the current y position
+        startY: y,
         theme: 'grid',
         styles: {
             overflow: 'linebreak',
@@ -198,24 +200,21 @@ export const generateSaleDocumentPdf = (
             doc.setFont('helvetica', 'normal');
             const pageNumber = data.pageNumber;
             const footerY = pageHeight - margin / 2;
-            doc.text('[Resolución Exenta N°11  / Comercializadora SPA]', margin, footerY); // TODO: Añadir info real
+            doc.text('[Resolución Exenta N°11  / Comercializadora SPA]', margin, footerY); // TODO: Añadir info real
             doc.text(`Página ${pageNumber}`, pageWidth - margin, footerY, { align: 'right' });
         },
     };
 
-    // Add the table and update the y position after it
+
     (doc as any).autoTable(tableColumns, tableRows, autoTableOptions);
     y = (doc as any).autoTable.previous.finalY || y;
 
 
-    // --- Resumen y Totales (Debajo de la tabla) ---
-    // Space after the table
     let yAfterTable = y + largeLineHeight;
 
 
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
-    // Align totals to the right edge, with labels offset
     doc.text(`Subtotal:`, pageWidth - margin - 100, yAfterTable, { align: 'left' });
     doc.text(`$${sale.price_subtotal?.toFixed(2).replace(/\.00$/, '') || '0'}`, pageWidth - margin, yAfterTable, { align: 'right' });
     yAfterTable += lineHeight;
@@ -225,49 +224,56 @@ export const generateSaleDocumentPdf = (
     doc.text(`TOTAL:`, pageWidth - margin - 100, yAfterTable + lineHeight * 0.5, { align: 'left' });
     doc.text(`$${sale.price_final?.toFixed(2).replace(/\.00$/, '') || '0'}`, pageWidth - margin, yAfterTable + lineHeight * 0.5, { align: 'right' });
 
-    // Update the main y position after totals
+
     y = yAfterTable + largeLineHeight;
 
 
     // --- Observaciones ---
-    // Position observations below totals, adjusting the starting Y
+
     if (sale.observation) {
         doc.setFontSize(9);
         doc.setFont('helvetica', 'italic');
-        // Start observations on the left, below the space after totals
+        
         doc.text('Observaciones:', margin, y);
         doc.setFont('helvetica', 'normal');
-        const observationText = doc.splitTextToSize(sale.observation, pageWidth - 2 * margin - 100); // Adjust width
-        // Position observation text offset from the label
+        const observationText = doc.splitTextToSize(sale.observation, pageWidth - 2 * margin - 100); 
+    
         doc.text(observationText, margin + 90, y);
 
-        // Update y to be below observations if they exist
         y += lineHeight * observationText.length + largeLineHeight;
     } else {
-        // If no observations, y is already after totals
-        // No need to update y further if this block is skipped
+      
     }
 
 
     // --- Sección de Firma / Sello (Opcional) ---
-    let ySignature = y + largeLineHeight; // Position below the last content (observations or totals)
-
-    // Ensure signature line doesn't go off page if content was very long
+    let ySignature = y + largeLineHeight;
+   
     if (ySignature < pageHeight - margin - largeLineHeight * 3) {
-        drawLine(ySignature, 150, pageWidth - margin - 150); // Line for signature (150pt width)
+        drawLine(ySignature, 150, pageWidth - margin - 150); 
         doc.setFontSize(8);
         doc.setFont('helvetica', 'normal');
-        doc.text('Firma y Sello Autorizado', pageWidth - margin - 150 + 75, ySignature + lineHeight, { align: 'center' }); // Centered below the line
-        // Update y to be after signature block if drawn
+        doc.text('Firma y Sello Autorizado', pageWidth - margin - 150 + 75, ySignature + lineHeight, { align: 'center' }); 
+      
         y = ySignature + largeLineHeight * 2;
     } else {
-        // If signature block was not drawn, y remains after observations/totals
-        y = ySignature; // Set y to the intended start position of the signature block even if not drawn
+        // aca deberia ir else por lo de la firma pero no esta hecho xdd
     }
 
+    // Generar el Blob y retornarlo
+    const pdfBlob = doc.output('blob');
 
-    // --- Guardar o abrir el PDF ---
+    // Opcional: Si quieres que también se descargue automáticamente AL MISMO TIEMPO que se sube:
     const fileName = `${documentType.toUpperCase()}_${sale.id}_${sale.created_at ? new Date(sale.created_at).toLocaleDateString().replace(/\//g, '-') : 'sin-fecha'}.pdf`;
-    doc.save(fileName);
-    // doc.output('dataurlnewwindow');
+    const url = window.URL.createObjectURL(pdfBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+     document.body.removeChild(link);
+     window.URL.revokeObjectURL(url);
+
+
+    return pdfBlob; 
 };
