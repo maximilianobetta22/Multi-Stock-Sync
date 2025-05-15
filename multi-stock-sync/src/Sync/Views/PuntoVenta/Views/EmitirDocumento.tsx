@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect} from 'react';
-import { Typography, Row, Col, Input, Button, Card, Spin, Alert, Divider, Table, message, Radio, Form } from 'antd';
+import { Typography, Row, Col, Input, Button, Card, Spin, Alert, Divider, Table, message, Radio, Form }from 'antd';
 import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
 import useFetchSaleById from '../Hooks/useIdVenta'; 
 import { SaleService } from '../Services/saleService'; 
