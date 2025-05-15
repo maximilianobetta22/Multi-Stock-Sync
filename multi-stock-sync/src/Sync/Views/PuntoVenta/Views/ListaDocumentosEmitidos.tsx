@@ -1,325 +1,335 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { Card, Typography, Table, Spin, Alert, Button, Space, message, Input, Form } from 'antd';
-import { DownloadOutlined, ReloadOutlined, SearchOutlined, ClearOutlined } from '@ant-design/icons';
+import { Card, Typography, Table, Spin, Alert, Button, Space, Input, Form, Row, Col } from 'antd';
+import { ReloadOutlined, SearchOutlined, ClearOutlined, FilePdfOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import useListDocumentosEmitidos, { DocumentFilters } from '../Hooks/useListDocumentosEmitidos';
-import { EmittedSaleListItem } from '../Services/documentoSaleService'; 
+import { EmittedSaleListItem } from '../Services/documentoSaleService';
 import { DocumentSaleService } from '../Services/documentoSaleService';
-import axiosInstance from '../../../../axiosConfig'; 
-import axios from 'axios'; 
+import axiosInstance from '../../../../axiosConfig';
+import axios from 'axios';
+import message from 'antd/lib/message';
 
+const { Title, Text } = Typography;
 
-const { Title } = Typography;
-
-// --- Props del componente ---
+// Props que recibe el componente: el id de la empresa
 interface ListaDocumentosEmitidosProps {
-    companyId: string | number | null | undefined; // Recibimos el companyId
+    companyId: string | number | null | undefined;
 }
 
 const ListaDocumentosEmitidos: React.FC<ListaDocumentosEmitidosProps> = ({ companyId }) => {
-    // Usamos el hook para gestionar la carga y el filtrado de documentos
+    // Hook personalizado para obtener documentos y filtros
     const { documents, loading, error, refetch, applyFilters } = useListDocumentosEmitidos(companyId);
 
-    // Estado local para los valores de los campos de filtro
+    // Estados para los filtros de búsqueda
     const [filterFolio, setFilterFolio] = useState<string>('');
     const [filterClientName, setFilterClientName] = useState<string>('');
-    // Estados para otros filtros eliminados según solicitud
 
-
-    // --- Lógica para aplicar los filtros ---
-    // Esta función se llama cuando los valores de filtro cambian o se pulsa un botón de filtro
+    // Aplica los filtros cuando el usuario busca
     const handleApplyFilters = useCallback(() => {
         const filters: DocumentFilters = {
-            folio: filterFolio.trim() || undefined, // Usar undefined si está vacío
-            clientName: filterClientName.trim() || undefined, // Usar undefined si está vacío
-            // Añadir otros valores de filtro aquí
+            folio: filterFolio.trim() || undefined,
+            clientName: filterClientName.trim() || undefined,
         };
-        applyFilters(filters); // Llama a la función del hook para aplicar los filtros
-    }, [filterFolio, filterClientName, applyFilters]); // Depende de los estados locales de filtro y la función applyFilters
+        applyFilters(filters);
+    }, [filterFolio, filterClientName, applyFilters]);
 
-    // --- Lógica para limpiar los filtros ---
+    // Limpia los filtros y muestra todos los documentos
     const handleClearFilters = useCallback(() => {
-        setFilterFolio(''); // Limpiar estado local del folio
-        setFilterClientName(''); // Limpiar estado local del nombre de cliente
-        // Limpiar otros estados de filtro aquí
-
-        // Aplicar filtros vacíos para mostrar todos los documentos obtenidos
+        setFilterFolio('');
+        setFilterClientName('');
         applyFilters({});
-    }, [applyFilters]); // Depende de la función applyFilters
+    }, [applyFilters]);
 
+    // Estado para mostrar el botón de descarga en "loading"
+    const [downloadingId, setDownloadingId] = useState<string | number | null>(null);
 
-    // --- Lógica para descargar un documento ---
-    const [downloadingId, setDownloadingId] = useState<string | number | null>(null); // Estado para saber qué documento se está descargando
-
+    // Función para descargar el PDF
     const handleDownload = useCallback(async (documentFolioId: string | number) => {
-         if (!companyId) {
-             message.error("No se pudo obtener el ID de la empresa para descargar el documento.");
-             console.error("ListaDocumentosEmitidos: companyId is missing for download.");
-             return;
-         }
-         if (!documentFolioId) {
-              message.error("No se pudo obtener el folio del documento para descargar.");
-              console.error("ListaDocumentosEmitidos: documentFolioId is missing for download.");
-              return;
-         }
+        if (!companyId) {
+            message.error("No se pudo obtener el ID de la empresa para descargar el documento.");
+            return;
+        }
+        if (!documentFolioId) {
+            message.error("No se pudo obtener el folio del documento para descargar.");
+            return;
+        }
+        setDownloadingId(documentFolioId);
 
-         setDownloadingId(documentFolioId); // Indicar que este documento se está descargando
+        try {
+            const downloadUrl = DocumentSaleService.getDownloadUrl(companyId, documentFolioId);
+            if (!downloadUrl) {
+                message.error("No se pudo generar la URL de descarga.");
+                setDownloadingId(null);
+                return;
+            }
 
-         try {
-             // Usar el servicio para obtener la URL de descarga
-             const downloadUrl = DocumentSaleService.getDownloadUrl(companyId, documentFolioId);
+            const response = await axiosInstance.get(downloadUrl, { responseType: 'blob' });
 
-             if (!downloadUrl) {
-                 message.error("No se pudo generar la URL de descarga.");
-                 setDownloadingId(null); // Finalizar descarga
-                 return;
-             }
-
-             console.log(`ListaDocumentosEmitidos: Attempting to download PDF from: ${downloadUrl}`);
-
-             // Realizar la solicitud GET usando axiosInstance (incluye token)
-             const response = await axiosInstance.get(downloadUrl, {
-                 responseType: 'blob', // Importante para manejar la respuesta como un archivo binario
-             });
-
-             // Verificar si la respuesta es un PDF
-             if (response.data && response.data.type === 'application/pdf') {
-                 // Crear un objeto Blob a partir de la respuesta
-                 const blob = new Blob([response.data], { type: 'application/pdf' });
-
-                 // Crear una URL temporal para el Blob
-                 const url = window.URL.createObjectURL(blob);
-
-                 // Crear un enlace temporal para la descarga
-                 const link = document.createElement('a');
-                 link.href = url;
-                 // Establecer el nombre del archivo. Puedes mejorarlo si el backend sugiere un nombre en los headers (Content-Disposition)
-                 link.setAttribute('download', `documento_folio_${documentFolioId}.pdf`);
-
-                 // Añadir el enlace al DOM (necesario para que funcione en algunos navegadores)
-                 document.body.appendChild(link);
-
-                 // Simular un clic en el enlace para iniciar la descarga
-                 link.click();
-
-                 // Limpiar: remover el enlace y revocar la URL temporal
-                 document.body.removeChild(link);
-                 window.URL.revokeObjectURL(url);
-
-                 message.success(`Documento con folio ${documentFolioId} descargado con éxito.`);
-
-             } else {
-                 // Si la respuesta no es un PDF (ej: un JSON de error)
-                 // Intentar leer la respuesta como texto para ver si hay un mensaje de error del backend
-                 const reader = new FileReader();
-                 reader.onload = (e) => {
-                     const errorText = e.target?.result as string;
-                     console.error("ListaDocumentosEmitidos: Received non-PDF response:", errorText);
-                      try {
-                         const errorJson = JSON.parse(errorText);
-                         message.error(errorJson.message || 'Error al descargar el documento: Respuesta inesperada del servidor.');
-                      } catch (parseError) {
-                         message.error('Error al descargar el documento: Respuesta no PDF recibida.');
-                      }
-                 };
-                 reader.readAsText(response.data); // Leer el blob como texto
-
-             }
-
-
-         } catch (err: any) { // Captura de errores de la solicitud axios
-             console.error(`ListaDocumentosEmitidos: Error downloading document with folio ${documentFolioId}:`, err);
-             let errorMessage = 'Error al descargar el documento.';
-
-             if (axios.isAxiosError(err)) {
-                 if (err.response) {
-                     // Si hay respuesta del servidor, intentar obtener el mensaje de error
-                     // La respuesta de error para un blob puede ser un blob de texto/json
-                     if (err.response.data instanceof Blob) {
-                         const reader = new FileReader();
-                         reader.onload = (e) => {
-                             const errorText = e.target?.result as string;
-                             try {
-                                 const errorJson = JSON.parse(errorText);
-                                 message.error(errorJson.message || `Error del servidor (${err.response?.status ?? 'desconocido'}) al descargar.`);
-                             } catch (parseError) {
-                                 message.error(`Error del servidor (${err.response?.status ?? 'desconocido'}) al descargar.`);
-                             }
-                         };
-                         reader.readAsText(err.response.data);
-                     } else {
-                          // Si no es un Blob, asumir que data es directamente el error (ej: string o JSON parseado)
-                          errorMessage = err.response.data?.message || `Error del servidor (${err.response.status}) al descargar.`;
-                          message.error(errorMessage);
-                     }
-                 } else if (err.request) {
-                     errorMessage = 'Error de red: No se recibió respuesta del servidor al descargar.';
-                     message.error(errorMessage);
-                 } else {
-                     errorMessage = err.message || 'Error al configurar la petición de descarga.';
-                     message.error(errorMessage);
-                 }
-             } else {
-                 errorMessage = err.message || 'Error desconocido al intentar descargar el documento.';
-                 message.error(errorMessage);
-             }
-
-         } finally {
-             setDownloadingId(null); // Finalizar descarga
-         }
-
-    }, [companyId]); // La función depende de companyId y message (si se usa directamente)
-
-
-    // --- Definición de Columnas para la Tabla ---
-    // Usamos useMemo para evitar que las columnas se redefinan innecesariamente en cada render
-    const columns: ColumnsType<EmittedSaleListItem> = useMemo(() => {
-        return [
-            {
-                title: 'Folio Venta',
-                dataIndex: 'id_folio', // Corresponde a sale.id
-                key: 'id_folio',
-                sorter: (a, b) => Number(a.id_folio) - Number(b.id_folio),
-            },
-             {
-                title: 'Cliente',
-                key: 'client_name',
-                // Combinar nombre y apellido si existen, o mostrar razón social
-                render: (_, record: EmittedSaleListItem) => {
-                    if (record.nombres || record.apellidos) {
-                        return `${record.nombres || ''} ${record.apellidos || ''}`.trim();
+            // Si la respuesta es un PDF, descarga el archivo
+            if (response.data && response.data.type === 'application/pdf') {
+                const blob = new Blob([response.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', `documento_folio_${documentFolioId}.pdf`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                window.URL.revokeObjectURL(url);
+                message.success(`Documento con folio ${documentFolioId} descargado con éxito.`);
+            } else {
+                // Si la respuesta no es PDF, intenta mostrar el error del backend
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const errorText = e.target?.result as string;
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        message.error(errorJson.message || 'Error al descargar el documento: Respuesta inesperada del servidor.');
+                    } catch {
+                        message.error('Error al descargar el documento: Respuesta no PDF recibida.');
                     }
-                    return 'N/A'; // Mostrar N/A si no hay datos de cliente en la respuesta actual
-                },
-            },
-            {
-                title: 'Tipo Documento',
-                dataIndex: 'type_emission', // Corresponde a sale.type_emission
-                key: 'type_emission',
-                 render: (text: string | null) => text || 'N/A', // Mostrar N/A si es null
-                sorter: (a, b) => (a.type_emission || '').localeCompare(b.type_emission || ''),
-            },
-            {
-                title: 'Acciones',
-                key: 'actions',
-                render: (_, record: EmittedSaleListItem) => (
-                    <Space size="small">
-                        {/* Botón de Descarga */}
-                        <Button
-                            icon={<DownloadOutlined />}
-                            onClick={() => handleDownload(record.id_folio)} 
-                            disabled={loading || downloadingId === record.id_folio}
-                            loading={downloadingId === record.id_folio}
-                        >
-                            Descargar PDF
-                        </Button>
-                    </Space>
-                ),
-            },
-        ];
-    }, [handleDownload, loading, downloadingId]); // Las columnas dependen de handleDownload, loading y downloadingId
+                };
+                reader.readAsText(response.data);
+            }
+        } catch (err: any) {
+            // Manejo de errores de red o backend
+            let errorMessage = 'Error al descargar el documento.';
+            if (axios.isAxiosError(err)) {
+                if (err.response) {
+                    if (err.response.data instanceof Blob) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            const errorText = e.target?.result as string;
+                            try {
+                                const errorJson = JSON.parse(errorText);
+                                message.error(errorJson.message || `Error del servidor (${err.response?.status ?? 'desconocido'}) al descargar.`);
+                            } catch {
+                                message.error(`Error del servidor (${err.response?.status ?? 'desconocido'}) al descargar.`);
+                            }
+                        };
+                        reader.readAsText(err.response.data);
+                    } else {
+                        errorMessage = err.response.data?.message || `Error del servidor (${err.response.status}) al descargar.`;
+                        message.error(errorMessage);
+                    }
+                } else if (err.request) {
+                    errorMessage = 'Error de red: No se recibió respuesta del servidor al descargar.';
+                    message.error(errorMessage);
+                } else {
+                    errorMessage = err.message || 'Error al configurar la petición de descarga.';
+                    message.error(errorMessage);
+                }
+            } else {
+                errorMessage = err.message || 'Error desconocido al intentar descargar el documento.';
+                message.error(errorMessage);
+            }
+        } finally {
+            setDownloadingId(null);
+        }
+    }, [companyId]);
 
+    // Función para previsualizar el PDF en una nueva pestaña
+    const handlePreview = useCallback(async (documentFolioId: string | number) => {
+        if (!companyId) {
+            message.error("No se pudo obtener el ID de la empresa para previsualizar el documento.");
+            return;
+        }
+        if (!documentFolioId) {
+            message.error("No se pudo obtener el folio del documento para previsualizar.");
+            return;
+        }
+        try {
+            const downloadUrl = DocumentSaleService.getDownloadUrl(companyId, documentFolioId);
+            if (!downloadUrl) {
+                message.error("No se pudo generar la URL de previsualización.");
+                return;
+            }
+            const response = await axiosInstance.get(downloadUrl, { responseType: 'blob' });
+            if (response.data && response.data.type === 'application/pdf') {
+                const blob = new Blob([response.data], { type: 'application/pdf' });
+                const url = window.URL.createObjectURL(blob);
+                window.open(url, '_blank'); // Abre el PDF en una nueva pestaña
+            } else {
+                message.error('No se recibió un PDF para previsualizar.');
+            }
+        } catch (err: any) {
+            message.error('Error al previsualizar el documento.');
+        }
+    }, [companyId]);
+
+    // Definición de las columnas de la tabla
+    const columns: ColumnsType<EmittedSaleListItem> = useMemo(() => [
+        {
+            title: 'Folio Venta', // Muestra el folio
+            dataIndex: 'id_folio',
+            key: 'id_folio',
+            sorter: (a, b) => Number(a.id_folio) - Number(b.id_folio),
+            render: (text: string | number) => <Text strong>{text}</Text>,
+        },
+        {
+            title: 'Cliente', // Muestra el nombre del cliente
+            key: 'client_name',
+            render: (_, record: EmittedSaleListItem) => {
+                if (record.nombres || record.apellidos) {
+                    return `${record.nombres || ''} ${record.apellidos || ''}`.trim();
+                }
+                return <Text type="secondary">N/A</Text>;
+            },
+        },
+        {
+            title: 'Tipo Documento', // Muestra el tipo de documento
+            dataIndex: 'type_emission',
+            key: 'type_emission',
+            render: (text: string | null) => <Text code>{text || 'N/A'}</Text>,
+            sorter: (a, b) => (a.type_emission || '').localeCompare(b.type_emission || ''),
+        },
+        {
+            title: 'Acciones', // Botones para descargar y previsualizar
+            key: 'actions',
+            render: (_, record: EmittedSaleListItem) => (
+                <Space size="small">
+                    {/* Botón para descargar el PDF */}
+                    <Button
+                        type="default"
+                        icon={<FilePdfOutlined />}
+                        onClick={() => handleDownload(record.id_folio)}
+                        disabled={loading || downloadingId === record.id_folio}
+                        loading={downloadingId === record.id_folio}
+                    >
+                        Descargar PDF
+                    </Button>
+                    {/* Botón para previsualizar el PDF */}
+                    <Button
+                        type="link"
+                        icon={<FilePdfOutlined />}
+                        onClick={() => handlePreview(record.id_folio)}
+                        disabled={loading}
+                    >
+                        Previsualizar PDF
+                    </Button>
+                </Space>
+            ),
+        },
+    ], [handleDownload, handlePreview, loading, downloadingId]);
 
     return (
-        <Card>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-                <Title level={4} style={{ margin: 0 }}>Documentos Emitidos (Facturas y Boletas)</Title>
-                 {/* Botón para recargar la lista */}
-                 <Button
+        <Card className="modern-container-card" bordered={false}>
+            {/* Título y botón de recarga */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                <Title level={4} style={{ margin: 0 }}>Documentos Emitidos</Title>
+                {/* Botón para recargar la lista */}
+                <Button
                     icon={<ReloadOutlined />}
-                    onClick={refetch} // Llama a la función refetch del hook
-                    disabled={loading || !companyId} // Deshabilitar si está cargando o no hay empresa
-                 >
-                    Recargar Lista
-                 </Button>
+                    onClick={refetch}
+                    disabled={loading || !companyId}
+                    type="default"
+                >
+                    Recargar
+                </Button>
             </div>
 
-            {/* Sección de Filtros */}
-            <Card size="small" style={{ marginBottom: 20 }}>
-                <Title level={5} style={{ marginTop: 0, marginBottom: 10 }}>Filtros</Title>
+            {/* Filtros de búsqueda alineados con Row y Col */}
+            <Card size="small" style={{ marginBottom: 24, borderRadius: '8px', backgroundColor: '#f9f9f9' }}>
+                <Title level={5} style={{ marginTop: 0, marginBottom: 16 }}>Filtros de Búsqueda</Title>
                 <Form layout="vertical">
-                    <Space wrap>
-                        {/* Filtro por Folio */}
-                        <Form.Item label="Folio Venta" style={{ marginBottom: 0 }}>
-                            <Input
-                                placeholder="Buscar por folio"
-                                value={filterFolio}
-                                onChange={(e) => setFilterFolio(e.target.value)}
-                                onPressEnter={handleApplyFilters} // Aplicar filtros al presionar Enter
-                                style={{ width: 180 }}
-                            />
-                        </Form.Item>
-
-                        {/* Filtro por Nombre de Cliente */}
-                        <Form.Item label="Nombre Cliente" style={{ marginBottom: 0 }}>
-                            <Input
-                                placeholder="Buscar por nombre o apellido"
-                                value={filterClientName}
-                                onChange={(e) => setFilterClientName(e.target.value)}
-                                onPressEnter={handleApplyFilters} // Aplicar filtros al presionar Enter
-                                style={{ width: 200 }}
-                            />
-                        </Form.Item>
-
-                        {/* Botones de Acción para Filtros */}
-                        <Form.Item style={{ marginBottom: 0 }}>
-                            <Space>
-                                <Button type="primary" icon={<SearchOutlined />} onClick={handleApplyFilters}>
-                                    Aplicar Filtros
-                                </Button>
-                                <Button icon={<ClearOutlined />} onClick={handleClearFilters}>
-                                    Limpiar Filtros
-                                </Button>
-                            </Space>
-                        </Form.Item>
-                    </Space>
+                    <Row gutter={16} align="bottom">
+                        <Col>
+                            <Form.Item label="Folio Venta" style={{ marginBottom: 0 }}>
+                                <Input
+                                    placeholder="Ej: 12345"
+                                    value={filterFolio}
+                                    onChange={(e) => setFilterFolio(e.target.value)}
+                                    onPressEnter={handleApplyFilters}
+                                    style={{ width: 200 }}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col>
+                            <Form.Item label="Nombre Cliente" style={{ marginBottom: 0 }}>
+                                <Input
+                                    placeholder="Ej: Juan Pérez"
+                                    value={filterClientName}
+                                    onChange={(e) => setFilterClientName(e.target.value)}
+                                    onPressEnter={handleApplyFilters}
+                                    style={{ width: 250 }}
+                                />
+                            </Form.Item>
+                        </Col>
+                        <Col>
+                            {/* Botones alineados abajo */}
+                            <Form.Item label=" " colon={false} style={{ marginBottom: 0 }}>
+                                <Space>
+                                    <Button
+                                        type="primary"
+                                        icon={<SearchOutlined />}
+                                        onClick={handleApplyFilters}
+                                    >
+                                        Buscar
+                                    </Button>
+                                    <Button
+                                        icon={<ClearOutlined />}
+                                        onClick={handleClearFilters}
+                                    >
+                                        Limpiar
+                                    </Button>
+                                </Space>
+                            </Form.Item>
+                        </Col>
+                    </Row>
                 </Form>
             </Card>
 
-
-            {/* Indicador de carga */}
+            {/* Spinner de carga */}
             {loading && (
-                <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                <div style={{ textAlign: 'center', margin: '40px 0' }}>
                     <Spin size="large" tip="Cargando documentos..." />
                 </div>
             )}
 
-            {/* Mensaje de error */}
-            {error && !loading && ( // Mostrar error solo si no está cargando
+            {/* Mensaje de error si ocurre */}
+            {error && !loading && (
                 <Alert
                     message="Error"
                     description={error}
                     type="error"
                     showIcon
-                    style={{ marginBottom: 20 }}
+                    style={{ marginBottom: 24 }}
                 />
             )}
 
             {/* Mensaje si no hay empresa seleccionada */}
-            {!companyId && !loading && !error && ( 
-                 <Alert
+            {!companyId && !loading && !error && (
+                <Alert
                     message="Seleccione una empresa"
                     description="Por favor, seleccione una empresa en la configuración de conexión para poder listar los documentos emitidos."
                     type="info"
                     showIcon
-                    style={{ marginBottom: 20 }}
-                 />
+                    style={{ marginBottom: 24 }}
+                />
             )}
 
+            {/* Mensaje si no hay documentos */}
+            {!loading && !error && companyId && documents.length === 0 && (
+                <Alert
+                    message="No hay documentos encontrados"
+                    description="No se encontraron documentos emitidos que coincidan con los filtros aplicados o para la empresa seleccionada."
+                    type="info"
+                    showIcon
+                    style={{ marginBottom: 24 }}
+                />
+            )}
 
             {/* Tabla de documentos */}
-            {/* Mostrar la tabla solo si no está cargando */}
-            {!loading && (
-                 <Table
-                    dataSource={documents} // Los datos obtenidos del hook
-                    columns={columns} // Las columnas definidas arriba
-                    rowKey="id_folio" // Usamos id_folio como clave única si es estable y único en la lista
-                                      // Si el backend añade un ID único para la tabla document_sale, usar ese ID.
-                    pagination={{ pageSize: 10 }} // Paginación por 10 elementos
-                    locale={{ emptyText: (error && !companyId) ? 'No se pudieron cargar los documentos.' : 'No hay documentos emitidos para esta empresa.' }} // Mensaje cuando no hay datos
-                 />
+            {!loading && documents.length > 0 && (
+                <Table
+                    dataSource={documents}
+                    columns={columns}
+                    rowKey="id_folio"
+                    pagination={{ pageSize: 10 }}
+                    className="modern-table"
+                    size="middle"
+                />
             )}
-
         </Card>
     );
 };
