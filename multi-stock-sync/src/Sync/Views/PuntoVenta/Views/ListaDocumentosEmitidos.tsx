@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { Card, Typography, Table, Spin, Alert, Button, Space, message, Input, Select, DatePicker, Form } from 'antd';
+import React, { useState, useCallback, useMemo } from 'react';
+import { Card, Typography, Table, Spin, Alert, Button, Space, message, Input, Form } from 'antd';
 import { DownloadOutlined, ReloadOutlined, SearchOutlined, ClearOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import useListDocumentosEmitidos, { DocumentFilters } from '../Hooks/useListDocumentosEmitidos';
@@ -10,7 +10,6 @@ import axios from 'axios';
 
 
 const { Title } = Typography;
-const { Option } = Select; // Para el Select de tipo de documento (si se añade en el futuro)
 
 // --- Props del componente ---
 interface ListaDocumentosEmitidosProps {
@@ -142,9 +141,9 @@ const ListaDocumentosEmitidos: React.FC<ListaDocumentosEmitidosProps> = ({ compa
                              const errorText = e.target?.result as string;
                              try {
                                  const errorJson = JSON.parse(errorText);
-                                 message.error(errorJson.message || `Error del servidor (${err.response.status}) al descargar.`);
+                                 message.error(errorJson.message || `Error del servidor (${err.response?.status ?? 'desconocido'}) al descargar.`);
                              } catch (parseError) {
-                                 message.error(`Error del servidor (${err.response.status}) al descargar.`);
+                                 message.error(`Error del servidor (${err.response?.status ?? 'desconocido'}) al descargar.`);
                              }
                          };
                          reader.readAsText(err.response.data);
@@ -200,17 +199,6 @@ const ListaDocumentosEmitidos: React.FC<ListaDocumentosEmitidosProps> = ({ compa
                  render: (text: string | null) => text || 'N/A', // Mostrar N/A si es null
                 sorter: (a, b) => (a.type_emission || '').localeCompare(b.type_emission || ''),
             },
-            // Columna de Fecha Emisión eliminada según solicitud
-            // {
-            //     title: 'Fecha Emisión',
-            //     dataIndex: 'created_at',
-            //     key: 'created_at',
-            //     render: (text: string | undefined) => text ? new Date(text).toLocaleDateString() : 'Fecha no disponible',
-            //     sorter: (a, b) => {
-            //          if (!a.created_at || !b.created_at) return 0;
-            //          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-            //     },
-            // },
             {
                 title: 'Acciones',
                 key: 'actions',
@@ -273,24 +261,6 @@ const ListaDocumentosEmitidos: React.FC<ListaDocumentosEmitidosProps> = ({ compa
                             />
                         </Form.Item>
 
-                        {/* Puedes añadir más campos de filtro aquí (ej: Tipo de Documento) */}
-                        {/* Ejemplo de filtro por Tipo de Documento (si el backend lo devuelve) */}
-                         {/*
-                         <Form.Item label="Tipo Documento" style={{ marginBottom: 0 }}>
-                             <Select
-                                 placeholder="Seleccionar tipo"
-                                 style={{ width: 150 }}
-                                 allowClear
-                                 value={filterDocumentType}
-                                 onChange={(value) => setFilterDocumentType(value || '')} // Usar '' si se limpia
-                             >
-                                 <Option value="Boleta">Boleta</Option>
-                                 <Option value="Factura">Factura</Option>
-                             </Select>
-                         </Form.Item>
-                         */}
-
-
                         {/* Botones de Acción para Filtros */}
                         <Form.Item style={{ marginBottom: 0 }}>
                             <Space>
@@ -322,12 +292,11 @@ const ListaDocumentosEmitidos: React.FC<ListaDocumentosEmitidosProps> = ({ compa
                     type="error"
                     showIcon
                     style={{ marginBottom: 20 }}
-                    onClose={() => setError(undefined)} // Permite cerrar la alerta (si usas estado local de error)
                 />
             )}
 
             {/* Mensaje si no hay empresa seleccionada */}
-            {!companyId && !loading && !error && ( // Mostrar solo si no hay companyId, no está cargando y no hay error
+            {!companyId && !loading && !error && ( 
                  <Alert
                     message="Seleccione una empresa"
                     description="Por favor, seleccione una empresa en la configuración de conexión para poder listar los documentos emitidos."
