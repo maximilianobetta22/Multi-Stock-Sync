@@ -199,17 +199,6 @@ const ListaDocumentosEmitidos: React.FC<ListaDocumentosEmitidosProps> = ({ compa
                  render: (text: string | null) => text || 'N/A', // Mostrar N/A si es null
                 sorter: (a, b) => (a.type_emission || '').localeCompare(b.type_emission || ''),
             },
-            // Columna de Fecha Emisión eliminada según solicitud
-            // {
-            //     title: 'Fecha Emisión',
-            //     dataIndex: 'created_at',
-            //     key: 'created_at',
-            //     render: (text: string | undefined) => text ? new Date(text).toLocaleDateString() : 'Fecha no disponible',
-            //     sorter: (a, b) => {
-            //          if (!a.created_at || !b.created_at) return 0;
-            //          return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-            //     },
-            // },
             {
                 title: 'Acciones',
                 key: 'actions',
@@ -307,7 +296,7 @@ const ListaDocumentosEmitidos: React.FC<ListaDocumentosEmitidosProps> = ({ compa
             )}
 
             {/* Mensaje si no hay empresa seleccionada */}
-            {!companyId && !loading && !error && ( // Mostrar solo si no hay companyId, no está cargando y no hay error
+            {!companyId && !loading && !error && ( 
                  <Alert
                     message="Seleccione una empresa"
                     description="Por favor, seleccione una empresa en la configuración de conexión para poder listar los documentos emitidos."
