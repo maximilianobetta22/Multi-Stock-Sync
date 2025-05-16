@@ -3,6 +3,7 @@ import axios from 'axios';
 import { NotaVentaActual } from '../Hooks/GestionNuevaVenta';
 import { VentaResponse } from '../Types/ventaTypes';
 
+// Estructura de un producto en la venta
 interface SalePayloadItem {
     id: string | number;
     nombre: string;
@@ -11,6 +12,7 @@ interface SalePayloadItem {
     total: number;
 }
 
+// Estructura de una venta para enviar al backend
 interface SaleCreationPayload {
     warehouse_id: number | string;
     client_id: number | string | null;
@@ -24,19 +26,23 @@ interface SaleCreationPayload {
     status_sale: string;
 }
 
+// Estructura para emitir documento (boleta/factura)
 interface EmitDocumentPayload {
     type_emission: 'Boleta' | 'Factura';
     observation: string | null;
     name_companies: string | null;
 }
 
+// URL base de la API
 const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}`;
 
-
+// Servicio principal para ventas
 export const SaleService = {
 
+    // Crea una nueva venta en el backend
     async createSale(saleData: NotaVentaActual, status: string, warehouseId: string | number | null): Promise<VentaResponse> {
         try {
+            // Prepara los datos para enviar
             const payload: SaleCreationPayload = {
                 warehouse_id: warehouseId as number | string,
                 client_id: saleData.idCliente,
@@ -56,6 +62,7 @@ export const SaleService = {
             };
             console.log("SaleService: Payload to backend (createSale):", payload);
 
+             // Llama al backend para crear la venta
             const url = `${API_BASE_URL}/generated-sale-note/${status}`;
 
             const response = await axiosInstance.post(url, payload, {
@@ -65,6 +72,7 @@ export const SaleService = {
                 },
             });
 
+            // Devuelve la respuesta si todo salió bien
             if (response.data && response.data.data) {
                 console.log("SaleService: Backend response data (createSale):", response.data.data);
                 return response.data.data as VentaResponse;
@@ -73,6 +81,7 @@ export const SaleService = {
             }
 
         } catch (error) {
+            // Manejo de errores
             console.error("SaleService: Error al crear venta:", error);
             if (axios.isAxiosError(error) && error.response) {
                 throw new Error(error.response.data.message || `SaleService: Error del servidor (${error.response.status}) al crear venta.`);
@@ -80,7 +89,8 @@ export const SaleService = {
             throw new Error('SaleService: Error desconocido al intentar crear la venta.');
         }
     },
-
+    // Busca una venta por su folio (ID) y empresa
+    // Se espera que el backend devuelva un objeto con la estructura de VentaResponse
     async getSaleById(saleId: string | number, companyId: string | number | null): Promise<VentaResponse> {
         try {
             if (!companyId) {
@@ -120,7 +130,7 @@ export const SaleService = {
             throw new Error(`SaleService: Error desconocido al intentar obtener la venta con folio ${saleId}.`);
         }
     },
-
+    // Marca una venta como emitida (boleta o factura)
     async emitSaleDocument(
         saleId: string | number,
         emissionType: 'boleta' | 'factura',
@@ -146,14 +156,14 @@ export const SaleService = {
             };
 
             console.log("SaleService: Payload to backend (emitSaleDocument):", payload);
-
+             // Llama al backend para emitir el documento
             const response = await axiosInstance.put(url, payload, {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('access_token')}`
                 },
             });
-
+            // Manejo de la respuesta si todo salió bien
             if (response.data && response.data.data) {
                 console.log("SaleService: Backend response data (emitSaleDocument):", response.data.data);
                 return response.data.data as VentaResponse;
@@ -165,6 +175,7 @@ export const SaleService = {
             }
 
         } catch (error) {
+            // Manejo de errores
             console.error(`SaleService: Error al emitir documento para venta con ID ${saleId} para company ${companyId}:`, error);
             if (axios.isAxiosError(error) && error.response) {
                 throw new Error(error.response.data.message || `SaleService: Error del servidor (${error.response.status}) al emitir documento.`);
