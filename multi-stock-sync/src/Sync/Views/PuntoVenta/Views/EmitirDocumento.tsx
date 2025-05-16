@@ -145,13 +145,6 @@ const EmitirDocumento: React.FC<EmitirDocumentoProps> = ({ companyId }) => {
             key: 'status_sale'
         },
         {
-            title: <Text strong>Total</Text>,
-            dataIndex: 'price_final',
-            key: 'price_final',
-            render: (text: number) => `$${text?.toFixed(2).replace(/\.00$/, '') || '0'}`,
-            sorter: (a: SaleHistoryItem, b: SaleHistoryItem) => a.price_final - b.price_final
-        },
-        {
             title: <Text strong>Acción</Text>,
             key: 'action',
             render: (_: any, record: SaleHistoryItem) => (
