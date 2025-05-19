@@ -1,15 +1,20 @@
-import React, { useState, useMemo, useEffect, useCallback } from 'react';
-import { Typography, Row, Col, Input, Button, Table, Space, Form, InputNumber, Select, Card, Divider, Spin, Alert, Grid, Modal, message } from 'antd';
-import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined, ShoppingCartOutlined, UserOutlined, FileTextOutlined } from '@ant-design/icons';
-import type { ColumnsType } from 'antd/es/table';
-import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta';
+import React, { useState, useMemo, useEffect, useCallback } from 'react'; // Importa useCallback
+import { Typography, Row, Col, Input, Button, Table, Space, Form, InputNumber, Select, Card, Divider, Spin, Alert, Grid, Modal, message } from 'antd'; // Importa Modal y message
+import { SearchOutlined, DeleteOutlined, PlusOutlined, LoadingOutlined } from '@ant-design/icons';
+// Este hook nos ayuda a traer la lista de todos los clientes que podemos usar.
+import useClientes, { ClienteAPI } from '../Hooks/ClientesVenta'; // Este hook nos ayuda a traer la lista de todos los clientes que podemos usar.
+// Asegúrate de que useProductosPorEmpresa aún recibe solo el ID de la bodega
 import useProductosPorEmpresa, { ProductoAPI } from '../Hooks/ProductosVenta';
+// Este hook maneja toda la información de la venta actual, como los productos, totales y... ¡el cliente seleccionado!
+// Asegúrate de que este hook NO maneja internamente el warehouseId ahora
 import useGestionNotaVentaActual, { ItemVenta } from '../Hooks/GestionNuevaVenta';
 import useBodegasPorEmpresa, { BodegaAPI } from '../Hooks/ListaBodega';
 import AgregarClienteDrawer from '../components/agregarClienteDrawer';
 import { client } from '../Types/clienteTypes';
+import { ColumnsType } from 'antd/es/table'; // Importa ColumnsType si lo usas para tipar las columnas
 
-const { Title, Text } = Typography;
+
+const { Title } = Typography;
 const { Search } = Input;
 const { useBreakpoint } = Grid;
 
@@ -18,46 +23,44 @@ interface NuevaVentaProps {
 }
 
 const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
-  // Detecta tamaño de pantalla
   const screens = useBreakpoint();
-
-  // Estado para mostrar el drawer de agregar cliente
   const [drawerClienteVisible, setDrawerClienteVisible] = useState(false);
-
-  // Estado para buscar productos
   const [textoBusquedaProducto, setTextoBusquedaProducto] = useState('');
-
-  // Estado para la bodega seleccionada
+  // Mantenemos el estado local para selectedWarehouseId
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | number | null>(null);
 
-  // Obtiene clientes
+  // --- 1. Conseguimos la lista de clientes ---
   const { clientes, cargandoClientes, errorClientes, recargarClientes } = useClientes();
 
-  // Obtiene bodegas y productos según la empresa y bodega seleccionada
+  // Cosas de Bodegas y Productos
   const { bodegas, cargandoBodegas, errorBodegas } = useBodegasPorEmpresa(companyId);
+  // Pasamos el estado LOCAL selectedWarehouseId al hook de productos
   const { productos: productosDisponiblesAPI, cargandoProductos, errorProductos } = useProductosPorEmpresa(selectedWarehouseId);
 
-  // Hook principal para manejar la nota de venta
+  // De este hook sacamos la información de la nota de venta actual (SIN warehouseId ahora)
   const {
     notaVenta,
     subtotal,
     total,
     cargandoGuardado,
     errorGuardado,
-    ventaGeneradaExitosa,
-    showSuccessModal,
-    clearGuardadoState,
+    ventaGeneradaExitosa, // Obtenemos el estado de éxito de la generación (contiene el folio)
+    showSuccessModal, // Obtenemos el estado del modal de éxito
+    clearGuardadoState, // Obtenemos la función para limpiar estados de guardado
+
     agregarItem,
     actualizarCantidadItem,
     eliminarItem,
     establecerIdCliente,
+    // establecerWarehouseId ya no viene de aquí
     establecerObservaciones,
-    guardarBorrador,
-    generarNotaVentaFinal,
+    guardarBorrador, // Ahora espera warehouseId como parámetro
+    generarNotaVentaFinal, // Ahora espera warehouseId como parámetro
     limpiarNotaVenta,
   } = useGestionNotaVentaActual();
 
-  // Opciones para el selector de clientes
+
+  // --- 2. Preparamos las opciones para los selectores ---
   const opcionesClientes = useMemo(() => {
     return clientes ? clientes.map((cliente: ClienteAPI) => ({
       value: String(cliente.id),
@@ -65,7 +68,6 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     })) : [];
   }, [clientes]);
 
-  // Opciones para el selector de bodegas
   const opcionesBodegas = useMemo(() => {
     if (!bodegas) return [];
     return bodegas.map((bodega: BodegaAPI) => ({
@@ -74,7 +76,6 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     }));
   }, [bodegas]);
 
-  // Filtra productos según el texto de búsqueda
   const productosDisponiblesFiltrados = useMemo(() => {
     if (!productosDisponiblesAPI) return [];
     return productosDisponiblesAPI.filter((producto: ProductoAPI) =>
@@ -82,226 +83,201 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
     );
   }, [productosDisponiblesAPI, textoBusquedaProducto]);
 
-  // Columnas de la tabla de ítems de venta
-  const columnasItems: ColumnsType<ItemVenta> = useMemo(() => [
-    { title: 'Producto', dataIndex: 'nombre', key: 'nombre' },
-    {
-      title: 'Cantidad',
-      dataIndex: 'cantidad',
-      key: 'cantidad',
-      width: screens.sm ? 120 : 80,
-      render: (_text: number, record: ItemVenta) => (
-        <InputNumber
-          min={0}
-          precision={0}
-          value={record.cantidad}
-          onChange={value => actualizarCantidadItem(record.key, value)}
-          style={{ width: '100%' }}
-        />
-      ),
-      sorter: (a: ItemVenta, b: ItemVenta) => a.cantidad - b.cantidad,
-    },
-    {
-      title: 'P. Unitario',
-      dataIndex: 'precioUnitario',
-      key: 'precioUnitario',
-      render: (text: number | null | undefined) => {
-        return `$${text?.toFixed(2).replace(/\.00$/, '') || '0'}`;
+  // Tipamos columnasItems correctamente
+  const columnasItems: ColumnsType<ItemVenta> = useMemo(() => {
+    return [
+      { title: 'Producto', dataIndex: 'nombre', key: 'nombre' },
+      {
+        title: 'Cantidad', dataIndex: 'cantidad', key: 'cantidad', width: screens.sm ? 120 : 80,
+        render: (_text: number, record: ItemVenta) => (
+          <InputNumber
+            min={0} // Permite cantidad 0 para facilitar la eliminación
+            precision={0} // Cantidades enteras
+            value={record.cantidad}
+            onChange={value => actualizarCantidadItem(record.key, value)}
+          />
+        ),
+        sorter: (a: ItemVenta, b: ItemVenta) => a.cantidad - b.cantidad, // Tipado correcto
       },
-      sorter: (a: ItemVenta, b: ItemVenta) => a.precioUnitario - b.precioUnitario,
-    },
-    {
-      title: 'Total Línea',
-      dataIndex: 'total',
-      key: 'total',
-      render: (text: number) => `$${text?.toFixed(2).replace(/\.00$/, '') || '0'}`
-    },
-    {
-      title: 'Acción',
-      key: 'accion',
-      width: screens.sm ? 120 : 80,
-      render: (_text: any, record: ItemVenta) => (
-        <Button icon={<DeleteOutlined />} danger onClick={() => eliminarItem(record.key)} size="small">
-          {screens.md && "Eliminar"}
-        </Button>
-      ),
-    },
-  ], [actualizarCantidadItem, eliminarItem, screens]);
+      {
+        title: 'P. Unitario', dataIndex: 'precioUnitario', key: 'precioUnitario',
+        render: (text: number | null | undefined, _record: ItemVenta) => {
+          return `$${text?.toFixed(2).replace(/\.00$/, '') || '0'}`; // Formato moneda sin decimales si es entero
+        },
+        sorter: (a: ItemVenta, b: ItemVenta) => a.precioUnitario - b.precioUnitario, // Tipado correcto
+      },
+      {
+        title: 'Total Línea', dataIndex: 'total', key: 'total',
+        render: (text: number) => `$${text?.toFixed(2).replace(/\.00$/, '') || '0'}` // Formato moneda
+      },
+      {
+        title: 'Acción', key: 'accion', width: screens.sm ? 120 : 80,
+        render: (_text: any, record: ItemVenta) => (
+          <Button icon={<DeleteOutlined />} danger onClick={() => eliminarItem(record.key)} size="small">
+            {screens.md && "Eliminar"}
+          </Button>
+        ),
+      },
+    ];
+  }, [actualizarCantidadItem, eliminarItem, screens]);
 
-  // Cuando el usuario selecciona un cliente
+  // --- 3. Función para cuando el usuario elige un cliente ---
   const handleSeleccionarCliente = (valorIdCliente?: string | number | null) => {
     establecerIdCliente(valorIdCliente);
   };
 
-  // Cuando el usuario selecciona una bodega
+  // Cosas de Bodegas
   const handleSeleccionarBodega = (valorIdBodega?: string | number | null | undefined) => {
     const nuevoIdBodega = valorIdBodega === undefined ? null : valorIdBodega;
-    setSelectedWarehouseId(nuevoIdBodega);
-    setTextoBusquedaProducto('');
+    setSelectedWarehouseId(nuevoIdBodega); // Actualizamos el estado LOCAL
+    setTextoBusquedaProducto(''); // Limpiar búsqueda de producto al cambiar bodega
   };
 
-  // Cuando se agrega un nuevo cliente desde el drawer
-  const handleClienteSuccess = useCallback((nuevoCliente: client) => {
+  // Manejar el éxito al agregar un nuevo cliente
+  const handleClienteSuccess = useCallback((nuevoCliente: client) => { // Usar useCallback
     recargarClientes();
     if (nuevoCliente && nuevoCliente.id) {
       handleSeleccionarCliente(String(nuevoCliente.id));
     }
     setDrawerClienteVisible(false);
-  }, [recargarClientes]);
+  }, [recargarClientes]); // Dependencia del useCallback
 
-  // Si solo hay una bodega, la selecciona automáticamente
+  // Efecto para seleccionar la bodega si solo hay una (usa estado LOCAL)
   useEffect(() => {
     if (!cargandoBodegas && !errorBodegas && bodegas && bodegas.length === 1) {
-      setSelectedWarehouseId(bodegas[0].id);
+      setSelectedWarehouseId(bodegas[0].id); // Seteamos el estado LOCAL
     }
-  }, [bodegas, cargandoBodegas, errorBodegas]);
+  }, [bodegas, cargandoBodegas, errorBodegas]); // Dependencias
 
-  // Genera la nota de venta final
+  // --- Manejo de la generación final y el folio ---
   const handleGenerarNotaVentaFinal = async () => {
     try {
-      await generarNotaVentaFinal(selectedWarehouseId);
-      message.success('Nota de Venta generada con éxito');
+      // El hook ahora lanza errores y guarda la respuesta exitosa en su estado
+      await generarNotaVentaFinal(selectedWarehouseId); // <-- Eliminamos la variable local
+      // La lógica de mostrar el modal de éxito y limpiar la venta ahora está en el hook
+      message.success('Nota de Venta generada con éxito'); // Opcional: Mostrar un mensaje adicional si prefieres
     } catch (error: any) {
+      // El hook ya establece errorGuardado, podrías mostrar un mensaje adicional si quieres
       console.error("Error manejado en la vista al generar nota:", error);
-      message.error(errorGuardado || 'Error al generar nota de venta.');
+      // El Alert del hook ya muestra el errorGuardado
+      message.error(errorGuardado || 'Error al generar nota de venta.'); // Muestra un mensaje de error usando Ant Design
     }
   };
-
-  // Guarda la nota de venta como borrador
   const handleGuardarBorrador = async () => {
     try {
-      await guardarBorrador(selectedWarehouseId);
-      message.success('Borrador guardado con éxito');
+      // Pasamos el estado LOCAL selectedWarehouseId a la función del hook
+      await guardarBorrador(selectedWarehouseId); // Llama a la función del hook
+      message.success('Borrador guardado con éxito'); // Muestra mensaje de éxito de Ant Design
     } catch (error: any) {
       console.error("Error al guardar borrador:", error);
-      message.error(errorGuardado || 'Error al guardar borrador.');
+      message.error(errorGuardado || 'Error al guardar borrador.'); // Muestra mensaje de error de Ant Design
     }
   };
 
   return (
-    <div style={{ padding: "24px", backgroundColor: '#f0f2f5', minHeight: '100vh' }}>
-      {/* Título principal */}
-      <Title level={3} style={{ marginBottom: '24px' }}>Generar Nueva Nota de Venta</Title>
+    <div style={{ padding: "20px" }}>
+      <Title level={3}>Generar Nueva Nota de Venta</Title>
+      {/* Muestra el error de guardado si existe */}
+      {errorGuardado && <Alert message={`Error al procesar venta: ${errorGuardado}`} type="error" showIcon style={{ marginBottom: '20px' }} onClose={clearGuardadoState} />} {/* Permite cerrar la alerta */}
 
-      {/* Muestra error si ocurre al guardar o generar venta */}
-      {errorGuardado && (
-        <Alert
-          message="Error al procesar venta"
-          description={errorGuardado}
-          type="error"
-          showIcon
-          style={{ marginBottom: '24px', borderRadius: '8px' }}
-          onClose={clearGuardadoState}
-        />
-      )}
 
-      <Row gutter={[24, 24]}>
-        {/* Columna izquierda: Productos y Bodega */}
+      <Row gutter={[16, 16]}>
+        {/* Sección izquierda: Productos y Bodega */}
         <Col xs={24} lg={8}>
-          <Card title="Productos Disponibles" style={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
-            {/* Selector de bodega */}
-            <Title level={5} style={{ marginTop: 0, marginBottom: '16px' }}>Seleccionar Bodega</Title>
+          <Card title="Productos Disponibles">
+            <Title level={5}>Seleccionar Bodega</Title>
             {cargandoBodegas ? (
-              <div style={{ textAlign: 'center', padding: '20px 0' }}><Spin tip="Cargando bodegas..." /></div>
+              <div style={{ textAlign: 'center' }}><Spin size="small" tip="Cargando bodegas..." /></div>
             ) : errorBodegas ? (
               <Typography.Text type="danger">{errorBodegas}</Typography.Text>
             ) : !companyId ? (
               <Typography.Text type="secondary">Selecciona una conexión para cargar bodegas.</Typography.Text>
             ) : (
-              <Form.Item style={{ marginBottom: 0 }}>
-                <Select
-                  showSearch
-                  placeholder="Selecciona una bodega"
-                  optionFilterProp="children"
-                  onChange={handleSeleccionarBodega}
-                  value={selectedWarehouseId}
-                  notFoundContent={cargandoBodegas ? <Spin size="small" /> : errorBodegas ? errorBodegas : 'No encontrado'}
-                  filterOption={(input, option) =>
-                    (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
-                  }
-                  options={opcionesBodegas}
-                  allowClear
-                  style={{ width: '100%' }}
-                  disabled={!companyId || (bodegas && bodegas.length === 0 && !cargandoBodegas) || cargandoBodegas}
-                />
-              </Form.Item>
+              <Select
+                showSearch
+                placeholder="Selecciona una bodega"
+                optionFilterProp="children"
+                onChange={handleSeleccionarBodega}
+                value={selectedWarehouseId} // Usar el estado LOCAL
+                notFoundContent={cargandoBodegas ? <Spin size="small" /> : errorBodegas ? errorBodegas : 'No encontrado'} // Mejorar el notFoundContent
+                filterOption={(input, option) =>
+                  (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
+                }
+                options={opcionesBodegas}
+                allowClear
+                style={{ width: '100%' }}
+                disabled={!companyId || (bodegas && bodegas.length === 0 && !cargandoBodegas) || cargandoBodegas} // Mejorar disabled si no hay bodegas
+              />
             )}
 
-            <Divider style={{ margin: '24px 0' }} />
-
-            {/* Buscador de productos */}
-            <Title level={5} style={{ marginBottom: '16px' }}>Buscar y Añadir Productos</Title>
+            <Title level={5}>Buscar y Añadir Productos</Title>
+            {/* Muestra el error de productos si existe */}
             {errorProductos && <Typography.Text type="danger">{errorProductos}</Typography.Text>}
-            <Form.Item style={{ marginBottom: 0 }}>
-              <Search
-                placeholder="Buscar producto por nombre o código"
-                onChange={(e) => setTextoBusquedaProducto(e.target.value)}
-                enterButton={<SearchOutlined />}
-                loading={cargandoProductos}
-                disabled={!selectedWarehouseId || cargandoProductos || !!errorProductos}
-              />
-            </Form.Item>
+            <Search
+              placeholder="Buscar producto por nombre o código"
+              onChange={(e) => setTextoBusquedaProducto(e.target.value)}
+              enterButton={<SearchOutlined />}
+              loading={cargandoProductos}
+              disabled={!selectedWarehouseId || cargandoProductos || !!errorProductos} // Deshabilitar si no hay bodega seleccionada (estado local)
+            />
 
-            {/* Lista de productos filtrados */}
-            <div style={{ marginTop: '16px', maxHeight: '300px', overflowY: 'auto', border: '1px solid #d9d9d9', padding: '12px', borderRadius: '4px', backgroundColor: '#fff' }}>
+            <div style={{ marginTop: '15px', maxHeight: '400px', overflowY: 'auto', border: '1px solid #f0f0f0', padding: '10px', borderRadius: '4px' }}>
               {cargandoProductos ? (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}><Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} /></div>
+                <div style={{ textAlign: 'center' }}><Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} /></div>
               ) : errorProductos ? (
                 <Typography.Text type="secondary">{errorProductos}</Typography.Text>
-              ) : !selectedWarehouseId ? (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <Typography.Text type="secondary">Selecciona una bodega para cargar productos.</Typography.Text>
-                </div>
+              ) : !selectedWarehouseId ? ( // Mostrar mensaje si no hay bodega seleccionada (estado local)
+                <Typography.Text type="secondary">Selecciona una bodega para cargar productos.</Typography.Text>
               ) : productosDisponiblesFiltrados.length > 0 ? (
-                <Space direction="vertical" style={{ width: '100%' }} size={10}>
+                <Space direction="vertical" style={{ width: '100%' }}>
                   {productosDisponiblesFiltrados.map((producto: ProductoAPI) => (
                     <Button
                       key={producto.id}
-                      type="dashed"
+                      type="text"
                       onClick={() => agregarItem({ id: producto.id, title: producto.title, price: producto.price })}
-                      style={{ width: '100%', textAlign: 'left', padding: '10px 12px' }}
+                      style={{ width: '100%', textAlign: 'left', padding: '5px 0' }}
                       disabled={(producto.available_quantity || 0) <= 0 || (producto.price === undefined || producto.price === null)}
                     >
-                      <Space style={{ justifyContent: 'space-between', width: '100%' }}>
-                        <Text>{producto.title}</Text>
-                        <Text strong>${parseFloat(String(producto.price))?.toFixed(2).replace(/\.00$/, '') || 'N/A'}</Text>
-                        <Text type="secondary">({producto.available_quantity || 0} disp.)</Text>
-                      </Space>
+                      {/* El precio (producto.price) ya debería ser un número o null/undefined del hook */}
+                      {producto.title} ({producto.available_quantity || 0} disp.) - **${parseFloat(String(producto.price))?.toFixed(2).replace(/\.00$/, '') || 'N/A'}**
                     </Button>
                   ))}
                 </Space>
               ) : (
-                <div style={{ textAlign: 'center', padding: '20px 0' }}>
-                  <Typography.Text type="secondary">No hay productos disponibles o que coincidan con la búsqueda para esta bodega.</Typography.Text>
-                </div>
+                <Typography.Text type="secondary">No hay productos disponibles o que coincidan con la búsqueda para esta bodega.</Typography.Text>
               )}
             </div>
+
+            <Divider />
+
+            <Title level={5}>Acceso Rápido</Title>
+            <Space wrap>
+              <Button icon={<PlusOutlined />} onClick={() => console.log("TODO: Agregar producto rápido")}>Prod Rápido 1</Button>
+              {/* Agrega más botones de acceso rápido según necesites */}
+            </Space>
           </Card>
         </Col>
 
-        {/* Columna derecha: Ítems, Cliente y Resumen */}
+        {/* Resto del componente (Items de Venta, Cliente, Resumen) */}
         <Col xs={24} lg={16}>
-          <Card title="Ítems de la Venta" style={{ marginBottom: '24px', borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
-            {/* Tabla de productos agregados a la venta */}
+          <Card title="Ítems de la Venta">
             <Table
               dataSource={notaVenta.items}
               columns={columnasItems}
               pagination={false}
               locale={{ emptyText: 'Agrega productos a la venta' }}
               rowKey="key"
-              size="middle"
-              bordered={false}
+              size="small"
             />
           </Card>
 
-          <Row gutter={[24, 24]}>
-            {/* Sección Cliente y Observaciones */}
+          <Row gutter={[16, 16]} style={{ marginTop: '16px' }}>
             <Col xs={24} lg={12}>
-              <Card title="Cliente y Observaciones" style={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
+              <Card title="Cliente y Observaciones">
+                {/* Muestra el error de clientes si existe */}
                 {errorClientes && <Typography.Text type="danger">{errorClientes}</Typography.Text>}
                 <Form layout="vertical">
-                  <Form.Item label={<Text strong><UserOutlined /> Cliente</Text>}>
-                    {/* Selector de cliente */}
+                  <Form.Item label="Cliente">
                     <Select
                       showSearch
                       placeholder="Selecciona o busca un cliente"
@@ -309,7 +285,7 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
                       onSearch={(texto) => console.log("Buscar cliente (si API soporta):", texto)}
                       onChange={handleSeleccionarCliente}
                       value={notaVenta.idCliente}
-                      notFoundContent={cargandoClientes ? <Spin size="small" /> : errorClientes ? errorClientes : 'No encontrado'}
+                      notFoundContent={cargandoClientes ? <Spin size="small" /> : errorClientes ? errorClientes : 'No encontrado'} // Mejorar el notFoundContent
                       filterOption={(input, option) =>
                         (option?.label as string)?.toLowerCase().includes(input.toLowerCase())
                       }
@@ -332,20 +308,20 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
                         </>
                       )}
                     />
+
                   </Form.Item>
-                  {/* Muestra detalles del cliente seleccionado */}
+                  {/* Muestra detalles del cliente seleccionado si hay uno */}
                   {notaVenta.idCliente && clientes && clientes.length > 0 && (() => {
                     const clienteSel = clientes.find((c: ClienteAPI) => String(c.id) === String(notaVenta.idCliente));
                     return clienteSel ? (
-                      <div style={{ marginTop: '10px', padding: '12px', border: '1px dashed #d9d9d9', borderRadius: '4px', backgroundColor: '#fafafa' }}>
-                        <Text strong>Cliente Seleccionado:</Text><br />
-                        <Text>{clienteSel.nombres || clienteSel.razon_social}</Text><br />
-                        <Text type="secondary">RUT: {clienteSel.rut}</Text>
+                      <div style={{ marginTop: '10px', padding: '10px', border: '1px solid #f0f0f0', borderRadius: '4px' }}>
+                        <Typography.Text strong>Cliente Seleccionado:</Typography.Text><br />
+                        <Typography.Text>{clienteSel.nombres || clienteSel.razon_social}</Typography.Text><br />
+                        <Typography.Text>RUT: {clienteSel.rut}</Typography.Text>
                       </div>
                     ) : null;
                   })()}
-                  <Form.Item label={<Text strong><FileTextOutlined /> Observaciones</Text>} style={{ marginTop: '24px' }}>
-                    {/* Observaciones de la venta */}
+                  <Form.Item label="Observaciones" style={{ marginTop: '15px' }}>
                     <Input.TextArea
                       rows={4}
                       value={notaVenta.observaciones}
@@ -356,52 +332,39 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
                 </Form>
               </Card>
             </Col>
-            {/* Sección Resumen y acciones */}
             <Col xs={24} lg={12}>
-              <Card title="Resumen de Venta" style={{ borderRadius: '8px', boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)' }}>
-                <Space direction="vertical" style={{ width: '100%' }} size={16}>
-                  {/* Subtotal */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <Text>Subtotal:</Text>
-                    <Text strong>${subtotal.toFixed(2).replace(/\.00$/, '')}</Text>
-                  </div>
-                  <Divider style={{ margin: '8px 0' }} />
-                  {/* Total */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <Title level={4} style={{ margin: 0 }}>Total:</Title>
-                    <Title level={4} style={{ margin: 0, color: '#1890ff' }}>${total.toFixed(2).replace(/\.00$/, '')}</Title>
-                  </div>
-                  <Divider style={{ margin: '8px 0' }} />
-                  {/* Botón para guardar borrador */}
+              <Card title="Resumen de Venta">
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  <Typography.Text>Subtotal: **${subtotal.toFixed(2).replace(/\.00$/, '')}**</Typography.Text> {/* Formato moneda */}
+                  <Divider />
+                  <Title level={4}>Total: **${total.toFixed(2).replace(/\.00$/, '')}**</Title> {/* Formato moneda */}
+                  <Divider />
                   <Button
                     type="default"
                     size="large"
-                    onClick={handleGuardarBorrador}
-                    style={{ width: '100%', borderRadius: '4px' }}
+                    onClick={handleGuardarBorrador} // Llama a la función que maneja el feedback
+                    style={{ width: '100%' }}
                     loading={cargandoGuardado}
-                    disabled={notaVenta.items.length === 0 || cargandoGuardado || !notaVenta.idCliente || !selectedWarehouseId}
+                    disabled={notaVenta.items.length === 0 || cargandoGuardado || !notaVenta.idCliente || !selectedWarehouseId} // Deshabilitar si no hay ítems, cliente o bodega (estado local)
                   >
                     Guardar Borrador
                   </Button>
-                  {/* Botón para generar nota de venta */}
                   <Button
                     type="primary"
                     size="large"
-                    icon={<ShoppingCartOutlined />}
-                    onClick={handleGenerarNotaVentaFinal}
-                    style={{ width: '100%', borderRadius: '4px' }}
-                    disabled={notaVenta.items.length === 0 || cargandoGuardado || !notaVenta.idCliente || !selectedWarehouseId}
+                    icon={<PlusOutlined />}
+                    onClick={handleGenerarNotaVentaFinal} // Llama a la nueva función que maneja la promesa y feedback
+                    style={{ width: '100%' }}
+                    disabled={notaVenta.items.length === 0 || cargandoGuardado || !notaVenta.idCliente || !selectedWarehouseId} // Deshabilitar si no hay ítems, cliente o bodega (estado local)
                   >
                     Generar Nota de Venta
                   </Button>
-                  {/* Botón para cancelar y limpiar todo */}
                   <Button
                     type="text"
                     danger
                     size="large"
-                    onClick={limpiarNotaVenta}
-                    disabled={notaVenta.items.length === 0 && !notaVenta.idCliente && !notaVenta.observaciones && !selectedWarehouseId}
-                    style={{ width: '100%', borderRadius: '4px' }}
+                    onClick={limpiarNotaVenta} // Llama a limpiar la venta
+                    disabled={notaVenta.items.length === 0 && !notaVenta.idCliente && !notaVenta.observaciones && !selectedWarehouseId} // Deshabilitar si la venta está completamente vacía (estado local)
                   >
                     Cancelar Venta
                   </Button>
@@ -412,36 +375,41 @@ const NuevaVenta: React.FC<NuevaVentaProps> = ({ companyId }) => {
         </Col>
       </Row>
 
-      {/* Drawer para agregar cliente nuevo */}
+      {/* Drawer para agregar cliente */}
       <AgregarClienteDrawer
         visible={drawerClienteVisible}
         onClose={() => setDrawerClienteVisible(false)}
         onSuccess={handleClienteSuccess}
+      // Si quieres usar el message de Ant Design para el toast en el Drawer:
+      // showToast={(msg, type) => {
+
       />
 
-      {/* Modal de éxito al generar nota de venta */}
+      {/* Modal de éxito al generar nota */}
       <Modal
         title="Nota de Venta Generada"
         open={showSuccessModal}
-        onOk={() => { clearGuardadoState(); limpiarNotaVenta(); }}
-        onCancel={() => { clearGuardadoState(); limpiarNotaVenta(); }}
+        onOk={() => { clearGuardadoState(); limpiarNotaVenta(); }} // Limpia estados Y limpia la nota al cerrar el modal
+        onCancel={() => { clearGuardadoState(); limpiarNotaVenta(); }} // Limpia estados Y limpia la nota al cancelar el modal
         footer={[
-          <Button key="ok" type="primary" onClick={() => { clearGuardadoState(); limpiarNotaVenta(); }}>
+          <Button key="ok" type="primary" onClick={() => { clearGuardadoState(); limpiarNotaVenta(); }}> {/* Limpia estados Y limpia la nota */}
             Aceptar
           </Button>,
         ]}
       >
-        {/* Muestra el folio si existe */}
+        {/* Asegúrate de que ventaGeneradaExitosa.id contiene el folio devuelto por el backend */}
         {ventaGeneradaExitosa && ventaGeneradaExitosa.id ? (
           <div>
             <Typography.Text>La Nota de Venta ha sido generada con éxito.</Typography.Text><br />
             <Typography.Text strong>Folio de Venta:</Typography.Text> <Typography.Text code>{ventaGeneradaExitosa.id}</Typography.Text>
+            {/* Puedes añadir más detalles de la venta generada si es necesario */}
           </div>
         ) : (
           <Typography.Text type="warning">Nota de venta generada, pero no se recibió un folio.</Typography.Text>
         )}
       </Modal>
     </div>
+
   );
 };
 
