@@ -256,18 +256,22 @@ export const generateSaleDocumentPdf = async (
         });
 
         // Totales a la derecha
+        const total = Number(sale.price_final ?? 0);
+        const neto = Math.round(total / 1.19);
+        const iva = total - neto;
+
         let yTotales = (doc as any).lastAutoTable.finalY + 10;
         doc.setFont('helvetica', 'bold');
         doc.setFontSize(10);
         doc.text('MONTO NETO', pageWidth - margin - 120, yTotales, { align: 'left' });
-        doc.text(`$${Number(sale.price_subtotal ?? 0).toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth - margin, yTotales, { align: 'right' });
+        doc.text(`$${neto.toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth - margin, yTotales, { align: 'right' });
         yTotales += 14;
         doc.text('I.V.A. 19%', pageWidth - margin - 120, yTotales, { align: 'left' });
-        doc.text(`$${Number((sale.price_final ?? 0) - (sale.price_subtotal ?? 0)).toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth - margin, yTotales, { align: 'right' });
+        doc.text(`$${iva.toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth - margin, yTotales, { align: 'right' });
         yTotales += 14;
         doc.setFontSize(12);
         doc.text('TOTAL $', pageWidth - margin - 120, yTotales, { align: 'left' });
-        doc.text(`$${Number(sale.price_final ?? 0).toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth - margin, yTotales, { align: 'right' });
+        doc.text(`$${total.toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth - margin, yTotales, { align: 'right' });
 
         // Código PDF417
         let yCode = yTotales + 30;
@@ -284,10 +288,12 @@ export const generateSaleDocumentPdf = async (
             const pdf417DataUrl = canvas.toDataURL('image/png');
             const pdf417Height = 70;
             const pdf417Width = 300;
+            const pdf417X = margin + ((boxWidth - pdf417Width) / 2);
+
             doc.addImage(
                 pdf417DataUrl,
                 'PNG',
-                margin,
+                pdf417X,
                 yCode,
                 pdf417Width,
                 pdf417Height
@@ -298,22 +304,26 @@ export const generateSaleDocumentPdf = async (
         }
 
         // Timbre y resolución
+        const centerX = margin + (boxWidth / 2);
         doc.setFontSize(9);
         doc.setFont('helvetica', 'normal');
-        doc.text('Timbre Electrónico SII', margin + 150, yCode, { align: 'center' });
+        doc.text('Timbre Electrónico SII', centerX, yCode, { align: 'center' });
         yCode += 12;
-        doc.text('Res.0 de 2019 Verifique documento: www.sii.cl', margin + 150, yCode, { align: 'center' });
+        doc.text('Res.0 de 2019 Verifique documento: www.sii.cl', centerX, yCode, { align: 'center' });
 
         // Pie de página legal
-        let yPie = pageHeight - 40;
+        const boxBottom = pageHeight - margin;
+        let yPie = boxBottom - 80; 
+
         doc.setFontSize(8);
         doc.text('NOMBRE: ______________________   R.U.T.: _______________   FECHA: ___________   RECINTO: ___________', margin, yPie);
-        yPie += 10;
-        doc.text('FIRMA: ____________________________________________________________________________________________', margin, yPie);
+       
+        yPie += 40;
+        doc.text('FIRMA: _______________________________________________', margin, yPie);
         yPie += 10;
         doc.text('El cedente declara que los bienes o servicios entregados han sido recibidos.', margin, yPie);
         doc.setTextColor(200, 0, 0);
-        doc.text('CEDIBLE', pageWidth - margin, yPie, { align: 'right' });
+        doc.text('CEDIBLE', pageWidth - 10, pageHeight - 10, { align: 'right' });
         doc.setTextColor(0, 0, 0);
     }
 
