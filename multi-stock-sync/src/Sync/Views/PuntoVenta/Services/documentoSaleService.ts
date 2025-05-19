@@ -1,5 +1,6 @@
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
+import { VentaResponse } from '../Types/ventaTypes'; 
 
 // Interface para la respuesta del listado de ventas emitidas
 export interface EmittedSaleListItem {
@@ -14,13 +15,13 @@ export interface EmittedSaleListItem {
 }
 
 // Interface para la respuesta completa del listado
-export interface  EmittedSaleListResponse {
+interface EmittedSaleListResponse {
     message: string;
     data: EmittedSaleListItem[]; // Array de documentos emitidos
 }
 
 // Interface para la respuesta del backend al subir un documento
-export interface UploadDocumentResponse {
+interface UploadDocumentResponse {
     message: string;
     data: {
         id: number; // ID del registro en document_sale
