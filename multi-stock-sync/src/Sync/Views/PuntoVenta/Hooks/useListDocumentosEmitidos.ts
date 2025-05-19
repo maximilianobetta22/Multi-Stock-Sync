@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { DocumentSaleService, EmittedSaleListItem } from '../Services/documentoSaleService'; 
-import { ClientesError } from './useListCliente'; 
+
 
 // Interfaz para los filtros que el frontend aplicará
 export interface DocumentFilters {
