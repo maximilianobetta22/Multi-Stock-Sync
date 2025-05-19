@@ -100,6 +100,7 @@ export const TablaProductos = ({
   title: "Título",
   dataIndex: "title",
   render: (_, record) => (
+    
     <Space direction="vertical" size={0}>
       <Button
         type="link"
