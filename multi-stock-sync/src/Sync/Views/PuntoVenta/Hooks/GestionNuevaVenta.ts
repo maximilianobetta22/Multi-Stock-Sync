@@ -1,7 +1,6 @@
-// PuntoVenta/Hooks/GestionNuevaVenta.ts
 import { useState, useCallback } from "react";
-import { SaleService } from "../Services/saleService"; // Importa el nuevo servicio
-import { VentaResponse } from "../Types/ventaTypes"; // Importa VentaResponse para el tipo de retorno de la API
+import { SaleService } from "../Services/saleService";
+import { VentaResponse } from "../Types/ventaTypes";
 
 export interface ItemVenta {
   key: string;
@@ -13,21 +12,22 @@ export interface ItemVenta {
 }
 
 export interface NotaVentaActual {
-  // Esta interfaz describe la estructura interna de la venta que gestiona el hook (SIN warehouseId)
   idCliente: string | number | null;
   observaciones: string;
-  items: ItemVenta[]; // Eliminamos warehouseId de aquí
+  items: ItemVenta[];
+  warehouseId?: string | number | null; // Solo para compatibilidad con el modal
+  saleId?: string | number; // Solo para compatibilidad con el modal
 }
 
 const useGestionNotaVentaActual = () => {
   const [notaVenta, setNotaVenta] = useState<NotaVentaActual>({
     idCliente: null,
     observaciones: "",
-    items: [], // Eliminamos warehouseId de la inicialización
+    items: [],
   });
 
   const subtotal = notaVenta.items.reduce((sum, item) => sum + item.total, 0);
-  const total = subtotal; // TODO: Considerar impuestos/descuentos si aplica
+  const total = subtotal;
 
   const agregarItem = useCallback(
     (producto: {
@@ -36,11 +36,9 @@ const useGestionNotaVentaActual = () => {
       price: number | string | undefined | null;
     }) => {
       const numericPrice = parseFloat(String(producto.price)) || 0;
-
       const itemExistente = notaVenta.items.find(
         (item) => item.idProducto === producto.id
       );
-
       if (itemExistente) {
         const nuevosItems = notaVenta.items.map((item) =>
           item.idProducto === producto.id
@@ -54,8 +52,8 @@ const useGestionNotaVentaActual = () => {
         setNotaVenta({ ...notaVenta, items: nuevosItems });
       } else {
         const nuevoItem: ItemVenta = {
-          key: Date.now().toString(), // Clave única para React
-          idProducto: producto.id, // ID del producto para el backend
+          key: Date.now().toString(),
+          idProducto: producto.id,
           nombre: producto.title,
           cantidad: 1,
           precioUnitario: numericPrice,
@@ -69,14 +67,11 @@ const useGestionNotaVentaActual = () => {
 
   const actualizarCantidadItem = useCallback(
     (key: string, cantidad: number | null) => {
-      // Permite cantidad 0 para poder eliminar un ítem poniendo cantidad a 0
-      if (cantidad === null || cantidad < 0) return; // Si la cantidad es 0, eliminamos el item
-
+      if (cantidad === null || cantidad < 0) return;
       if (cantidad === 0) {
-        eliminarItem(key); // Llama a la función eliminarItem
-        return; // Salimos de la función
+        eliminarItem(key);
+        return;
       }
-
       const nuevosItems = notaVenta.items.map((item) =>
         item.key === key
           ? {
@@ -89,7 +84,7 @@ const useGestionNotaVentaActual = () => {
       setNotaVenta({ ...notaVenta, items: nuevosItems });
     },
     [notaVenta]
-  ); // Añadimos eliminarItem a las dependencias si lo usamos dentro
+  );
 
   const eliminarItem = useCallback(
     (key: string) => {
@@ -102,29 +97,27 @@ const useGestionNotaVentaActual = () => {
   const establecerIdCliente = useCallback(
     (idCliente: string | number | null | undefined) => {
       setNotaVenta((prevNotaVenta) => ({
-        // Usar actualizador de estado para evitar problemas de dependencia
         ...prevNotaVenta,
         idCliente: idCliente === undefined ? null : idCliente,
       }));
     },
     []
-  ); // Dependencia vacía porque no usamos estado externo // Eliminamos establecerWarehouseId de aquí
+  );
 
   const establecerObservaciones = useCallback((observaciones: string) => {
     setNotaVenta((prevNotaVenta) => ({
-      // Usar actualizador de estado
       ...prevNotaVenta,
       observaciones,
     }));
-  }, []); // Dependencia vacía
+  }, []);
 
   const [cargandoGuardado, setCargandoGuardado] = useState(false);
   const [errorGuardado, setErrorGuardado] = useState<string | undefined>(
     undefined
   );
   const [ventaGeneradaExitosa, setVentaGeneradaExitosa] =
-    useState<VentaResponse | null>(null); // Estado para guardar la respuesta exitosa
-  const [showSuccessModal, setShowSuccessModal] = useState(false); // Estado para controlar la visibilidad del modal de éxito
+    useState<VentaResponse | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const clearGuardadoState = useCallback(() => {
     setCargandoGuardado(false);
@@ -133,13 +126,11 @@ const useGestionNotaVentaActual = () => {
     setShowSuccessModal(false);
   }, []);
 
-  // Modificamos guardarBorrador para aceptar warehouseId como parámetro
+  // POST: Crear borrador
   const guardarBorrador = async (warehouseId: string | number | null) => {
     setCargandoGuardado(true);
     setErrorGuardado(undefined);
     setVentaGeneradaExitosa(null);
-
-    console.log("Guardando borrador:", { ...notaVenta, warehouseId }); // Incluimos warehouseId en el log // Validación básica
 
     if (!notaVenta.idCliente) {
       setErrorGuardado(
@@ -149,7 +140,6 @@ const useGestionNotaVentaActual = () => {
       throw new Error("Cliente no seleccionado.");
     }
     if (!warehouseId) {
-      // Validamos el warehouseId recibido como parámetro
       setErrorGuardado(
         "Debes seleccionar una bodega para guardar el borrador."
       );
@@ -163,24 +153,21 @@ const useGestionNotaVentaActual = () => {
     }
 
     try {
-      // Pasar saleData y warehouseId al servicio
-      const response = await SaleService.createSale(
+      await SaleService.createSale(
         notaVenta,
         "Pendiente",
         warehouseId
       );
-      // Pasamos warehouseId aquí
-      console.log("Borrador guardado exitosamente:", response); // Opcional: Mostrar un mensaje de éxito temporal
+      // Puedes manejar la respuesta aquí si lo necesitas
     } catch (error: any) {
-      console.error("Error al guardar borrador:", error);
       setErrorGuardado(error.message || "Error al guardar borrador.");
-      throw error; // Re-lanzar el error
+      throw error;
     } finally {
       setCargandoGuardado(false);
     }
   };
 
-  // Modificamos generarNotaVentaFinal para aceptar warehouseId como parámetro
+  // POST: Crear venta nueva
   const generarNotaVentaFinal = async (
     warehouseId: string | number | null
   ): Promise<VentaResponse> => {
@@ -188,62 +175,116 @@ const useGestionNotaVentaActual = () => {
     setErrorGuardado(undefined);
     setVentaGeneradaExitosa(null);
 
-    console.log("Generando nota de venta final:", {
-      ...notaVenta,
-      warehouseId,
-    }); // Incluimos warehouseId en el log // Validación básica antes de enviar
-
     if (!notaVenta.idCliente) {
       setErrorGuardado(
         "Debes seleccionar un cliente para generar la nota de venta."
       );
       setCargandoGuardado(false);
-      throw new Error("Cliente no seleccionado."); // Lanzar error para detener el flujo
+      throw new Error("Cliente no seleccionado.");
     }
     if (notaVenta.items.length === 0) {
       setErrorGuardado("La nota de venta debe contener al menos un producto.");
       setCargandoGuardado(false);
-      throw new Error("No hay productos en la venta."); // Lanzar error
-    } // Validamos el warehouseId recibido como parámetro
+      throw new Error("No hay productos en la venta.");
+    }
     if (!warehouseId) {
       setErrorGuardado(
         "Debes seleccionar una bodega para generar la nota de venta."
       );
       setCargandoGuardado(false);
-      throw new Error("Bodega no seleccionada."); // Lanzar error
+      throw new Error("Bodega no seleccionada.");
     }
 
     try {
-      // Llamar al servicio para crear la venta con estado 'Finalizado'
       const response = await SaleService.createSale(
         notaVenta,
         "Finalizado",
         warehouseId
-      ); // Pasamos warehouseId aquí
-      console.log("Nota de venta final generada exitosamente:", response);
-
-      setVentaGeneradaExitosa(response); // Guarda la respuesta exitosa
-      setShowSuccessModal(true); // Muestra el modal de éxito // No limpiarNotaVenta aquí automáticamente para que el usuario pueda ver el modal. // La vista llamará a clearGuardadoState y potencialmente a limpiarNotaVenta al cerrar el modal.
-      return response; // Devuelve la respuesta exitosa
+      );
+      setVentaGeneradaExitosa(response);
+      setShowSuccessModal(true);
+      return response;
     } catch (error: any) {
-      console.error("Error al generar nota de venta final:", error);
       setErrorGuardado(
         error.message || "Error al generar nota de venta final."
-      ); // No limpiarNotaVenta aquí para permitir al usuario corregir y reintentar
-      throw error; // Re-lanzar el error para que el componente que llama lo maneje si es necesario
+      );
+      throw error;
     } finally {
       setCargandoGuardado(false);
     }
+  };
+
+  // PATCH: Finalizar borrador existente
+  const finalizarBorrador = async (
+    saleId: string | number,
+    warehouseId: string | number | null
+  ): Promise<VentaResponse> => {
+    setCargandoGuardado(true);
+    setErrorGuardado(undefined);
+    setVentaGeneradaExitosa(null);
+
+    if (!notaVenta.idCliente) {
+      setErrorGuardado("Debes seleccionar un cliente para finalizar la venta.");
+      setCargandoGuardado(false);
+      throw new Error("Cliente no seleccionado.");
+    }
+    if (!warehouseId) {
+      setErrorGuardado("Debes seleccionar una bodega para finalizar la venta.");
+      setCargandoGuardado(false);
+      throw new Error("Bodega no seleccionada.");
+    }
+    if (notaVenta.items.length === 0) {
+      setErrorGuardado("La venta debe contener al menos un producto.");
+      setCargandoGuardado(false);
+      throw new Error("No hay productos en la venta.");
+    }
+
+    try {
+      const ventaData = {
+        warehouse_id: warehouseId,
+        client_id: notaVenta.idCliente,
+        products: notaVenta.items.map(item => ({
+          id: item.idProducto,
+          nombre: item.nombre,
+          quantity: item.cantidad,
+          unit_price: item.precioUnitario,
+        })),
+        amount_total_products: notaVenta.items.reduce((sum, item) => sum + item.cantidad, 0),
+        price_subtotal: subtotal,
+        price_final: total,
+        observation: notaVenta.observaciones,
+      };
+      const response = await SaleService.actualizarEstadoVenta(
+        saleId,
+        "Finalizado",
+        ventaData
+      );
+      setVentaGeneradaExitosa(response.data);
+      setShowSuccessModal(true);
+      return response.data;
+    } catch (error: any) {
+      setErrorGuardado(error.message || "Error al finalizar borrador.");
+      throw error;
+    } finally {
+      setCargandoGuardado(false);
+    }
+  };
+
+  const cargarDesdeBorrador = (borrador: NotaVentaActual) => {
+    setNotaVenta({
+      idCliente: borrador.idCliente ?? null,
+      observaciones: borrador.observaciones ?? "",
+      items: borrador.items ?? [],
+    });
   };
 
   const limpiarNotaVenta = useCallback(() => {
     setNotaVenta({
       idCliente: null,
       observaciones: "",
-      items: [], // Eliminamos warehouseId de la limpieza
+      items: [],
     });
-    // clearGuardadoState(); // La limpieza de estados de guardado se hace al cerrar el modal
-  }, []); // Dependencia vacía
+  }, []);
 
   return {
     notaVenta,
@@ -251,17 +292,19 @@ const useGestionNotaVentaActual = () => {
     total,
     cargandoGuardado,
     errorGuardado,
-    ventaGeneradaExitosa, // Exporta el estado de éxito
-    showSuccessModal, // Exporta el estado del modal
-    clearGuardadoState, // Exporta la función para limpiar estados de guardado
+    ventaGeneradaExitosa,
+    showSuccessModal,
+    clearGuardadoState,
 
     agregarItem,
     actualizarCantidadItem,
     eliminarItem,
-    establecerIdCliente, // Eliminamos establecerWarehouseId de la exportación
+    establecerIdCliente,
     establecerObservaciones,
-    guardarBorrador, // Ahora acepta warehouseId como parámetro
-    generarNotaVentaFinal, // Ahora acepta warehouseId como parámetro
+    guardarBorrador,
+    generarNotaVentaFinal,
+    finalizarBorrador, // <--- EXPORTA AQUÍ
+    cargarDesdeBorrador,
     limpiarNotaVenta,
   };
 };

@@ -51,6 +51,24 @@ export interface SaleHistoryItem {
 const API_BASE_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:8000/api'}`;
 
 export const SaleService = {
+
+    actualizarEstadoVenta: async (
+    saleId: string | number,
+    status: string,
+    ventaData: any
+) => {
+    const response = await axiosInstance.patch(
+        `${API_BASE_URL}/generated-sale-note/${saleId}/${status}`,
+        ventaData,
+        {
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+            },
+        }
+    );
+    return response.data;
+},
     // Crea una nueva venta en el backend
     async createSale(
         saleData: NotaVentaActual,
@@ -217,4 +235,8 @@ export const SaleService = {
             throw new Error(`SaleService: Error desconocido al intentar obtener el historial de ventas para client ID ${clientId}.`);
         }
     },
+
+        
+
+
 };

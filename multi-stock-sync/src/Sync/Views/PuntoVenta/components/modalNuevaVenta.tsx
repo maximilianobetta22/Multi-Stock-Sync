@@ -50,13 +50,15 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
   onCancel,
   onSuccess,
 }) => {
-  console.log(venta);
   const screens = useBreakpoint();
   const [drawerClienteVisible, setDrawerClienteVisible] = useState(false);
   const [textoBusquedaProducto, setTextoBusquedaProducto] = useState("");
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<
     string | number | null | undefined
   >(null);
+
+  // Bandera para evitar inicialización múltiple
+  const [yaInicializado, setYaInicializado] = useState(false);
 
   const { clientes, cargandoClientes, errorClientes, recargarClientes } =
     useClientes();
@@ -81,7 +83,9 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
     establecerObservaciones,
     guardarBorrador,
     generarNotaVentaFinal,
+    finalizarBorrador,
     limpiarNotaVenta,
+    cargarDesdeBorrador
   } = useGestionNotaVentaActual();
 
   const opcionesClientes = useMemo(() => {
@@ -161,7 +165,7 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
   const handleSeleccionarCliente = (
     valorIdCliente?: string | number | null
   ) => {
-    establecerIdCliente(valorIdCliente);
+    establecerIdCliente(valorIdCliente ? String(valorIdCliente) : undefined);
   };
 
   const handleSeleccionarBodega = (
@@ -180,9 +184,20 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
     setDrawerClienteVisible(false);
   };
 
+  // Detecta si viene de un borrador (tiene saleId)
+  const esBorrador = !!venta?.saleId;
+
+  // Cambia el estado y refresca la lista de borradores al finalizar
   const handleGenerarNotaVenta = async () => {
     try {
-      await generarNotaVentaFinal(venta.warehouseId);
+      if (esBorrador) {
+        if (!venta.saleId) {
+          throw new Error("No se encontró el ID del borrador para finalizar.");
+        }
+        await finalizarBorrador(venta.saleId, venta.warehouseId);
+      } else {
+        await generarNotaVentaFinal(venta.warehouseId);
+      }
       if (onSuccess) onSuccess();
       limpiarNotaVenta();
       onCancel();
@@ -191,18 +206,31 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
     }
   };
 
+  // Inicializa los datos del borrador al abrir el modal SOLO una vez por apertura
   useEffect(() => {
-    setSelectedWarehouseId(venta.warehouseId);
-    establecerIdCliente(venta.idCliente);
-    for (let i = 0; i < venta.items.length; i++) {
-      const producto = venta.items[i];
-      agregarItem({
-        id: producto.idProducto,
-        title: producto.nombre,
-        price: producto.precioUnitario,
-      });
+    if (
+      visible &&
+      venta &&
+      venta.items &&
+      venta.items.length > 0 &&
+      clientes &&
+      clientes.length > 0 &&
+      !yaInicializado
+    ) {
+      limpiarNotaVenta();
+      setTimeout(() => {
+        if (venta.idCliente && venta.items.length > 0) {
+          cargarDesdeBorrador(venta);
+        }
+        setSelectedWarehouseId(venta.warehouseId);
+        setYaInicializado(true);
+      }, 0);
     }
-  }, []);
+    if (!visible && yaInicializado) {
+      setYaInicializado(false);
+    }
+    // eslint-disable-next-line
+  }, [visible, venta, clientes]);
 
   return (
     <Modal
@@ -256,11 +284,7 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
                 options={opcionesBodegas}
                 allowClear
                 style={{ width: "100%" }}
-                disabled={
-                  !clientId ||
-                  (bodegas && bodegas.length === 0) ||
-                  cargandoBodegas
-                }
+                disabled={esBorrador || !clientId || (bodegas && bodegas.length === 0) || cargandoBodegas}
               />
             )}
 
@@ -387,7 +411,7 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
                       placeholder="Selecciona o busca un cliente"
                       optionFilterProp="children"
                       onChange={handleSeleccionarCliente}
-                      value={notaVenta.idCliente}
+                      value={notaVenta.idCliente ? String(notaVenta.idCliente) : undefined}
                       notFoundContent={
                         cargandoClientes ? (
                           <Spin size="small" />
@@ -405,7 +429,7 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
                       options={opcionesClientes}
                       allowClear
                       style={{ width: "100%" }}
-                      disabled={cargandoClientes || !!errorClientes}
+                      disabled={esBorrador || cargandoClientes || !!errorClientes}
                       dropdownRender={(menu) => (
                         <>
                           {menu}
@@ -462,6 +486,7 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
                       value={notaVenta.observaciones}
                       onChange={(e) => establecerObservaciones(e.target.value)}
                       placeholder="Añadir observaciones sobre la venta"
+                      // disabled={esBorrador} // Descomenta si NO quieres que se edite
                     />
                   </Form.Item>
                 </Form>
@@ -507,7 +532,6 @@ const NuevaVentaModal: React.FC<NuevaVentaModalProps> = ({
         visible={drawerClienteVisible}
         onClose={() => setDrawerClienteVisible(false)}
         onSuccess={handleClienteSuccess}
-        //companyId={clienteId}
       />
     </Modal>
   );

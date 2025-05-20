@@ -3,11 +3,7 @@ import { Button, Table, Card, Typography, message, DatePicker, Select, Input, Fo
 import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import type { ColumnsType } from 'antd/es/table';
 import { useListBorradores } from '../Hooks/useListBorradores';
-
-//import type { DatePickerProps } from 'antd';
-//import NuevaVentaModal from '../components/modalNuevaVenta'
 import { useListCliente } from '../Hooks/useListCliente';
-
 import type { VentaResponse, FiltrosBackend, NotaVentaActual } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 import { ItemVenta } from '../Hooks/GestionNuevaVenta';
@@ -16,33 +12,19 @@ import NuevaVentaModal from '../components/modalNuevaVenta';
 const { Title } = Typography;
 const { Option } = Select;
 
-// Interfaces para los filtros y estados
-
-
 interface FormValues {
   clientId?: number;
   fechaStart?: string;
- 
   allVenta?: number;
 }
 
-
-
-
-// Definir los estados posibles de una venta
-;
-
-// view para lista de ventas
 const ListaBorradores: React.FC = () => {
   const { clientes } = useListCliente();
-  //se establecen los filtros por defecto en indefinidos
   const [filtros, setFiltros] = useState<FiltrosBackend>({
     client_id: undefined,
     date_start: undefined,
-  
     all_sale: undefined,
   });
-  console.log(filtros.date_start);
   const [form] = Form.useForm<FormValues>();
   const [confirmDeleteModal, setConfirmDeleteModal] = useState<{
     visible: boolean;
@@ -61,9 +43,9 @@ const ListaBorradores: React.FC = () => {
       items: [],
       observaciones: "",
       warehouseId: null,
+      saleId: undefined, // <-- Cambiado a opcional y undefined
     });
-   
-  // Hook personalizado para obtener las ventas
+
   const {
     data,
     loading,
@@ -72,32 +54,24 @@ const ListaBorradores: React.FC = () => {
     clientId,
     resetSuccess,
     refetch,
-    successMessage,
     deleteBorradores,
-
   } = useListBorradores();
-  console.log("lista de ventas pendientes:", data)
-  console.log("successMessage", successMessage)
 
-  // Función para aplicar filtros
   const [fechaInicio, setFechaInicio] = useState<string>('');
   const handleAplicarFiltros = (values: FormValues) => {
-    const { clientId, fechaStart, allVenta } = values;
-    console.log('Fecha recibida:', fechaStart);
+    const { clientId, allVenta } = values;
     const nuevosFiltros: FiltrosBackend = {
       client_id: clientId,
       date_start: fechaInicio,
-
       all_sale: allVenta
-      // ...nuevosFiltros,
     };
-
     setFiltros(nuevosFiltros);
     refetch(nuevosFiltros)
   };
+
   useEffect(() => {
     if (success) {
-      resetSuccess(); // Reset the success state after consuming it
+      resetSuccess();
     }
   }, [success, resetSuccess])
 
@@ -105,50 +79,73 @@ const ListaBorradores: React.FC = () => {
     return <LoadingDinamico variant="fullScreen" />;
   }
 
+  // CAMBIO PRINCIPAL: función robusta para cargar productos y cliente
   const abrirBorradorEnModal = (borrador: VentaResponse) => {
-    // Convertir los productos del borrador al formato esperado por el modal
     let itemsVenta: ItemVenta[] = [];
     try {
       const productosParseados = JSON.parse(borrador.products);
-      console.log("Productos parseados:", productosParseados);
-      // Manejar diferentes formatos de productos
       if (Array.isArray(productosParseados)) {
-        itemsVenta = productosParseados.map((producto, index) => ({
-          key: `${index}`,
-          idProducto: producto.id || '',
-          nombre: producto.nombre || '',
-          cantidad: producto.quantity || producto.cantidad || 1,
-          precioUnitario: producto.unit_price || producto.unitPrice || 0,
-          total: (producto.quantity || producto.cantidad || 1) * (producto.unit_price || producto.unitPrice || 0)
-        }));
-      } else if (typeof productosParseados === 'object') {
+        itemsVenta = productosParseados.map((producto, index) => {
+          const precio =
+            producto.unit_price ??
+            producto.unitPrice ??
+            producto.price ??
+            producto.precioUnitario ??
+            0;
+          return {
+            key: `${index}`,
+            idProducto: producto.id || producto.idProducto || '',
+            nombre: producto.nombre || producto.title || '',
+            cantidad: producto.quantity || producto.cantidad || 1,
+            precioUnitario: precio,
+            total: (producto.quantity || producto.cantidad || 1) * precio,
+          };
+        });
+      } else if (typeof productosParseados === 'object' && productosParseados !== null) {
+        const precio =
+          productosParseados.unit_price ??
+          productosParseados.unitPrice ??
+          productosParseados.price ??
+          productosParseados.precioUnitario ??
+          0;
         itemsVenta = [{
           key: '0',
-          idProducto: productosParseados.id || '',
-          nombre: productosParseados.nombre || '',
+          idProducto: productosParseados.id || productosParseados.idProducto || '',
+          nombre: productosParseados.nombre || productosParseados.title || '',
           cantidad: productosParseados.quantity || productosParseados.cantidad || 1,
-          precioUnitario: productosParseados.unit_price || productosParseados.unitPrice || 0,
-          total: (productosParseados.quantity || productosParseados.cantidad || 1) * (productosParseados.unit_price || productosParseados.unitPrice || 0)
+          precioUnitario: precio,
+          total: (productosParseados.quantity || productosParseados.cantidad || 1) * precio,
         }];
       }
     } catch (error) {
       console.error('Error al parsear productos del borrador:', error);
     }
 
-    // Preparar la venta para el modal
+    // Si no hay productos, muestra un mensaje de error
+    if (!itemsVenta.length) {
+      message.error('El borrador no tiene productos válidos.');
+      return;
+    }
+
+    // Asegura que el cliente exista en la lista
+    const clienteIdStr = String(borrador.client_id);
+    const clienteExiste = clientes.some(c => String(c.id) === clienteIdStr);
+    if (!clienteExiste) {
+      message.error('El cliente del borrador no existe en la lista de clientes.');
+      return;
+    }
+
     const ventaParaModal: NotaVentaActual = {
-      idCliente: String(borrador.client_id),
+      idCliente: clienteIdStr,
       warehouseId: borrador.warehouse_id,
       observaciones: borrador.observation || '',
-      items: itemsVenta
+      items: itemsVenta,
+      saleId: borrador.id, // <-- AGREGADO para que el modal lo reciba
     };
 
-    // Establecer el borrador seleccionado y abrir el modal
     setBorradorSeleccionado(ventaParaModal);
     setNuevaVentaModalVisible(true);
   };
-
-  // Mostrar modal para cambiar estado y cargar datos para ser enviados a la api
 
   const handleDeleteVenta = (id: string) => {
     setConfirmDeleteModal({
@@ -174,15 +171,6 @@ const ListaBorradores: React.FC = () => {
     });
   };
 
-
-
-
-
-
-
-
-
-  // Función para limpiar filtros
   const limpiarFiltros = (): void => {
     form.resetFields();
     const filtrosVacios: FiltrosBackend = {
@@ -194,34 +182,28 @@ const ListaBorradores: React.FC = () => {
     refetch(filtrosVacios);
   };
 
-  // Manejo de error en la carga de datos
   if (error) {
     message.error({
       content: `Error al cargar ventas: ${error.message}`,
       key: 'ventas-list-error'
     });
   }
-  // Ordena la forma en que se muestran los productos en el modal detalle
+
   const formatProductos = (productosString: string): string => {
     try {
       const parsedData = JSON.parse(productosString);
-
-      // Caso 1: Es un array de productos (ej: '[{"quantity":1,"price":15990}]')
       if (Array.isArray(parsedData)) {
         if (parsedData.length === 0) return "No hay productos";
-
         return parsedData
           .map(
             (producto) =>
               `nombre  ${producto.nombre}| Cantidad: ${producto.quantity
-              } | Precio unitario: ${producto.unit_price.toLocaleString(
+              } | Precio unitario: ${producto.unit_price?.toLocaleString(
                 "es-CL"
               )} |`
           )
           .join("\n");
       }
-
-      // Caso 2: Es un objeto individual (ej: '{"quantity":1,"price":15990}')
       if (typeof parsedData === 'object' && parsedData !== null) {
         if (
           parsedData.quantity !== undefined &&
@@ -237,33 +219,22 @@ const ListaBorradores: React.FC = () => {
               "es-CL"
             )} |`;
         }
-
       }
-
-      // Si no coincide con ningún formato esperado
       return "Formato de productos no reconocido";
-
     } catch (error) {
       console.error('Error al formatear productos:', error);
-      return productosString; // Devuelve el string original si hay error
+      return productosString;
     }
   };
-
-
-  // Ordena la forma en que se envian los productos a la api al momento de editar estado
-
 
   const getClientName = (clientId: number): string => {
     const cliente = clientes.find(c => c.id === clientId);
     if (!cliente) return `Cliente #${clientId}`;
-
-    // Si es persona natural (tipo_cliente_id === 2), devuelve nombre y apellido
-    // Si es empresa, devuelve razón social
     return cliente.tipo_cliente_id === 2
       ? `${cliente.nombres} ${cliente.apellidos}`
       : cliente.razon_social || `Cliente #${clientId}`;
   };
-  // Columnas para la tabla de ventas
+
   const columns: ColumnsType<VentaResponse> = [
     {
       title: "ID",
@@ -338,7 +309,7 @@ const ListaBorradores: React.FC = () => {
             detalle
           </Button>
           <Button 
-          type="primary"
+            type="primary"
             size="small"
             icon={<EditOutlined />}
             onClick={() => abrirBorradorEnModal(record)}
@@ -357,7 +328,6 @@ const ListaBorradores: React.FC = () => {
     },
   ];
 
-  // Función para ver el detalle de una venta
   const verDetalleVenta = (id: number): void => {
     const venta = data.find(v => v.id === id);
     if (venta) {
@@ -368,13 +338,10 @@ const ListaBorradores: React.FC = () => {
     }
   };
 
-  // Función para cerrar el modal de detalle
   const cerrarDetalle = (): void => {
     setDetalleVisible(false);
     setVentaSeleccionada(null);
   };
-
-
 
   return (
     <Card>
@@ -399,9 +366,7 @@ const ListaBorradores: React.FC = () => {
         }}
       >
         <Title level={4}>Borradores</Title>
-
       </div>
-      {/* Formulario de filtros */}
       <Form
         form={form}
         layout="vertical"
@@ -449,7 +414,6 @@ const ListaBorradores: React.FC = () => {
               />
             </Form.Item>
           </Col>
-
           <Col xs={24} sm={12} md={6}>
             <Form.Item label="Cantidad de ventas">
               <Space style={{ width: "100%" }}>
@@ -464,7 +428,6 @@ const ListaBorradores: React.FC = () => {
             </Form.Item>
           </Col>
         </Row>
-
         <Row>
           <Col span={24} style={{ textAlign: "right" }}>
             <Space>
@@ -480,8 +443,6 @@ const ListaBorradores: React.FC = () => {
           </Col>
         </Row>
       </Form>
-
-      {/*tabla que muestra la lista de ventas */}
       <Table
         rowKey="id"
         columns={columns}
@@ -491,8 +452,6 @@ const ListaBorradores: React.FC = () => {
           emptyText: "No hay ventas registradas",
         }}
       />
-
-      {/* Modal para mostrar detalles de la venta */}
       <Modal
         title={`Detalle de Venta #${ventaSeleccionada?.id || ""}`}
         open={detalleVisible}
@@ -551,11 +510,9 @@ const ListaBorradores: React.FC = () => {
                 {ventaSeleccionada.observation || "Ninguna"}
               </Descriptions.Item>
             </Descriptions>
-
             <Divider orientation="left">
               Productos ({ventaSeleccionada.amount_total_products})
             </Divider>
-
             <Input.TextArea
               rows={8}
               value={formatProductos(ventaSeleccionada.products)}
@@ -578,13 +535,13 @@ const ListaBorradores: React.FC = () => {
           visible={nuevaVentaModalVisible}
           onCancel={() => {
             setNuevaVentaModalVisible(false);
-
           }}
           onSuccess={() => {
             setNuevaVentaModalVisible(false);
-            refetch(filtros); // Recargar la lista de ventas
+            refetch(filtros);
           }}
-        />)}
+        />
+      )}
     </Card>
   );
 };

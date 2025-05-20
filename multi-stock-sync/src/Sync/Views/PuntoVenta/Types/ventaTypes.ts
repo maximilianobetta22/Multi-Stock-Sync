@@ -61,5 +61,6 @@ export interface NotaVentaActual {
   observaciones: string;
   items: ItemVenta[];
   warehouseId: string | number |null;
+  saleId?: string | number;
 }
 
