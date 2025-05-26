@@ -1,4 +1,4 @@
-import { Table, Button, Tag, Dropdown, Space } from "antd";
+import { Table, Button, Tag, Dropdown, Space, Tooltip } from "antd";
 import {
   EditOutlined,
   PauseCircleOutlined,
@@ -64,12 +64,20 @@ export const TablaProductos = ({
   mostrarDetalles,
 }: Props) => {
   const traducirEstado = (status: string) => {
-    const map: any = { active: "Activo", paused: "Pausado", under_review: "En revisión" };
+    const map: any = {
+      active: "Activo",
+      paused: "Pausado",
+      under_review: "En revisión",
+    };
     return map[status] || status;
   };
 
   const colorEstado = (status: string) => {
-    const map: any = { active: "green", paused: "orange", under_review: "blue" };
+    const map: any = {
+      active: "green",
+      paused: "orange",
+      under_review: "blue",
+    };
     return map[status] || "default";
   };
 
@@ -93,131 +101,139 @@ export const TablaProductos = ({
     {
       title: "ID",
       dataIndex: "id",
-      render: (text) => resaltarTexto(text, busquedaActual),
+      render: (text) => <span style={{ fontFamily: "monospace" }}>{resaltarTexto(text, busquedaActual)}</span>,
     },
-    
- {
+    {
   title: "Título",
   dataIndex: "title",
-  render: (_, record) => (
-    
-    <Space direction="vertical" size={0}>
-      <Button
-        type="link"
-        icon={<InfoCircleOutlined />}
-        onClick={() => mostrarDetalles(record)}
-        style={{ padding: 0 }}
-      >
-        {resaltarTexto(record.title, busquedaActual)}
-      </Button>
+  render: (_, record) => {
+    const textoResaltado = resaltarTexto(record.title, busquedaActual);
+    const link = (record as any).permalink; // 👈 Aquí accedemos directo
 
-      {record.permalink && (
-        <a
-          href={record.permalink}
-          target="_blank"
-          rel="noopener noreferrer"
-          style={{ fontSize: 12, color: "#1890ff", textDecoration: "underline" }}
-        >
-          Ver publicación
-        </a>
-      )}
-    </Space>
-  ),
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        style={{
+          fontWeight: 500,
+          color: "#1677ff",
+          textDecoration: "none",
+          transition: "color 0.2s, text-decoration 0.2s",
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.textDecoration = "underline";
+          e.currentTarget.style.color = "#0958d9";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.textDecoration = "none";
+          e.currentTarget.style.color = "#1677ff";
+        }}
+      >
+        {textoResaltado}
+      </a>
+    );
+  },
 },
 
 
+    
     {
       title: "Fecha",
       dataIndex: "date_created",
-      sorter: true,
       render: (fecha) => dayjs(fecha).format("DD MMM YYYY HH:mm"),
     },
     {
       title: "Precio",
       dataIndex: "price",
-      sorter: true,
-      render: (text) => `$${text.toLocaleString("es-CL")}`,
+      render: (text) => <strong>${text.toLocaleString("es-CL")}</strong>,
     },
     {
       title: "Stock",
       dataIndex: "available_quantity",
       sorter: true,
+      render: (text) => <span>{text} u.</span>,
     },
     {
       title: "Estado",
       dataIndex: "status",
-      sorter: true,
       render: (estado) => (
-        <Tag color={colorEstado(estado)}>{traducirEstado(estado)}</Tag>
+        <Tag color={colorEstado(estado)} style={{ fontWeight: 500 }}>
+          {traducirEstado(estado)}
+        </Tag>
       ),
     },
-    
-      {
-  title: "Acciones",
-  render: (_, record) => {
-    const items = [
-      {
-        key: "edit",
-        icon: <EditOutlined />,
-        label: "Editar",
-        onClick: () => handleEditar(record),
-      },
-      {
-        key: "toggle",
-        icon: record.status === "active" ? <PauseCircleOutlined /> : <CheckCircleOutlined />,
-        label: record.status === "active" ? "Pausar" : "Activar",
-        onClick: () => toggleEstado(record),
-      },
-    ];
+    {
+      title: "Acciones",
+      render: (_, record) => {
+        const items = [
+          {
+            key: "edit",
+            icon: <EditOutlined />,
+            label: "Editar",
+            onClick: () => handleEditar(record),
+          },
+          {
+            key: "toggle",
+            icon: record.status === "active" ? <PauseCircleOutlined /> : <CheckCircleOutlined />,
+            label: record.status === "active" ? "Pausar" : "Activar",
+            onClick: () => toggleEstado(record),
+          },
+        ];
 
-    return (
-      <Dropdown
-        trigger={["click"]}
-        menu={{
-          items: items.map((item) => ({
-            key: item.key,
-            icon: item.icon,
-            label: (
-              <span onClick={item.onClick}>
-                {item.label}
-              </span>
-            ),
-          })),
-        }}
-      >
-        <Button icon={<MoreOutlined />} />
-      </Dropdown>
-    );
-  },
-}
-    ];
-  return (
-  <Table
-    columns={columns}
-    dataSource={productos}
-    rowKey="id"
-    loading={loading}
-    pagination={{
-      current: pagina,
-      pageSize: 50,
-      total,
-      showSizeChanger: false,
-      onChange: (page) => {
-        setPagina(page);
-        fetchProductos(page, "date_created", "desc", busquedaActual, fechaInicio, fechaFin, estadoFiltro);
+        return (
+          <Dropdown
+            trigger={["click"]}
+            menu={{
+              items: items.map((item) => ({
+                key: item.key,
+                icon: item.icon,
+                label: (
+                  <span onClick={item.onClick}>
+                    {item.label}
+                  </span>
+                ),
+              })),
+            }}
+          >
+            <Tooltip title="Más acciones">
+              <Button shape="circle" icon={<MoreOutlined />} />
+            </Tooltip>
+          </Dropdown>
+        );
       },
-    }}
-    onChange={(pagination, _, sorter) => {
-      const page = pagination.current || 1;
-      let sort_by = "date_created";
-      let order: "asc" | "desc" = "desc";
-      if (!Array.isArray(sorter) && typeof sorter === "object" && sorter) {
-        sort_by = "field" in sorter && sorter.field ? (sorter.field as string) : "date_created";
-        order = sorter.order === "ascend" ? "asc" : "desc";
-      }
-      setPagina(page);
-      fetchProductos(page, sort_by, order, busquedaActual, fechaInicio, fechaFin, estadoFiltro);
-    }}
-  />
-);
+    },
+  ];
+
+  return (
+    <Table
+      columns={columns}
+      dataSource={productos}
+      rowKey="id"
+      loading={loading}
+      size="middle"
+      pagination={{
+        current: pagina,
+        pageSize: 50,
+        total,
+        showSizeChanger: false,
+        onChange: (page) => {
+          setPagina(page);
+          fetchProductos(page, "date_created", "desc", busquedaActual, fechaInicio, fechaFin, estadoFiltro);
+        },
+      }}
+      onChange={(pagination, _, sorter) => {
+        const page = pagination.current || 1;
+        let sort_by = "date_created";
+        let order: "asc" | "desc" = "desc";
+        if (!Array.isArray(sorter) && typeof sorter === "object" && sorter) {
+          sort_by = "field" in sorter && sorter.field ? (sorter.field as string) : "date_created";
+          order = sorter.order === "ascend" ? "asc" : "desc";
+        }
+        setPagina(page);
+        fetchProductos(page, sort_by, order, busquedaActual, fechaInicio, fechaFin, estadoFiltro);
+      }}
+      bordered
+    />
+  );
 };
