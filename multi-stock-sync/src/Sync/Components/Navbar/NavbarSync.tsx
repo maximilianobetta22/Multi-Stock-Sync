@@ -2,6 +2,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { useContext } from "react";
 import styles from "./NavbarSync.module.css";
 import { UserContext } from "../../Context/UserContext";
+import StockCriticAlert from "../../stockCriticAlert";
 
 const Navbar = () => {
   const userContext = useContext(UserContext);
@@ -28,6 +29,7 @@ const Navbar = () => {
                 <span className="navbar-text me-3 text-light">
                 {user.nombre.charAt(0).toUpperCase() + user.nombre.slice(1)} {user.apellidos.charAt(0).toUpperCase() + user.apellidos.slice(1)}
                 </span>
+                <StockCriticAlert />
               <button className="btn btn-outline-light" onClick={handleLogout}>Cerrar sesión</button>
             </>
           ) : (

@@ -1,101 +1,125 @@
-import { useState } from 'react';
-import { Alert, Collapse, Table, Button, Input, message, Space, Typography } from 'antd';
-import { DownloadOutlined, MailOutlined, WarningOutlined } from '@ant-design/icons';
-import { useStockCritic } from '../Sync/Hooks/useStockCritic';
+import { useState, useEffect } from "react"
+import { Alert, Modal, Table, Button, Input, message, Space, Typography, Badge, Tooltip, Card } from "antd"
+import { DownloadOutlined, MailOutlined, WarningOutlined, BellOutlined, CloseOutlined } from "@ant-design/icons"
+import { useStockCritic } from "../Sync/Hooks/useStockCritic"
 
-const { Panel } = Collapse;
-const { Text } = Typography;
+const { Text, Title } = Typography
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000/api"
 
 function getClientIdFromConexionSeleccionada(): string | undefined {
   try {
-    const raw = localStorage.getItem('conexionSeleccionada');
-    if (!raw) return undefined;
-    const obj = JSON.parse(raw);
-    return obj.client_id;
+    const raw = localStorage.getItem("conexionSeleccionada")
+    if (!raw) return undefined
+    const obj = JSON.parse(raw)
+    return obj.client_id
   } catch {
-    return undefined;
+    return undefined
   }
 }
 
+function isUserLoggedIn(): boolean {
+  const token = localStorage.getItem("token")
+  return !!token
+}
+
 export default function StockCriticAlert() {
-  const clientIdStr = getClientIdFromConexionSeleccionada();
-  const clientId = clientIdStr ? Number(clientIdStr) : undefined;
-  const { data, loading, error } = useStockCritic(clientId);
-  const [email, setEmail] = useState('');
-  const [sending, setSending] = useState(false);
-  const [downloading, setDownloading] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [email, setEmail] = useState("")
+  const [sending, setSending] = useState(false)
+  const [downloading, setDownloading] = useState(false)
+  const [authState, setAuthState] = useState({
+    isLoggedIn: isUserLoggedIn(),
+    clientId: getClientIdFromConexionSeleccionada(),
+  })
 
-  // Mostrar error solo una vez
-  if (error) {
-    message.destroy();
-    message.error(error);
-    return (
-      <Alert
-        message="Acceso no autorizado"
-        description="Por favor, inicia sesión nuevamente para ver el stock crítico."
-        type="error"
-        showIcon
-        style={{ marginBottom: 16 }}
-      />
-    );
+  const clientId = authState.clientId ? Number(authState.clientId) : undefined
+  const { data, loading, error } = useStockCritic(clientId)
+
+  // Escuchar cambios en localStorage para manejar login/logout y cambios de conexión
+  useEffect(() => {
+    const handleStorageChange = () => {
+      const newAuthState = {
+        isLoggedIn: isUserLoggedIn(),
+        clientId: getClientIdFromConexionSeleccionada(),
+      }
+
+      // Si cambió el estado de autenticación o la conexión, resetear el componente
+      if (newAuthState.isLoggedIn !== authState.isLoggedIn || newAuthState.clientId !== authState.clientId) {
+        setAuthState(newAuthState)
+        setIsModalOpen(false) // Cerrar modal si estaba abierto
+        setEmail("") // Limpiar email
+      }
+    }
+
+    // Escuchar cambios en localStorage
+    window.addEventListener("storage", handleStorageChange)
+
+    // También verificar cambios cada segundo (para cambios en la misma pestaña)
+    const interval = setInterval(handleStorageChange, 1000)
+
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+      clearInterval(interval)
+    }
+  }, [authState])
+
+  // No mostrar nada si el usuario no está logueado
+  if (!authState.isLoggedIn) {
+    return null
   }
 
-  if (!clientId) return null;
-
-  if (loading) {
-    return (
-      <Alert
-        message="Cargando alerta de stock crítico..."
-        type="info"
-        showIcon
-        style={{ marginBottom: 16 }}
-      />
-    );
+  // No mostrar nada si no hay clientId
+  if (!clientId) {
+    return null
   }
 
-  if (!data || data.length === 0) return null;
+  // No mostrar nada si no hay datos críticos (excepto cuando está cargando)
+  if (!loading && (!data || data.length === 0)) {
+    return null
+  }
 
-  const token = localStorage.getItem('token');
+  const token = localStorage.getItem("token")
 
   const handleDownload = async () => {
-    setDownloading(true);
+    setDownloading(true)
     try {
       const res = await fetch(`${API_BASE_URL}/mercadolibre/stock-critic/${clientId}?excel=true`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
-      });
+      })
+
       if (!res.ok) {
-        const error = await res.json();
-        message.error(error.message || 'No se pudo descargar el archivo');
-        setDownloading(false);
-        return;
+        const error = await res.json()
+        message.error(error.message || "No se pudo descargar el archivo")
+        return
       }
-      const blob = await res.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `stock-critico-${clientId}.xlsx`;
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
-      window.URL.revokeObjectURL(url);
-      message.success('Archivo descargado correctamente');
+
+      const blob = await res.blob()
+      const url = window.URL.createObjectURL(blob)
+      const a = document.createElement("a")
+      a.href = url
+      a.download = `stock-critico-${clientId}.xlsx`
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      window.URL.revokeObjectURL(url)
+      message.success("Archivo descargado correctamente")
     } catch (e) {
-      message.error('Error de red al descargar el archivo');
+      message.error("Error de red al descargar el archivo")
     } finally {
-      setDownloading(false);
+      setDownloading(false)
     }
-  };
+  }
 
   const handleSendEmail = async () => {
     if (!email) {
-      message.warning('Ingrese un email válido.');
-      return;
+      message.warning("Ingrese un email válido.")
+      return
     }
-    setSending(true);
+
+    setSending(true)
     try {
       const res = await fetch(
         `${API_BASE_URL}/mercadolibre/stock-critic/${clientId}?mail=${encodeURIComponent(email)}`,
@@ -103,116 +127,206 @@ export default function StockCriticAlert() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
-        }
-      );
+        },
+      )
+
       if (res.ok) {
-        message.success('Email enviado correctamente.');
-        setEmail('');
+        message.success("Email enviado correctamente.")
+        setEmail("")
       } else {
-        const error = await res.json();
-        message.error(error.message || 'Error al enviar el email.');
+        const error = await res.json()
+        message.error(error.message || "Error al enviar el email.")
       }
     } catch {
-      message.error('Error de red.');
+      message.error("Error de red.")
     } finally {
-      setSending(false);
+      setSending(false)
     }
-  };
+  }
+
+  const showModal = () => {
+    setIsModalOpen(true)
+  }
+
+  const handleCancel = () => {
+    setIsModalOpen(false)
+  }
+
+  // Mostrar error en el trigger si hay error
+  if (error) {
+    return (
+      <Tooltip title="Error al cargar stock crítico">
+        <Button
+          type="text"
+          danger
+          icon={<WarningOutlined />}
+          onClick={() => message.error(error)}
+          style={{
+            marginLeft: 8,
+            color: "#ff4d4f",
+          }}
+        >
+          Error
+        </Button>
+      </Tooltip>
+    )
+  }
+
+  // Trigger button con badge si hay productos críticos - Mejorado para header
+  const triggerButton = (
+    <Tooltip title={loading ? "Cargando alertas..." : `${data?.length || 0} productos con stock crítico`}>
+      <Badge count={loading ? 0 : data?.length || 0} size="small" offset={[0, 0]}>
+        <Button
+          type="text"
+          icon={<BellOutlined />}
+          onClick={showModal}
+          loading={loading}
+          style={{
+            marginLeft: 8,
+            color: data && data.length > 0 ? "#faad14" : "#ffffff",
+            borderColor: "transparent",
+            display: "flex",
+            alignItems: "center",
+            height: "32px",
+          }}
+        >
+          <span style={{ marginLeft: 4, color: data && data.length > 0 ? "#faad14" : "#ffffff" }}>Alertas</span>
+        </Button>
+      </Badge>
+    </Tooltip>
+  )
 
   return (
-    <Collapse style={{ marginBottom: 16 }} bordered={false} defaultActiveKey={['1']}>
-      <Panel
-        header={
-          <Alert
-            message={
-              <Space>
-                <WarningOutlined style={{ color: '#faad14' }} />
-                <Text strong>¡Atención! Stock crítico detectado en MercadoLibre</Text>
-                <Text type="danger">(Productos críticos: {data.length})</Text>
-              </Space>
-            }
-            type="warning"
-            showIcon
-            style={{ background: '#fffbe6', border: 'none', width: '100%' }}
-          />
-        }
-        key="1"
-        showArrow={false}
-      >
-        <div style={{ margin: '16px 0' }}>
+    <>
+      {triggerButton}
+
+      <Modal
+        title={
           <Space>
-            <Button
-              type="primary"
-              icon={<DownloadOutlined />}
-              onClick={handleDownload}
-              size="small"
-              loading={downloading}
-            >
-              Descargar Excel
-            </Button>
-            <Input
-              placeholder="Enviar reporte a email"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-              style={{ width: 220 }}
-              size="small"
-              allowClear
-              disabled={sending}
-              onPressEnter={handleSendEmail}
-            />
-            <Button
-              type="default"
-              icon={<MailOutlined />}
-              loading={sending}
-              onClick={handleSendEmail}
-              size="small"
-              disabled={sending}
-            >
-              Enviar
-            </Button>
+            <WarningOutlined style={{ color: "#faad14" }} />
+            <Title level={4} style={{ margin: 0 }}>
+              Stock Crítico - MercadoLibre
+            </Title>
           </Space>
-        </div>
-        <Table
-          dataSource={data}
-          rowKey="id"
-          size="small"
-          loading={loading}
-          pagination={{ pageSize: 8 }}
-          bordered
-          columns={[
-            {
-              title: 'ID',
-              dataIndex: 'id',
-              width: 120,
-            },
-            {
-              title: 'Nombre',
-              dataIndex: 'title',
-              width: 300,
-              render: (text: string, record: any) => (
-                <a href={record.permalink} target="_blank" rel="noopener noreferrer">{text}</a>
-              ),
-            },
-            {
-              title: 'Stock',
-              dataIndex: 'available_quantity',
-              align: 'center',
-              render: (stock: number) => (
-                <span style={{ color: stock <= 0 ? '#cf1322' : '#faad14', fontWeight: 600 }}>
-                  {stock}
-                </span>
-              ),
-              width: 100,
-            },
-            {
-              title: 'Precio',
-              dataIndex: 'price',
-              render: (price: number) => `$${price.toLocaleString()}`,
-              width: 120,
-            },
-          ]}
-        />
-      </Panel>
-    </Collapse>
-  );
+        }
+        open={isModalOpen}
+        onCancel={handleCancel}
+        width={900}
+        footer={null}
+        closeIcon={<CloseOutlined />}
+        destroyOnClose={true} // Destruir el modal al cerrarlo para limpiar estado
+      >
+        {error ? (
+          <Alert
+            message="Error al cargar datos"
+            description={error}
+            type="error"
+            showIcon
+            style={{ marginBottom: 16 }}
+          />
+        ) : (
+          <>
+            <Card size="small" style={{ marginBottom: 16 }}>
+              <Alert
+                message={
+                  <Space>
+                    <Text strong>¡Atención! Stock crítico detectado</Text>
+                    <Text type="danger">({data?.length || 0} productos críticos)</Text>
+                  </Space>
+                }
+                type="warning"
+                showIcon
+                style={{ border: "none", background: "transparent" }}
+              />
+            </Card>
+
+            <Card title="Acciones" size="small" style={{ marginBottom: 16 }}>
+              <Space wrap>
+                <Button type="primary" icon={<DownloadOutlined />} onClick={handleDownload} loading={downloading}>
+                  Descargar Excel
+                </Button>
+
+                <Input.Group compact>
+                  <Input
+                    placeholder="Enviar reporte a email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    style={{ width: 250 }}
+                    allowClear
+                    disabled={sending}
+                    onPressEnter={handleSendEmail}
+                  />
+                  <Button
+                    type="default"
+                    icon={<MailOutlined />}
+                    loading={sending}
+                    onClick={handleSendEmail}
+                    disabled={sending}
+                  >
+                    Enviar
+                  </Button>
+                </Input.Group>
+              </Space>
+            </Card>
+
+            <Card title="Productos con Stock Crítico" size="small">
+              <Table
+                dataSource={data}
+                rowKey="id"
+                size="small"
+                loading={loading}
+                pagination={{
+                  pageSize: 10,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
+                }}
+                scroll={{ y: 400 }}
+                columns={[
+                  {
+                    title: "ID",
+                    dataIndex: "id",
+                    width: 120,
+                    fixed: "left",
+                  },
+                  {
+                    title: "Nombre del Producto",
+                    dataIndex: "title",
+                    width: 300,
+                    render: (text: string, record: any) => (
+                      <a href={record.permalink} target="_blank" rel="noopener noreferrer" style={{ color: "#1890ff" }}>
+                        {text}
+                      </a>
+                    ),
+                  },
+                  {
+                    title: "Stock",
+                    dataIndex: "available_quantity",
+                    align: "center",
+                    width: 100,
+                    render: (stock: number) => (
+                      <Badge
+                        count={stock}
+                        style={{
+                          backgroundColor: stock <= 0 ? "#ff4d4f" : "#faad14",
+                        }}
+                      />
+                    ),
+                    sorter: (a: any, b: any) => a.available_quantity - b.available_quantity,
+                  },
+                  {
+                    title: "Precio",
+                    dataIndex: "price",
+                    width: 120,
+                    render: (price: number) => <Text strong>${price.toLocaleString()}</Text>,
+                    sorter: (a: any, b: any) => a.price - b.price,
+                  },
+                ]}
+              />
+            </Card>
+          </>
+        )}
+      </Modal>
+    </>
+  )
 }
