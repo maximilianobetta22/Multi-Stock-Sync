@@ -36,6 +36,13 @@ const CrearProducto: React.FC = () => {
   } = useCrearProducto(form);
 
   const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
+  if (!conexion || !conexion.nickname) {
+    return (
+      <Card style={{ maxWidth: 800, margin: "0 auto" }}>
+        <p style={{ color: "red" }}>Por favor, selecciona una conexión de Mercado Libre.</p>
+      </Card>
+    );
+  }
   
   
 
