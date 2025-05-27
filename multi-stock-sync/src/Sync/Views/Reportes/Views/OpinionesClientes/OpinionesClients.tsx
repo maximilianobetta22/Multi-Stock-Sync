@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Form, Spinner, Alert } from 'react-bootstrap';
 import styles from './OpinionesClients.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
 
 // Tipos de datos
 interface Client {
@@ -43,6 +45,7 @@ const OpinionesClients = () => {
 
   // Obtiene los productos con opiniones para el cliente seleccionado
   const fetchProductsWithReviews = async (clientId: string) => {
+    setError(null);
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
@@ -100,7 +103,7 @@ const OpinionesClients = () => {
       <h2 className={styles.title}>Opiniones de Clientes</h2>
 
       {/* Mensaje de error */}
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && !loading && <Alert variant="danger">{error}</Alert>}
 
       {/* Selector de tienda */}
       <Form.Group className={styles.selectWrapper}>
@@ -110,7 +113,7 @@ const OpinionesClients = () => {
           onChange={(e) => setSelectedClient(e.target.value)}
           className={styles.select}
         >
-          <option value="">-- Selecciona --</option>
+          <option value="">-- Por favor, elija una opción --</option>
           {clients.map((client) => (
             <option key={client.client_id} value={client.client_id}>
               {client.nickname}
@@ -120,26 +123,54 @@ const OpinionesClients = () => {
       </Form.Group>
 
       {/* Loader mientras carga opiniones */}
-      {loading ? (
-        <Spinner animation="border" />
-      ) : (
-        <div className={styles.grid}>
-          {reviewsList.map((entry, index) => (
-            <div key={index} className={styles.card}>
-              <div className={styles.header}>
-                <span className={styles.client}>{entry.review.user_name}</span>
-                <span className={styles.product}>{entry.productTitle}</span>
-              </div>
-              <div className={styles.comment}>
-                {entry.review.comment || 'Sin comentario'}
-              </div>
-              <div className={styles.rating}>
-                {entry.review.rate !== null ? `${entry.review.rate} / 5` : 'No disponible'}
-              </div>
-            </div>
-          ))}
+      {loading && (
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+          <Spinner animation="border" role="status">
+          </Spinner>
         </div>
       )}
+
+      {/* Mensaje de "no hay reseñas" o la lista de reseñas */}
+      {!loading && !error && selectedClient && (
+        <>
+          {reviewsList.length > 0 ? (
+            <div className={styles.grid}>
+              {reviewsList.map((entry, index) => (
+                <div key={index} className={styles.card}>
+                  <div className={styles.header}>
+                    <span className={styles.client}>
+                      {entry.review.user_name}
+                    </span>
+                    <span className={styles.product}>
+                      {entry.productTitle}
+                    </span>
+                  </div>
+                  <div className={styles.comment}>
+                    {entry.review.comment || 'Sin comentario'}
+                  </div>
+                  <div className={styles.rating}>
+                    {entry.review.rate !== null ? (
+                      <>
+                        <FontAwesomeIcon icon={faStar} />{entry.review.rate} / 5
+                      </>) : ('No disponible')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <p> No hay reseñas disponibles para esta tienda.</p>
+            </div>
+          )}
+        </>
+      )}
+      {/* Mensaje si no se ha seleccionado ningún cliente */}
+      {!loading && !error && !selectedClient && (
+        <div className={styles.noReviewsMessage}>
+          <p> Por favor, selecciona una tienda para ver las opiniones. </p>
+        </div>
+      )}
+
     </Container>
   );
 };
