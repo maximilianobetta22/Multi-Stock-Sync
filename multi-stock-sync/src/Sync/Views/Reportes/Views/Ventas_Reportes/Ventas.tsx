@@ -8,6 +8,7 @@ import {
   BarChartOutlined,
   LineChartOutlined,
 } from "@ant-design/icons";
+import styles from "./Ventas.module.css";
 
 const { Title, Text } = Typography;
 
@@ -24,19 +25,19 @@ const Ventas: React.FC = () => {
   const options = [
     {
       title: "Ventas por Día",
-      icon: <FieldTimeOutlined style={{ fontSize: 30 }} />,
+      icon: <FieldTimeOutlined style={{ fontSize: 40 }} />,
       path: "ventas-dia",
       description: "Visualiza el desempeño diario",
     },
     {
       title: "Ventas por Mes",
-      icon: <CalendarOutlined style={{ fontSize: 30 }} />,
+      icon: <CalendarOutlined style={{ fontSize: 40 }} />,
       path: "ventas-mes",
       description: "Revisa ventas agrupadas por mes",
     },
     {
       title: "Ventas por Año",
-      icon: <CalendarFilled style={{ fontSize: 30 }} />,
+      icon: <CalendarFilled style={{ fontSize: 40 }} />,
       path: "ventas-year",
       description: "Estadísticas anuales consolidadas",
     },
@@ -46,27 +47,27 @@ const Ventas: React.FC = () => {
   const comparisons = [
     {
       title: "Mes a Mes",
-      icon: <BarChartOutlined style={{ fontSize: 30 }} />,
+      icon: <BarChartOutlined style={{ fontSize: 40 }} />,
       path: "compare/month",
       description: "Compara rendimiento mensual",
     },
     {
       title: "Año a Año",
-      icon: <LineChartOutlined style={{ fontSize: 30 }} />,
+      icon: <LineChartOutlined style={{ fontSize: 40 }} />,
       path: "compare/year",
       description: "Observa variaciones anuales",
     },
   ];
 
   return (
-    <div style={{ padding: "4rem 2rem", background: "#f5f7fa", minHeight: "100vh" }}>
+    <div className={styles.container}>
       <Row justify="center">
         <Col xs={24} md={20} lg={16}>
           {/* Título principal */}
-          <Title level={2} style={{ textAlign: "center", marginBottom: 8 }}>
+          <Title level={2} className={styles.title}>
             Reporte de Ventas
           </Title>
-          <Text type="secondary" style={{ display: "block", textAlign: "center", marginBottom: 48 }}>
+          <Text type="secondary" className={styles.subtitle}>
             Selecciona el tipo de análisis que deseas visualizar
           </Text>
 
@@ -77,23 +78,13 @@ const Ventas: React.FC = () => {
                 <Card
                   hoverable
                   onClick={() => goTo(item.path)}
-                  style={{
-                    borderRadius: 12,
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-                  }}
-                  styles={{
-                    body: {
-                      padding: "2rem 1.5rem",
-                    },
-                  }}
+                  className={styles.card}
+                  styles={{ body: { padding: "2rem 1.5rem" } }}
                 >
-                  <div style={{ marginBottom: 16, color: "#213f99" }}>{item.icon}</div>
+                  <div className={styles.cardIconPrimary}>{item.icon}</div>
                   <Text strong>{item.title}</Text>
                   <div>
-                    <Text type="secondary" style={{ fontSize: "0.85rem", display: "block", marginTop: 8 }}>
+                    <Text type="secondary" className={styles.cardDescription}>
                       {item.description}
                     </Text>
                   </div>
@@ -103,7 +94,7 @@ const Ventas: React.FC = () => {
           </Row>
 
           {/* Comparaciones inteligentes */}
-          <Title level={4} style={{ marginTop: 64, textAlign: "center", color: "#213f99" }}>
+          <Title level={4} className={styles.sectionTitle}>
             Comparaciones inteligentes
           </Title>
 
@@ -113,23 +104,13 @@ const Ventas: React.FC = () => {
                 <Card
                   hoverable
                   onClick={() => goTo(item.path)}
-                  style={{
-                    borderRadius: 12,
-                    textAlign: "center",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.06)",
-                  }}
-                  styles={{
-                    body: {
-                      padding: "2rem 1.5rem",
-                    },
-                  }}
+                  className={styles.card}
+                  styles={{ body: { padding: "2rem 1.5rem" } }}
                 >
-                  <div style={{ marginBottom: 16, color: "#4b4b4b" }}>{item.icon}</div>
+                  <div className={styles.cardIconSecondary}>{item.icon}</div>
                   <Text>{item.title}</Text>
                   <div>
-                    <Text type="secondary" style={{ fontSize: "0.85rem", display: "block", marginTop: 8 }}>
+                    <Text type="secondary" className={styles.cardDescription}>
                       {item.description}
                     </Text>
                   </div>
@@ -139,8 +120,8 @@ const Ventas: React.FC = () => {
           </Row>
 
           {/* Footer */}
-          <div style={{ textAlign: "center", marginTop: 64 }}>
-            <Text type="secondary" style={{ fontSize: "0.85rem" }}>
+          <div className={styles.footer}>
+            <Text type="secondary">
               Multi Stock Sync • Reportes de ventas
             </Text>
           </div>

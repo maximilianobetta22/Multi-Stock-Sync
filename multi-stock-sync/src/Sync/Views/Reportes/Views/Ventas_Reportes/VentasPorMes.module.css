@@ -44,6 +44,8 @@
   justify-content: center;
   gap: 1.2rem;
   margin-top: 2rem;
+  flex-wrap: wrap;
+  padding-bottom: 1rem;
 }
 
 .botonPDF,
@@ -55,6 +57,9 @@
   border-radius: 0.8rem;
   transition: background-color 0.3s ease;
   font-weight: 600;
+  min-width: 140px;
+  max-width: 45vw;
+  text-align: center;
 }
 
 .botonPDF {
@@ -71,4 +76,31 @@
 
 .botonExcel:hover {
   background-color: #182d6f;
+}
+
+/* =========== RESPONSIVE =========== */
+@media (max-width: 768px) {
+  .graficoContenedor {
+    height: 600px; /* o más alto para que la leyenda tenga espacio */
+  }
+  
+
+  .titulo {
+    font-size: 2rem;
+  }
+
+  .subtitulo {
+    font-size: 1rem;
+    margin-bottom: 1.2rem;
+  }
+
+  .graficoContenedor {
+    height: 400px;
+  }
+
+  .botonPDF,
+  .botonExcel {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+  }
 }

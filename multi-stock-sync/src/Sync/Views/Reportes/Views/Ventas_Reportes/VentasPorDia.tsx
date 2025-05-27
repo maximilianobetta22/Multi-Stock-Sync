@@ -172,16 +172,22 @@ const VentasPorDia: React.FC = () => {
       </div>
 
       {/* Modal de vista previa PDF */}
+
+      
       <Modal
         open={showModal}
         onCancel={() => setShowModal(false)}
         footer={[
-          <Button key="descargar" type="primary" onClick={() => {
-            const link = document.createElement("a");
-            link.href = pdfDataUrl!;
-            link.download = `Ventas_${fecha.format("YYYY-MM-DD")}.pdf`;
-            link.click();
-          }}>
+          <Button
+            key="descargar"
+            type="primary"
+            onClick={() => {
+              const link = document.createElement("a");
+              link.href = pdfDataUrl!;
+              link.download = `Ventas_${fecha.format("YYYY-MM-DD")}.pdf`;
+              link.click();
+            }}
+          >
             Guardar PDF
           </Button>,
           <Button key="cerrar" onClick={() => setShowModal(false)}>
@@ -191,7 +197,7 @@ const VentasPorDia: React.FC = () => {
         width={900}
       >
         <iframe
-          src={pdfDataUrl || ""}
+          src={`${pdfDataUrl || ""}#zoom=100`}
           title="Vista previa del PDF"
           width="100%"
           height="500px"

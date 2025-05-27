@@ -1,0 +1,60 @@
+/* Ventas.css */
+
+.container {
+  padding: 4rem 2rem;
+  background: #f5f7fa;
+  min-height: 100vh;
+}
+
+.title {
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.subtitle {
+  display: block;
+  text-align: center;
+  margin-bottom: 48px;
+}
+
+.card {
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.cardBody {
+  padding: 2rem 1.5rem;
+}
+
+.cardIconPrimary {
+  margin-bottom: 16px;
+  color: #213f99;
+}
+
+.cardIconSecondary {
+  margin-bottom: 16px;
+  color: #000000;
+}
+
+.cardDescription {
+  font-size: 0.85rem;
+  display: block;
+  margin-top: 8px;
+  
+}
+
+.sectionTitle {
+  margin-top: 64px;
+  text-align: center;
+  color: #213f99;
+}
+
+.footer {
+  text-align: center;
+  margin-top: 64px;
+  font-size: 0.85rem;
+}
+

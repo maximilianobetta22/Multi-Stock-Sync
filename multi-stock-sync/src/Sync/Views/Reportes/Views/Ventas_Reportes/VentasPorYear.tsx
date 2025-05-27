@@ -207,7 +207,7 @@ const VentasPorYear: React.FC = () => {
           </Modal.Header>
           <Modal.Body>
             <iframe
-              src={pdfData}
+              src={`${pdfData}#zoom=100`}
               style={{ width: "100%", height: "500px" }}
               title="Vista Previa PDF"
             />
