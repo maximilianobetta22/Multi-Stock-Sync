@@ -22,6 +22,9 @@ const VentasPorMes: React.FC = () => {
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
 
+
+
+  
   // Formateador de moneda CLP
   const formatCLP = (value: number) =>
     `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
@@ -108,6 +111,8 @@ const VentasPorMes: React.FC = () => {
   }, [client_id, year, month]);
 
   // Exportar a PDF
+
+  
   const handleExportPDF = () => {
     const pdf = generarPDFPorMes(
       ventas,
@@ -119,6 +124,7 @@ const VentasPorMes: React.FC = () => {
     );
     setPdfDataUrl(pdf);
     setShowModal(true);
+
   };
 
   // Exportar a Excel
@@ -174,10 +180,6 @@ const VentasPorMes: React.FC = () => {
               year={year}
               month={month}
             />
-            <p className="text-center text-muted mt-2">
-              Gráfico basado en los 10 productos con mayor ingreso.
-              El detalle completo está disponible en el PDF o Excel exportado.
-            </p>
           </>
         )}
       </div>
@@ -199,6 +201,10 @@ const VentasPorMes: React.FC = () => {
           Exportar a Excel
         </button>
       </div>
+      <p className="text-center text-muted mt-2">
+              Gráfico basado en los 10 productos con mayor ingreso.
+              El detalle completo está disponible en el PDF o Excel exportado.
+            </p>
 
       {/* Modal vista previa del PDF */}
       {pdfDataUrl && (
@@ -207,7 +213,13 @@ const VentasPorMes: React.FC = () => {
             <Modal.Title>Vista Previa del PDF</Modal.Title>
           </Modal.Header>
           <Modal.Body>
-            <iframe src={pdfDataUrl} width="100%" height="500px" title="Vista Previa PDF" />
+            <iframe
+              src={`${pdfDataUrl}#zoom=100`}
+              width="100%"
+              height="500px"
+              title="Vista Previa PDF"
+              style={{ border: "none" }}
+            />
           </Modal.Body>
           <Modal.Footer>
             <Button

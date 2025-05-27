@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
+
 // 🟧 PDF: Ventas por Mes
 export const generarPDFPorMes = (
   ventas: any[],

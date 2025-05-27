@@ -38,7 +38,7 @@ const options: ChartOptions<"bar"> = {
       },
     },
     datalabels: {
-      color: "#fff",
+      color: "#000",
       font: {
         weight: "bold",
       },
