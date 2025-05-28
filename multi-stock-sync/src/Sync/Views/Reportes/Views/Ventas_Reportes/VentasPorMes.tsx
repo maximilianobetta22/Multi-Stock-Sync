@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Modal, Button } from "react-bootstrap";
+import { Modal, Button, Container, Row, Col, Form } from "react-bootstrap";
 import axiosInstance from "../../../../../axiosConfig";
 import GraficoPorMes from "./components/GraficoPorMes";
 import { generarPDFPorMes, exportarExcelPorMes } from "./utils/exportUtils";
@@ -9,7 +9,6 @@ import styles from "./VentasPorMes.module.css";
 
 const VentasPorMes: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-
   const currentDate = new Date();
   const [year, setYear] = useState<number>(currentDate.getFullYear());
   const [month, setMonth] = useState<number>(currentDate.getMonth() + 1);
@@ -22,14 +21,9 @@ const VentasPorMes: React.FC = () => {
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
 
-
-
-  
-  // Formateador de moneda CLP
   const formatCLP = (value: number) =>
     `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
 
-  // Fetch de ventas agrupadas por mes
   const fetchVentas = async () => {
     if (!client_id) return;
     setLoading(true);
@@ -91,7 +85,6 @@ const VentasPorMes: React.FC = () => {
     }
   };
 
-  // Fetch de información del usuario (nickname, imagen)
   const fetchUserData = async () => {
     if (!client_id) return;
     try {
@@ -110,9 +103,6 @@ const VentasPorMes: React.FC = () => {
     fetchUserData();
   }, [client_id, year, month]);
 
-  // Exportar a PDF
-
-  
   const handleExportPDF = () => {
     const pdf = generarPDFPorMes(
       ventas,
@@ -124,10 +114,8 @@ const VentasPorMes: React.FC = () => {
     );
     setPdfDataUrl(pdf);
     setShowModal(true);
-
   };
 
-  // Exportar a Excel
   const handleExportExcel = () => {
     exportarExcelPorMes(
       ventas,
@@ -139,30 +127,43 @@ const VentasPorMes: React.FC = () => {
   };
 
   return (
-    <div className={styles.container}>
+    <Container className={styles.container} fluid="md">
       <h2 className={styles.titulo}>Ventas por Mes</h2>
       <p className={styles.subtitulo}>
         Usuario: <strong>{userData?.nickname || "Cargando..."}</strong>
       </p>
 
-      {/* Selección año y mes */}
-      <div className={styles.fechaSelector}>
-        <label htmlFor="year">Año:</label>
-        <select id="year" value={year} onChange={(e) => setYear(Number(e.target.value))}>
-          {[2023, 2024, 2025, 2026].map((y) => (
-            <option key={y} value={y}>{y}</option>
-          ))}
-        </select>
-
-        <label htmlFor="month" className="ms-3">Mes:</label>
-        <select id="month" value={month} onChange={(e) => setMonth(Number(e.target.value))}>
-          {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-            <option key={m} value={m}>
-              {m.toString().padStart(2, "0")}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Selector año y mes */}
+      <Row className="align-items-center mb-3">
+        <Col xs={6} md={3}>
+          <Form.Group controlId="year">
+            <Form.Label>Año:</Form.Label>
+            <Form.Select
+              value={year}
+              onChange={(e) => setYear(Number(e.target.value))}
+            >
+              {[2023, 2024, 2025, 2026].map((y) => (
+                <option key={y} value={y}>{y}</option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+        <Col xs={6} md={3}>
+          <Form.Group controlId="month">
+            <Form.Label>Mes:</Form.Label>
+            <Form.Select
+              value={month}
+              onChange={(e) => setMonth(Number(e.target.value))}
+            >
+              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                <option key={m} value={m}>
+                  {m.toString().padStart(2, "0")}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+        </Col>
+      </Row>
 
       {/* Gráfico o loading */}
       <div className={styles.graficoContenedor}>
@@ -173,55 +174,64 @@ const VentasPorMes: React.FC = () => {
         ) : chartData.labels.length === 0 ? (
           <p className="text-muted text-center">No hay datos para mostrar.</p>
         ) : (
-          <>
-            <GraficoPorMes
-              chartData={chartData}
-              totalVentas={totalIngresos}
-              year={year}
-              month={month}
-            />
-          </>
+          <GraficoPorMes
+            chartData={chartData}
+            totalVentas={totalIngresos}
+            year={year}
+            month={month}
+          />
         )}
       </div>
 
       {/* Botones de exportación */}
-      <div className={styles.botonContenedor}>
-        <button
-          className={styles.botonPDF}
-          onClick={handleExportPDF}
-          disabled={chartData.labels.length === 0}
-        >
-          Exportar a PDF
-        </button>
-        <button
-          className={styles.botonExcel}
-          onClick={handleExportExcel}
-          disabled={chartData.labels.length === 0}
-        >
-          Exportar a Excel
-        </button>
-      </div>
+      <Row className="mt-4 mb-2 justify-content-center">
+        <Col xs="auto" className="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2">
+          <button
+            className={`${styles.boton} ${styles.botonPDF}`}
+            onClick={handleExportPDF}
+            disabled={chartData.labels.length === 0}
+          >
+            Exportar a PDF
+          </button>
+          <button
+            className={`${styles.boton} ${styles.botonExcel}`}
+            onClick={handleExportExcel}
+            disabled={chartData.labels.length === 0}
+          >
+            Exportar a Excel
+          </button>
+        </Col>
+      </Row>
+
       <p className="text-center text-muted mt-2">
-              Gráfico basado en los 10 productos con mayor ingreso.
-              El detalle completo está disponible en el PDF o Excel exportado.
-            </p>
+        Gráfico basado en los 10 productos con mayor ingreso. El detalle completo está disponible en el PDF o Excel exportado.
+      </p>
 
       {/* Modal vista previa del PDF */}
       {pdfDataUrl && (
-        <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
+        <Modal
+          show={showModal}
+          onHide={() => setShowModal(false)}
+          size="lg"
+          centered
+          dialogClassName="pdf-modal-fullscreen"
+        >
           <Modal.Header closeButton>
             <Modal.Title>Vista Previa del PDF</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
+          <Modal.Body style={{ padding: 0 }}>
             <iframe
-              src={`${pdfDataUrl}#zoom=100`}
-              width="100%"
-              height="500px"
+              src={`${pdfDataUrl}#zoom=110`}
               title="Vista Previa PDF"
-              style={{ border: "none" }}
+              style={{
+                width: "100%",
+                height: "80vh",
+                border: "none",
+                minHeight: "400px",
+              }}
             />
           </Modal.Body>
-          <Modal.Footer>
+          <Modal.Footer className="d-flex justify-content-between flex-wrap gap-2">
             <Button
               variant="primary"
               onClick={() => {
@@ -233,11 +243,13 @@ const VentasPorMes: React.FC = () => {
             >
               Guardar PDF
             </Button>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>Cerrar</Button>
+            <Button variant="secondary" onClick={() => setShowModal(true)}>
+              Cerrar
+            </Button>
           </Modal.Footer>
         </Modal>
       )}
-    </div>
+    </Container>
   );
 };
 

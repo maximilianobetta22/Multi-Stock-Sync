@@ -45,6 +45,13 @@ const BACKGROUND_COLORS = [
   "#34495E"  // gris azulado
 ];
 
+const MAX_LABEL_LENGTH = 7;
+
+const truncateLabel = (label: string) => {
+  if (label.length <= MAX_LABEL_LENGTH) return label;
+  return label.slice(0, MAX_LABEL_LENGTH) + "...";
+};
+
 const getOptions = (isMobile?: boolean): ChartOptions<"pie"> => ({
   responsive: true,
   maintainAspectRatio: false,
@@ -68,9 +75,11 @@ const getOptions = (isMobile?: boolean): ChartOptions<"pie"> => ({
           return labels.map((label, i) => {
             const value = dataset.data[i] as number;
             const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
+            const truncated = truncateLabel(typeof label === "string" ? label : String(label));
+
 
             return {
-              text: `${percentage}%  ${label}`,
+              text: `${percentage}%  ${truncated}`,
               fillStyle: Array.isArray(dataset.backgroundColor)
                 ? dataset.backgroundColor[i]
                 : dataset.backgroundColor,
@@ -81,6 +90,8 @@ const getOptions = (isMobile?: boolean): ChartOptions<"pie"> => ({
               pointStyle: "circle",
               hidden: (meta.data[i] as any)?.hidden ?? false,
               index: i,
+              // Puedes agregar tooltip para mostrar el label completo al pasar el mouse si quieres
+              // Pero Chart.js no tiene soporte nativo para tooltip en leyendas, sería extra
             };
           });
         },

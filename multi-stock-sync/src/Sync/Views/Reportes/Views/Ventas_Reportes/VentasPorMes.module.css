@@ -1,106 +1,30 @@
-.container {
-  width: 100%;
-  max-width: 1200px;
-  margin: 3rem auto;
-  padding: 3rem 2rem;
-  background: rgba(255, 255, 255, 0.9);
-  backdrop-filter: blur(10px);
-  border-radius: 1.5rem;
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
-}
-
-.titulo {
-  text-align: center;
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #4f5a95;
-  margin-bottom: 0.5rem;
-}
-
-.subtitulo {
-  text-align: center;
-  font-size: 1.2rem;
-  color: #1e2949;
-  margin-bottom: 1.5rem;
-}
-
-.fechaSelector {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1.2rem;
-  margin-bottom: 1.5rem;
-  flex-wrap: wrap;
-}
-
-.graficoContenedor {
-  width: 100%;
-  height: 500px;
-  margin-bottom: 2rem;
-}
-
-.botonContenedor {
-  display: flex;
-  justify-content: center;
-  gap: 1.2rem;
-  margin-top: 2rem;
-  flex-wrap: wrap;
-  padding-bottom: 1rem;
-}
-
-.botonPDF,
-.botonExcel {
-  padding: 0.8rem 1.8rem;
+.boton {
+  padding: 0.6rem 1.2rem;
   font-size: 1rem;
-  color: white;
-  border: none;
-  border-radius: 0.8rem;
-  transition: background-color 0.3s ease;
   font-weight: 600;
-  min-width: 140px;
-  max-width: 45vw;
-  text-align: center;
+  border-radius: 5px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
 }
 
 .botonPDF {
-  background-color: #198754;
+  background-color: #ff9900;
 }
 
 .botonPDF:hover {
-  background-color: #146c43;
+  background-color: #cc7a00;
 }
 
 .botonExcel {
-  background-color: #213f99;
+  background-color: #28a745;
 }
 
 .botonExcel:hover {
-  background-color: #182d6f;
+  background-color: #1e7e34;
 }
 
-/* =========== RESPONSIVE =========== */
-@media (max-width: 768px) {
-  .graficoContenedor {
-    height: 600px; /* o más alto para que la leyenda tenga espacio */
-  }
-  
 
-  .titulo {
-    font-size: 2rem;
-  }
 
-  .subtitulo {
-    font-size: 1rem;
-    margin-bottom: 1.2rem;
-  }
 
-  .graficoContenedor {
-    height: 400px;
-  }
-
-  .botonPDF,
-  .botonExcel {
-    padding: 0.7rem 1.5rem;
-    font-size: 0.95rem;
-  }
-}
