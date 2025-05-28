@@ -1,95 +1,198 @@
+/* Estilos generales */
+
 .container {
-  padding: 2rem;
+  padding-top: 70px; /* o 60px según altura navbar + algo extra */
+  padding-left: 2rem;
+  padding-right: 2rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
 .titulo {
-  text-align: center;
   font-size: 2rem;
-  margin-bottom: 0.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  color: #333;
 }
 
 .subtitulo {
-  text-align: center;
-  margin-bottom: 2rem;
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #555;
 }
 
 .fechaSelector {
-  text-align: center;
-  margin-bottom: 2rem;
-}
-
-.fechaSelector label {
-  margin-right: 0.5rem;
-  font-weight: bold;
-}
-
-.graficoContenedor {
-  max-width: 100%;
-  overflow-x: auto;
-  margin-bottom: 2rem;
-}
-
-.botonContenedor {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
+  align-items: center;
   gap: 1rem;
   margin-bottom: 2rem;
 }
 
-.botonPDF,
-.botonExcel {
-  background-color: #ffa500;
-  border: none;
-  color: white;
-  padding: 0.75rem 1.5rem;
-  border-radius: 8px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background 0.3s ease;
+.fechaSelector label {
+  font-weight: 600;
+  color: #444;
 }
 
-.botonPDF:hover,
-.botonExcel:hover {
-  background-color: #ff8c00;
+.fechaSelector select {
+  padding: 0.4rem 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
 }
+
+/* Gráfico */
+.graficoContenedor {
+  margin-bottom: 2.5rem;
+}
+
+/* Botones */
+.boton {
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  text-align: center;
+}
+
+
+.botonContenedor {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+/* Botón PDF */
+.botonPDF {
+  background-color: #ff9900;
+}
+
+.botonPDF:hover {
+  background-color: #cc7a00;
+  transform: scale(1.03);
+}
+
+/*Boton Excel*/
+.botonExcel {
+  background-color: #28a745;
+}
+
+.botonExcel:hover {
+  background-color: #1e7e34;
+  transform: scale(1.03);
+}
+/* Botón Detalle */
+.botonDetalle {
+  background-color: #007bff; /* azul bootstrap */
+  color: white;
+}
+
+.botonDetalle:hover:not(:disabled) {
+  background-color: #0056b3; /* azul más oscuro */
+  transform: scale(1.03);
+}
+
+/* Tabla detalle */
 
 .tablaDetalle {
+  margin-top: 2rem;
   overflow-x: auto;
 }
 
-.tablaDetalle table {
+.table {
   width: 100%;
+  border-collapse: collapse;
   min-width: 600px;
 }
 
-/* Responsive: para móviles */
-@media (max-width: 768px) {
-  .titulo {
-    font-size: 1.5rem;
+.table th,
+.table td {
+  padding: 0.6rem 1rem;
+  border: 1px solid #ddd;
+  text-align: left;
+}
+
+.table thead {
+  background-color: #f8f8f8;
+}
+
+.table tfoot td {
+  font-weight: 700;
+  background-color: #f0f0f0;
+}
+
+
+/* Responsive */
+
+@media (max-width: 639px) {
+  .container {
+    padding-top: 70px;
+    padding-left: 1rem;
+    padding-right: 1rem;
   }
 
-  .botonPDF,
-  .botonExcel {
-    width: 100%;
+  .titulo,
+  .subtitulo {
     text-align: center;
+    width: 100%;
+  }
+
+  .fechaSelector {
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 300px;
+    margin-bottom: 1.5rem;
   }
 
   .fechaSelector select {
     width: 100%;
-    margin-top: 0.5rem;
+    max-width: 160px;
+    margin-top: 0.25rem;
   }
 
-  .tablaDetalle table {
-    font-size: 0.9rem;
+  .graficoContenedor {
+    min-height: 400px;
+    height: auto;
+    max-width: 100%;
+    padding: 1rem 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  
-}
-@media (max-width: 768px) {
-  .container {
-    padding-top: 5rem; /* Ajusta según la altura de tu menú fijo */
+
+  .botonContenedor {
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+  }
+
+  .boton {
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+  }
+
+
+  .tablaDetalle {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  .table {
+    min-width: 300px;
   }
 }
 
