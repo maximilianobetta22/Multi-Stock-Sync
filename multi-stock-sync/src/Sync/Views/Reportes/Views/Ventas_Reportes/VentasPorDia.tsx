@@ -14,7 +14,8 @@ import {
 import dayjs from "dayjs";
 import GraficoPorDia from "./components/GraficoPorDia";
 import axiosInstance from "../../../../../axiosConfig";
-import { generarPDFPorDia } from "./utils/exportUtils";
+import { generarPDFPorDiaBlobURL } from "./utils/exportUtils";
+
 
 const { Title, Text } = Typography;
 
@@ -98,16 +99,36 @@ const VentasPorDia: React.FC = () => {
   }, [client_id, fecha]);
 
   // Generar y mostrar PDF
+  const generatePdf = () => {
+    if (!userData) {
+    message.error("Faltan datos del usuario para generar el PDF.");
+    return null;
+    }
+    try {
+      const pdfUrl = generarPDFPorDiaBlobURL(
+        fecha.format("YYYY-MM-DD"),
+        ventas,
+        totalIngresos,
+        userData || { nickname: "Desconocido", profile_image: "" },
+        formatCLP
+      );
+      setPdfDataUrl(pdfUrl);
+      return pdfUrl;
+    } catch (error) {
+      message.error("Error al generar el PDF.");
+      return null;
+    }
+  };
+
   const handleExportPDF = () => {
-    const pdf = generarPDFPorDia(
-      fecha.format("YYYY-MM-DD"),
-      ventas,
-      totalIngresos,
-      userData || { nickname: "Desconocido", profile_image: "" },
-      formatCLP
-    );
-    setPdfDataUrl(pdf);
-    setShowModal(true);
+    if (!pdfDataUrl) {
+      const pdfUrl = generatePdf();
+      if (pdfUrl) {
+        setShowModal(true);
+      }
+    } else {
+      setShowModal(true);
+    }
   };
 
   return (
@@ -171,33 +192,50 @@ const VentasPorDia: React.FC = () => {
         </Button>
       </div>
 
+
       {/* Modal de vista previa PDF */}
-      <Modal
-        open={showModal}
-        onCancel={() => setShowModal(false)}
-        footer={[
-          <Button key="descargar" type="primary" onClick={() => {
-            const link = document.createElement("a");
-            link.href = pdfDataUrl!;
-            link.download = `Ventas_${fecha.format("YYYY-MM-DD")}.pdf`;
-            link.click();
-          }}>
-            Guardar PDF
-          </Button>,
-          <Button key="cerrar" onClick={() => setShowModal(false)}>
-            Cerrar
-          </Button>,
-        ]}
-        width={900}
-      >
-        <iframe
-          src={pdfDataUrl || ""}
-          title="Vista previa del PDF"
-          width="100%"
-          height="500px"
-          style={{ border: "none" }}
-        />
-      </Modal>
+
+      
+      {pdfDataUrl && (
+        <Modal
+          open={showModal}
+          onCancel={() => setShowModal(false)}
+          centered
+          width="80vw"
+          style={{ maxWidth: 900 }}
+          footer={[
+            <Button
+              key="descargar"
+              type="primary"
+              onClick={() => {
+                const link = document.createElement("a");
+                link.href = pdfDataUrl;
+                link.download = `Ventas_${fecha.format("YYYY-MM-DD")}.pdf`;
+                link.click();
+              }}
+            >
+              Guardar PDF
+            </Button>,
+            <Button key="cerrar" onClick={() => setShowModal(false)}>
+              Cerrar
+            </Button>,
+          ]}
+        >
+          <div style={{ textAlign: "center" }}>
+            <iframe
+              src={`${pdfDataUrl}#zoom=110`}
+              title="Vista Previa PDF"
+              style={{ width: "100%", height: "80vh", border: "none", minHeight: 400 }}
+            />
+            <p style={{ fontSize: "0.9em", marginTop: 8 }}>
+              ¿No se muestra el PDF?{" "}
+              <a href={pdfDataUrl} target="_blank" rel="noopener noreferrer">
+                Ábrelo en una nueva pestaña
+              </a>
+            </p>
+          </div>
+        </Modal>
+      )}
     </div>
   );
 };

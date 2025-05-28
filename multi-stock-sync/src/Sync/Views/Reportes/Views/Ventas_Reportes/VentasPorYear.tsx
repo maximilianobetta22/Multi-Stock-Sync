@@ -25,6 +25,8 @@ interface Mes {
   sold_products: ProductoVendido[];
 }
 
+
+
 const VentasPorYear: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
 
@@ -82,8 +84,14 @@ const VentasPorYear: React.FC = () => {
 
   // Generar PDF de vista previa
   const generatePDF = () => {
-    const data = generarPDFPorYear(salesData, selectedYear, userName);
-    setPdfData(data);
+    const pdfBase64 = generarPDFPorYear(salesData, selectedYear, userName);
+    const base64Data = pdfBase64.split(',')[1]; // separar el header data:application/pdf;base64,
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length).fill(0).map((_, i) => byteCharacters.charCodeAt(i));
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: "application/pdf" });
+    const url = URL.createObjectURL(blob);
+    setPdfData(url);
     setShowPDFModal(true);
   };
 
@@ -145,14 +153,20 @@ const VentasPorYear: React.FC = () => {
 
       {/* Botones de acción */}
       <div className={styles.botonContenedor}>
-        <button className={styles.botonPDF} onClick={generatePDF}>
+        <button
+          className={`${styles.boton} ${styles.botonPDF}`}
+          onClick={generatePDF}
+        >
           Exportar a PDF
         </button>
-        <button className={styles.botonExcel} onClick={generateExcel}>
+        <button
+          className={`${styles.boton} ${styles.botonExcel}`}
+          onClick={generateExcel}
+        >
           Exportar a Excel
         </button>
         <button
-          className={styles.botonPDF}
+          className={`${styles.boton} ${styles.botonDetalle}`}
           onClick={() => setMostrarTablaDetalle(!mostrarTablaDetalle)}
         >
           {mostrarTablaDetalle ? "Ocultar Detalle" : "Ver Detalle"}
@@ -201,16 +215,29 @@ const VentasPorYear: React.FC = () => {
           onHide={() => setShowPDFModal(false)}
           size="lg"
           centered
+          dialogClassName="pdf-modal-fullscreen"
         >
           <Modal.Header closeButton>
             <Modal.Title>Vista Previa del PDF</Modal.Title>
           </Modal.Header>
-          <Modal.Body>
-            <iframe
-              src={pdfData}
-              style={{ width: "100%", height: "500px" }}
-              title="Vista Previa PDF"
-            />
+          <Modal.Body style={{ padding: 0 }}>
+            <div style={{ textAlign: "center" }}>
+              <iframe
+                src={`${pdfData}#zoom=110`} 
+                style={{
+                  width: "100%",
+                  height: "80vh",
+                  border: "none",
+                }}
+                title="Vista Previa PDF"
+              />
+              <p style={{ fontSize: "0.9em", marginTop: "0.5em" }}>
+                ¿No se muestra el PDF?{" "}
+                <a href={pdfData} target="_blank" rel="noopener noreferrer">
+                  Ábrelo en una nueva pestaña
+                </a>
+              </p>
+            </div>
           </Modal.Body>
           <Modal.Footer>
             <Button variant="primary" onClick={savePDF}>

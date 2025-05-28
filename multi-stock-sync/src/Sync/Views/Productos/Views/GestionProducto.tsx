@@ -1,81 +1,76 @@
-import { Card, Button, Typography, Row, Col } from "antd";
+import { Card, Typography, Row, Col, Button } from "antd";
 import { useNavigate } from "react-router-dom";
+import {
+  PlusCircleOutlined,
+  FileExcelOutlined,
+  AppstoreOutlined,
+} from "@ant-design/icons";
 
 const { Title, Paragraph } = Typography;
 
 const GestionProducto = () => {
   const navigate = useNavigate();
 
+  const opciones = [
+    {
+      icon: <PlusCircleOutlined style={{ fontSize: 36, color: "#1890ff" }} />,
+      titulo: "Subir producto individual",
+      descripcion: "Carga manual de un producto nuevo con sus atributos completos.",
+      ruta: "/sync/productos/crear",
+    },
+    {
+      icon: <FileExcelOutlined style={{ fontSize: 36, color: "#52c41a" }} />,
+      titulo: "Carga masiva desde Excel",
+      descripcion: "Carga múltiples productos mediante archivo Excel.",
+      ruta: "/sync/productos/carga-masiva",
+    },
+    {
+      icon: <AppstoreOutlined style={{ fontSize: 36, color: "#fa8c16" }} />,
+      titulo: "Productos publicados",
+      descripcion: "Revisa, edita y gestiona tus publicaciones actuales.",
+      ruta: "/sync/productos/editar",
+    },
+  ];
+
   return (
     <div style={{ padding: "2rem" }}>
-      <Title level={2}>Gestión de Productos</Title>
+      <Title level={2} style={{ marginBottom: "2rem" }}>
+        Gestión de Productos
+      </Title>
 
       <Row gutter={[24, 24]}>
-        <Col xs={24} md={8}>
-          <Card
-            title="Subir producto individual"
-            bordered
-            hoverable
-            actions={[
+        {opciones.map((opcion, index) => (
+          <Col xs={24} md={8} key={index}>
+            <Card
+              hoverable
+              style={{
+                borderRadius: 12,
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "space-between",
+              }}
+              bodyStyle={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+            >
+              <div style={{ textAlign: "center" }}>{opcion.icon}</div>
+              <Title level={4}>{opcion.titulo}</Title>
+              <Paragraph>{opcion.descripcion}</Paragraph>
               <Button
                 type="primary"
-                onClick={() => navigate("/sync/productos/crear")}
+                block
+                style={{ marginTop: "auto" }}
+                onClick={() => navigate(opcion.ruta)}
               >
-                Crear producto
-              </Button>,
-            ]}
-          >
-            <Paragraph>
-              Desde aquí puedes cargar un producto nuevo a MercadoLibre, ingresando sus
-              atributos de forma manual.
-            </Paragraph>
-          </Card>
-        </Col>
-
-        <Col xs={24} md={8}>
-          <Card
-            title="Carga masiva desde Excel"
-            bordered
-            hoverable
-            actions={[
-              <Button
-                type="default"
-                onClick={() => navigate("/sync/productos/carga-masiva")}
-              >
-                Ir a carga masiva
-              </Button>,
-            ]}
-          >
-            <Paragraph>
-              Sube múltiples productos a MercadoLibre mediante un archivo Excel con los
-              datos estandarizados.
-            </Paragraph>
-          </Card>
-        </Col>
-
-        <Col xs={24} md={8}>
-          <Card
-            title="Productos publicados"
-            bordered
-            hoverable
-            actions={[
-              <Button
-                type="dashed"
-                onClick={() => navigate("/sync/productos/editar")}
-              >
-                Ver productos
-              </Button>,
-            ]}
-          >
-            <Paragraph>
-              Revisa todos los productos que ya están publicados en tu cuenta de
-              MercadoLibre. Edita, elimina o gestiona desde aquí.
-            </Paragraph>
-          </Card>
-        </Col>
+                Ingresar
+              </Button>
+            </Card>
+          </Col>
+        ))}
       </Row>
     </div>
   );
 };
 
 export default GestionProducto;
+// Este componente es una vista de gestión de productos que permite al usuario
+// seleccionar entre varias opciones para gestionar sus productos. Cada opción

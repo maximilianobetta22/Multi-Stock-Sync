@@ -2,6 +2,7 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as XLSX from "xlsx";
 
+
 // 🟧 PDF: Ventas por Mes
 export const generarPDFPorMes = (
   ventas: any[],
@@ -28,17 +29,13 @@ export const generarPDFPorMes = (
       v.quantity,
       formatCLP(v.total_amount || 0),
     ]),
-    foot: [
-      [
-        { content: "Total del Mes", colSpan: 3 },
-        formatCLP(totalVentas),
-      ],
-    ],
+    foot: [[{ content: "Total del Mes", colSpan: 3 }, formatCLP(totalVentas)]],
     styles: { fontSize: 9, cellPadding: 2 },
     theme: "striped",
   });
 
-  return doc.output("datauristring");
+  const pdfBlob = doc.output("blob");
+  return URL.createObjectURL(pdfBlob);
 };
 
 // 🟧 PDF: Guardar directo Mes
@@ -110,7 +107,7 @@ export const exportarExcelPorMes = (
 };
 
 // 🟨 PDF: Ventas por Día
-export const generarPDFPorDia = (
+export const generarPDFPorDiaBlobURL = (
   fecha: string,
   ventas: any[],
   total: number,
@@ -118,6 +115,7 @@ export const generarPDFPorDia = (
   formatCLP: (value: number) => string
 ): string => {
   const doc = new jsPDF();
+
   doc.setFontSize(16);
   doc.text(`Reporte de Ventas por Día - ${fecha}`, 10, 10);
   doc.setFontSize(12);
@@ -141,7 +139,8 @@ export const generarPDFPorDia = (
     theme: "striped",
   });
 
-  return doc.output("datauristring");
+  const blob = doc.output("blob");
+  return URL.createObjectURL(blob); // ⬅ Blob URL para usar en iframe o descargar
 };
 
 

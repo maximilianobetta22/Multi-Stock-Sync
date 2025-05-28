@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Container, Form, Spinner, Alert } from 'react-bootstrap';
 import styles from './OpinionesClients.module.css';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faStar } from '@fortawesome/free-solid-svg-icons';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import { format as formatDateFns, isValid as isValidDate } from 'date-fns';
+import { es } from 'date-fns/locale';
 
 // Tipos de datos
 interface Client {
@@ -27,6 +33,8 @@ const OpinionesClients = () => {
   const [reviewsList, setReviewsList] = useState<ProductReview[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
   // Obtiene las credenciales de las tiendas conectadas
   const fetchClients = async () => {
@@ -42,11 +50,27 @@ const OpinionesClients = () => {
   };
 
   // Obtiene los productos con opiniones para el cliente seleccionado
-  const fetchProductsWithReviews = async (clientId: string) => {
+  const fetchProductsWithReviews = async (clientId: string, sDate?: Date | null, eDate?: Date | null) => {
+    setError(null);
     setLoading(true);
+
+    let apiUrl = `${process.env.VITE_API_URL}/reviews/${clientId}`;
+    const params = new URLSearchParams();
+    if (sDate) {
+      params.append('start_date', formatDateFns(sDate, 'yyyy-MM-dd'));
+    }
+    if (eDate) {
+      params.append('end_date', formatDateFns(eDate, 'yyyy-MM-dd'));
+    }
+
+    const queryString = params.toString();
+    if (queryString) {
+      apiUrl += `?${queryString}`;
+    }
+
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${process.env.VITE_API_URL}/reviews/${clientId}`, {
+      const response = await axios.get(apiUrl, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -76,8 +100,13 @@ const OpinionesClients = () => {
 
       setReviewsList(parsedReviews);
     } catch (err) {
-      console.error(err);
-      setError('Error al cargar opiniones.');
+      console.error("Error fetching reviews:", err);
+      let errorMessage = ('Error al cargar opiniones.');
+      if (axios.isAxiosError(err) && err.response?.data?.message) {
+        errorMessage = `Error al cargar opiniones: ${err.response.data.message}`;
+      }
+      setError(errorMessage
+      );
     } finally {
       setLoading(false);
     }
@@ -86,12 +115,23 @@ const OpinionesClients = () => {
   // Al iniciar, carga los clientes
   useEffect(() => {
     fetchClients();
+    setStartDate(null);
+    setEndDate(null);
   }, []);
 
   // Cada vez que se selecciona un cliente, carga sus opiniones
   useEffect(() => {
     if (selectedClient) {
-      fetchProductsWithReviews(selectedClient);
+      setStartDate(null);
+      setEndDate(null);
+      setReviewsList([]);
+      setError(null);
+      fetchProductsWithReviews(selectedClient, startDate, endDate);
+    } else {
+      setStartDate(null);
+      setEndDate(null);
+      setReviewsList([]);
+      setError(null);
     }
   }, [selectedClient]);
 
@@ -100,7 +140,7 @@ const OpinionesClients = () => {
       <h2 className={styles.title}>Opiniones de Clientes</h2>
 
       {/* Mensaje de error */}
-      {error && <Alert variant="danger">{error}</Alert>}
+      {error && !loading && <Alert variant="danger">{error}</Alert>}
 
       {/* Selector de tienda */}
       <Form.Group className={styles.selectWrapper}>
@@ -110,7 +150,7 @@ const OpinionesClients = () => {
           onChange={(e) => setSelectedClient(e.target.value)}
           className={styles.select}
         >
-          <option value="">-- Selecciona --</option>
+          <option value="">-- Por favor, elija una opción --</option>
           {clients.map((client) => (
             <option key={client.client_id} value={client.client_id}>
               {client.nickname}
@@ -119,27 +159,160 @@ const OpinionesClients = () => {
         </Form.Select>
       </Form.Group>
 
-      {/* Loader mientras carga opiniones */}
-      {loading ? (
-        <Spinner animation="border" />
-      ) : (
-        <div className={styles.grid}>
-          {reviewsList.map((entry, index) => (
-            <div key={index} className={styles.card}>
-              <div className={styles.header}>
-                <span className={styles.client}>{entry.review.user_name}</span>
-                <span className={styles.product}>{entry.productTitle}</span>
-              </div>
-              <div className={styles.comment}>
-                {entry.review.comment || 'Sin comentario'}
-              </div>
-              <div className={styles.rating}>
-                {entry.review.rate !== null ? `${entry.review.rate} / 5` : 'No disponible'}
-              </div>
+      {/* Filtrar por fecha */}
+      {!loading && !error && selectedClient && (
+        <div className={styles.filtersSection}>
+          <Form.Label> Filtrar reseñas por fecha: </Form.Label>
+          <div className={styles.dateFilterContainer}>
+            <div className={styles.datePickerGroup}>
+              <label htmlFor="startDatePicker" className={styles.datePickerLabel}> Fecha de inicio: </label>
+              <DatePicker
+                id="startDatePicker"
+                selected={startDate}
+                locale={es}
+                onChange={(date: Date | null) => setStartDate(date)}
+                selectsStart
+                startDate={startDate}
+                endDate={endDate}
+                maxDate={endDate || new Date()}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Seleccione inicio"
+                isClearable
+                className={styles.datePickerInput}
+                wrapperClassName={styles.datePickerWrapper}
+                popperPlacement="bottom-start"
+                
+              />
             </div>
-          ))}
+
+            <div className={styles.datePickerGroup}>
+              <label htmlFor="endDatePicker" className={styles.datePickerLabel}> Fecha de termino: </label>
+              <DatePicker
+                id="endDatePicker"
+                selected={endDate}
+                locale={es}
+                onChange={(date: Date | null) => setEndDate(date)}
+                selectsEnd
+                startDate={startDate}
+                endDate={endDate}
+                maxDate={new Date()}
+                dateFormat="dd/MM/yyyy"
+                placeholderText="Seleccione fin"
+                isClearable
+                className={styles.datePickerInput}
+                wrapperClassName={styles.datePickerWrapper}
+              />
+            </div>
+
+            <div>
+              <button
+                type="button"
+                className={styles.applyFilterButton}
+                onClick={() => {
+                  if (selectedClient) {
+                    fetchProductsWithReviews(selectedClient, startDate, endDate);
+                  }
+                }}
+                disabled={loading || !selectedClient}
+              >
+                Aplicar Fechas
+              </button>
+            </div>
+          </div>
         </div>
       )}
+
+      {/* Indicador de filtro de fecha */}
+      {selectedClient && (startDate || endDate) && (
+        <div className={styles.activeDateFilterIndicator}>
+          <div className={styles.filterIndicatorText}>
+            <span>Filtrando opiniones: </span>
+            {startDate && isValidDate(startDate) && (
+              <>
+                {' '} Desde el <strong>{formatDateFns(startDate, 'dd/MM/yyyy', { locale: es })}</strong>
+              </>
+            )}
+            {startDate && endDate && isValidDate(startDate) && isValidDate(endDate) && (
+              <>
+                {' '} Hasta el
+              </>
+            )}
+            {endDate && isValidDate(endDate) && (
+              <>
+                {' '}
+                <strong>{formatDateFns(endDate, 'dd/MM/yyyy', { locale: es })}</strong>
+              </>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => {
+              setStartDate(null);
+              setEndDate(null);
+              if (selectedClient) {
+                fetchProductsWithReviews(selectedClient, null, null);
+              }
+            }}
+            className={styles.clearDateFilterButton}
+            title="Limpiar filtro de fechas"
+          >
+            ×
+          </button>
+        </div>
+
+
+      )}
+
+      {/* Loader mientras carga opiniones */}
+      {loading && (
+        <div style={{ textAlign: 'center', margin: '20px 0' }}>
+          <Spinner animation= "border" role= "status">
+          </Spinner>
+        </div>
+      )}
+
+      {/* Lista de reseñas o mensaje de "no hay reseñas" */}
+      {!loading && !error && selectedClient && (
+        <>
+          {reviewsList.length > 0 ? (
+            <div className={styles.grid}>
+              {reviewsList.map((entry, index) => (
+                <div key={index} className= {styles.card}>
+                  <div className={styles.header}>
+                    <span className= {styles.client}>
+                      {entry.review.user_name}
+                    </span>
+                    <span className={styles.product}>
+                      {entry.productTitle}
+                    </span>
+                  </div>
+                  <div className={styles.comment}>
+                    {entry.review.comment || 'Sin comentario'}
+                  </div>
+                  <div className={styles.rating}>
+                    {entry.review.rate !== null ? (
+                      <>
+                        <FontAwesomeIcon icon={faStar} />{entry.review.rate} / 5
+                      </>) : ('No disponible')}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div>
+              <p> No hay reseñas disponibles para esta tienda.</p>
+            </div>
+          )}
+        </>
+      )}
+
+      {/* Mensaje si no se ha seleccionado ningun cliente */}
+      {!loading && !error && !selectedClient && (
+        <div className={styles.noReviewsMessage}>
+          <p> Por favor, selecciona una tienda para ver las opiniones </p>
+        </div>
+      )}
+
     </Container>
   );
 };
