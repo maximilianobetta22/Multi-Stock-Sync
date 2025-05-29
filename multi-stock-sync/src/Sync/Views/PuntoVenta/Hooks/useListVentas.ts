@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 
 import { ListVentaService, } from '../Services/listVentaService';
-import { VentaResponse, setVenta,FiltrosBackend } from '../Types/ventaTypes';
+import { VentaResponse, FiltrosBackend } from '../Types/ventaTypes';
 
 //datos a los que travez se va a filtrar
 
@@ -30,7 +30,7 @@ export const useListVentas = () => {
       console.log("filtros en hook:", filtros);
       const response = await ListVentaService.getListVenta(clientId,filtros);
       // Ensure we're working with an array
-      const ventasData = Array.isArray(response) ? response : [];
+      const ventasData = Array.isArray(response.data) ? response.data : [];
 
       setAllData(ventasData);
       setData(ventasData);
@@ -49,7 +49,7 @@ export const useListVentas = () => {
   // Función para aplicar filtros en el frontend
 
 
-  const cambiarEstadoVenta = async (ventaId: number, nuevoEstado: string, setventa:setVenta) => {
+  const cambiarEstadoVenta = async (ventaId: number, nuevoEstado: string) => {
     setLoading(true);
     setSuccess(false);
     setError(null);
@@ -58,7 +58,6 @@ export const useListVentas = () => {
       const response = await ListVentaService.actualizarEstadoVenta(
         ventaId,
         nuevoEstado,
-        setventa
       );
       // Actualizar el estado de la venta en el estado local
       const actualizarVenta = (

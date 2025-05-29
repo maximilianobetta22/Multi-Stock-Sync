@@ -1,7 +1,6 @@
-
 import axiosInstance from '../../../../axiosConfig';
 import axios from 'axios';
-import { EstadoReceive, VentaResponse, setVenta, FiltrosBackend, ApiResponse } from '../Types/ventaTypes';
+import { EstadoReceive, VentaResponse, FiltrosBackend, ApiResponse } from '../Types/ventaTypes';
 
 
 // Función para obtener la lista de ventas incluye lista de ventas filtradas
@@ -10,7 +9,7 @@ export const ListVentaService = {
   async getListVenta(
     client_id: string,
     filters: FiltrosBackend = {}
-  ): Promise<VentaResponse> {
+  ): Promise<ApiResponse> {
     try {
       // Preparar URL base
       let url = `${import.meta.env.VITE_API_URL}/history-sale/${client_id}`;
@@ -40,11 +39,12 @@ export const ListVentaService = {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
         },
       });
+      console.log("url")
       console.log("Response data:", response.data);
       if (!response.data || !response.data.data) {
         throw new Error("Estructura de respuesta inválida.");
       }
-      return response.data.data;
+      return response.data;
     } catch (error) {
       console.error("Error al obtener Clientes:", error);
       // Manejo personalizado de errores según tipo y código HTTP
@@ -81,13 +81,14 @@ export const ListVentaService = {
   async actualizarEstadoVenta(
     saleId: number,
     status: string,
-    setventa: setVenta
   ): Promise<EstadoReceive> {
     try {
+      console.log(saleId)
       const url = `${
         import.meta.env.VITE_API_URL
-      }/generated-sale-note/${saleId}/${status}`;
-      const response = await axiosInstance.patch(url, setventa, {
+      }/sale-note-patch/${saleId}/${status}`;
+      console.log(url)
+      const response = await axiosInstance.patch(url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           "Content-Type": "application/json",

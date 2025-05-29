@@ -1,4 +1,3 @@
-
 export interface VentaResponse {
     id: number;
     warehouse_id: number;
@@ -7,7 +6,7 @@ export interface VentaResponse {
     price_subtotal: number;
     price_final: number;
     client_id: number;
-    products: string;
+    products: Products[];
     name_companies: string;
     observation: string;
     shipping: string;
@@ -16,19 +15,25 @@ export interface VentaResponse {
   }
 
 export interface EstadoReceive{
-    data:VentaResponse;
+    data:VentaResponse[];
     message: string;
+    success: string;
 }
-export interface products {
-  nombre?: string;
-  cantidad?: number;
-  unitPrice?:number;
+
+
+//interface para recibir los productos vendidos de cada venta en lista de ventas
+export interface Products {
+  product_name:string;
+  product_id:string|number;
+  quantity:number;
+  price_unit:number;
+  subtotal:number;
 }
 export interface setVenta{
   type_emission:string;
   warehouse_id:number;
   client_id:number;
-  products:products;
+  products:Products[];
   amount_total_products:number;
   price_subtotal:number;
   price_final:number;
