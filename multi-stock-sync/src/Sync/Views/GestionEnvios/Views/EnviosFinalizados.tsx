@@ -153,34 +153,7 @@ const EnviosFinalizados: React.FC = () => {
         </Tag>
       ),
     },
-    {
-      title: "Detalles de Entrega",
-      key: "detallesEntrega",
-      render: (_text: any, record: Envio) => {
-        if (record.shipment_history?.status?.toLowerCase() === "entregado") {
-          if (record.order_id) {
-            return <ShipmentSpecificDetailsLoader orderId={record.order_id} />
-          } else {
-            return (
-              <div className="bg-yellow-50 p-2 rounded border border-yellow-200">
-                <Text type="warning" className="text-sm">
-                  ID de envío no disponible
-                </Text>
-                <br />
-                <Text type="secondary" className="text-xs">
-                  Record ID: {record.id}
-                </Text>
-              </div>
-            )
-          }
-        }
-        return (
-          <Text type="secondary" className="italic">
-            No aplica
-          </Text>
-        )
-      },
-    },
+
   ]
 
   const handleTableChange = (pagination: any) => {
