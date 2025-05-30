@@ -4,7 +4,7 @@ import { SearchOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-
 import type { ColumnsType } from 'antd/es/table';
 import { useListBorradores } from '../Hooks/useListBorradores';
 import { useListCliente } from '../Hooks/useListCliente';
-import type { VentaResponse, FiltrosBackend, NotaVentaActual } from '../Types/ventaTypes';
+import type { VentaResponse, FiltrosBackend, NotaVentaActual,Products } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 import { ItemVenta } from '../Hooks/GestionNuevaVenta';
 import NuevaVentaModal from '../components/modalNuevaVenta';
@@ -79,44 +79,25 @@ const ListaBorradores: React.FC = () => {
     return <LoadingDinamico variant="fullScreen" />;
   }
 
-  // CAMBIO PRINCIPAL: función robusta para cargar productos y cliente
+
   const abrirBorradorEnModal = (borrador: VentaResponse) => {
     let itemsVenta: ItemVenta[] = [];
     try {
-      const productosParseados = JSON.parse(borrador.products);
-      if (Array.isArray(productosParseados)) {
-        itemsVenta = productosParseados.map((producto, index) => {
+      
+      if (Array.isArray(borrador.products)) {
+        itemsVenta = borrador.products.map((producto, index) => {
           const precio =
-            producto.unit_price ??
-            producto.unitPrice ??
-            producto.price ??
-            producto.precioUnitario ??
-            0;
+            producto.price_unit;
           return {
             key: `${index}`,
-            idProducto: producto.id || producto.idProducto || '',
-            nombre: producto.nombre || producto.title || '',
-            cantidad: producto.quantity || producto.cantidad || 1,
+            idProducto: producto.product_id ,
+            nombre:producto.product_name,
+            cantidad: producto.quantity ,
             precioUnitario: precio,
-            total: (producto.quantity || producto.cantidad || 1) * precio,
+            total: producto.subtotal,
           };
         });
-      } else if (typeof productosParseados === 'object' && productosParseados !== null) {
-        const precio =
-          productosParseados.unit_price ??
-          productosParseados.unitPrice ??
-          productosParseados.price ??
-          productosParseados.precioUnitario ??
-          0;
-        itemsVenta = [{
-          key: '0',
-          idProducto: productosParseados.id || productosParseados.idProducto || '',
-          nombre: productosParseados.nombre || productosParseados.title || '',
-          cantidad: productosParseados.quantity || productosParseados.cantidad || 1,
-          precioUnitario: precio,
-          total: (productosParseados.quantity || productosParseados.cantidad || 1) * precio,
-        }];
-      }
+      } 
     } catch (error) {
       console.error('Error al parsear productos del borrador:', error);
     }
@@ -189,43 +170,7 @@ const ListaBorradores: React.FC = () => {
     });
   }
 
-  const formatProductos = (productosString: string): string => {
-    try {
-      const parsedData = JSON.parse(productosString);
-      if (Array.isArray(parsedData)) {
-        if (parsedData.length === 0) return "No hay productos";
-        return parsedData
-          .map(
-            (producto) =>
-              `nombre  ${producto.nombre}| Cantidad: ${producto.quantity
-              } | Precio unitario: ${producto.unit_price?.toLocaleString(
-                "es-CL"
-              )} |`
-          )
-          .join("\n");
-      }
-      if (typeof parsedData === 'object' && parsedData !== null) {
-        if (
-          parsedData.quantity !== undefined &&
-          parsedData.unit_price !== undefined
-        ) {
-          return `| Productos: ${parsedData.quantity
-            } | Precio unitario: $${parsedData.unit_price.toLocaleString(
-              "es-CL"
-            )} |`;
-        } else if (parsedData.price !== undefined) {
-          return `| Productos: ${parsedData.quantity
-            } | Precio unitario: $${parsedData.price.toLocaleString(
-              "es-CL"
-            )} |`;
-        }
-      }
-      return "Formato de productos no reconocido";
-    } catch (error) {
-      console.error('Error al formatear productos:', error);
-      return productosString;
-    }
-  };
+
 
   const getClientName = (clientId: number): string => {
     const cliente = clientes.find(c => c.id === clientId);
@@ -327,6 +272,31 @@ const ListaBorradores: React.FC = () => {
       ),
     },
   ];
+  const columnsProduct: ColumnsType<Products> = [
+      {
+        title: "Nombre",
+        dataIndex: "product_name",
+        key: "product_name",
+  
+      },
+      {
+        title: "cantidad",
+        dataIndex: "quantity",
+        key: "quantitya",
+      },
+      {
+        title: "precio unitario",
+        dataIndex: "price_unit",
+        key: "price_unit",
+  
+      },
+      {
+        title: "subtotal",
+        dataIndex: "subtotal",
+        key: "subtotal",
+  
+      },
+    ]
 
   const verDetalleVenta = (id: number): void => {
     const venta = data.find(v => v.id === id);
@@ -496,11 +466,6 @@ const ListaBorradores: React.FC = () => {
               <Descriptions.Item label="Tipo Emisión">
                 {ventaSeleccionada.type_emission}
               </Descriptions.Item>
-              <Descriptions.Item label="Subtotal">
-                <Typography.Text strong>
-                  ${ventaSeleccionada.price_subtotal.toLocaleString("es-CL")}
-                </Typography.Text>
-              </Descriptions.Item>
               <Descriptions.Item label="Total">
                 <Typography.Text strong>
                   ${ventaSeleccionada.price_final.toLocaleString("es-CL")}
@@ -513,18 +478,15 @@ const ListaBorradores: React.FC = () => {
             <Divider orientation="left">
               Productos ({ventaSeleccionada.amount_total_products})
             </Divider>
-            <Input.TextArea
-              rows={8}
-              value={formatProductos(ventaSeleccionada.products)}
-              readOnly
-              style={{
-                width: "100%",
-                backgroundColor: "#fafafa",
-                fontFamily: "monospace",
-                whiteSpace: "pre",
-                marginBottom: 16,
-              }}
-            />
+             <Table
+                        rowKey="id"
+                        columns={columnsProduct}
+                        dataSource={ventaSeleccionada.products}
+                        pagination={{ pageSize: 10 }}
+                        locale={{
+                          emptyText: "No hay productos registrados",
+                        }}
+                      />
           </>
         )}
       </Modal>
