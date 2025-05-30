@@ -1,6 +1,6 @@
 import axiosInstance from "../../../../axiosConfig";
 import axios from "axios";
-import {  EnviosTransitoResponse } from "../Types/EnviosProximos.Type";
+import { EnviosTransitoResponse } from "../Types/EnviosProximos.Type";
 
 /**
  * Servicio para gestionar operaciones relacionadas con envíos próximos
@@ -11,9 +11,13 @@ export const enviosTransitoService = {
    * clientId - ID del cliente para el cual se obtienen los envíos
    * @returns {Promise<EnviosResponse>} Respuesta con datos de envíos o mensaje de error
    */
-  async fetchAviableReception(clientId: string): Promise<EnviosTransitoResponse> {
+  async fetchAviableReception(
+    clientId: string
+  ): Promise<EnviosTransitoResponse> {
     try {
-      const url = `${import.meta.env.VITE_API_URL}/mercadolibre/available-for-reception/${clientId}`;
+      const url = `${
+        import.meta.env.VITE_API_URL
+      }/mercadolibre/available-for-reception/${clientId}`;
       const response = await axiosInstance.get(url, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -36,11 +40,16 @@ export const enviosTransitoService = {
         console.log(error.response?.status);
         // No hay envíos disponibles (esto no debería ser un error, sino un estado válido)
         // Errores comunes de HTTP
-        if (status === 500 || status ===404 || status ===403|| status ===401){
+        if (
+          status === 500 ||
+          status === 404 ||
+          status === 403 ||
+          status === 401
+        ) {
           throw new Error(status.toString());
         }
         //
-        
+
         // Otros errores con respuesta del servidor
         if (error.response?.data?.message) {
           throw new Error(error.response.data.message);
