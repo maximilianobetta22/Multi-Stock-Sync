@@ -1,9 +1,8 @@
-import { Table, Button, Tag, Dropdown, Space, Tooltip } from "antd";
+import { Table, Button, Tag, Dropdown, Tooltip } from "antd";
 import {
   EditOutlined,
   PauseCircleOutlined,
   CheckCircleOutlined,
-  InfoCircleOutlined,
   MoreOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
@@ -61,7 +60,6 @@ export const TablaProductos = ({
   fechaInicio,
   fechaFin,
   estadoFiltro,
-  mostrarDetalles,
 }: Props) => {
   const traducirEstado = (status: string) => {
     const map: any = {
@@ -88,7 +86,9 @@ export const TablaProductos = ({
       <>
         {partes.map((parte, i) =>
           parte.toLowerCase() === keyword.toLowerCase() ? (
-            <mark key={i} style={{ backgroundColor: "#ffe58f", padding: 0 }}>{parte}</mark>
+            <mark key={i} style={{ backgroundColor: "#ffe58f", padding: 0 }}>
+              {parte}
+            </mark>
           ) : (
             <span key={i}>{parte}</span>
           )
@@ -101,43 +101,45 @@ export const TablaProductos = ({
     {
       title: "ID",
       dataIndex: "id",
-      render: (text) => <span style={{ fontFamily: "monospace" }}>{resaltarTexto(text, busquedaActual)}</span>,
+      render: (text) => (
+        <span style={{ fontFamily: "monospace" }}>
+          {resaltarTexto(text, busquedaActual)}
+        </span>
+      ),
     },
     {
-  title: "Título",
-  dataIndex: "title",
-  render: (_, record) => {
-    const textoResaltado = resaltarTexto(record.title, busquedaActual);
-    const link = (record as any).permalink; // 👈 Aquí accedemos directo
+      title: "Título",
+      dataIndex: "title",
+      render: (_, record) => {
+        const textoResaltado = resaltarTexto(record.title, busquedaActual);
+        const link = (record as any).permalink; // 👈 Aquí accedemos directo
 
-    return (
-      <a
-        href={link}
-        target="_blank"
-        rel="noopener noreferrer"
-        style={{
-          fontWeight: 500,
-          color: "#1677ff",
-          textDecoration: "none",
-          transition: "color 0.2s, text-decoration 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.textDecoration = "underline";
-          e.currentTarget.style.color = "#0958d9";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.textDecoration = "none";
-          e.currentTarget.style.color = "#1677ff";
-        }}
-      >
-        {textoResaltado}
-      </a>
-    );
-  },
-},
+        return (
+          <a
+            href={link}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              fontWeight: 500,
+              color: "#1677ff",
+              textDecoration: "none",
+              transition: "color 0.2s, text-decoration 0.2s",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.textDecoration = "underline";
+              e.currentTarget.style.color = "#0958d9";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.textDecoration = "none";
+              e.currentTarget.style.color = "#1677ff";
+            }}
+          >
+            {textoResaltado}
+          </a>
+        );
+      },
+    },
 
-
-    
     {
       title: "Fecha",
       dataIndex: "date_created",
@@ -175,7 +177,12 @@ export const TablaProductos = ({
           },
           {
             key: "toggle",
-            icon: record.status === "active" ? <PauseCircleOutlined /> : <CheckCircleOutlined />,
+            icon:
+              record.status === "active" ? (
+                <PauseCircleOutlined />
+              ) : (
+                <CheckCircleOutlined />
+              ),
             label: record.status === "active" ? "Pausar" : "Activar",
             onClick: () => toggleEstado(record),
           },
@@ -188,11 +195,7 @@ export const TablaProductos = ({
               items: items.map((item) => ({
                 key: item.key,
                 icon: item.icon,
-                label: (
-                  <span onClick={item.onClick}>
-                    {item.label}
-                  </span>
-                ),
+                label: <span onClick={item.onClick}>{item.label}</span>,
               })),
             }}
           >
@@ -219,7 +222,15 @@ export const TablaProductos = ({
         showSizeChanger: false,
         onChange: (page) => {
           setPagina(page);
-          fetchProductos(page, "date_created", "desc", busquedaActual, fechaInicio, fechaFin, estadoFiltro);
+          fetchProductos(
+            page,
+            "date_created",
+            "desc",
+            busquedaActual,
+            fechaInicio,
+            fechaFin,
+            estadoFiltro
+          );
         },
       }}
       onChange={(pagination, _, sorter) => {
@@ -227,11 +238,22 @@ export const TablaProductos = ({
         let sort_by = "date_created";
         let order: "asc" | "desc" = "desc";
         if (!Array.isArray(sorter) && typeof sorter === "object" && sorter) {
-          sort_by = "field" in sorter && sorter.field ? (sorter.field as string) : "date_created";
+          sort_by =
+            "field" in sorter && sorter.field
+              ? (sorter.field as string)
+              : "date_created";
           order = sorter.order === "ascend" ? "asc" : "desc";
         }
         setPagina(page);
-        fetchProductos(page, sort_by, order, busquedaActual, fechaInicio, fechaFin, estadoFiltro);
+        fetchProductos(
+          page,
+          sort_by,
+          order,
+          busquedaActual,
+          fechaInicio,
+          fechaFin,
+          estadoFiltro
+        );
       }}
       bordered
     />
