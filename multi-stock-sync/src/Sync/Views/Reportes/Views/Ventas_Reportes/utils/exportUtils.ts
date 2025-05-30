@@ -29,13 +29,19 @@ export const generarPDFPorMes = (
       v.quantity,
       formatCLP(v.total_amount || 0),
     ]),
-    foot: [[{ content: "Total del Mes", colSpan: 3 }, formatCLP(totalVentas)]],
+    foot: [
+      [
+        { content: "Total del Mes", colSpan: 3 },
+        formatCLP(totalVentas),
+      ],
+    ],
     styles: { fontSize: 9, cellPadding: 2 },
     theme: "striped",
   });
 
   const pdfBlob = doc.output("blob");
   return URL.createObjectURL(pdfBlob);
+
 };
 
 // 🟧 PDF: Guardar directo Mes
@@ -129,22 +135,14 @@ export const generarPDFPorDiaBlobURL = (
       v.quantity,
       formatCLP(v.total_amount || 0),
     ]),
-    foot: [
-      [
-        { content: "Total del Día", colSpan: 2 },
-        formatCLP(total),
-      ],
-    ],
+    foot: [[{ content: "Total del Día", colSpan: 2 }, formatCLP(total)]],
     styles: { fontSize: 9, cellPadding: 2 },
     theme: "striped",
   });
 
-  const blob = doc.output("blob");
-  return URL.createObjectURL(blob); // ⬅ Blob URL para usar en iframe o descargar
+  const pdfBlob = doc.output("blob"); // Genera el PDF como Blob
+  return URL.createObjectURL(pdfBlob);
 };
-
-
-
 
 // 🟦 PDF: Ventas por Año
 export const generarPDFPorYear = (

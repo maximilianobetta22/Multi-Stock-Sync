@@ -20,6 +20,7 @@ const VentasPorMes: React.FC = () => {
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
+  
 
   const formatCLP = (value: number) =>
     `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
@@ -103,8 +104,23 @@ const VentasPorMes: React.FC = () => {
     fetchUserData();
   }, [client_id, year, month]);
 
+  const savePDF = () => {
+    if (!pdfDataUrl) return;
+    
+    const link = document.createElement('a');
+    link.href = pdfDataUrl;
+    link.download = `Ventas_Mes_${userData?.nickname || 'Desconocido'}_${month.toString().padStart(2, '0')}-${year}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    setShowModal(false);
+  };
+
   const handleExportPDF = () => {
-    const pdf = generarPDFPorMes(
+    if (ventas.length === 0) return;
+    
+    const pdfUrl = generarPDFPorMes(
       ventas,
       year,
       month,
@@ -112,7 +128,8 @@ const VentasPorMes: React.FC = () => {
       totalIngresos,
       formatCLP
     );
-    setPdfDataUrl(pdf);
+    
+    setPdfDataUrl(pdfUrl);
     setShowModal(true);
   };
 
@@ -220,30 +237,25 @@ const VentasPorMes: React.FC = () => {
             <Modal.Title>Vista Previa del PDF</Modal.Title>
           </Modal.Header>
           <Modal.Body style={{ padding: 0 }}>
-            <iframe
-              src={`${pdfDataUrl}#zoom=110`}
-              title="Vista Previa PDF"
-              style={{
-                width: "100%",
-                height: "80vh",
-                border: "none",
-                minHeight: "400px",
-              }}
-            />
+            <div style={{ textAlign: "center", height: "80vh", minHeight: 400, display: "flex", flexDirection: "column" }}>
+              <iframe
+                src={`${pdfDataUrl}#zoom=110`}
+                title="Vista Previa PDF"
+                style={{ flexGrow: 1, width: "100%", border: "none" }}
+              />
+              <p style={{ fontSize: "0.9em", margin: "8px 0" }}>
+                ¿No se muestra el PDF?{" "}
+                <a href={pdfDataUrl} target="_blank" rel="noopener noreferrer">
+                  Ábrelo en una nueva pestaña
+                </a>
+              </p>
+            </div>
           </Modal.Body>
-          <Modal.Footer className="d-flex justify-content-between flex-wrap gap-2">
-            <Button
-              variant="primary"
-              onClick={() => {
-                const link = document.createElement("a");
-                link.href = pdfDataUrl!;
-                link.download = `Ventas_${month.toString().padStart(2, "0")}-${year}.pdf`;
-                link.click();
-              }}
-            >
+          <Modal.Footer>
+            <Button variant="primary" onClick={savePDF}>
               Guardar PDF
             </Button>
-            <Button variant="secondary" onClick={() => setShowModal(true)}>
+            <Button variant="secondary" onClick={() => setShowModal(false)}>
               Cerrar
             </Button>
           </Modal.Footer>
