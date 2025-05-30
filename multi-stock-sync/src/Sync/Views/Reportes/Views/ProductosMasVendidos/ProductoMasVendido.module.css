@@ -59,6 +59,20 @@
   color: #ffffff !important;
 }
 
+.btnCustomOrange:hover,
+.btnCustomOrange:focus {
+  background-color: #b04a10 !important;
+  border-color: #a0400c !important;
+  color: #ffffff !important;
+}
+
+.btnCustomOrange.active,
+.show > .btnCustomOrange.dropdown-toggle {
+  background-color: #b04a10 !important;
+  border-color: #a0400c !important;
+  color: #ffffff !important;
+}
+
 .table__container {
     max-height: 50vh;
     overflow-y: auto;
@@ -80,6 +94,7 @@
 .table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px;
 }
 
 .table th,
@@ -113,26 +128,6 @@
 
 .table tr:hover {
     background-color: #f1f1f1;
-}
-
-.summaryCard {
-  border: none;
-  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-}
-
-.summaryCard:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
-}
-
-.summaryCardHeader {
-  border-bottom: none;
-  padding: 0.75rem 1.25rem;
-}
-
-.summaryCardHeader h5 {
-  font-size: 1rem; /* Ajustar tamaño del título del header */
-  font-weight: 500;
 }
 
 .no_underline {
@@ -225,13 +220,53 @@
   font-weight: bold;
   color: #007bff;
 }
+.summaryCard {
+  border: none;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.summaryCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+}
+
+.summaryCardHeader {
+  border-bottom: none;
+  padding: 0.75rem 1.25rem;
+  color: #333;
+}
+
+.summaryCardHeader h5 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.headerMasVendido {
+  background-color: #f76e1f;
+  border-radius: 3px;
+  border-bottom: none;
+}
+
+.headerMenosVendido {
+  background-color: #f76e1f;
+  border-radius: 3px;
+  border-bottom: none;
+  }
+
+.boddyMasVendido {
+  border-radius: 5px;
+}
+
+.boddyMenosVendido {
+  border-radius: 5px;
+}
 
 .summaryCard .card-body {
   padding: 1.25rem;
 }
 
 .summaryCard:first-child .productTotal {
-  color: #28a745;
+  color: #37a728;
 }
 
 .summaryCard:last-child .productTotal {

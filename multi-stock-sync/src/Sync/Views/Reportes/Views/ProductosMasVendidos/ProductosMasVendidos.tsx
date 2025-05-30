@@ -29,7 +29,7 @@ const Productos: React.FC = () => {
   const itemsPerPage = 10; //Numero maximo por pagina
   const maxPageButtons = 10; //Numero maximo que muestra por pantalla si hay mas de 12 paginas compaginadas igual se muestran
   const [maxProducts, setMaxProducts] = useState(10); // Número máximo de productos para mostrar en el gráfico
-  const [sortOrder, setSortOrder] = useState<'top' | 'bottom'>('top');
+  const [sortOrder, setSortOrder] = useState<'top' | 'bottom'>('top'); //Ordenar de más a menos
   const chartRef = useRef<HTMLDivElement | null>(null);
   const pdfRef = useRef<jsPDF | null>(null); //Función que genera el pdf
   const [showPDFModal, setShowPDFModal] = useState<boolean>(false);
@@ -122,7 +122,7 @@ const Productos: React.FC = () => {
         <button
           key={index}
           onClick={() => paginate(page)}
-          className={`btn ${currentPage === page ? "btn-primary" : "btn-secondary"
+          className={`btn ${styles.btnCustomOrange} ${currentPage === page ? "btn-primary" : "btn-secondary"
             } btn-sm mx-1`}
         >
           {page}
@@ -264,6 +264,7 @@ const Productos: React.FC = () => {
     XLSX.writeFile(workbook, fileName);
   };
   //Función que genera el pdf del reporte de productos
+
   const generatePDF = async () => {
     const doc = new jsPDF();
     const pageHeight = doc.internal.pageSize.height;
@@ -322,7 +323,6 @@ const Productos: React.FC = () => {
     setPdfData(pdfUrl);
     setShowPDFModal(true);
   };
-
   const savePDF = () => {
     if (pdfRef.current) {
       const fileName = `reporte_Productos_${selectedMonth}_${client_id}.pdf`;
@@ -331,21 +331,22 @@ const Productos: React.FC = () => {
     }
   };
 
+  //función que ordena los productos
   const sortedProducts = [...productos].sort(
     (a, b) => b.total_amount - a.total_amount
-  ); //función que ordena los productos
+  );
   const bestSellingProduct =
-    sortedProducts.length > 0 ? sortedProducts[0] : null; //Función que busca al producto más vendido
+    sortedProducts.length > 0 ? sortedProducts[0] : null;
   const leastSellingProduct =
     sortedProducts.length > 0
       ? sortedProducts[sortedProducts.length - 1]
-      : null; //Función que busca al producto menos vendido
+      : null;
 
   return (
     <div className={`${styles.container__HomeProducto} mt-3`}>
       <h1 className="text-center mb-4">Reporte de Productos</h1>
       <div className="container mt-4">
-        {/* Filtros y exportaciones en la parte superior derecha */}
+        {/* Filtros y exportaciones en la parte superior izquierda */}
         <div className="d-flex flex-column flex-lg-row justify-content-lg-between align-items-center mb-4">
           {/* Selector de mes */}
           <div className="mb-3 mb-lg-0 w-100 w-lg-auto">
@@ -362,15 +363,14 @@ const Productos: React.FC = () => {
               max={currentMaxMonth}
             />
           </div>
+
           {/* Grupo de botones */}
-
           <div className="d-grid gap-2 d-lg-flex justify-content-lg-end w-100 w-lg-auto">
-
             <button onClick={exportToExcel} className={`${styles.customButton} btn btn-success`}>
               Exportar a Excel
             </button>
             <button onClick={generatePDF} className={`${styles.customButton} btn btn-danger`}>
-              Generar Vista PDF
+              Generar PDF
             </button>
             <Link to="/sync/home" className={`btn ${styles.btnCustomOrange} ${styles.customButton}`}>
               Volver a inicio
@@ -391,7 +391,7 @@ const Productos: React.FC = () => {
         ) : error ? (
           <p className="text-center text-danger">{error}</p>
         ) : (
-          <div className={styles.tableWrapper}>
+          <div className={styles.tableContainer}>
             <table className={styles.table}>
               <thead>
                 <tr>
@@ -430,7 +430,7 @@ const Productos: React.FC = () => {
           <button
             onClick={() => paginate(currentPage - 1)}
             disabled={currentPage === 1}
-            className="btn btn-primary btn-sm"
+            className={`btn ${styles.btnCustomOrange}`}
           >
             Anterior
           </button>
@@ -440,7 +440,7 @@ const Productos: React.FC = () => {
           <button
             onClick={() => paginate(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="btn btn-primary btn-sm"
+            className={`btn ${styles.btnCustomOrange}`}
           >
             Siguiente
           </button>
@@ -451,17 +451,24 @@ const Productos: React.FC = () => {
           onHide={() => setShowPDFModal(false)}
           size="xl"
           centered
+          fullscreen="md-down"
         >
           <Modal.Header closeButton>
             <Modal.Title>Vista previa del PDF</Modal.Title>
           </Modal.Header>
           <Modal.Body style={{ height: '74vh' }}>
             {pdfData && (
-              <iframe
-                src={pdfData}
+              <object
+                data={pdfData}
+                type="application/pdf"
                 style={{ width: "100%", height: "100%" }}
-                title="PDF Preview"
-              />
+                aria-label="PDF Preview"
+              >
+                <p>
+                  Parece que su navegador no puede mostrar PDFs.
+                  Puede <a href={pdfData} download={`reporte_Productos_${selectedMonth}_${client_id}.pdf`}>descargar el PDF directamente</a>.
+                </p>
+              </object>
             )}
           </Modal.Body>
           <Modal.Footer>
@@ -479,10 +486,10 @@ const Productos: React.FC = () => {
           {/* Tarjeta Producto Más Vendido */}
           <div className="col-12 col-lg-6 mb-3 mb-lg-0 d-flex">
             <div className={`card shadow-lg h-100 ${styles.summaryCard}`}>
-              <div className={`card-header bg-success text-white ${styles.summaryCardHeader}`}>
+              <div className={`${styles.summaryCardHeader} ${styles.headerMasVendido}`}>
                 <h5 className="mb-0">Producto Más Vendido</h5>
               </div>
-              <div className="card-body d-flex flex-column">
+              <div className={"card-body d-flex flex-column"}>
                 {bestSellingProduct ? (
                   <>
                     <h6 className={`${styles.productTitle} mb-2`}>{bestSellingProduct.title || "Sin título"}</h6>
@@ -507,10 +514,11 @@ const Productos: React.FC = () => {
               </div>
             </div>
           </div>
+
           {/* Tarjeta Producto Menos Vendido */}
           <div className="col-12 col-lg-6 d-flex">
             <div className={`card shadow-lg h-100 ${styles.summaryCard}`}>
-              <div className={`card-header bg-danger text-white ${styles.summaryCardHeader}`}>
+              <div className={`${styles.summaryCardHeader} ${styles.headerMenosVendido}`}>
                 <h5 className="mb-0">Producto Menos Vendido</h5>
               </div>
               <div className="card-body d-flex flex-column">
@@ -543,14 +551,14 @@ const Productos: React.FC = () => {
         {/* Gráfico */}
         <div className={`${styles.graficoSectionContenedor} mt-5`}>
           <div className="d-flex flex-column flex-md-row justify-content-md-between align-items-md-center mb-4">
-            {/* Título del gráfico */}
             <h3 className={`${styles.graficoTitulo} mb-3 mb-md-0`}>
               Productos Destacados en Gráfico
             </h3>
+            {/* Filtro del gráfico */}
             <div className="d-flex gap-2">
               <div className={styles.dropdownContainer}>
                 <Dropdown onSelect={(eventKey) => setSortOrder(eventKey as 'top' | 'bottom')}>
-                  <Dropdown.Toggle variant="info" id="dropdown-sort-order" size="sm">
+                  <Dropdown.Toggle id="dropdown-sort-order" size="sm" className={styles.btnCustomOrange}>
                     Ordenar por: {sortOrder === 'top' ? 'Más Vendidos' : 'Menos Vendidos'}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
@@ -566,7 +574,7 @@ const Productos: React.FC = () => {
 
               <div className={styles.dropdownContainer}>
                 <Dropdown onSelect={(eventKey) => setMaxProducts(parseInt(eventKey || "10"))}>
-                  <Dropdown.Toggle variant="secondary" id="dropdown-chart-products" size="sm">
+                  <Dropdown.Toggle id="dropdown-chart-products" size="sm" className={styles.btnCustomOrange}>
                     Mostrar Top: {maxProducts}
                   </Dropdown.Toggle>
                   <Dropdown.Menu>
@@ -583,7 +591,6 @@ const Productos: React.FC = () => {
                 </Dropdown>
               </div>
             </div>
-
           </div>
 
           {/* Contenedor del Canvas del Gráfico */}
