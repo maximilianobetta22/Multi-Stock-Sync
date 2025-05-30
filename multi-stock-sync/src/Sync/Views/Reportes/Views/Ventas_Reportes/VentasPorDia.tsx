@@ -3,8 +3,6 @@ import { useParams } from "react-router-dom";
 import {
   DatePicker,
   Card,
-  Row,
-  Col,
   Typography,
   Button,
   Modal,
@@ -15,6 +13,7 @@ import dayjs from "dayjs";
 import GraficoPorDia from "./components/GraficoPorDia";
 import axiosInstance from "../../../../../axiosConfig";
 import { generarPDFPorDiaBlobURL } from "./utils/exportUtils";
+import './VentasPorDia.Module.css'; 
 
 
 const { Title, Text } = Typography;
@@ -132,36 +131,35 @@ const VentasPorDia: React.FC = () => {
   };
 
   return (
-    <div style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
-      <Title level={2}>Ventas por Día</Title>
+    <div
+      className="container"
+      style={{ maxWidth: 1200, margin: "0 auto", paddingTop: 70 }}
+    >
+      <Title className="titulo">Ventas por Día</Title>
 
       {/* Panel de resumen */}
-      <Row gutter={[16, 16]} justify="center" align="middle" style={{ marginBottom: 24 }}>
-        <Col xs={24} md={12}>
-          <Card>
-            <Text strong>Usuario:</Text>{" "}
-            {userData?.nickname || <Text type="secondary">Cargando...</Text>}
-            <br />
-            <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)}
-          </Card>
-        </Col>
+      <div className="fechaSelector">
+        <Card>
+          <Text strong>Usuario:</Text>{" "}
+          {userData?.nickname || <Text type="secondary">Cargando...</Text>}
+          <br />
+          <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)}
+        </Card>
 
-        <Col xs={24} md={12}>
-          <Card>
-            <Text strong>Selecciona una Fecha:</Text>
-            <br />
-            <DatePicker
-              value={fecha}
-              onChange={(date) => date && setFecha(date)}
-              format="YYYY-MM-DD"
-              style={{ marginTop: 8 }}
-            />
-          </Card>
-        </Col>
-      </Row>
+        <Card>
+          <Text strong>Selecciona una Fecha:</Text>
+          <br />
+          <DatePicker
+            value={fecha}
+            onChange={(date) => date && setFecha(date)}
+            format="YYYY-MM-DD"
+            style={{ marginTop: 8 }}
+          />
+        </Card>
+      </div>
 
       {/* Gráfico */}
-      <Card style={{ padding: 24, minHeight: 500 }}>
+      <div className="graficoContenedor">
         {loading ? (
           <div style={{ textAlign: "center", padding: 40 }}>
             <Spin size="large" />
@@ -170,18 +168,15 @@ const VentasPorDia: React.FC = () => {
           <Text type="secondary">No hay datos disponibles para este día.</Text>
         ) : (
           <>
-            <GraficoPorDia
-              data={ventas}
-              formatCLP={formatCLP}
-            />
+            <GraficoPorDia data={ventas} formatCLP={formatCLP} />
             <Text type="secondary">
               Basado en los 10 productos con mayor ingreso. Detalles adicionales en el PDF.
             </Text>
           </>
         )}
-      </Card>
+      </div>
 
-      {/* Botón de exportar */}
+      {/* Botón */}
       <div style={{ textAlign: "center", marginTop: 32 }}>
         <Button
           type="primary"
@@ -192,10 +187,7 @@ const VentasPorDia: React.FC = () => {
         </Button>
       </div>
 
-
-      {/* Modal de vista previa PDF */}
-
-      
+      {/* Modal */}
       {pdfDataUrl && (
         <Modal
           open={showModal}

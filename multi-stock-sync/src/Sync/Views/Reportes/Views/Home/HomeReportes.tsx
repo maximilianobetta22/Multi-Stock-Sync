@@ -69,20 +69,31 @@ const HomeReportes: React.FC = () => {
     fetchConnections();
   }, [fetchConnections]);
 
-  // Maneja cambio de conexión seleccionada y carga el resumen de tienda
-  const handleConnectionChange = async (value: string) => {
-    setSelectedConnection(value);
-    if (value) {
-      try {
-        setLoadingResumen(true);
-        await fetchStoreSummary(value);
-      } catch (e) {
-        setToastMessage("No se pudo obtener el resumen de la tienda.");
-      } finally {
-        setLoadingResumen(false);
+  useEffect(() => {
+    const cargarConexionAnterior = async () => {
+      const saved = localStorage.getItem("conexionSeleccionada");
+      if (saved && connections.length > 0) {
+        const { client_id } = JSON.parse(saved);
+        const connectionExists = connections.find(c => c.client_id === client_id);
+
+        if (connectionExists) {
+          setSelectedConnection(client_id);
+          try { 
+            setLoadingResumen(true);
+            await fetchStoreSummary(client_id);
+          } catch {
+            setToastMessage("No se pudo obtener el resumen de la tienda.");
+          } finally {
+            setLoadingResumen(false);
+          }
+        }
       }
-    }
-  };
+    };
+
+    cargarConexionAnterior();
+  }, [connections]);
+  
+  // Maneja cambio de conexión seleccionada y carga el resumen de tienda
 
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
   const currentYear = new Date().getFullYear();
@@ -109,23 +120,6 @@ const HomeReportes: React.FC = () => {
       <Title level={2} style={{ textAlign: "center", marginBottom: "2rem" }}>
         Estadísticas Generales
       </Title>
-
-      {/* Selector de conexión */}
-      <div style={{ textAlign: "center", marginBottom: "2rem" }}>
-        <p>Selecciona una conexión para ver el resumen de la tienda</p>
-        <Select
-          style={{ width: 300 }}
-          placeholder="Selecciona una conexión"
-          onChange={handleConnectionChange}
-          value={selectedConnection || undefined}
-        >
-          {connections.map(({ client_id, nickname }) => (
-            <Option key={client_id} value={client_id}>
-              {nickname} ({client_id})
-            </Option>
-          ))}
-        </Select>
-      </div>
 
       {/* Spinner de carga del resumen */}
       {loadingResumen && (
