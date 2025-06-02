@@ -1,9 +1,8 @@
-import { Table, Button, Tag, Dropdown, Space, Tooltip } from "antd";
+import { Table, Button, Tag, Dropdown, Tooltip } from "antd";
 import {
   EditOutlined,
   PauseCircleOutlined,
   CheckCircleOutlined,
-  InfoCircleOutlined,
   MoreOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
@@ -61,7 +60,6 @@ export const TablaProductos = ({
   fechaInicio,
   fechaFin,
   estadoFiltro,
-  mostrarDetalles,
 }: Props) => {
   const traducirEstado = (status: string) => {
     const map: any = {
