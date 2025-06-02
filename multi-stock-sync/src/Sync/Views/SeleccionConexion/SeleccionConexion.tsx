@@ -18,7 +18,7 @@ const SeleccionConexion: React.FC = () => {
       navigate("/login");
       return;
     }
-
+    
     const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
 
 try {
