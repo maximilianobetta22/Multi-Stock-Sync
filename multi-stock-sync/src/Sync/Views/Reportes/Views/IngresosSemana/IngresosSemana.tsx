@@ -45,7 +45,7 @@ const IngresosSemana: React.FC = () => {
         label: "Cantidad Vendida", // Nombre del dataset para cantidades vendidas
         data: [], // Datos numéricos de cantidades por producto
         backgroundColor: "rgba(153, 102, 255, 0.6)", // Color de fondo (púrpura con opacidad)
-        borderColor: "rgba(153, 102, 255, 1)", // Color del borde (púrpura sólido)
+        borderColor: "rgb(212, 91, 248)", // Color del borde (púrpura sólido)
         borderWidth: 2, // Grosor del borde
         datalabels: { // Configuración de etiquetas
           anchor: 'end', // Posición al final de la barra
@@ -138,7 +138,7 @@ const IngresosSemana: React.FC = () => {
             label: "Cantidad Vendida",
             data: result.data.sold_products.map((product: any) => product.quantity), // Datos de cantidades
             backgroundColor: "rgba(153, 102, 255, 0.6)",
-            borderColor: "rgba(153, 102, 255, 1)",
+            borderColor: "rgb(212, 102, 255)",
             borderWidth: 2,
             datalabels: {
               anchor: 'end',
