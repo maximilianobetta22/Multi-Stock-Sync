@@ -10,6 +10,8 @@ import * as XLSX from "xlsx"; // Librería para crear y exportar archivos Excel
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico"; // Componente personalizado para mostrar un indicador de carga
 import axiosInstance from "../../../../../axiosConfig"; // Instancia preconfigurada de Axios para realizar peticiones HTTP
 
+
+
 // Definición del componente funcional IngresosSemana
 const IngresosSemana: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>(); // Extrae el client_id de los parámetros de la URL
@@ -384,8 +386,39 @@ const IngresosSemana: React.FC = () => {
                   </div>
                 )}
 
-                <button type="submit" className="btn btn-primary" disabled={loading}> {/* Botón para enviar el formulario */}
-                  {loading ? "Cargando..." : "Consultar"} {/* Texto dinámico según estado */}
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                  style={{ 
+                    backgroundColor: 'white',
+                    color: '#6a3093',
+                    border: '2px solid #ba68c8',
+                    transition: 'all 0.3s',
+                    zIndex: 1
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.borderColor = '#6a3093';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#6a3093';
+                    e.currentTarget.style.borderColor = '#ba68c8';
+                  }}
+                >
+                  <span style={{ position: 'relative', zIndex: 2 }}>
+                    {loading ? "Cargando..." : "Consultar"}
+                  </span>
+                  <span style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '0%',
+                    height: '100%',
+                    backgroundColor: '#6a3093',
+                    transition: 'all 0.3s ease',
+                    zIndex: 0
+                  }}></span>
                 </button>
               </form>
 
@@ -396,23 +429,144 @@ const IngresosSemana: React.FC = () => {
               )}
 
               <div className="text-start"> {/* Botones de navegación y exportación */}
-                <Link to="/sync/home" className="btn btn-primary mb-3 me-2"> {/* Enlace para volver al inicio */}
-                  Volver a inicio
+                <Link
+                  to="/sync/home"
+                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                  style={{ 
+                    backgroundColor: 'white',
+                    color: '#6a3093',
+                    border: '2px solid #ba68c8',
+                    transition: 'all 0.3s',
+                    zIndex: 1,
+                    display: 'inline-block',
+                    textAlign: 'center',
+                    textDecoration: 'none'
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.borderColor = '#6a3093';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#6a3093';
+                    e.currentTarget.style.borderColor = '#ba68c8';
+                  }}
+                >
+                  <span style={{ position: 'relative', zIndex: 2 }}>
+                    <i className="fas fa-home me-2"></i> Volver al inicio
+                  </span>
+                  <span style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '0%',
+                    height: '100%',
+                    backgroundColor: '#6a3093',
+                    transition: 'all 0.3s ease',
+                    zIndex: 0
+                  }}></span>
                 </Link>
-                <button type="button" className="btn btn-secondary mb-3 me-2" onClick={handleNavigate}> {/* Botón para ir a ventas por mes */}
-                  Ir a Ventas por Mes
+
+                <button
+                  type="button"
+                  onClick={handleNavigate}
+                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                  style={{ 
+                    backgroundColor: 'white',
+                    color: '#6a3093',
+                    border: '2px solid #ba68c8',
+                    transition: 'all 0.3s',
+                    zIndex: 1
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.borderColor = '#6a3093';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#6a3093';
+                    e.currentTarget.style.borderColor = '#ba68c8';
+                  }}
+                >
+                  <span style={{ position: 'relative', zIndex: 2 }}>
+                    <i className="fas fa-calendar-alt me-2"></i> Ver Ventas por Mes
+                  </span>
+                  <span style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '0%',
+                    height: '100%',
+                    backgroundColor: '#6a3093',
+                    transition: 'all 0.3s ease',
+                    zIndex: 0
+                  }}></span>
                 </button>
                 <button
                   type="button"
-                  className="btn btn-success mb-3 me-2"
-                  onClick={generatePDF} // Genera el PDF
-                  disabled={chartData.labels.length === 0} // Deshabilitado si no hay datos
-                  id="descargar"
+                  onClick={generatePDF}
+                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                  style={{ 
+                    backgroundColor: 'white',
+                    color: '#6a3093',
+                    border: '2px solid #ba68c8',
+                    transition: 'all 0.3s',
+                    zIndex: 1
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.borderColor = '#6a3093';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#6a3093';
+                    e.currentTarget.style.borderColor = '#ba68c8';
+                  }}
                 >
-                  Exportar a PDF
+                  <span style={{ position: 'relative', zIndex: 2 }}>
+                    <i className="fas fa-file-pdf me-2"></i> Descargar PDF
+                  </span>
+                  <span style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '0%',
+                    height: '100%',
+                    backgroundColor: '#6a3093',
+                    transition: 'all 0.3s ease',
+                    zIndex: 0
+                  }}></span>
                 </button>
-                <button className="btn btn-primary mb-3" onClick={generateExcel}> {/* Genera el Excel */}
-                  Exportar a Excel
+                <button
+                  type="button"
+                  onClick={generateExcel}
+                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                  style={{ 
+                    backgroundColor: 'white',
+                    color: '#6a3093',
+                    border: '2px solid #ba68c8',
+                    transition: 'all 0.3s',
+                    zIndex: 1
+                  }}
+                  onMouseOver={(e) => {
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.borderColor = '#6a3093';
+                  }}
+                  onMouseOut={(e) => {
+                    e.currentTarget.style.color = '#6a3093';
+                    e.currentTarget.style.borderColor = '#ba68c8';
+                  }}
+                >
+                  <span style={{ position: 'relative', zIndex: 2 }}>
+                    <i className="fas fa-file-excel me-2"></i> Descargar Excel
+                  </span>
+                  <span style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    width: '0%',
+                    height: '100%',
+                    backgroundColor: '#6a3093',
+                    transition: 'all 0.3s ease',
+                    zIndex: 0
+                  }}></span>
                 </button>
               </div>
             </div>

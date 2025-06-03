@@ -1,0 +1,28 @@
+/* Estilo para botones morados primarios */
+.purple-button.ant-btn-primary {
+  background-color: #6a3093;
+  border-color: #6a3093;
+}
+
+.purple-button.ant-btn-primary:hover,
+.purple-button.ant-btn-primary:focus {
+  background-color: #5a2a7d;
+  border-color: #5a2a7d;
+}
+
+.purple-button.ant-btn-primary[disabled] {
+  background-color: #d3d3d3;
+  border-color: #d3d3d3;
+}
+
+/* Estilo para botones secundarios con borde morado */
+.purple-button-secondary {
+  color: #6a3093;
+  border-color: #6a3093;
+}
+
+.purple-button-secondary:hover,
+.purple-button-secondary:focus {
+  color: #5a2a7d;
+  border-color: #5a2a7d;
+}

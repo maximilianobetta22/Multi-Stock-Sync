@@ -44,6 +44,8 @@ const reportLinks = [
   { path: "devoluciones-reembolsos", label: "Devoluciones", icon: faUndo, category: "Clientes" },
   { path: "estados-ordenes-anual", label: "Estados de órdenes", icon: faClipboardList, category: "Órdenes" },
   { path: "historial", label: "Historial despacho", icon: faClipboardList, category: "Órdenes" },
+  { path: "ganancias-mensuales", label: "Ganancias mensuales", icon: faChartLine, category: "Ventas" },
+  
 ];
 
 // Categorías disponibles para filtrar reportes

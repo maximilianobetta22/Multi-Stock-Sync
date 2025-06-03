@@ -7,7 +7,7 @@ import { useListVentas } from '../Hooks/useListVentas';
 
 import { useListCliente } from '../Hooks/useListCliente';
 
-import type { VentaResponse, setVenta, products, FiltrosBackend } from '../Types/ventaTypes';
+import type { VentaResponse, FiltrosBackend, Products } from '../Types/ventaTypes';
 import { LoadingDinamico } from '../../../../components/LoadingDinamico/LoadingDinamico';
 
 const { Title } = Typography;
@@ -46,19 +46,6 @@ const ListaVentas: React.FC = () => {
   });
   console.log(filtros.date_start);
   const [form] = Form.useForm<FormValues>();
-  const [editVenta, setEditVenta] = useState<setVenta>({
-    type_emission: "",
-    warehouse_id: 0,
-    client_id: 0,
-    products: {
-      nombre:"",
-      cantidad: 0,
-      unitPrice: 0
-    },
-    amount_total_products: 0,
-    price_subtotal: 0,
-    price_final: 0
-  });
   const [detalleVisible, setDetalleVisible] = useState<boolean>(false);
   const [ventaSeleccionada, setVentaSeleccionada] = useState<VentaResponse | null>(null);
   const [cambioEstadoVisible, setCambioEstadoVisible] = useState<boolean>(false);
@@ -97,24 +84,14 @@ const ListaVentas: React.FC = () => {
   const mostrarModalCambioEstado = (
     id: number,
     estadoActual: string,
-    warehouse_id: number,total_amount: number, Products: string, client_id: number, price_final: number, price_subtotal: number
-    , type_emission: string
   ): void => {
-    //se formatea el string de productos para enviarlo a la api  
-    const products: products = formatProductostoEdit(Products);
+
+
     //se creala venta a enviar
-    const venta: setVenta = {
-      warehouse_id: warehouse_id,
-      client_id: client_id,
-      products: products,
-      price_final,
-      price_subtotal,
-      amount_total_products: total_amount,
-      type_emission: type_emission,
-    };
+ 
     //se cargan los diferentes estados encesarios para el enevio a la api
     setVentaIdParaCambio(id);
-    setEditVenta(venta);
+   
     setNuevoEstado(estadoActual);
     //se muestra el modal
     setVentaIdParaCambio(id)
@@ -135,7 +112,7 @@ const ListaVentas: React.FC = () => {
   const confirmarCambioEstado = async (): Promise<void> => {
     if (ventaIdParaCambio && nuevoEstado) {
       try {
-        await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado, editVenta);
+        await cambiarEstadoVenta(ventaIdParaCambio, nuevoEstado);
         message.success('Estado de venta actualizado con éxito');
         setCambioEstadoVisible(false);
       } catch (error: unknown) {
@@ -168,72 +145,12 @@ const ListaVentas: React.FC = () => {
       key: 'ventas-list-error'
     });
   }
-  // Ordena la forma en que se muestran los productos en el modal detalle
-  const formatProductos = (productosString: string): string => {
-    try {
-      const parsedData = JSON.parse(productosString);
 
-      // Caso 1: Es un array de productos (ej: '[{"quantity":1,"price":15990}]')
-      if (Array.isArray(parsedData)) {
-        if (parsedData.length === 0) return "No hay productos";
-
-        return parsedData
-          .map(
-            (producto) =>
-              `nombre  ${producto.nombre}| Cantidad: ${
-                producto.quantity
-              } | Precio unitario: ${producto.unit_price.toLocaleString(
-                "es-CL"
-              )} |`
-          )
-          .join("\n");
-      }
-
-      // Caso 2: Es un objeto individual (ej: '{"quantity":1,"price":15990}')
-      if (typeof parsedData === 'object' && parsedData !== null) {
-        if (
-          parsedData.quantity !== undefined &&
-          parsedData.unit_price !== undefined
-        ) {
-          return `| Productos: ${parsedData.quantity
-            } | Precio unitario: $${parsedData.unit_price.toLocaleString(
-              "es-CL"
-            )} |`;
-        } else if (parsedData.price !== undefined) {
-          return `| Productos: ${parsedData.quantity
-            } | Precio unitario: $${parsedData.price.toLocaleString(
-              "es-CL"
-            )} |`;
-        }
-
-      }
-
-      // Si no coincide con ningún formato esperado
-      return "Formato de productos no reconocido";
-
-    } catch (error) {
-      console.error('Error al formatear productos:', error);
-      return productosString; // Devuelve el string original si hay error
-    }
-  };
 
 
   // Ordena la forma en que se envian los productos a la api al momento de editar estado
 
-  const formatProductostoEdit = (productosString: string): products => {
-    console.log(JSON.parse(productosString))
-    const parsedData: products = JSON.parse(productosString);
-    if (typeof parsedData === 'object' && !Array.isArray(parsedData)) {
-      return parsedData;
-    }
 
-
-    if (Array.isArray(parsedData)) {
-      return parsedData[0]; // Si el array está vacío, devuelve null
-    }
-
-    return parsedData;
-  }
   const getClientName = (clientId: number): string => {
     const cliente = clientes.find(c => c.id === clientId);
     if (!cliente) return `Cliente #${clientId}`;
@@ -275,7 +192,7 @@ const ListaVentas: React.FC = () => {
           status_sale = "Sin estado";
         let color = "default";
         switch (status_sale) {
-          case "Cancelada":
+          case "Cancelado":
             color = "error";
             break;
           case "Finalizado":
@@ -285,7 +202,7 @@ const ListaVentas: React.FC = () => {
             color = "warning";
             break;
           case "Emitido":
-            color = "success";
+            color = "blue";
             break;
         }
         return (
@@ -318,10 +235,7 @@ const ListaVentas: React.FC = () => {
           <Button
             size="small"
             icon={<EditOutlined />}
-            onClick={() => mostrarModalCambioEstado(record.id, record.status_sale, record.warehouse_id,
-              record.amount_total_products,record.products,
-              record.client_id, record.price_final,
-              record.price_subtotal, record.type_emission)}
+            onClick={() => mostrarModalCambioEstado(record.id, record.status_sale)}
           >
             Cambiar estado
           </Button>
@@ -330,10 +244,37 @@ const ListaVentas: React.FC = () => {
     },
   ];
 
+  const columnsProduct: ColumnsType<Products> = [
+    {
+      title: "Nombre",
+      dataIndex: "product_name",
+      key: "product_name",
+
+    },
+    {
+      title: "cantidad",
+      dataIndex: "quantity",
+      key: "quantitya",
+    },
+    {
+      title: "precio unitario",
+      dataIndex: "price_unit",
+      key: "price_unit",
+
+    },
+    {
+      title: "subtotal",
+      dataIndex: "subtotal",
+      key: "subtotal",
+
+    },
+  ]
+
   // Función para ver el detalle de una venta
   const verDetalleVenta = (id: number): void => {
     const venta = data.find(v => v.id === id);
     if (venta) {
+      console.log(venta.products)
       setVentaSeleccionada(venta);
       setDetalleVisible(true);
     } else {
@@ -346,7 +287,7 @@ const ListaVentas: React.FC = () => {
     setDetalleVisible(false);
     setVentaSeleccionada(null);
   };
-   
+
 
 
   return (
@@ -389,7 +330,7 @@ const ListaVentas: React.FC = () => {
           </Col>
           <Col xs={24} sm={12} md={6}>
             <Form.Item name="fechaInicio" label="Fecha">
-              <DatePicker 
+              <DatePicker
                 placeholder="Seleccionar fecha"
                 format="DD-MM-YYYY"
                 style={{ width: '100%' }}
@@ -507,11 +448,6 @@ const ListaVentas: React.FC = () => {
               <Descriptions.Item label="Tipo Emisión">
                 {ventaSeleccionada.type_emission}
               </Descriptions.Item>
-              <Descriptions.Item label="Subtotal">
-                <Typography.Text strong>
-                  ${ventaSeleccionada.price_subtotal.toLocaleString("es-CL")}
-                </Typography.Text>
-              </Descriptions.Item>
               <Descriptions.Item label="Total">
                 <Typography.Text strong>
                   ${ventaSeleccionada.price_final.toLocaleString("es-CL")}
@@ -526,16 +462,13 @@ const ListaVentas: React.FC = () => {
               Productos ({ventaSeleccionada.amount_total_products})
             </Divider>
 
-            <Input.TextArea
-              rows={8}
-              value={formatProductos(ventaSeleccionada.products)}
-              readOnly
-              style={{
-                width: "100%",
-                backgroundColor: "#fafafa",
-                fontFamily: "monospace",
-                whiteSpace: "pre",
-                marginBottom: 16,
+            <Table
+              rowKey="id"
+              columns={columnsProduct}
+              dataSource={ventaSeleccionada.products}
+              pagination={{ pageSize: 10 }}
+              locale={{
+                emptyText: "No hay productos registrados",
               }}
             />
           </>

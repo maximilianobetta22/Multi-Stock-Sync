@@ -30,6 +30,7 @@ import Plantilla from "../Views/Plantillas/plantillas";
 // ✅ Nueva vista unificada de comparación
 import Compare from "../Views/Compare/Compare";
 import StockCritico from "../Views/StockCritico/ReporteStockCritico";
+import GananciasMensuales from "../Views/gananciasMensuales/GananciasMensuales";
 
 function RouterReportes() {
   return (
@@ -60,6 +61,7 @@ function RouterReportes() {
       <Route path="devoluciones-reembolsos/:client_id/detalle/:refund_id" element={<DetalleReembolso />} />
       <Route path="productos-mas-vendidos/:client_id" element={<ProductosMasVendidos />} />
       <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
+      <Route path="/ganancias-mensuales/:conexionId" element={<GananciasMensuales />} />
       <Route
         path="ingresos-categoria-producto/:client_id"
         element={

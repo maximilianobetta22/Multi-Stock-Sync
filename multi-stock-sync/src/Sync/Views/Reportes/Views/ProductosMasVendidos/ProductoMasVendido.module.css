@@ -1,6 +1,6 @@
 .HomeProducto {
     display: flex;
-    flex-direction: column !important;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 1rem;
@@ -10,8 +10,8 @@
 .container__HomeProducto {
     height: 85vh;
     width: 100%;
+    max-width: 1400px;
     padding: 1.5rem;
-    background-color: #f3f3f3;
     border-radius: 1rem;
 }
 
@@ -46,6 +46,33 @@
     align-items: center;
 }
 
+.customButton {
+    border-radius: 20px;
+    padding: 0.5rem 1.5rem;
+    font-size: 1rem;
+    white-space: nowrap;
+}
+
+.btnCustomOrange {
+  background-color: #d35b16 !important;
+  border-color: #F36F21 !important;
+  color: #ffffff !important;
+}
+
+.btnCustomOrange:hover,
+.btnCustomOrange:focus {
+  background-color: #b04a10 !important;
+  border-color: #a0400c !important;
+  color: #ffffff !important;
+}
+
+.btnCustomOrange.active,
+.show > .btnCustomOrange.dropdown-toggle {
+  background-color: #b04a10 !important;
+  border-color: #a0400c !important;
+  color: #ffffff !important;
+}
+
 .table__container {
     max-height: 50vh;
     overflow-y: auto;
@@ -67,6 +94,7 @@
 .table {
     width: 100%;
     border-collapse: collapse;
+    min-width: 600px;
 }
 
 .table th,
@@ -77,36 +105,25 @@
     font-size: 0.875rem; 
 }
 
-.table tbody {
-    display: block;
-    max-height: 300px;
-    overflow-y: auto;
-}
-
-.table thead,
-.table tbody tr {
-    display: table;
-    width: 100%;
-    table-layout: fixed;
-}
-
 .table thead {
     position: sticky;
     top: 0;
-    background-color: #f2f2f2; /* Ensure the header has a background */
+    background-color: #e9e9e9;
     z-index: 1;
-    border: 3px solid #ccc; /* Add this line to set the border */
+    box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1);
 }
 
 .table th, .table td {
     padding: 0.75rem;
     text-align: left;
-    border-bottom: 1px solid #ddd;
-    word-wrap: break-word; /* Add this line to handle long text */
+    border-bottom: 1px solid #dee2e6;
+    font-size: 0.9rem;
+    word-wrap: break-word;
 }
 
 .table th {
-    background-color: #f2f2f2;
+    background-color: #cacaca;
+    color: #212529;
 }
 
 .table tr:hover {
@@ -164,4 +181,106 @@
     justify-content: space-between;
     margin-top: 1rem;
     width: 100%;
+}
+
+.graficoSectionContenedor {
+  background-color: #ffffff;
+  padding: 1.5rem;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.graficoTitulo {
+  font-size: 1.25rem;
+  font-weight: 500;
+  margin-bottom: 0;
+}
+
+.dropdownContainer .dropdown-toggle {
+  font-size: 0.875rem;
+}
+
+.productTitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.productDetail strong {
+  color: #222;
+  margin-right: 0.25rem;
+}
+
+.productTotal {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #007bff;
+}
+.summaryCard {
+  border: none;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.summaryCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.15) !important;
+}
+
+.summaryCardHeader {
+  border-bottom: none;
+  padding: 0.75rem 1.25rem;
+  color: #333;
+}
+
+.summaryCardHeader h5 {
+  font-size: 1rem;
+  font-weight: 500;
+}
+
+.headerMasVendido {
+  background-color: #f76e1f;
+  border-radius: 3px;
+  border-bottom: none;
+}
+
+.headerMenosVendido {
+  background-color: #f76e1f;
+  border-radius: 3px;
+  border-bottom: none;
+  }
+
+.boddyMasVendido {
+  border-radius: 5px;
+}
+
+.boddyMenosVendido {
+  border-radius: 5px;
+}
+
+.summaryCard .card-body {
+  padding: 1.25rem;
+}
+
+.summaryCard:first-child .productTotal {
+  color: #37a728;
+}
+
+.summaryCard:last-child .productTotal {
+  color: #dc3545;
+}
+
+.chartCanvasWrapper {
+  position: relative;
+  height: 450px;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1rem;
+  border: 1px solid #e9ecef;
+  border-radius: 0.25rem;
+  background-color: #f8f9fa;
 }

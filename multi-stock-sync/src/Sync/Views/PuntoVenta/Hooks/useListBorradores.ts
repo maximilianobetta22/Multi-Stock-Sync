@@ -27,13 +27,13 @@ export const useListBorradores = () => {
       setClientId(ClientId);
       console.log("ClientId:", ClientId);
       if (!ClientId) {
-        throw new Error("No hay conexión seleccionada");
+        throw new Error("No hay conexiÃ³n seleccionada");
       }
       console.log("filtros en hook:", filtros);
       filtros.status_sale = "Pendiente"
       const response = await ListVentaService.getListVenta(ClientId, filtros);
       // Ensure we're working with an array
-      const ventasData = Array.isArray(response) ? response : [];
+      const ventasData = Array.isArray(response.data) ? response.data : [];
 
       setAllData(ventasData);
       setData(ventasData);
