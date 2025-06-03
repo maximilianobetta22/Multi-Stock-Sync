@@ -19,6 +19,7 @@ import IngresosCategoriaProducto from "../Views/IngresosCategoriaProducto/Ingres
 import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Context/IngresosProductosProvider";
 import EstadosOrdenes from "../Views/EstadosOrdenes/EstadosOrdenes";
 import EstadosOrdenesAnual from "../Views/EstadoOrdenesAnuales/EstadoOrdenesAnuales";
+import ReportesCancelados from "../Views/ReportesCancelados/ReportesCancelados";
 
 import ReporteDisponible from "../Views/ReporteDisponible/ReporteDisponible";
 import ReporteRecepcion from "../Views/ReporteRecepcion/ReporteRecepcion";
@@ -60,6 +61,8 @@ function RouterReportes() {
       <Route path="devoluciones-reembolsos/:client_id/detalle/:refund_id" element={<DetalleReembolso />} />
       <Route path="productos-mas-vendidos/:client_id" element={<ProductosMasVendidos />} />
       <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
+      <Route path="reportes-cancelados/:client_id" element={<ReportesCancelados />} />
+
       <Route
         path="ingresos-categoria-producto/:client_id"
         element={
