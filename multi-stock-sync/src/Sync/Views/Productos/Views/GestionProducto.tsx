@@ -4,6 +4,7 @@ import {
   PlusCircleOutlined,
   FileExcelOutlined,
   AppstoreOutlined,
+  TagsOutlined,
 } from "@ant-design/icons";
 
 const { Title, Paragraph } = Typography;
@@ -23,6 +24,12 @@ const GestionProducto = () => {
       titulo: "Carga masiva desde Excel",
       descripcion: "Carga múltiples productos mediante archivo Excel.",
       ruta: "/sync/productos/carga-masiva",
+    },
+    {
+      icon: <TagsOutlined style={{ fontSize: 36, color: "#722ed1" }} />,
+      titulo: "Plantillas Mercado Libre",
+      descripcion: "Descarga plantillas de Excel por categoría para carga masiva.",
+      ruta: "/sync/productos/plantillas-mercadolibre",
     },
     {
       icon: <AppstoreOutlined style={{ fontSize: 36, color: "#fa8c16" }} />,
