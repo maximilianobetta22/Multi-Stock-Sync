@@ -13,7 +13,15 @@ export interface CancelledProductItem {
   };
 }
 
-export const usePerdidasManagement = () => {
+interface UsePerdidasManagementResult {
+  productosPerdidos: CancelledProductItem[];
+  totalMontoGlobalPerdido: number;
+  loading: boolean;
+  error: string | null;
+  fetchPerdidasEmpresa: () => Promise<void>;
+}
+
+export const usePerdidasManagement = (): UsePerdidasManagementResult => {
   const [productosPerdidos, setProductosPerdidos] = React.useState<CancelledProductItem[]>([]);
   const [totalMontoGlobalPerdido, setTotalMontoGlobalPerdido] = React.useState<number>(0);
   const [loading, setLoading] = React.useState<boolean>(false);
