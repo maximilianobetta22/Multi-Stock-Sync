@@ -1,0 +1,56 @@
+.perdidasContainer {
+  background-color: #f0f2f5;
+}
+
+.statsCardContainer {
+  background: linear-gradient(to right, #fff1f0, #ffe7ba);
+  border: 1px solid #ffccc7;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.exportButtonExcel button, .exportButtonPdf button {
+  transition: all 0.3s ease;
+}
+.exportButtonExcel button:hover {
+  background-color: #389e0d !important;
+  border-color: #389e0d !important;
+  color: white !important;
+}
+.exportButtonPdf button:hover {
+  background-color: #cf1322 !important;
+  border-color: #cf1322 !important;
+  color: white !important;
+}
+
+.chartWrapper {
+  padding: 20px;
+  border: 1px solid #e8e8e8;
+  border-radius: 8px;
+  background-color: #fff;
+}
+
+.evenRow {
+  background-color: #ffffff;
+}
+.oddRow {
+  background-color: #fafafa;
+}
+
+.activeMenuItem {
+  background-color: #e6f7ff !important;
+  color: #1890ff !important;
+}
+
+.perdidasContainer .ant-btn-primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+.perdidasContainer .ant-btn-primary:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+
+.perdidasContainer .ant-card {
+    border-radius: 8px;
+}
