@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { FormInstance, message } from "antd";
 import axios from "axios";
 
@@ -15,6 +15,12 @@ export const useCrearProducto = (form: FormInstance) => {
 
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
   const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
+  useEffect(() => {
+    const selectedCatalogId = form.getFieldValue("catalog_product_id");
+    if (selectedCatalogId) {
+      setCatalogProductId(selectedCatalogId);
+    }
+  }, []);
 
   const authHeader = () => ({
     headers: {
@@ -105,13 +111,22 @@ export const useCrearProducto = (form: FormInstance) => {
       await obtenerAtributos(data.category_id);
 
       if (data.products?.length > 0) {
-        setCatalogProducts(data.products);
-        message.info("Hay productos de catálogo disponibles. Selecciona uno.");
-      } else {
-        setCatalogProducts([]);
-        setCatalogProductId("");
-        form.setFieldsValue({ catalog_product_id: undefined });
-      }
+  setCatalogProducts(data.products);
+
+  if (data.products.length === 1) {
+    const unico = data.products[0];
+    setCatalogProductId(unico.id);
+    form.setFieldsValue({ catalog_product_id: unico.id });
+    message.info("Se seleccionó automáticamente el único producto del catálogo disponible.");
+  } else {
+    message.info("Hay productos de catálogo disponibles. Selecciona uno.");
+  }
+} else {
+  setCatalogProducts([]);
+  setCatalogProductId("");
+  form.setFieldsValue({ catalog_product_id: undefined });
+}
+
     } catch (error) {
       console.error("❌ Error al predecir categoría:", error);
       message.error("Error al intentar predecir la categoría.");
@@ -138,94 +153,122 @@ export const useCrearProducto = (form: FormInstance) => {
   };
 
   const onFinish = async (values: any) => {
-    if (!conexion?.client_id || !categoryId) return message.error("Faltan datos clave.");
-    if (!values.condition || imagenes.length === 0 || !values.description || !values.price || !values.quantity) {
-      return message.error("Completa todos los campos obligatorios.");
-    }
+  if (!conexion?.client_id || !categoryId) 
+    return message.error("Faltan datos clave.");
+    
+  if (!values.condition || imagenes.length === 0 || !values.description || !values.price || !values.quantity) {
+    return message.error("Completa todos los campos obligatorios.");
+  }
 
-    const tituloFinal = validateTitle(values.title || "");
-    const payload: any = {
-      category_id: categoryId,
-      condition: values.condition,
-      price: values.price,
-      currency_id: values.currency_id,
-      available_quantity: values.quantity,
-      description: values.description,
-      listing_type_id: values.listing_type_id,
-      pictures: imagenes.map((src) => ({ source: src })),
-      shipping: {
-        mode: "me2",
-        local_pick_up: values.local_pick_up || false,
-        free_shipping: values.free_shipping || false,
-      },
-    };
+  const tituloFinal = validateTitle(values.title || "");
+  const payload: any = {
+    category_id: categoryId,
+    condition: values.condition,
+    price: values.price,
+    currency_id: values.currency_id,
+    available_quantity: values.quantity,
+    listing_type_id: values.listing_type_id,
+    pictures: imagenes.map((src) => ({ source: src })),
+    shipping: {
+      mode: "me2",
+      local_pick_up: values.local_pick_up || false,
+      free_shipping: values.free_shipping || false,
+    },
+  };
 
-    if (!catalogProductId) {
+  const atributos: any[] = [
+    ...Object.entries(values.attributes || {}).map(([id, value_name]) => ({ id, value_name })),
+    ...Object.entries(values.specs || {}).map(([id, value_name]) => ({ id, value_name })),
+  ];
+
+  const sizeGridAttr = atributosCategoria.find((attr) => attr.id === "SIZE_GRID_ID");
+  const validGrids = sizeGridAttr?.values?.map((v: any) => v.id) || [];
+
+  if (values.size_grid_id && validGrids.includes(values.size_grid_id)) {
+    atributos.push({
+      id: "SIZE_GRID_ID",
+      value_id: values.size_grid_id,
+    });
+  } else if (values.size_grid_id) {
+    console.warn("❌ SIZE_GRID_ID inválido para esta categoría:", values.size_grid_id);
+    message.warning("La grilla de tallas seleccionada no es válida para esta categoría.");
+  }
+
+  payload.attributes = atributos;
+
+  payload.sale_terms = [
+    { id: "WARRANTY_TYPE", value_name: "Garantía del vendedor" },
+    { id: "WARRANTY_TIME", value_name: "90 días" },
+  ];
+// --- Bloque de asignación de campos según catálogo ---
+await form.validateFields(); // 🔧 sincroniza el formulario completo
+const requiereCatalogo = categoriasConCatalogoObligatorio.includes(categoryId);
+const catalogProductIdFinal = form.getFieldValue("catalog_product_id") || catalogProductId || "";
+console.log("🧪 catalog_product_id desde form:", form.getFieldValue("catalog_product_id"));
+
+
+  if (!catalogProductIdFinal) {
+    if (!requiereCatalogo) {
       payload.title = tituloFinal;
       payload.family_name = tituloFinal;
-    } else {
-      payload.catalog_product_id = catalogProductId;
+      payload.description = values.description;
+    } else if (requiereCatalogo && catalogProducts.length === 1) {
+      const unico = catalogProducts[0];
+      setCatalogProductId(unico.id);
+      form.setFieldsValue({ catalog_product_id: unico.id });
+      payload.catalog_product_id = unico.id;
       payload.catalog_listing = true;
-    }
-
-    const atributos: any[] = [
-  ...Object.entries(values.attributes || {}).map(([id, value_name]) => ({ id, value_name })),
-  ...Object.entries(values.specs || {}).map(([id, value_name]) => ({ id, value_name })),
-];
-
-
-    const sizeGridAttr = atributosCategoria.find((attr) => attr.id === "SIZE_GRID_ID");
-const validGrids = sizeGridAttr?.values?.map((v: any) => v.id) || [];
-
-if (values.size_grid_id && validGrids.includes(values.size_grid_id)) {
-  atributos.push({
-    id: "SIZE_GRID_ID",
-    value_id: values.size_grid_id,
-  });
-} else if (values.size_grid_id) {
-  console.warn("❌ SIZE_GRID_ID inválido para esta categoría:", values.size_grid_id);
-  message.warning("La grilla de tallas seleccionada no es válida para esta categoría.");
-}
-
-
-    payload.attributes = atributos;
-
-    payload.sale_terms = [
-      { id: "WARRANTY_TYPE", value_name: "Garantía del vendedor" },
-      { id: "WARRANTY_TIME", value_name: "90 días" },
-    ];
-
-    try {
-      setLoading(true);
-      console.log("📦 Payload final:", payload);
-
-      await axios.post(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/Products/${conexion.client_id}/crear-producto`,
-        payload,
-        authHeader()
-      );
-
-      message.success("✅ Producto subido exitosamente");
-      form.resetFields();
-      setImagenes([]);
-      setAtributosCategoria([]);
-      setCatalogProducts([]);
-      setCatalogProductId("");
-    } catch (error: any) {
-      const data = error.response?.data;
-      console.error("❌ Error al crear producto:", data);
-
-      if (data?.ml_error?.cause?.length) {
-        const errores = data.ml_error.cause.map((c: any) => `• ${c.message}`).join("\n");
-        message.error(`Mercado Libre rechazó el producto:\n${errores}`);
-      } else {
-        const msg = data?.message || "Hubo un error al subir el producto.";
-        message.error(msg);
-      }
-    } finally {
+      message.info("Se seleccionó automáticamente el único producto del catálogo disponible.");
+    } else {
+      message.error("Debes seleccionar un producto del catálogo para esta categoría.");
       setLoading(false);
+      return;
     }
-  };
+  } else {
+    payload.catalog_product_id = catalogProductIdFinal;
+    payload.catalog_listing = true;
+  }
+
+  if (payload.catalog_product_id) {
+    delete payload.title;
+    delete payload.description;
+    delete payload.family_name;
+  }
+
+  console.log("📦 Payload final:", payload);
+  console.log("📌 ¿Tiene catálogo?:", catalogProductIdFinal);
+  // --- Fin del bloque ---
+
+  try {
+    setLoading(true);
+    await axios.post(
+      `${import.meta.env.VITE_API_URL}/mercadolibre/Products/${conexion.client_id}/crear-producto`,
+      payload,
+      authHeader()
+    );
+    console.log("✅ Producto creado exitosamente");
+    message.success("✅ Producto subido exitosamente");
+    form.resetFields();
+    setImagenes([]);
+    setAtributosCategoria([]);
+    setCatalogProducts([]);
+    setCatalogProductId("");
+  } catch (error: any) {
+    const data = error.response?.data;
+    console.error("❌ Error al crear producto:", data);
+    if (data?.ml_error?.cause?.length) {
+      const errores = data.ml_error.cause.map((c: any) => `• ${c.message}`).join("\n");
+      message.error(`Mercado Libre rechazó el producto:\n${errores}`);
+    } else {
+      const msg = data?.message || "Hubo un error al subir el producto.";
+      message.error(msg);
+    }
+  } finally {
+    setLoading(false);
+  }
+};
+
+
 
   return {
     loading,
