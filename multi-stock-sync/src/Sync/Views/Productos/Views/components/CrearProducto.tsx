@@ -9,6 +9,10 @@ import {
   Space,
   Card,
   Switch,
+  Divider,
+  Alert,
+  Row,
+  Col,
 } from "antd";
 import { UploadOutlined } from "@ant-design/icons";
 import { useCrearProducto } from "../hook/useCrearProducto";
@@ -36,42 +40,41 @@ const CrearProducto: React.FC = () => {
   } = useCrearProducto(form);
 
   const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
-  if (!conexion || !conexion.nickname) {
+  if (!conexion?.nickname) {
     return (
       <Card style={{ maxWidth: 800, margin: "0 auto" }}>
-        <p style={{ color: "red" }}>Por favor, selecciona una conexión de Mercado Libre.</p>
+        <Alert message="Por favor, selecciona una conexión de Mercado Libre." type="error" />
       </Card>
     );
   }
-  
-  
+
+  const requiereCatalogo = categoriasConCatalogoObligatorio.includes(categoryId);
 
   return (
-    <Card style={{ maxWidth: 800, margin: "0 auto" }}>
-      {conexion?.nickname && (
-        <p style={{ fontWeight: 500, marginBottom: 10 }}>
-          🛒 Estás subiendo un producto a: <strong>{conexion.nickname}</strong>
-        </p>
-      )}
+    <Card style={{ maxWidth: 900, margin: "0 auto" }}>
+      <p style={{ fontWeight: 500, marginBottom: 10 }}>
+        🛒 Estás subiendo un producto a: <strong>{conexion.nickname}</strong>
+      </p>
 
       <Title level={3}>Subir Producto a Mercado Libre</Title>
 
-      {(catalogProducts.length > 0 || categoriasConCatalogoObligatorio.includes(categoryId)) &&
-        !catalogProductId && (
-          <div style={{ marginBottom: 16 }}>
-            <div
-              style={{
-                backgroundColor: "#fff1f0",
-                border: "1px solid #ffa39e",
-                padding: 12,
-                borderRadius: 4,
-                color: "#a8071a",
-              }}
-            >
-              ⚠️ Esta categoría exige seleccionar un producto del catálogo para poder publicarlo.
-            </div>
-          </div>
-        )}
+      {!categoryId && (
+        <Alert
+          type="info"
+          message="Escribe un título para predecir la categoría automáticamente."
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
+
+      {requiereCatalogo && !catalogProductId && (
+        <Alert
+          message="⚠️ Esta categoría exige seleccionar un producto del catálogo para poder publicarlo."
+          type="warning"
+          showIcon
+          style={{ marginBottom: 16 }}
+        />
+      )}
 
       <Form layout="vertical" form={form} onFinish={onFinish}>
         {!catalogProductId && (
@@ -88,11 +91,11 @@ const CrearProducto: React.FC = () => {
           <Form.Item
             name="catalog_product_id"
             label="Producto del catálogo"
-            rules={[{ required: true }]}
+            rules={[{ required: true, message: "Selecciona un producto del catálogo" }]}
           >
             <Select
               showSearch
-              onChange={(value: string) => setCatalogProductId(value)}
+              onChange={setCatalogProductId}
               optionFilterProp="children"
               placeholder="Selecciona el producto del catálogo"
             >
@@ -136,32 +139,58 @@ const CrearProducto: React.FC = () => {
           </Form.Item>
         ))}
 
-        <Form.Item name="price" label="Precio" rules={[{ required: true }]}>
-          <InputNumber min={0} style={{ width: "100%" }} />
-        </Form.Item>
-
-        <Form.Item name="currency_id" label="Moneda" rules={[{ required: true }]}>
-          <Select>
-            <Select.Option value="CLP">CLP</Select.Option>
-            <Select.Option value="USD">USD</Select.Option>
-          </Select>
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="price" label="Precio" rules={[{ required: true }]}>
+              <InputNumber min={0} style={{ width: "100%" }} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="currency_id" label="Moneda" rules={[{ required: true }]}>
+              <Select>
+                <Select.Option value="CLP">CLP</Select.Option>
+                <Select.Option value="USD">USD</Select.Option>
+              </Select>
+            </Form.Item>
+          </Col>
+        </Row>
 
         <Form.Item name="quantity" label="Cantidad" rules={[{ required: true }]}>
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
-        {!categoriasConCatalogoObligatorio.includes(categoryId) && (
-  <Form.Item
-    name="family_name"
-    label="Nombre de Familia (family_name)"
-    tooltip="Este valor agrupa tus publicaciones similares. Usa palabras específicas como modelo, color, etc."
-    rules={[{ required: true, message: "Debes ingresar el nombre de familia" }]}
-  >
-    <Input placeholder="Ej: Celular" />
-  </Form.Item>
-)}
 
+        {atributosCategoria.map((atributo) => {
+          if (atributo.id === "SIZE_GRID_ID") {
+            return (
+              <Form.Item
+                key={atributo.id}
+                label="Guía de Tallas"
+                name="size_grid_id"
+                rules={[{ required: true, message: "Selecciona una guía de tallas" }]}
+              >
+                <Select placeholder="Selecciona una guía de tallas">
+                  {atributo.values?.map((value: any) => (
+                    <Select.Option key={value.id} value={value.id}>
+                      {value.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            );
+          }
+          return null;
+        })}
 
+        {!catalogProductId && (
+          <Form.Item
+            name="family_name"
+            label="Nombre de Familia"
+            tooltip="Agrupa publicaciones similares. Ej: modelo, color, tipo, etc."
+            rules={[{ required: true }]}
+          >
+            <Input placeholder="Ej: Celular Samsung A12 Azul" />
+          </Form.Item>
+        )}
 
         <Form.Item name="listing_type_id" label="Tipo de publicación" rules={[{ required: true }]}>
           <Select>
@@ -178,10 +207,10 @@ const CrearProducto: React.FC = () => {
 
         <Form.Item label="Imágenes agregadas">
           <ul>
-            {imagenes.map((src: string, idx: number) => (
+            {imagenes.map((src, idx) => (
               <li key={idx}>
                 <a href={src} target="_blank" rel="noreferrer">
-                  {src}
+                  <img src={src} alt={`Imagen ${idx + 1}`} style={{ maxWidth: 100 }} />
                 </a>
               </li>
             ))}
@@ -190,6 +219,8 @@ const CrearProducto: React.FC = () => {
             Agregar imagen por URL
           </Button>
         </Form.Item>
+
+        <Divider />
 
         <Form.Item name="warranty_type" label="Tipo de Garantía">
           <Input placeholder="Ej: Garantía del vendedor" />
@@ -219,7 +250,11 @@ const CrearProducto: React.FC = () => {
                 rules={[{ required: true }]}
               >
                 {attr.value_type === "list" && attr.values?.length > 0 ? (
-                  <Select showSearch optionFilterProp="children">
+                  <Select
+                    mode={attr.tags?.multivalued ? "multiple" : undefined}
+                    showSearch
+                    optionFilterProp="children"
+                  >
                     {attr.values.map((v: any) => (
                       <Select.Option key={v.id} value={v.name}>
                         {v.name}
