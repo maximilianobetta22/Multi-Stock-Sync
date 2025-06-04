@@ -1,11 +1,7 @@
-// Importaciones necesarias
-import React, { useState, useRef } from "react";
-import { Card, Button, Modal, Select, Spin, Alert } from "antd";
-import type { DefaultOptionType } from 'antd/es/select';
-import { jsPDF } from "jspdf";
+import { useEffect, useState, useCallback } from "react";
+import { Select, Button, Card, Alert, Row, Col, Spin, Typography } from "antd";
 import { Line } from "react-chartjs-2";
-import * as XLSX from 'xlsx';
-import html2canvas from 'html2canvas';
+import axiosInstance from "../../../../../axiosConfig";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -15,10 +11,8 @@ import {
   Title,
   Tooltip,
   Legend,
-} from "chart.js";
-import './GananciasMensuales.css'; // Estilos personalizados
+} from 'chart.js';
 
-// Registro de componentes necesarios para Chart.js
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -29,317 +23,241 @@ ChartJS.register(
   Legend
 );
 
-// Inicializa Select
 const { Option } = Select;
+const { Text } = Typography;
 
-// Tipo de datos que usará el gráfico
-interface ChartData {
-  labels: string[];
-  datasets: {
-    label: string;
-    data: number[];
-    borderColor: string;
-    backgroundColor: string;
-    tension?: number;
-    fill?: boolean;
-  }[];
+interface Product {
+  title: string;
+  quantity: number;
+  price: number;
 }
 
-const GananciasMensuales: React.FC = () => {
-  // Estados del componente
-  const [mesSeleccionado, setMesSeleccionado] = useState<string | null>(null);
-  const [datosGrafico, setDatosGrafico] = useState<ChartData | null>(null);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [pdfPreview, setPdfPreview] = useState<string | null>(null);
-  const [showPreview, setShowPreview] = useState(false);
-  const chartRef = useRef(null); // Referencia al gráfico para exportación
+interface Order {
+  id: string;
+  created_date: string;
+  total_amount: number;
+  status: string;
+  products: Product[];
+}
 
-  // Lista de meses en español
-  const meses = [
+interface MonthlySalesData {
+  total_sales: number;
+  orders: Order[];
+}
+
+interface ApiResponse {
+  sales_by_month: {
+    [key: string]: MonthlySalesData;
+  };
+  total_sales?: number;
+  date_range?: {
+    from: string;
+    to: string;
+  };
+}
+
+const GananciasMensuales = () => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [apiData, setApiData] = useState<ApiResponse | null>(null);
+  const [selectedYear, setSelectedYear] = useState<string>('');
+  const [selectedMonth, setSelectedMonth] = useState<string>('');
+  const [chartData, setChartData] = useState<any>(null);
+
+  const monthNames = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ];
 
-  // Filtro para buscar meses en el selector
-  const filterOption = (input: string, option: DefaultOptionType | undefined): boolean => {
-    if (!option?.children) return false;
-    return String(option.children).toLowerCase().includes(input.toLowerCase());
-  };
-
-  // Genera datos de ejemplo simulando estacionalidad
-  const generarDatosReales = (mesIndex: number): number[] => {
-    const datos: number[] = [];
-    for (let i = 0; i < 3; i++) {
-      const mesActual = (mesIndex + i - 1 + 12) % 12;
-      const factorEstacional = 1 + Math.sin(mesActual * Math.PI / 6) * 0.3;
-      datos.push(Math.floor((500 + Math.random() * 1500) * factorEstacional));
-    }
-    return datos;
-  };
-
-  // Maneja la consulta de datos al seleccionar un mes
-  const handleConsultar = () => {
-    if (!mesSeleccionado) {
-      setError("Por favor selecciona un mes");
-      return;
-    }
-
+  const fetchSalesData = useCallback(async () => {
+    setLoading(true);
     setError(null);
-    setLoading(true);
+    try {
+      const response = await axiosInstance.get<ApiResponse>(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/get-total-sales-all-companies`
+      );
 
-    // Simula carga de datos con un pequeño delay
-    setTimeout(() => {
-      try {
-        const index = meses.indexOf(mesSeleccionado);
-        const datos: ChartData = {
-          labels: [
-            meses[(index + 11) % 12],
-            meses[index],
-            meses[(index + 1) % 12],
-          ],
-          datasets: [
-            {
-              label: "Ganancias ($)",
-              data: generarDatosReales(index),
-              borderColor: "#1890ff",
-              backgroundColor: "rgba(24, 144, 255, 0.2)",
-              tension: 0.4,
-              fill: true,
-            },
-          ],
+      console.log("Respuesta API completa:", response.data);
+
+      const data = response.data;
+      if (!data.sales_by_month || Object.keys(data.sales_by_month).length === 0) {
+        throw new Error("La API no devolvió datos válidos");
+      }
+
+      setApiData(data);
+    } catch (error) {
+      console.error("Error al cargar datos:", error);
+      setError("Error al cargar datos");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const getAvailableYears = () => {
+    if (!apiData) return [];
+    return Object.keys(apiData.sales_by_month)
+      .map(key => key.split('-')[0])
+      .filter((year, index, self) => self.indexOf(year) === index)
+      .sort((a, b) => b.localeCompare(a));
+  };
+
+  const getAvailableMonths = () => {
+    if (!selectedYear || !apiData) return [];
+    return Object.keys(apiData.sales_by_month)
+      .filter(key => key.startsWith(`${selectedYear}-`))
+      .map(key => {
+        const monthNum = parseInt(key.split('-')[1]);
+        return {
+          value: key,
+          label: monthNames[monthNum - 1]
         };
-        setDatosGrafico(datos);
-      } catch (err) {
-        setError("Error al cargar los datos");
-      } finally {
-        setLoading(false);
-      }
-    }, 800);
+      })
+      .sort((a, b) => a.value.localeCompare(b.value));
   };
 
-  // Genera y descarga o previsualiza un PDF
-  const generatePDF = async (download = true) => {
-    if (!datosGrafico || !chartRef.current) {
-      setError("No hay datos para exportar");
-      return;
-    }
+  const generateChart = () => {
+    if (!selectedMonth || !apiData) return;
 
-    setLoading(true);
-    setModalMessage("Generando documento...");
-    setIsModalVisible(true);
+    const monthData = apiData.sales_by_month[selectedMonth];
+    if (!monthData) return;
 
-    try {
-      const canvas = await html2canvas(chartRef.current);
-      const imgData = canvas.toDataURL('image/png');
+    const dailySales = monthData.orders.reduce((acc, order) => {
+      const date = new Date(order.created_date).toLocaleDateString();
+      acc[date] = (acc[date] || 0) + order.total_amount;
+      return acc;
+    }, {} as Record<string, number>);
 
-      const doc = new jsPDF();
-      doc.setFontSize(18);
-      doc.text("Reporte de Ganancias Mensuales", 105, 15, { align: 'center' });
-      doc.setFontSize(14);
-      doc.text(`Mes seleccionado: ${mesSeleccionado}`, 105, 25, { align: 'center' });
-
-      // Agrega imagen del gráfico
-      doc.addImage(imgData, 'PNG', 15, 40, 180, 100);
-
-      // Agrega tabla de ganancias
-      doc.setFontSize(12);
-      doc.text("Detalle de Ganancias:", 15, 150);
-
-      datosGrafico.labels.forEach((mes, i) => {
-        doc.text(
-          `${mes}: $${datosGrafico.datasets[0].data[i].toLocaleString()}`,
-          20,
-          160 + (i * 10)
-        );
-      });
-
-      if (download) {
-        doc.save(`reporte-ganancias-${mesSeleccionado}.pdf`);
-        setModalMessage("¡PDF descargado correctamente!");
-      } else {
-        const pdfBlob = doc.output('blob');
-        const previewUrl = URL.createObjectURL(pdfBlob);
-        setPdfPreview(previewUrl);
-        setShowPreview(true);
-        setModalMessage("Vista previa generada");
-      }
-    } catch (err) {
-      setModalMessage("Error al generar el documento");
-    } finally {
-      setLoading(false);
-      setTimeout(() => setIsModalVisible(false), 1500);
-    }
+    setChartData({
+      labels: Object.keys(dailySales),
+      datasets: [
+        {
+          label: 'Ventas Diarias ($)',
+          data: Object.values(dailySales),
+          borderColor: '#1890ff',
+          backgroundColor: 'rgba(24, 144, 255, 0.2)',
+          tension: 0.4
+        }
+      ]
+    });
   };
 
-  // Exporta datos a Excel
-  const exportExcel = () => {
-    if (!datosGrafico) {
-      setError("No hay datos para exportar");
-      return;
-    }
-
-    setLoading(true);
-    setModalMessage("Generando archivo Excel...");
-    setIsModalVisible(true);
-
-    try {
-      const excelData = datosGrafico.labels.map((mes, i) => ({
-        Mes: mes,
-        Ganancias: datosGrafico.datasets[0].data[i]
-      }));
-
-      const worksheet = XLSX.utils.json_to_sheet(excelData);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Ganancias");
-
-      XLSX.writeFile(workbook, `ganancias-${mesSeleccionado}.xlsx`);
-      setModalMessage("¡Excel descargado correctamente!");
-    } catch (err) {
-      setModalMessage("Error al generar el archivo Excel");
-    } finally {
-      setLoading(false);
-      setTimeout(() => setIsModalVisible(false), 1500);
-    }
+  const formatCurrency = (amount: number) => {
+    return new Intl.NumberFormat('es-CL', {
+      style: 'currency',
+      currency: 'CLP'
+    }).format(amount);
   };
 
-  // Cierra la vista previa del PDF
-  const closePreview = () => {
-    if (pdfPreview) {
-      URL.revokeObjectURL(pdfPreview);
-    }
-    setShowPreview(false);
-    setPdfPreview(null);
-  };
+  useEffect(() => {
+    fetchSalesData();
+  }, [fetchSalesData]);
 
-  // Renderizado del componente
+  useEffect(() => {
+    if (selectedMonth) {
+      generateChart();
+    }
+  }, [selectedMonth]);
+
   return (
-    <div style={{ padding: "2rem", maxWidth: "800px", margin: "auto" }}>
-      <h2 style={{ textAlign: "center", marginBottom: "1.5rem" }}>Ganancias Mensuales</h2>
+    <div style={{ padding: 24 }}>
+      {loading && (
+        <div style={{ textAlign: 'center', margin: '40px 0' }}>
+          <Spin tip="Cargando datos de ventas..." size="large" />
+        </div>
+      )}
 
       {error && (
-        <Alert
-          message={error}
+        <Alert 
+          message="Error"
+          description={error}
           type="error"
           showIcon
-          closable
-          onClose={() => setError(null)}
-          style={{ marginBottom: "1.5rem" }}
+          style={{ marginBottom: 24 }}
         />
       )}
 
-      {/* Selector de mes y botón de consulta */}
-      <div style={{ display: "flex", justifyContent: "center", gap: "1rem", marginBottom: "1.5rem" }}>
-        <Select
-          placeholder="Selecciona un mes"
-          style={{ width: 200 }}
-          onChange={(value) => setMesSeleccionado(value)}
-          value={mesSeleccionado}
-          optionFilterProp="children"
-          showSearch
-          filterOption={filterOption}
-        >
-          {meses.map((mes) => (
-            <Option key={mes} value={mes}>{mes}</Option>
-          ))}
-        </Select>
-        <Button 
-          type="primary" 
-          onClick={handleConsultar}
-          loading={loading}
-          disabled={!mesSeleccionado}
-          className="purple-button"
-        >
-          Consultar
-        </Button>
-      </div>
-
-      {/* Gráfico y botones de exportación */}
-      {datosGrafico && (
-        <>
-          <Card 
-            title={`Ganancias para ${mesSeleccionado}`}
-            ref={chartRef}
-            style={{ marginBottom: "1.5rem", width: "100%", height: "550px", padding: "20px" }}
+      <Row gutter={16} style={{ marginBottom: 24 }}>
+        <Col span={8}>
+          <Select
+            placeholder="Seleccione un año"
+            style={{ width: '100%' }}
+            onChange={setSelectedYear}
+            value={selectedYear}
+            loading={loading}
+            disabled={!apiData}
           >
-            <div style={{ height: "450px" }}>
-              <Line
-                data={datosGrafico}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { position: "top" },
-                    title: { 
-                      display: true, 
-                      text: "Tendencia de ganancias (mes anterior - mes actual - mes siguiente)",
-                      font: { size: 16 }
-                    },
-                    tooltip: {
-                      callbacks: {
-                        label: (context) => `$${context.parsed.y.toLocaleString()}`
-                      }
-                    }
-                  },
-                  scales: {
-                    y: {
-                      beginAtZero: false,
-                      ticks: {
-                        callback: value => "$" + value.toLocaleString(),
-                        font: { size: 12 }
-                      }
-                    },
-                    x: {
-                      ticks: { font: { size: 12 } }
-                    }
-                  },
-                  elements: {
-                    point: { radius: 4, hoverRadius: 6 },
-                    line: { borderWidth: 3 }
-                  }
-                }}
-              />
-            </div>
-          </Card>
+            {getAvailableYears().map(year => (
+              <Option key={year} value={year}>{year}</Option>
+            ))}
+          </Select>
+        </Col>
 
-          {/* Botones de exportación */}
-          <div style={{ display: "flex", justifyContent: "center", gap: "1rem", flexWrap: "wrap" }}>
-            <Button onClick={() => generatePDF(false)} className="purple-button">Vista Previa PDF</Button>
-            <Button onClick={() => generatePDF(true)} className="purple-button">Descargar PDF</Button>
-            <Button onClick={exportExcel} className="purple-button">Descargar Excel</Button>
-          </div>
-        </>
-      )}
-
-      {/* Modal de estado */}
-      <Modal visible={isModalVisible} footer={null} closable={false} centered width={300}>
-        <div style={{ textAlign: "center", padding: "20px" }}>
-          {loading && <Spin size="large" />}
-          <p>{modalMessage}</p>
-        </div>
-      </Modal>
-
-      {/* Modal de vista previa */}
-      <Modal
-        title="Vista Previa del Reporte"
-        visible={showPreview}
-        onCancel={closePreview}
-        footer={[
-          <Button key="download" type="primary" onClick={() => generatePDF(true)}>Descargar PDF</Button>,
-          <Button key="close" onClick={closePreview}>Cerrar</Button>
-        ]}
-        width="80%"
-      >
-        {pdfPreview && (
-          <iframe 
-            src={pdfPreview} 
-            style={{ width: '100%', height: '500px', border: 'none' }}
-            title="Vista previa del PDF"
+        <Col span={8}>
+          <Select
+            placeholder="Seleccione un mes"
+            style={{ width: '100%' }}
+            onChange={setSelectedMonth}
+            value={selectedMonth}
+            disabled={!selectedYear}
+            options={getAvailableMonths()}
           />
-        )}
-      </Modal>
+        </Col>
+
+        <Col span={8}>
+          <Button 
+            type="primary" 
+            onClick={generateChart}
+            disabled={!selectedMonth}
+            style={{ width: '100%' }}
+            loading={loading}
+          >
+            Generar Gráfico
+          </Button>
+        </Col>
+      </Row>
+
+      {chartData && selectedMonth && apiData?.sales_by_month[selectedMonth] && (
+        <Card 
+          title={`Ventas Mensuales - ${monthNames[parseInt(selectedMonth.split('-')[1]) - 1]} ${selectedMonth.split('-')[0]}`}
+          extra={
+            <Text strong>
+              Total: {formatCurrency(apiData.sales_by_month[selectedMonth].total_sales)}
+            </Text>
+          }
+        >
+          <div style={{ height: 400 }}>
+            <Line 
+              data={chartData} 
+              options={{
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                  y: {
+                    beginAtZero: false,
+                    ticks: {
+                      callback: (value: number | string) => {
+                        if (typeof value === 'number') {
+                          return formatCurrency(value);
+                        }
+                        return value;
+                      }
+                    }
+                  }
+                },
+                plugins: {
+                  tooltip: {
+                    callbacks: {
+                      label: (context) => {
+                        return ` ${context.dataset.label}: ${formatCurrency(context.raw as number)}`;
+                      }
+                    }
+                  }
+                }
+              }} 
+            />
+          </div>
+        </Card>
+      )}
     </div>
   );
 };
