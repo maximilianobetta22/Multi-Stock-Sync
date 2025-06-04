@@ -3,7 +3,7 @@ import axiosInstance from "../../../../axiosConfig";
 import axios from "axios";
 
 export const useEnviosManagement = () => {
-  const [envios, setEnvios] = React.useState<any[]>([]); // Cambiado a un array vacío
+  const [envios, setEnvios] = React.useState([]); // Cambiado a un array vacío
   const [loading, setLoading] = React.useState(false); // Cambiado a un booleano
   const [error, setError] = React.useState<string | null>(null); // Cambiado a un string o null
 
