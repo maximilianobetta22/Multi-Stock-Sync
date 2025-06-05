@@ -17,6 +17,8 @@ import {
   Statistic,
   Badge,
   Tooltip,
+  Descriptions,
+  message,
 } from "antd"
 import {
   ShopOutlined,
@@ -28,9 +30,12 @@ import {
   UserOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  BugOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons"
 import type { ColumnsType } from "antd/es/table"
 import useWooCommerceProducts from "../hook/useWooCommerceProducts"
+import { WooCommerceService } from "../Services/woocommerceService"
 import type { WooCommerceProduct } from "../Types/woocommerceTypes"
 
 const { Title, Text } = Typography
@@ -39,6 +44,8 @@ const { Search } = Input
 const WooCommerceProductsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("")
   const [filteredProducts, setFilteredProducts] = useState<WooCommerceProduct[]>([])
+  const [testingIds, setTestingIds] = useState(false)
+  const [mappedStoreId, setMappedStoreId] = useState<number | null>(null)
 
   const {
     products,
@@ -51,6 +58,35 @@ const WooCommerceProductsList: React.FC = () => {
     loadProducts,
     clearError,
   } = useWooCommerceProducts({ autoLoad: false })
+
+  // Obtener el ID mapeado cuando cambia la conexión
+  useEffect(() => {
+    if (connectionInfo) {
+      const storeId = WooCommerceService.getCurrentWooCommerceStoreId()
+      setMappedStoreId(storeId)
+    }
+  }, [connectionInfo])
+
+  // Probar diferentes IDs para debug
+  const testDifferentIds = async () => {
+    if (!connectionInfo) return
+
+    setTestingIds(true)
+    const availableStores = WooCommerceService.getAvailableStores()
+
+    console.log("Probando tiendas disponibles:", availableStores)
+
+    for (const store of availableStores) {
+      const works = await WooCommerceService.testConnectionWithId(store.id)
+      console.log(`Tienda ${store.name} (ID ${store.id}): ${works ? "✅ Funciona" : "❌ No funciona"}`)
+
+      if (works) {
+        message.success(`Tienda "${store.name}" (ID ${store.id}) funciona correctamente`)
+      }
+    }
+
+    setTestingIds(false)
+  }
 
   // Filtrar productos por término de búsqueda
   const handleSearch = (value: string) => {
@@ -77,11 +113,6 @@ const WooCommerceProductsList: React.FC = () => {
     }
   }, [products, searchTerm])
 
-  // Limpiar búsqueda
-  const clearSearch = () => {
-    setSearchTerm("")
-    setFilteredProducts(products)
-  }
 
   // Columnas de la tabla
   const columns: ColumnsType<WooCommerceProduct> = [
@@ -166,6 +197,7 @@ const WooCommerceProductsList: React.FC = () => {
               icon={<LinkOutlined />}
               onClick={() => {
                 navigator.clipboard.writeText(record.permalink)
+                message.success("Enlace copiado al portapapeles")
               }}
             />
           </Tooltip>
@@ -196,25 +228,25 @@ const WooCommerceProductsList: React.FC = () => {
           </Row>
         </Card>
 
-        {/* Información de conexión */}
+        {/* Información de conexión y mapeo */}
         {connectionInfo && (
           <Card style={{ marginBottom: 24, borderRadius: 8 }}>
             <Row align="middle" justify="space-between">
-              <Col>
+              <Col span={16}>
                 <Space>
                   <div
                     style={{
                       width: 40,
                       height: 40,
                       borderRadius: 8,
-                      backgroundColor: hasSelectedConnection() ? "#f6ffed" : "#fff2f0",
-                      border: `2px solid ${hasSelectedConnection() ? "#b7eb8f" : "#ffccc7"}`,
+                      backgroundColor: mappedStoreId ? "#f6ffed" : "#fff2f0",
+                      border: `2px solid ${mappedStoreId ? "#b7eb8f" : "#ffccc7"}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                     }}
                   >
-                    {hasSelectedConnection() ? (
+                    {mappedStoreId ? (
                       <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "18px" }} />
                     ) : (
                       <CloseCircleOutlined style={{ color: "#ff4d4f", fontSize: "18px" }} />
@@ -224,22 +256,38 @@ const WooCommerceProductsList: React.FC = () => {
                     <Text strong style={{ display: "block" }}>
                       {connectionInfo.nickname || "Conexión WooCommerce"}
                     </Text>
-                    <Text type="secondary" style={{ fontSize: "12px" }}>
-                      ID: {connectionInfo.client_id || connectionInfo.id}
-                    </Text>
+                    <Descriptions size="small" column={1}>
+                      <Descriptions.Item label="Client ID">{connectionInfo.client_id}</Descriptions.Item>
+                      {mappedStoreId && (
+                        <Descriptions.Item label="WooCommerce Store ID">
+                          <Tag color="green">{mappedStoreId}</Tag>
+                        </Descriptions.Item>
+                      )}
+                    </Descriptions>
                   </div>
                 </Space>
               </Col>
-              <Col>
-                <Button
-                  type="primary"
-                  icon={<ReloadOutlined />}
-                  onClick={loadProducts}
-                  loading={loading}
-                  disabled={!hasSelectedConnection()}
-                >
-                  Cargar Productos
-                </Button>
+              <Col span={8} style={{ textAlign: "right" }}>
+                <Space direction="vertical">
+                  <Button
+                    type="primary"
+                    icon={<ReloadOutlined />}
+                    onClick={loadProducts}
+                    loading={loading}
+                    disabled={!mappedStoreId}
+                  >
+                    Cargar Productos
+                  </Button>
+                  <Button
+                    icon={<BugOutlined />}
+                    onClick={testDifferentIds}
+                    loading={testingIds}
+                    disabled={!hasSelectedConnection()}
+                    size="small"
+                  >
+                    Probar Tiendas
+                  </Button>
+                </Space>
               </Col>
             </Row>
           </Card>
@@ -256,8 +304,24 @@ const WooCommerceProductsList: React.FC = () => {
           />
         )}
 
+        {/* Alerta si no se puede mapear */}
+        {hasSelectedConnection() && !mappedStoreId && (
+          <Alert
+            message="Conexión no mapeada"
+            description={`La conexión "${connectionInfo?.nickname}" no está mapeada a ninguna tienda WooCommerce. Contacta al administrador para agregar el mapeo.`}
+            type="error"
+            showIcon
+            style={{ marginBottom: 24, borderRadius: 8 }}
+            action={
+              <Button size="small" icon={<InfoCircleOutlined />} onClick={testDifferentIds} loading={testingIds}>
+                Ver Tiendas Disponibles
+              </Button>
+            }
+          />
+        )}
+
         {/* Búsqueda */}
-        {hasSelectedConnection() && (
+        {hasSelectedConnection() && mappedStoreId && (
           <Card style={{ marginBottom: 24, borderRadius: 8 }}>
             <Row gutter={[16, 16]} align="middle">
               <Col xs={24} md={16}>
@@ -278,17 +342,6 @@ const WooCommerceProductsList: React.FC = () => {
                 <div style={{ marginBottom: 8 }}>
                   <Text strong>&nbsp;</Text>
                 </div>
-                <Button
-                  onClick={() => {
-                    clearSearch()
-                    loadProducts()
-                  }}
-                  loading={loading}
-                  size="large"
-                  style={{ width: "100%" }}
-                >
-                  Limpiar y Recargar
-                </Button>
               </Col>
             </Row>
           </Card>
@@ -334,13 +387,18 @@ const WooCommerceProductsList: React.FC = () => {
         {/* Error */}
         {error && (
           <Alert
-            message="Error"
+            message="Error al cargar productos"
             description={error}
             type="error"
             showIcon
             closable
             onClose={clearError}
             style={{ marginBottom: 24, borderRadius: 8 }}
+            action={
+              <Button size="small" onClick={testDifferentIds} loading={testingIds}>
+                Probar Tiendas
+              </Button>
+            }
           />
         )}
 
@@ -349,6 +407,11 @@ const WooCommerceProductsList: React.FC = () => {
           {!hasSelectedConnection() ? (
             <Empty
               description="Selecciona una conexión WooCommerce para ver los productos"
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+            />
+          ) : !mappedStoreId ? (
+            <Empty
+              description="Esta conexión no está mapeada a ninguna tienda WooCommerce"
               image={Empty.PRESENTED_IMAGE_SIMPLE}
             />
           ) : loading ? (
