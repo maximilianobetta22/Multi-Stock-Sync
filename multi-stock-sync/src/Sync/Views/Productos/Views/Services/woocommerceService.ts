@@ -1,4 +1,5 @@
 import axiosInstance from "../../../../../axiosConfig"
+import axios from 'axios';
 import type { WooCommerceProductsResponse } from "../Types/woocommerceTypes"
 import type { WooCommerceCredentials } from "../Types/woocommerceTypes"
 
@@ -13,7 +14,7 @@ const WOOCOMMERCE_STORE_MAPPING: Record<string, number> = {
   lenceriaonline: 2,
   CRAZYFAMILY: 3,
   crazyfamily: 3,
-  COMERCIALIZADORAABIZICL: 4, // Nickname real de Abizi
+  COMERCIALIZADORAABIZICL: 4, 
   ABIZI: 4,
   abizi: 4,
 
@@ -165,24 +166,30 @@ export const WooCommerceService = {
     return this.getWooCommerceStoreId(conexion)
   },
 
-  // Probar conexión con diferentes IDs
-  async testConnectionWithId(testId: string | number): Promise<boolean> {
-    try {
-      console.log(`Probando conexión con ID: ${testId}`)
+async testConnectionWithId(testId: string | number): Promise<boolean> {
+  try {
+    console.log(`Probando conexión con ID: ${testId}`);
 
-      const response = await axiosInstance.get(`${API_BASE_URL}/woocommerce/woo/${testId}/products`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        timeout: 10000, // 10 segundos para prueba
-      })
+    const response = await axiosInstance.get(`${API_BASE_URL}/woocommerce/woo/${testId}/products`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+      timeout: 100000000, 
+    });
 
-      return response.status === 200 && response.data
-    } catch (error) {
-      console.log(`ID ${testId} no funciona:`, error.response?.status || error.message)
-      return false
+    return response.status === 200 && response.data;
+  } catch (error) {
+    
+    if (axios.isAxiosError(error)) {
+      
+      console.log(`ID ${testId} no funciona:`, error.response?.status || error.message);
+    } else {
+      
+      console.log(`ID ${testId} no funciona debido a un error inesperado:`, error);
     }
-  },
+    return false;
+  }
+},
 
   // Obtener todas las tiendas disponibles basadas en el mapeo
   getAvailableStores(): Array<{ id: number; name: string; nickname: string }> {
