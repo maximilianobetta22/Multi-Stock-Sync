@@ -5,6 +5,7 @@ import {
   FileExcelOutlined,
   AppstoreOutlined,
   TagsOutlined,
+  ShopOutlined,
 } from "@ant-design/icons";
 
 const { Title, Paragraph } = Typography;
@@ -30,6 +31,12 @@ const GestionProducto = () => {
       titulo: "Plantillas Mercado Libre",
       descripcion: "Descarga plantillas de Excel por categoría para carga masiva.",
       ruta: "/sync/productos/plantillas-mercadolibre",
+    },
+    {
+      icon: <ShopOutlined style={{ fontSize: 36, color: "#13c2c2" }} />,
+      titulo: "Productos WooCommerce",
+      descripcion: "Visualiza y gestiona productos de tus tiendas WooCommerce.",
+      ruta: "/sync/productos/woocommerce",
     },
     {
       icon: <AppstoreOutlined style={{ fontSize: 36, color: "#fa8c16" }} />,
