@@ -43,6 +43,7 @@ import {
   FilterOutlined,
   SortAscendingOutlined,
   SortDescendingOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons"
 import type { ColumnsType } from "antd/es/table"
 
@@ -334,56 +335,200 @@ const Productos: React.FC = () => {
   const { mostSold, leastSold } = getMostAndLeastSoldProduct()
   const { mostSoldHistorical, leastSoldHistorical } = getHistoricalMostAndLeastSoldProduct()
 
-  // función que genera el excel
+  // Función mejorada que genera el excel
   const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(
-      productos.map((producto) => ({
-        // forma de los campos y texto del encabezado
-        SKU: producto.sku, // SKU del producto en mercado libre en las 5 cuentas
-        Título: producto.title, // nombre del producto
-        Talla: producto.size,
-        Cantidad: producto.quantity, // cantidad vendida
-        Total: currencyFormat.format(producto.total_amount), // Formato CLP
-      })),
-    )
+    // Datos principales con formato mejorado
+    const mainData = productos.map((producto, index) => ({
+      "N°": index + 1,
+      SKU: producto.sku || "N/A",
+      "Título del Producto": producto.title || "Sin título",
+      Talla: producto.size || "N/A",
+      "Cantidad Vendida": producto.quantity || 0,
+      "% Cantidad": Number.parseFloat(((producto.quantity / totalQuantity) * 100).toFixed(2)),
+      "Monto Total": producto.total_amount || 0,
+      "% Monto": Number.parseFloat(
+        ((producto.total_amount / productos.reduce((sum, p) => sum + (p.total_amount || 0), 0)) * 100).toFixed(2),
+      ),
+      "ID Variante": producto.variation_id || "N/A",
+      "ID Producto": producto.id || "N/A",
+    }))
 
+    // Crear libro de trabajo
     const workbook = XLSX.utils.book_new()
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Productos")
-    const fileName = `reporte_Productos_${selectedMonth}_${client_id}.xlsx` // nombre del archivo
+
+    // Hoja principal con datos
+    const wsMain = XLSX.utils.json_to_sheet(mainData)
+
+    // Configurar anchos de columna para la hoja principal
+    wsMain["!cols"] = [
+      { wch: 5 }, // N°
+      { wch: 15 }, // SKU
+      { wch: 50 }, // Título
+      { wch: 10 }, // Talla
+      { wch: 12 }, // Cantidad
+      { wch: 12 }, // % Cantidad
+      { wch: 15 }, // Monto
+      { wch: 12 }, // % Monto
+      { wch: 15 }, // ID Variante
+      { wch: 15 }, // ID Producto
+    ]
+
+    XLSX.utils.book_append_sheet(workbook, wsMain, "Productos Detallados")
+
+    const fileName = `Reporte_Productos_${selectedYear}_${selectedMonthNumber.toString().padStart(2, "0")}_Cliente_${client_id}.xlsx`
     XLSX.writeFile(workbook, fileName)
   }
 
-  // Función que genera el pdf del reporte de productos
+  // Función corregida que genera el pdf del reporte de productos
   const generatePDF = async () => {
     const doc = new jsPDF()
+    const pageWidth = doc.internal.pageSize.width
     const pageHeight = doc.internal.pageSize.height
+    let yPosition = 20
 
-    doc.text(`Reporte de Productos - Cliente: ${client_id}`, 10, 10)
+    // Configuración de colores (corregido)
+    const primaryColor: [number, number, number] = [24, 144, 255] // Azul
+    const textColor: [number, number, number] = [51, 51, 51] // Gris oscuro
 
-    if (mostSold) {
-      doc.text(`Producto Más Vendido: ${mostSold.title} - ${currencyFormat.format(mostSold.total_amount)}`, 10, 20)
+    // Header con título
+    doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2])
+    doc.rect(0, 0, pageWidth, 35, "F")
+
+    doc.setTextColor(255, 255, 255)
+    doc.setFontSize(20)
+    doc.setFont("helvetica", "bold")
+    doc.text("REPORTE DE PRODUCTOS MÁS VENDIDOS", pageWidth / 2, 15, { align: "center" })
+
+    doc.setFontSize(12)
+    doc.setFont("helvetica", "normal")
+    doc.text("Multi Stock Sync - Sistema de Gestión", pageWidth / 2, 25, { align: "center" })
+
+    yPosition = 50
+
+    // Información del cliente y período
+    doc.setTextColor(textColor[0], textColor[1], textColor[2])
+    doc.setFontSize(14)
+    doc.setFont("helvetica", "bold")
+    doc.text("INFORMACIÓN DEL REPORTE", 15, yPosition)
+
+    yPosition += 10
+    doc.setFontSize(11)
+    doc.setFont("helvetica", "normal")
+
+    const monthName = new Date(selectedYear, selectedMonthNumber - 1, 1).toLocaleDateString("es-ES", {
+      month: "long",
+      year: "numeric",
+    })
+
+    const reportInfo = [
+      [`Cliente ID:`, client_id || ""],
+      [`Período:`, monthName.charAt(0).toUpperCase() + monthName.slice(1)],
+      [`Fecha de generación:`, new Date().toLocaleDateString("es-CL")],
+      [`Total de productos:`, productos.length.toString()],
+      [`Cantidad total vendida:`, totalQuantity.toString()],
+      [`Monto total:`, currencyFormat.format(productos.reduce((sum, p) => sum + (p.total_amount || 0), 0))],
+    ]
+
+    reportInfo.forEach(([label, value]) => {
+      doc.setFont("helvetica", "bold")
+      doc.text(label, 15, yPosition)
+      doc.setFont("helvetica", "normal")
+      doc.text(value, 80, yPosition)
+      yPosition += 7
+    })
+
+    yPosition += 10
+
+    // Productos destacados
+    if (mostSold || leastSold) {
+      doc.setFillColor(245, 245, 245)
+      doc.rect(10, yPosition - 5, pageWidth - 20, 45, "F")
+
+      doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2])
+      doc.setFontSize(14)
+      doc.setFont("helvetica", "bold")
+      doc.text("PRODUCTOS DESTACADOS", 15, yPosition + 5)
+
+      yPosition += 15
+      doc.setTextColor(textColor[0], textColor[1], textColor[2])
+      doc.setFontSize(11)
+
+      if (mostSold) {
+        doc.setFont("helvetica", "bold")
+        doc.text("Producto Más Vendido:", 15, yPosition)
+        doc.setFont("helvetica", "normal")
+        const mostSoldTitle = mostSold.title.length > 50 ? mostSold.title.substring(0, 50) + "..." : mostSold.title
+        doc.text(`${mostSoldTitle} (${mostSold.quantity} unidades)`, 15, yPosition + 7)
+        doc.text(`Monto: ${currencyFormat.format(mostSold.total_amount)}`, 15, yPosition + 14)
+      }
+
+      if (leastSold) {
+        doc.setFont("helvetica", "bold")
+        doc.text("Producto Menos Vendido:", 15, yPosition + 25)
+        doc.setFont("helvetica", "normal")
+        const leastSoldTitle = leastSold.title.length > 50 ? leastSold.title.substring(0, 50) + "..." : leastSold.title
+        doc.text(`${leastSoldTitle} (${leastSold.quantity} unidades)`, 15, yPosition + 32)
+        doc.text(`Monto: ${currencyFormat.format(leastSold.total_amount)}`, 15, yPosition + 39)
+      }
+
+      yPosition += 55
     }
-    if (leastSold) {
-      doc.text(`Producto Menos Vendido: ${leastSold.title} - ${currencyFormat.format(leastSold.total_amount)}`, 10, 30)
-    }
+
+    // Tabla de productos con mejor manejo de texto largo
+    const tableData = productos.map((prod, index) => [
+      (index + 1).toString(),
+      prod.title && prod.title.length > 35 ? prod.title.substring(0, 35) + "..." : prod.title || "Sin título",
+      prod.sku || "N/A",
+      (prod.quantity || 0).toString(),
+      `${((prod.quantity / totalQuantity) * 100).toFixed(1)}%`,
+      currencyFormat.format(prod.total_amount || 0),
+      prod.size || "N/A",
+    ])
 
     autoTable(doc, {
-      startY: 50,
-      head: [["Producto", "Total Vendido", "SKU", "Numero de impresión", "Cantidad", "Variante", "Talla"]],
-      body: productos.map((prod) => [
-        prod.title,
-        currencyFormat.format(prod.total_amount),
-        prod.sku,
-        prod.id,
-        prod.quantity,
-        prod.variation_id,
-        prod.size,
-      ]),
+      startY: yPosition,
+      head: [["#", "Producto", "SKU", "Cant.", "% Cant.", "Total", "Talla"]],
+      body: tableData,
+      theme: "grid",
+      headStyles: {
+        fillColor: primaryColor,
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        fontSize: 10,
+      },
+      bodyStyles: {
+        fontSize: 8,
+        textColor: textColor,
+      },
+      alternateRowStyles: {
+        fillColor: [248, 249, 250],
+      },
+      columnStyles: {
+        0: { cellWidth: 12, halign: "center" },
+        1: { cellWidth: 70, halign: "left" }, // Más ancho para el producto
+        2: { cellWidth: 25, halign: "center" },
+        3: { cellWidth: 15, halign: "center" },
+        4: { cellWidth: 15, halign: "center" },
+        5: { cellWidth: 30, halign: "right" },
+        6: { cellWidth: 15, halign: "center" },
+      },
+      margin: { left: 10, right: 10 },
+      styles: {
+        overflow: "linebreak",
+        cellWidth: "wrap",
+      },
+      didDrawPage: () => {
+        // Footer en cada página
+        doc.setFillColor(primaryColor[0], primaryColor[1], primaryColor[2])
+        doc.rect(0, pageHeight - 20, pageWidth, 20, "F")
+
+        doc.setTextColor(255, 255, 255)
+        doc.setFontSize(10)
+        doc.text("Multi Stock Sync © 2024", 15, pageHeight - 10)
+        doc.text(new Date().toLocaleDateString("es-CL"), pageWidth / 2, pageHeight - 10, { align: "center" })
+      },
     })
 
-    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, {
-      align: "center",
-    })
     pdfRef.current = doc
     const pdfBlob = doc.output("blob")
     const pdfUrl = URL.createObjectURL(pdfBlob)
@@ -393,7 +538,7 @@ const Productos: React.FC = () => {
 
   const savePDF = () => {
     if (pdfRef.current) {
-      const fileName = `reporte_Productos_${selectedMonth}_${client_id}.pdf`
+      const fileName = `Reporte_Productos_${selectedYear}_${selectedMonthNumber.toString().padStart(2, "0")}_Cliente_${client_id}.pdf`
       pdfRef.current.save(fileName)
       setShowPDFModal(false)
     }
@@ -404,7 +549,7 @@ const Productos: React.FC = () => {
   const bestSellingProduct = sortedProducts.length > 0 ? sortedProducts[0] : null
   const leastSellingProduct = sortedProducts.length > 0 ? sortedProducts[sortedProducts.length - 1] : null
 
-  // Configuración de la tabla para Ant Design
+  // Configuración de la tabla para Ant Design (con porcentajes agregados)
   const columns: ColumnsType<any> = [
     {
       title: "SKU",
@@ -426,7 +571,15 @@ const Productos: React.FC = () => {
       width: 100,
       align: "center",
       sorter: (a, b) => a.quantity - b.quantity,
-      render: (value: number) => <Badge count={value} style={{ backgroundColor: "#1890ff" }} />,
+      render: (value: number) => (
+        <div style={{ textAlign: "center" }}>
+          <Badge count={value} style={{ backgroundColor: "#1890ff" }} />
+          <br />
+          <Text type="secondary" style={{ fontSize: "11px" }}>
+            {((value / totalQuantity) * 100).toFixed(1)}%
+          </Text>
+        </div>
+      ),
     },
     {
       title: "Total",
@@ -436,9 +589,17 @@ const Productos: React.FC = () => {
       align: "right",
       sorter: (a, b) => a.total_amount - b.total_amount,
       render: (value: number) => (
-        <Text strong style={{ color: "#3f8600", fontSize: "14px" }}>
-          {currencyFormat.format(value)}
-        </Text>
+        <div style={{ textAlign: "right" }}>
+          <Text strong style={{ color: "#3f8600", fontSize: "14px" }}>
+            {currencyFormat.format(value)}
+          </Text>
+          <br />
+          <Text type="secondary" style={{ fontSize: "11px" }}>
+            {value > 0
+              ? `${((value / productos.reduce((sum, p) => sum + p.total_amount, 0)) * 100).toFixed(1)}%`
+              : "0%"}
+          </Text>
+        </div>
       ),
     },
     {
@@ -602,6 +763,34 @@ const Productos: React.FC = () => {
           </Col>
         </Row>
       </Card>
+
+      {/* Información adicional - LA NOTIFICACIÓN QUE TE GUSTÓ */}
+      <Alert
+        message="Información del Reporte"
+        description={
+          <Space wrap>
+            <Text>
+              <InfoCircleOutlined /> Total de productos analizados: <strong>{productos.length}</strong>
+            </Text>
+            <Text>
+              • Monto total:{" "}
+              <strong>{currencyFormat.format(productos.reduce((sum, p) => sum + (p.total_amount || 0), 0))}</strong>
+            </Text>
+            <Text>
+              • Período:{" "}
+              <strong>
+                {new Date(selectedYear, selectedMonthNumber - 1, 1).toLocaleDateString("es-ES", {
+                  month: "long",
+                  year: "numeric",
+                })}
+              </strong>
+            </Text>
+          </Space>
+        }
+        type="info"
+        showIcon
+        style={{ marginBottom: 16 }}
+      />
 
       <Row gutter={[24, 24]}>
         {/* COLUMNA IZQUIERDA - TABLA Y GRÁFICO */}
