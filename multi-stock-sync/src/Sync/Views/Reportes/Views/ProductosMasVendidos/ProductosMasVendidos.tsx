@@ -65,7 +65,7 @@ const Productos: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true) // Función de carga de los datos y de la pagina
   const [error] = useState<string | null>(null) // Función que captura los datos
   const [selectedMonth, setSelectedMonth] = useState<string>(getCurrentYearMonth())
-  const itemsPerPage = 10 // Numero maximo por pagina
+  const itemsPerPage = 6 // Numero maximo por pagina (reducido de 10 a 6)
   const maxPageButtons = 10 // Numero maximo que muestra por pantalla si hay mas de 12 paginas compaginadas igual se muestran
   const [maxProducts, setMaxProducts] = useState(10) // Número máximo de productos para mostrar en el gráfico
   const [sortOrder, setSortOrder] = useState<"top" | "bottom">("top") // Ordenar de más a menos
@@ -335,7 +335,7 @@ const Productos: React.FC = () => {
   const { mostSold, leastSold } = getMostAndLeastSoldProduct()
   const { mostSoldHistorical, leastSoldHistorical } = getHistoricalMostAndLeastSoldProduct()
 
-  // Función que genera el excel
+  // Función mejorada que genera el excel
   const exportToExcel = () => {
     // Datos principales con formato mejorado
     const mainData = productos.map((producto, index) => ({
@@ -387,7 +387,7 @@ const Productos: React.FC = () => {
     let yPosition = 20
 
     // Configuración de colores (corregido)
-    const primaryColor: [number, number, number] = [24, 144, 255] // Azul
+    const primaryColor: [number, number, number] = [220, 53, 69] // Rojo
     const textColor: [number, number, number] = [51, 51, 51] // Gris oscuro
 
     // Header con título
@@ -793,8 +793,8 @@ const Productos: React.FC = () => {
       />
 
       <Row gutter={[24, 24]}>
-        {/* COLUMNA IZQUIERDA - TABLA Y GRÁFICO */}
-        <Col xs={24} lg={14}>
+        {/* COLUMNA IZQUIERDA - TABLA */}
+        <Col xs={24} lg={16}>
           {/* TABLA DE PRODUCTOS */}
           <Card
             title={
@@ -807,7 +807,7 @@ const Productos: React.FC = () => {
             style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)", marginBottom: 24 }}
           >
             {loading ? (
-              <div style={{ textAlign: "center", padding: "60px 0" }}>
+              <div style={{ textAlign: "center", padding: "40px 0" }}>
                 <Spin size="large" tip="Cargando productos..." />
               </div>
             ) : error ? (
@@ -844,7 +844,7 @@ const Productos: React.FC = () => {
             )}
           </Card>
 
-          {/* GRÁFICO DE BARRAS */}
+          {/* GRÁFICO DE BARRAS - AHORA DEBAJO DE LA TABLA */}
           <Card
             title={
               <Space>
@@ -890,7 +890,7 @@ const Productos: React.FC = () => {
             }
             style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}
           >
-            <div style={{ height: "500px" }} ref={chartRef}>
+            <div style={{ height: "400px" }} ref={chartRef}>
               {loading || (showHistorical && loadingHistoricos) ? (
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
                   <Spin size="large" tip="Cargando gráfico..." />
@@ -909,7 +909,7 @@ const Productos: React.FC = () => {
         </Col>
 
         {/* COLUMNA DERECHA - TARJETAS DE RESUMEN */}
-        <Col xs={24} lg={10}>
+        <Col xs={24} lg={8}>
           <Row gutter={[16, 16]}>
             <Col span={24}>
               <Card
@@ -1005,8 +1005,8 @@ const Productos: React.FC = () => {
               <Card
                 title={
                   <Space>
-                    <TrophyOutlined style={{ color: "#faad14" }} />
-                    <span>Producto Más Vendido Históricamente</span>
+                    <TrophyOutlined style={{ color: "#52c41a" }} />
+                    <span>Más Vendido Históricamente</span>
                   </Space>
                 }
                 style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}
@@ -1054,8 +1054,8 @@ const Productos: React.FC = () => {
               <Card
                 title={
                   <Space>
-                    <FallOutlined style={{ color: "#ff4d4f" }} />
-                    <span>Producto Menos Vendido Históricamente</span>
+                    <FallOutlined style={{ color: "#ff7875" }} />
+                    <span>Menos Vendido Históricamente</span>
                   </Space>
                 }
                 style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}
