@@ -335,7 +335,7 @@ const Productos: React.FC = () => {
   const { mostSold, leastSold } = getMostAndLeastSoldProduct()
   const { mostSoldHistorical, leastSoldHistorical } = getHistoricalMostAndLeastSoldProduct()
 
-  // Función mejorada que genera el excel
+  // Función que genera el excel
   const exportToExcel = () => {
     // Datos principales con formato mejorado
     const mainData = productos.map((producto, index) => ({
