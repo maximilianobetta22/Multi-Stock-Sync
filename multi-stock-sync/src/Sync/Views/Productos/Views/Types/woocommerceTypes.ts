@@ -18,14 +18,23 @@ export interface WooCommerceProduct {
   permalink: string
   sku: string
   // Campos adicionales que podrían venir en la respuesta
+  status?: string
+  regular_price?: string
+  on_sale?: boolean
+  sale_price?: string
   description?: string
   short_description?: string
   categories?: { id: number; name: string }[]
   images?: { id: number; src: string; alt: string }[]
-  status?: string
-  on_sale?: boolean
-  regular_price?: string
-  sale_price?: string
+weight?: string
+  dimensions?: {
+    length?: string
+    width?: string
+    height?: string
+  }
+
+  //  Para mostrar tallas
+  attributes?: WooCommerceAttribute[]
 }
 
 export interface WooCommerceCategory {
@@ -54,6 +63,7 @@ export interface WooCommerceAttribute {
   name: string
   position: number
   visible: boolean
+  slug: string
   variation: boolean
   options: string[]
 }
@@ -67,6 +77,8 @@ export interface WooCommerceMetaData {
 export interface WooCommerceStore {
   id: string | number
   name: string
+  nickname: string   
+  client_id: string  
   url?: string
   status?: "active" | "inactive"
 }

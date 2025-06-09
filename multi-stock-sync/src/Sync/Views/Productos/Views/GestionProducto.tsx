@@ -40,8 +40,8 @@ const GestionProducto = () => {
     },
     {
       icon: <AppstoreOutlined style={{ fontSize: 36, color: "#fa8c16" }} />,
-      titulo: "Productos publicados",
-      descripcion: "Revisa, edita y gestiona tus publicaciones actuales.",
+      titulo: "Productos publicados desde Mercado Libre",
+      descripcion: "Visualiza y gestiona productos publicados en Mercado Libre.",
       ruta: "/sync/productos/editar",
     },
   ];

@@ -17,12 +17,6 @@ const WOOCOMMERCE_STORE_MAPPING: Record<string, number> = {
   COMERCIALIZADORAABIZICL: 4, 
   ABIZI: 4,
   abizi: 4,
-
-  // Por client_id (si es necesario)
-  "831219417629855": 1, // OFERTASIMPERDIBLESCHILE
-  "736561022928727": 2, // LENCERIAONLINE
-  "582209517920790": 4, // COMERCIALIZADORAABIZICL (Abizi)
-  // Agrega más client_ids según sea necesario
 }
 
 export const WooCommerceService = {
@@ -62,79 +56,59 @@ export const WooCommerceService = {
   },
 
   // Obtener productos de WooCommerce usando la conexión seleccionada
-  async getProducts(): Promise<WooCommerceProductsResponse> {
-    try {
-      // Obtener la conexión seleccionada del localStorage
-      const conexionSeleccionada = localStorage.getItem("conexionSeleccionada")
-      if (!conexionSeleccionada) {
-        throw new Error("No hay una conexión seleccionada")
-      }
+  async getProducts({ storeId, page = 1, perPage = 50 }: { storeId: number; page?: number; perPage?: number }): Promise<WooCommerceProductsResponse> {
+  try {
+    console.log(`Obteniendo productos WooCommerce para tienda ID: ${storeId}, página ${page}`)
 
-      const conexion = JSON.parse(conexionSeleccionada)
-      console.log("Conexión seleccionada:", conexion)
+    const response = await axiosInstance.get(`${API_BASE_URL}/woocommerce/woo/${storeId}/products`, {
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+      },
+      params: {
+        page,
+        per_page: perPage,
+      },
+      timeout: 10000,
+    })
 
-      // Mapear la conexión al ID correcto de WooCommerce
-      const wooStoreId = this.getWooCommerceStoreId(conexion)
+    console.log("Respuesta de productos WooCommerce:", response.data)
 
-      if (!wooStoreId) {
-        throw new Error(
-          `No se pudo mapear la conexión "${conexion.nickname || conexion.client_id}" a un ID de WooCommerce válido`,
-        )
-      }
-
-      console.log(`Obteniendo productos WooCommerce para tienda ID: ${wooStoreId}`)
-
-      const response = await axiosInstance.get(`${API_BASE_URL}/woocommerce/woo/${wooStoreId}/products`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
-        },
-        timeout: 100000000, 
-      })
-
-      console.log("Respuesta de productos WooCommerce:", response.data)
-
-      // Verificar si la respuesta tiene la estructura esperada
-      if (!response.data) {
-        throw new Error("Respuesta vacía del servidor")
-      }
-
-      // La respuesta tiene la estructura {user, total_products, products}
-      return {
-        user: response.data.user || "usuario@ejemplo.com",
-        total_products: response.data.total_products || 0,
-        products: response.data.products || [],
-      }
-    } catch (error: any) {
-      console.error("Error al obtener productos de WooCommerce:", error)
-
-      // Manejar diferentes tipos de errores
-      if (error.code === "ECONNABORTED") {
-        throw new Error("Timeout: La petición tardó demasiado en responder")
-      }
-
-      if (error.response) {
-        const status = error.response.status
-        const message = error.response.data?.message || error.message
-
-        switch (status) {
-          case 404:
-            throw new Error(`Tienda no encontrada. Verifica que el mapeo de la tienda sea correcto.`)
-          case 503:
-            throw new Error("Servicio no disponible. El servidor está temporalmente fuera de servicio.")
-          case 500:
-            throw new Error(`Error interno del servidor: ${message}`)
-          default:
-            throw new Error(`Error ${status}: ${message}`)
-        }
-      }
-
-      if (error.request) {
-        throw new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet.")
-      }
-
-      throw new Error(error.message || "Error desconocido al obtener los productos de WooCommerce")
+    return {
+      user: response.data.user || "usuario@ejemplo.com",
+      total_products: response.data.total_products || 0,
+      products: response.data.products || [],
     }
-  },
+  } catch (error: any) {
+    console.error("Error al obtener productos de WooCommerce:", error)
+
+    if (error.code === "ECONNABORTED") {
+      throw new Error("Timeout: La petición tardó demasiado en responder")
+    }
+
+    if (error.response) {
+      const status = error.response.status
+      const message = error.response.data?.message || error.message
+
+      switch (status) {
+        case 404:
+          throw new Error(`Tienda no encontrada. Verifica que el mapeo de la tienda sea correcto.`)
+        case 503:
+          throw new Error("Servicio no disponible. El servidor está temporalmente fuera de servicio.")
+        case 500:
+          throw new Error(`Error interno del servidor: ${message}`)
+        default:
+          throw new Error(`Error ${status}: ${message}`)
+      }
+    }
+
+    if (error.request) {
+      throw new Error("No se pudo conectar con el servidor. Verifica tu conexión a internet.")
+    }
+
+    throw new Error(error.message || "Error desconocido al obtener los productos de WooCommerce")
+  }
+},
+  
 
   // Verificar si hay una conexión seleccionada
   hasSelectedConnection(): boolean {
@@ -238,4 +212,18 @@ async testConnectionWithId(testId: string | number): Promise<boolean> {
       throw new Error(error.response?.data?.message || "Error al conectar con la tienda WooCommerce")
     }
   },
+ async updateProduct({ storeId, productId, updatedData }: {
+  storeId: number
+  productId: number
+  updatedData: any
+}): Promise<void> {
+ await axiosInstance.put(`${API_BASE_URL}/woocommerce/woo/${storeId}/product/${productId}`, updatedData, {
+  timeout: 30000,
+})
+
 }
+
+
+
+}
+
