@@ -40,9 +40,18 @@ ChartJS.register(
 const { Option } = Select;
 const { Text, Title: AntTitle } = Typography;
 
+interface ProductDetail {
+  title: string;
+  quantity: number;
+  price: number;
+  order_id: number;
+  date_created: string; 
+}
+
 interface CompanySalesData {
   total_sales: number;
   total_products: number;
+  products: ProductDetail[]; 
   company_name: string;
 }
 
@@ -145,9 +154,10 @@ const GananciasMensuales = () => {
         }
 
         if (data.sales_by_company && data.sales_by_company.length > 0) {
+          
           setCurrentMonthAggregatedData({
             total_sales: data.total_sales,
-            companies_data: data.sales_by_company[0] 
+            companies_data: data.sales_by_company[0],
           });
         } else {
           setCurrentMonthAggregatedData(null);
@@ -171,7 +181,6 @@ const GananciasMensuales = () => {
       return;
     }
 
-    // Como no tenemos datos diarios, crearemos un gráfico simple de comparación por empresa
     const accountColors = {
       "COMERCIALIZADORAABIZICL": "#1890ff",
       "CRAZYFAMILY": "#52c41a",
@@ -183,10 +192,10 @@ const GananciasMensuales = () => {
     const datasets = [{
       label: "Ventas por Empresa ($)",
       data: companiesData.map(company => company.total_sales),
-      backgroundColor: companiesData.map(company => 
+      backgroundColor: companiesData.map(company =>
         accountColors[company.company_name as keyof typeof accountColors] || "#1890ff"
       ),
-      borderColor: companiesData.map(company => 
+      borderColor: companiesData.map(company =>
         accountColors[company.company_name as keyof typeof accountColors] || "#1890ff"
       ),
       borderWidth: 1
@@ -281,7 +290,8 @@ const GananciasMensuales = () => {
       pdf.setFontSize(14);
       pdf.setTextColor(40, 40, 40);
       pdf.text(
-        `Total General del Mes: ${formatCurrency(monthData.total_sales)}`,
+        `El total general de las ganancias obtenidas en las cuatro tiendas es de: ${formatCurrency(monthData.total_sales)}
+         en el mes de ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]} ${selectedYear}.`,
         105,
         (pdf as any).lastAutoTable.finalY + 10,
         { align: "center" }
@@ -289,6 +299,17 @@ const GananciasMensuales = () => {
 
       const pdfBlob = pdf.output("blob");
       const pdfBlobUrl = URL.createObjectURL(pdfBlob);
+
+      
+      const link = document.createElement("a");
+      link.href = pdfBlobUrl;
+      link.download = `Ganancias_Consolidadas_${selectedMonth}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      
+      URL.revokeObjectURL(pdfBlobUrl);
       setPdfUrl(pdfBlobUrl);
     } catch (err) {
       console.error("Error generating PDF:", err);
@@ -304,35 +325,30 @@ const GananciasMensuales = () => {
         return;
       }
 
-      // Crear workbook
       const workbook = XLSX.utils.book_new();
 
-      // 1. Hoja de Resumen (formato de tabla)
+      
       const summaryData = [
-        ["Cuenta", "Total Ventas", "Formateado", "Total Productos"],
+        ["Cuenta", "Total Ventas (CLP)", "Total Productos"],
         ...monthData.companies_data.map((companyData) => [
           companyData.company_name,
           companyData.total_sales,
-          formatCurrency(companyData.total_sales),
-          companyData.total_products
+          companyData.total_products,
         ]),
         [
           "TOTAL GENERAL",
           monthData.total_sales,
-          formatCurrency(monthData.total_sales),
-          monthData.companies_data.reduce((sum, company) => sum + company.total_products, 0)
-        ]
+          monthData.companies_data.reduce((sum, company) => sum + company.total_products, 0),
+        ],
       ];
 
       const summarySheet = XLSX.utils.aoa_to_sheet(summaryData);
-      
-      // Añadir estilo a la hoja de resumen
+
       if (summarySheet["!ref"]) {
         const range = XLSX.utils.decode_range(summarySheet["!ref"]);
-        
-        // Estilo para encabezados
+
         for (let C = range.s.c; C <= range.e.c; ++C) {
-          const headerCell = XLSX.utils.encode_cell({r: range.s.r, c: C});
+          const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
           if (!summarySheet[headerCell]) continue;
           summarySheet[headerCell].s = {
             font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -341,10 +357,9 @@ const GananciasMensuales = () => {
           };
         }
 
-        // Estilo para total general
         const totalRow = range.e.r;
         for (let C = range.s.c; C <= range.e.c; ++C) {
-          const totalCell = XLSX.utils.encode_cell({r: totalRow, c: C});
+          const totalCell = XLSX.utils.encode_cell({ r: totalRow, c: C });
           if (!summarySheet[totalCell]) continue;
           summarySheet[totalCell].s = {
             font: { bold: true, color: { rgb: "FFFFFF" } },
@@ -352,26 +367,117 @@ const GananciasMensuales = () => {
           };
         }
 
-        // Formato numérico para columna de montos
-        for (let R = range.s.r + 1; R < range.e.r; ++R) {
-          const amountCell = XLSX.utils.encode_cell({r: R, c: 1});
+        for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+          const amountCell = XLSX.utils.encode_cell({ r: R, c: 1 });
           if (summarySheet[amountCell]) {
-            summarySheet[amountCell].z = '"$"#,##0.00;[Red]\-"$"#,##0.00';
+            summarySheet[amountCell].z = '"$"#,##0;[Red]\-"$"#,##0';
           }
         }
       }
 
-      XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen");
+      XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen General");
 
-      // Generar archivo Excel
+      
+      monthData.companies_data.forEach((companyData) => {
+        const companyName = companyData.company_name;
+
+        const ordersMap = new Map<number, {
+          order_id: number;
+          date_created: string;
+          total_products_in_order: number;
+          total_amount_in_order: number;
+          status: string;
+        }>();
+
+        companyData.products.forEach(product => {
+          const orderId = product.order_id;
+          const productLineTotal = product.quantity * product.price;
+
+          if (ordersMap.has(orderId)) {
+            const existingOrder = ordersMap.get(orderId)!;
+            existingOrder.total_products_in_order += product.quantity;
+            existingOrder.total_amount_in_order += productLineTotal;
+          } else {
+            ordersMap.set(orderId, {
+              order_id: orderId,
+              date_created: product.date_created.split("T")[0],
+              total_products_in_order: product.quantity,
+              total_amount_in_order: productLineTotal,
+              status: "Completado"
+            });
+          }
+        });
+
+        const ordersArray = Array.from(ordersMap.values()).sort((a, b) => {
+            return new Date(a.date_created).getTime() - new Date(b.date_created).getTime();
+        });
+
+        if (ordersArray.length > 0) {
+          
+          const sheetData = [
+            ["ID Pedido", "Fecha", "Productos", "Monto Total", "Estado"]
+          ];
+
+          ordersArray.forEach(order => {
+            sheetData.push([
+              order.order_id.toString(),
+              order.date_created.toString(),
+              order.total_products_in_order.toString(),
+              order.total_amount_in_order.toString(),
+              order.status
+            ]);
+          });
+
+          const ws = XLSX.utils.aoa_to_sheet(sheetData);
+
+        if (ws["!ref"]) {
+              const range = XLSX.utils.decode_range(ws["!ref"]);
+              
+              
+              for (let C = range.s.c; C <= range.e.c; ++C) {
+                  const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+                  if (!ws[headerCell]) continue;
+                  ws[headerCell].s = {
+                      font: { bold: true, color: { rgb: "FFFFFF" } },
+                      fill: { fgColor: { rgb: "6A3093" } },
+                      alignment: { horizontal: "center" }
+                  };
+              }
+
+              
+              for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+                  const amountCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 }); 
+                  const cell = ws[amountCellAddress];
+                  
+                  if (cell) {
+                      cell.t = 'n'; 
+                      cell.z = '"$"#,##0;[Red]\-"$"#,##0'; 
+                  }
+              }
+
+              
+              ws['!cols'] = [
+                  { wch: 15 }, // ID Pedido
+                  { wch: 15 }, // Fecha
+                  { wch: 10 }, // Productos
+                  { wch: 15 }, // Monto Total
+                  { wch: 15 }, // Estado
+              ];
+          }
+
+        const sheetName = companyName.replace(/[/\\?*[\]:]/g, '').substring(0, 31);
+        XLSX.utils.book_append_sheet(workbook, ws, sheetName);
+        }
+      });
+
       const excelBuffer = XLSX.write(workbook, {
         bookType: "xlsx",
         type: "array",
-        bookSST: true
+        bookSST: true,
       });
-      
+
       const blob = new Blob([excelBuffer], {
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       });
 
       saveAs(blob, `Ganancias_Consolidadas_${selectedMonth}.xlsx`);
