@@ -1,6 +1,11 @@
 import type React from "react"
 import { useState, useEffect } from "react"
+import { MoreOutlined, EditOutlined } from "@ant-design/icons"
+import EditarProductoModal from "./EditarProductoModal"
 import {
+  Dropdown,
+  Menu,
+  Select,
   Card,
   Table,
   Input,
@@ -8,10 +13,10 @@ import {
   Space,
   Tag,
   Typography,
-  Image,
   Empty,
   Spin,
   Alert,
+  Image,
   Row,
   Col,
   Statistic,
@@ -47,17 +52,54 @@ const WooCommerceProductsList: React.FC = () => {
   const [testingIds, setTestingIds] = useState(false)
   const [mappedStoreId, setMappedStoreId] = useState<number | null>(null)
 
+  const [editingProduct, setEditingProduct] = useState<WooCommerceProduct | null>(null)
+  const [isEditModalVisible, setIsEditModalVisible] = useState(false)
+
+  const handleEditClick = (product: WooCommerceProduct) => {
+    setEditingProduct(product)
+    setIsEditModalVisible(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsEditModalVisible(false)
+    setEditingProduct(null)
+  }
+
+  const handleSaveProduct = async (updatedValues: any) => {
+    if (!editingProduct || !mappedStoreId) return
+
+    try {
+      await WooCommerceService.updateProduct({
+        storeId: mappedStoreId,
+        productId: editingProduct.id,
+        updatedData: updatedValues,
+      })
+      message.success("Producto actualizado correctamente")
+      handleCloseModal()
+      loadProducts(currentPage, pageSize)
+    } catch (error) {
+      console.error(error)
+      message.error("Error al actualizar el producto")
+    }
+  }
+
+
+
   const {
-    products,
-    totalProducts,
-    userEmail,
-    connectionInfo,
-    loading,
-    error,
-    hasSelectedConnection,
-    loadProducts,
-    clearError,
-  } = useWooCommerceProducts({ autoLoad: false })
+  products,
+  totalProducts,
+  userEmail,
+  connectionInfo,
+  loading,
+  error,
+  hasSelectedConnection,
+  loadProducts,
+  clearError,
+  currentPage,
+  pageSize,
+  setCurrentPage,
+  setPageSize,
+} = useWooCommerceProducts({ autoLoad: false })
 
   // Obtener el ID mapeado cuando cambia la conexión
   useEffect(() => {
@@ -114,98 +156,170 @@ const WooCommerceProductsList: React.FC = () => {
   }, [products, searchTerm])
 
 
+
   // Columnas de la tabla
   const columns: ColumnsType<WooCommerceProduct> = [
-    {
-      title: "Producto",
-      key: "name",
-      render: (_, record) => (
-        <Space>
-          <div
-            style={{
-              width: 40,
-              height: 40,
-              backgroundColor: "#f0f0f0",
-              borderRadius: 4,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-            }}
-          >
-            {record.images && record.images.length > 0 ? (
-              <Image
-                src={record.images[0].src || "/placeholder.svg"}
-                alt={record.name}
-                width={40}
-                height={40}
-                style={{ objectFit: "cover", borderRadius: 4 }}
-                fallback="/placeholder.svg?height=40&width=40"
-              />
-            ) : (
-              <InboxOutlined style={{ color: "#d9d9d9" }} />
-            )}
-          </div>
-          <div>
-            <Text strong style={{ display: "block" }}>
-              {record.name}
-            </Text>
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              SKU: {record.sku || "N/A"}
-            </Text>
-          </div>
-        </Space>
-      ),
-      width: 300,
+  {
+    title: "Nombre",
+    dataIndex: "name",
+    key: "name",
+    render: (text) => (
+      <Tooltip title={text}>
+        <Text strong ellipsis style={{ maxWidth: 220, display: "block" }}>{text}</Text>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "SKU",
+    dataIndex: "sku",
+    key: "sku",
+    render: (text) => (
+      <Tooltip title={text}>
+        <Text ellipsis style={{ maxWidth: 160, display: "block" }}>{text}</Text>
+      </Tooltip>
+    ),
+  },
+  {
+    title: "Precio",
+    dataIndex: "regular_price",
+    key: "regular_price",
+    render: (_, record) => {
+      const precio = record.regular_price || record.price || "-"
+      return precio !== "-"
+        ? `$${parseInt(precio).toLocaleString("es-CL")}`
+        : "-"
     },
-    {
-      title: "Precio",
-      dataIndex: "price",
-      key: "price",
-      render: (price) => (
-        <Text strong style={{ color: "#3f8600" }}>
-          ${price}
-        </Text>
-      ),
-      width: 100,
-      sorter: (a, b) => Number.parseFloat(a.price) - Number.parseFloat(b.price),
+  },
+  {
+    title: "Stock",
+    dataIndex: "stock_quantity",
+    key: "stock_quantity",
+    render: (stock) => {
+      let color = stock <= 0 ? "red" : stock < 10 ? "orange" : "green"
+      return <Tag color={color}>{stock > 0 ? stock : "N/A"}</Tag>
     },
-    {
-      title: "Stock",
-      dataIndex: "stock_quantity",
-      key: "stock",
-      render: (stock) => {
-        let color = "green"
-        if (stock <= 0) color = "red"
-        else if (stock < 10) color = "orange"
+  },
+  {
+    title: "Peso",
+    dataIndex: "weight",
+    key: "weight",
+    render: (weight) =>
+      weight
+        ? `${parseFloat(weight).toLocaleString("es-CL", {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2,
+          })} kg`
+        : <Text type="secondary">-</Text>,
+  },
+  {
+    title: "Dimensiones",
+    key: "dimensions",
+    render: (_, record) => {
+      const d = record.dimensions
+      return d?.length && d?.width && d?.height
+        ? `${d.length} x ${d.width} x ${d.height} cm`
+        : <Text type="secondary">-</Text>
+    },
+  },
+  {
+    title: "Imagen",
+    key: "image",
+    render: (_, record) => {
+      const src = record.images?.[0]?.src
+      return src ? (
+        <Image
+          src={src}
+          width={48}
+          height={48}
+          preview={false}
+          style={{ objectFit: "cover", borderRadius: 6 }}
+          fallback="/placeholder.svg"
+        />
+      ) : (
+        <Tag color="default">Sin imagen</Tag>
+      )
+    },
+  },
+  {
+    title: "Estado",
+    dataIndex: "status",
+    key: "status",
+    render: (status) => {
+      const estadosTraducidos: Record<string, string> = {
+        publish: "Publicado",
+        draft: "Borrador",
+        pending: "Pendiente",
+        private: "Privado",
+      }
+      const color = status === "publish" ? "green" : status === "draft" ? "orange" : "default"
+      return <Tag color={color}>{estadosTraducidos[status] || status}</Tag>
+    },
+  },
+  {
+  title: "Tallas",
+  key: "tallas",
+  render: (_, record) => {
+    console.log(record.name, record.attributes)
+    const tallaAttr = record.attributes?.find(attr => {
+      const nombre = attr.name?.toLowerCase().trim()
+      const slug = attr.slug?.toLowerCase().trim()
+      return nombre?.includes("talla") || slug?.includes("talla")
+    })
 
-        return <Tag color={color}>{stock}</Tag>
-      },
-      width: 100,
-      sorter: (a, b) => a.stock_quantity - b.stock_quantity,
-    },
-    {
-      title: "Acciones",
-      key: "actions",
-      render: (_, record) => (
-        <Space>
-          <Tooltip title="Ver en tienda">
-            <Button type="text" icon={<EyeOutlined />} onClick={() => window.open(record.permalink, "_blank")} />
-          </Tooltip>
-          <Tooltip title="Copiar enlace">
-            <Button
-              type="text"
-              icon={<LinkOutlined />}
-              onClick={() => {
-                navigator.clipboard.writeText(record.permalink)
-                message.success("Enlace copiado al portapapeles")
-              }}
-            />
-          </Tooltip>
-        </Space>
-      ),
-      width: 100,
-    },
-  ]
+    if (!tallaAttr || !tallaAttr.options || tallaAttr.options.length === 0) {
+      return <Text type="secondary">-</Text>
+    }
+
+    return tallaAttr.options.join(", ")
+  }
+}
+
+,
+
+  {
+  title: "Acciones",
+  key: "actions",
+  fixed: "right",
+  render: (_, record) => {
+    const menu = (
+      <Menu>
+        <Menu.Item
+          key="ver"
+          icon={<EyeOutlined />}
+          onClick={() => window.open(record.permalink, "_blank")}
+        >
+          Ver en tienda
+        </Menu.Item>
+        <Menu.Item
+          key="copiar"
+          icon={<LinkOutlined />}
+          onClick={() => {
+            navigator.clipboard.writeText(record.permalink)
+            message.success("Enlace copiado al portapapeles")
+          }}
+        >
+          Copiar enlace
+        </Menu.Item>
+        <Menu.Item
+          key="editar"
+          icon={<EditOutlined />}
+          onClick={() => handleEditClick(record)}
+        >
+          Editar producto
+        </Menu.Item>
+      </Menu>
+    )
+
+    return (
+      <Dropdown overlay={menu} trigger={["click"]}>
+        <Button shape="circle" icon={<MoreOutlined />} />
+      </Dropdown>
+    )
+  }
+}
+]
+
+
 
   // Productos a mostrar (filtrados o todos)
   const displayProducts = searchTerm ? filteredProducts : products
@@ -214,21 +328,29 @@ const WooCommerceProductsList: React.FC = () => {
     <div style={{ padding: "24px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
         {/* Header */}
-        <Card style={{ marginBottom: 24, borderRadius: 12, boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}>
-          <Row align="middle" justify="space-between">
+        <Card bordered={false} style={{ background: "#fff", padding: "24px 32px", marginBottom: 24, borderRadius: 12 }}>
+          <Row justify="space-between" align="middle">
             <Col>
-              <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
-                <ShopOutlined style={{ marginRight: 12 }} />
-                Productos WooCommerce
+              <Title level={2} style={{ margin: 0 }}>
+                <ShopOutlined /> Productos WooCommerce
               </Title>
-              <Text type="secondary" style={{ fontSize: "16px" }}>
-                Visualiza los productos de tu tienda WooCommerce
-              </Text>
+              <Text type="secondary">Gestión y edición de productos sincronizados</Text>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<ReloadOutlined />}
+                onClick={() => loadProducts()}
+                loading={loading}
+                disabled={!mappedStoreId}
+              >
+                Actualizar
+              </Button>
             </Col>
           </Row>
         </Card>
 
-        {/* Información de conexión y mapeo */}
+
         {connectionInfo && (
           <Card style={{ marginBottom: 24, borderRadius: 8 }}>
             <Row align="middle" justify="space-between">
@@ -257,7 +379,6 @@ const WooCommerceProductsList: React.FC = () => {
                       {connectionInfo.nickname || "Conexión WooCommerce"}
                     </Text>
                     <Descriptions size="small" column={1}>
-                      <Descriptions.Item label="Client ID">{connectionInfo.client_id}</Descriptions.Item>
                       {mappedStoreId && (
                         <Descriptions.Item label="WooCommerce Store ID">
                           <Tag color="green">{mappedStoreId}</Tag>
@@ -266,18 +387,48 @@ const WooCommerceProductsList: React.FC = () => {
                     </Descriptions>
                   </div>
                 </Space>
+
+                {/* Selector visual de tienda */}
+                <Row style={{ marginTop: 12 }}>
+                  <Col span={24}>
+                    <Text strong>Seleccionar tienda WooCommerce:</Text>
+                    <Select
+                      placeholder="Selecciona una tienda"
+                      style={{ width: 300, marginTop: 8 }}
+                      defaultValue={connectionInfo?.nickname}
+                      onChange={(value: string) => {
+                        const store = WooCommerceService.getAvailableStores().find(
+                          (s) => s.nickname === value
+                        )
+                        if (store) {
+                          localStorage.setItem(
+                            "conexionSeleccionada",
+                            JSON.stringify({ nickname: store.nickname, storeId: store.id })
+                          )
+                          window.location.reload()
+                        }
+                      }}
+                      options={WooCommerceService.getAvailableStores().map((store) => ({
+                        label: store.name,
+                        value: store.nickname,
+                      }))}
+                    />
+                  </Col>
+                </Row>
               </Col>
+
               <Col span={8} style={{ textAlign: "right" }}>
                 <Space direction="vertical">
                   <Button
                     type="primary"
                     icon={<ReloadOutlined />}
-                    onClick={loadProducts}
+                    onClick={() => loadProducts()}
                     loading={loading}
                     disabled={!mappedStoreId}
                   >
                     Cargar Productos
                   </Button>
+
                   <Button
                     icon={<BugOutlined />}
                     onClick={testDifferentIds}
@@ -292,6 +443,7 @@ const WooCommerceProductsList: React.FC = () => {
             </Row>
           </Card>
         )}
+
 
         {/* Alerta si no hay conexión */}
         {!hasSelectedConnection() && (
@@ -353,11 +505,12 @@ const WooCommerceProductsList: React.FC = () => {
             <Col xs={12} sm={8}>
               <Card>
                 <Statistic
-                  title="Total Productos"
+                  title="Total productos"
                   value={totalProducts}
                   prefix={<InboxOutlined />}
-                  valueStyle={{ color: "#1890ff" }}
+                  suffix={<Tooltip title="Cantidad total de productos sincronizados"><InfoCircleOutlined /></Tooltip>}
                 />
+
               </Card>
             </Col>
             <Col xs={12} sm={8}>
@@ -374,7 +527,11 @@ const WooCommerceProductsList: React.FC = () => {
               <Card>
                 <Statistic
                   title="Valor Total"
-                  value={displayProducts.reduce((sum, product) => sum + Number.parseFloat(product.price), 0)}
+                  value={displayProducts.reduce((sum, product) => {
+  const price = parseFloat(product.price)
+  return isNaN(price) ? sum : sum + price
+}, 0)}
+
                   precision={2}
                   prefix={<DollarOutlined />}
                   valueStyle={{ color: "#722ed1" }}
@@ -446,22 +603,41 @@ const WooCommerceProductsList: React.FC = () => {
                 </Space>
               </div>
 
-              <Table
-                dataSource={displayProducts}
-                columns={columns}
-                rowKey="id"
-                pagination={{
-                  pageSize: 10,
-                  showSizeChanger: true,
-                  showQuickJumper: false,
-                  pageSizeOptions: ["10", "20", "50", "100"],
-                  showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
-                }}
-                scroll={{ x: 800 }}
-              />
+                      <Table
+                        dataSource={displayProducts}
+                        columns={columns}
+                        rowKey="id"
+                        scroll={{ x: 'max-content' }} // ← Importante si hay muchas columnas
+                        pagination={{
+                          current: currentPage,
+                          pageSize,
+                          total: totalProducts,
+                          showSizeChanger: true,
+                          showQuickJumper: true,
+                          pageSizeOptions: ["10", "20", "50", "100"],
+                          onChange: (page, size) => {
+                            setCurrentPage(page)
+                            setPageSize(size)
+                            loadProducts(page, size) // ← ESTA ES LA CLAVE
+                          },
+                          showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
+                          position: ["bottomRight"], // ← Agrega esto si el paginador no se ve
+                        }}
+                      />
+
+
+
+
             </>
           )}
         </Card>
+        <EditarProductoModal
+          visible={isEditModalVisible}
+          product={editingProduct}
+          onClose={handleCloseModal}
+          onSave={handleSaveProduct}
+        />
+
       </div>
     </div>
   )
