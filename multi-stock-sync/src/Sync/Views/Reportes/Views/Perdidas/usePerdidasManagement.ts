@@ -1,72 +1,91 @@
-import React from "react";
+import {useCallback, useState} from "react";
 import axiosInstance from "../../../../../axiosConfig";
-import axios from "axios";
 
-export interface CancelledProductItem {
-    id: number;
-    created_date: string;
-    total_amount: number;
-    status: string;
-    product: {
-        title: string;
-        quantity: number;
-        price: number;
-    };
+export interface Product {
+  title: string;
+  quantity: number;
+  price: number;
 }
 
-export interface CancelledProductsResponse {
-    orders: CancelledProductItem[];
-    total_cancelled: number;
+export interface CompanyMonthlyData {
+  total_cancelled: number;
+  total_orders: number;
+  products: Product[];
+  company_name: string;
 }
 
-export const usePerdidasManagement = () => {
-    const [productosPerdidos, setProductosPerdidos] = React.useState<CancelledProductItem[]>([]);
-    const [totalMontoGlobalPerdido, setTotalMontoGlobalPerdido] = React.useState<number>(0);
-    const [loading, setLoading] = React.useState<boolean>(false);
-    const [error, setError] = React.useState<string | null>(null);
+export interface MonthlyLossData {
+  total_cancelled: number;
+  orders: any[];
+}
 
-    const fetchPerdidasEmpresa = async () => {
+export interface CancelledByMonth {
+  [month: string]: CompanyMonthlyData[];
+}
+
+export interface CompanyLossData {
+  [month: string]: MonthlyLossData;
+}
+
+export interface ApiLossResponse {
+  status: string;
+  message: string;
+  cancelled_by_company: CancelledByMonth;
+  total_cancelled: number;
+  date_range: {
+    from: string;
+    to: string;
+  };
+}
+
+interface UsePerdidasManagementResult {
+  loading: boolean;
+  error: string | null;
+  fetchPerdidasPorMes: (year: number, month: number) => Promise<ApiLossResponse | null>;
+}
+
+export const usePerdidasManagement = (): UsePerdidasManagementResult => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchPerdidasPorMes = useCallback(async (year: number, month: number): Promise<ApiLossResponse | null> => {
         setLoading(true);
         setError(null);
         try {
-            const response = await axiosInstance.get<CancelledProductsResponse>(
+            const response = await axiosInstance.get<ApiLossResponse>(
                 `${import.meta.env.VITE_API_URL}/mercadolibre/cancelled-products`,
                 {
+                    params: { year, month },
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                         Accept: "application/json",
                     },
                 }
             );
-            console.log("PerdidasEmpresa API response:", JSON.stringify(response.data, null, 2));
-
-            if (!Array.isArray(response.data)) {
-                throw new Error("Estructura de respuesta de API inválida");
-            }
-
-        } catch (err) {
-            console.error("Error en usePerdidasManagement.fetchPerdidasEmpresa:", err);
-            if (axios.isAxiosError(err) && err.response) {
-                if (err.response.status === 403 || err.response.status === 401) {
-                    setError("Acceso denegado. Por favor, verifica tus permisos.");
-                } else {
-                    setError(err.response.data.message || "Error obteniendo los datos de pérdidas.");
-                }
+            if (response.data && response.data.cancelled_by_company) {
+                return response.data;
             } else {
-                setError("Ocurrió un error inesperado al obtener los datos de pérdidas.");
+                return {
+                status: 'success',
+                message: 'No data for this period.',
+                cancelled_by_company: {},
+                total_cancelled: 0,
+                date_range: { from: '', to: '' }
+              };
             }
-            setProductosPerdidos([]);
-            setTotalMontoGlobalPerdido(0);
+        } catch (err: any) {
+            console.error("Error al obtener las pérdidas por compañía:", err);
+            const message = err.response?.data?.message || err.message || "Error al obtener los datos de pérdidas.";
+            setError(message);
+            return null;
         } finally {
             setLoading(false);
         }
-    };
+    }, []);
 
     return {
-        productosPerdidos,
-        totalMontoGlobalPerdido,
         loading,
         error,
-        fetchPerdidasEmpresa,
+        fetchPerdidasPorMes,
     };
 };
