@@ -7,6 +7,7 @@ import RouterReportes from "../Views/Reportes/Router/RouterReportes";
 import RouterCompania from "../Views/Compania/Router/RouterCompania";
 import Info from "../Views/Info/Info";
 import HomeSync from "../Views/Home/HomeSync";
+import LandingPage from "../Views/Home/LandingPage";
 import About from "../Views/About/About";
 import { Login } from "../../Auth/Pages";
 import Register from "../../Auth/Pages/Register";
@@ -23,6 +24,7 @@ function RouterSync() {
       <Routes>
         <Route path="/conexiones/*" element={<RouterConexiones />} />
         <Route path="/home" element={<HomeSync />} />
+        <Route path="/landing" element={<LandingPage />} />
         <Route path="/productos/*" element={<RouterProductos />} />
         <Route path="/companias/*" element={<RouterCompania />} />
         <Route path="/bodegas/*" element={<RouterBodegas />} />
@@ -38,7 +40,7 @@ function RouterSync() {
         <Route path="/envios/*" element={<RouterGestionEnvio />} />
 
 
-        <Route path="/*" element={<Navigate to="/sync/home" />} />
+        <Route path="/*" element={<Navigate to="/sync/landing" />} />
       </Routes>
     </LayoutSync>
   );
