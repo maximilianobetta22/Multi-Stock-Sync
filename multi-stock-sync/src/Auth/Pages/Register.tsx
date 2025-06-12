@@ -80,21 +80,165 @@ const Register: React.FC = () => {
         <div
           style={{
             minHeight: "100vh",
-            background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+            background: "white",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             padding: "15px",
+            position: "relative",
+            overflow: "hidden",
           }}
         >
-          <Row justify="center" style={{ width: "100%", maxWidth: "500px" }}>
+          {/* Elementos animados de fondo */}
+          <div
+            style={{
+              position: "absolute",
+              top: "-80px",
+              left: "-80px",
+              width: "250px",
+              height: "250px",
+              background: `radial-gradient(circle, ${brandColors.primary}18 0%, ${brandColors.primary}06 70%, transparent 100%)`,
+              borderRadius: "50%",
+              animation: "float 7s ease-in-out infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "15%",
+              right: "-60px",
+              width: "200px",
+              height: "200px",
+              background: `radial-gradient(circle, ${brandColors.secondary}22 0%, ${brandColors.secondary}08 70%, transparent 100%)`,
+              borderRadius: "50%",
+              animation: "float 9s ease-in-out infinite reverse",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "5%",
+              left: "5%",
+              width: "180px",
+              height: "180px",
+              background: `radial-gradient(circle, ${brandColors.accent}20 0%, ${brandColors.accent}07 70%, transparent 100%)`,
+              borderRadius: "50%",
+              animation: "float 8s ease-in-out infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-60px",
+              right: "15%",
+              width: "220px",
+              height: "220px",
+              background: `radial-gradient(circle, ${brandColors.primary}14 0%, ${brandColors.primary}05 70%, transparent 100%)`,
+              borderRadius: "50%",
+              animation: "float 10s ease-in-out infinite reverse",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "-40px",
+              width: "160px",
+              height: "160px",
+              background: `radial-gradient(circle, ${brandColors.secondary}16 0%, ${brandColors.secondary}04 70%, transparent 100%)`,
+              borderRadius: "50%",
+              animation: "float 6s ease-in-out infinite",
+            }}
+          />
+
+          {/* Ondas animadas */}
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(60deg, ${brandColors.primary}03 0%, transparent 20%, ${brandColors.secondary}04 40%, transparent 60%, ${brandColors.accent}03 80%, transparent 100%)`,
+              animation: "wave 15s ease-in-out infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: `linear-gradient(-45deg, transparent 0%, ${brandColors.primary}02 25%, transparent 50%, ${brandColors.secondary}02 75%, transparent 100%)`,
+              animation: "wave 18s ease-in-out infinite reverse",
+            }}
+          />
+
+          {/* Más partículas flotantes */}
+          <div
+            style={{
+              position: "absolute",
+              top: "10%",
+              left: "20%",
+              width: "8px",
+              height: "8px",
+              background: brandColors.primary,
+              borderRadius: "50%",
+              opacity: 0.4,
+              animation: "particle 12s linear infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "70%",
+              right: "30%",
+              width: "6px",
+              height: "6px",
+              background: brandColors.secondary,
+              borderRadius: "50%",
+              opacity: 0.3,
+              animation: "particle 16s linear infinite reverse",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              bottom: "40%",
+              left: "80%",
+              width: "10px",
+              height: "10px",
+              background: brandColors.accent,
+              borderRadius: "50%",
+              opacity: 0.5,
+              animation: "particle 14s linear infinite",
+            }}
+          />
+          <div
+            style={{
+              position: "absolute",
+              top: "30%",
+              right: "10%",
+              width: "7px",
+              height: "7px",
+              background: brandColors.primary,
+              borderRadius: "50%",
+              opacity: 0.3,
+              animation: "particle 11s linear infinite reverse",
+            }}
+          />
+
+          <Row justify="center" style={{ width: "100%", maxWidth: "500px", zIndex: 1 }}>
             <Col span={24}>
               <Card
                 style={{
                   borderRadius: "16px",
-                  boxShadow: "0 20px 40px rgba(0, 0, 0, 0.15)",
+                  boxShadow: "0 20px 40px rgba(255, 87, 34, 0.15)",
                   border: "none",
                   overflow: "hidden",
+                  backdropFilter: "blur(10px)",
+                  background: "rgba(255, 255, 255, 0.95)",
                 }}
                 bodyStyle={{ padding: 0 }}
               >
@@ -331,6 +475,76 @@ const Register: React.FC = () => {
               </Card>
             </Col>
           </Row>
+
+          {/* Estilos CSS para las animaciones */}
+          <style>
+            {`
+              @keyframes float {
+                0%, 100% { 
+                  transform: translateY(0px) translateX(0px) scale(1);
+                  opacity: 0.6;
+                }
+                25% { 
+                  transform: translateY(-25px) translateX(15px) scale(1.05);
+                  opacity: 0.3;
+                }
+                50% { 
+                  transform: translateY(15px) translateX(-20px) scale(0.95);
+                  opacity: 0.7;
+                }
+                75% { 
+                  transform: translateY(-10px) translateX(10px) scale(1.02);
+                  opacity: 0.4;
+                }
+              }
+
+              @keyframes wave {
+                0%, 100% { 
+                  transform: translateX(0%) rotate(0deg) scale(1);
+                  opacity: 0.2;
+                }
+                20% { 
+                  transform: translateX(8%) rotate(2deg) scale(1.1);
+                  opacity: 0.4;
+                }
+                40% { 
+                  transform: translateX(-5%) rotate(-1deg) scale(0.9);
+                  opacity: 0.1;
+                }
+                60% { 
+                  transform: translateX(3%) rotate(1.5deg) scale(1.05);
+                  opacity: 0.3;
+                }
+                80% { 
+                  transform: translateX(-2%) rotate(-0.5deg) scale(0.95);
+                  opacity: 0.5;
+                }
+              }
+
+              @keyframes particle {
+                0% { 
+                  transform: translateY(0px) translateX(0px) scale(0);
+                  opacity: 0;
+                }
+                10% { 
+                  opacity: 1;
+                  transform: scale(1);
+                }
+                50% { 
+                  transform: translateY(-50vh) translateX(25px) scale(1.2);
+                  opacity: 0.8;
+                }
+                90% { 
+                  opacity: 0.3;
+                  transform: scale(0.8);
+                }
+                100% { 
+                  transform: translateY(-100vh) translateX(60px) scale(0);
+                  opacity: 0;
+                }
+              }
+            `}
+          </style>
         </div>
       )}
     </>
