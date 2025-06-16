@@ -1,7 +1,10 @@
 import React, { useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Card, Row, Col, Typography } from "antd";
-import { ShoppingOutlined, ShopOutlined, CarOutlined, SettingOutlined } from "@ant-design/icons";
+import { ShoppingOutlined, 
+ShopOutlined, 
+CarOutlined, 
+SettingOutlined } from "@ant-design/icons";
 
 const { Title } = Typography;
 
