@@ -218,7 +218,7 @@ const GananciasMensuales = () => {
     });
   }, [selectedYear, monthNames]);
 
-  const generatePDF = useCallback(async () => {
+  const generatePDF = useCallback(async (preview: boolean = false) => {
     try {
       const monthData = getCurrentMonthData();
       if (!monthData) return;
@@ -291,7 +291,7 @@ const GananciasMensuales = () => {
       pdf.setTextColor(40, 40, 40);
       pdf.text(
         `El total general de las ganancias obtenidas en las cuatro tiendas es de: ${formatCurrency(monthData.total_sales)}
-         en el mes de ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]} ${selectedYear}.`,
+          en el mes de ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]} ${selectedYear}.`,
         105,
         (pdf as any).lastAutoTable.finalY + 10,
         { align: "center" }
@@ -300,20 +300,24 @@ const GananciasMensuales = () => {
       const pdfBlob = pdf.output("blob");
       const pdfBlobUrl = URL.createObjectURL(pdfBlob);
 
-      
-      const link = document.createElement("a");
-      link.href = pdfBlobUrl;
-      link.download = `Ganancias_Consolidadas_${selectedMonth}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
+      if (preview) {
+        setPdfUrl(pdfBlobUrl); // Establece la URL para la previsualización
+      } else {
+        // Lógica de descarga
+        const link = document.createElement("a");
+        link.href = pdfBlobUrl;
+        link.download = `Ganancias_Consolidadas_${selectedMonth}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
 
-      
-      URL.revokeObjectURL(pdfBlobUrl);
-      setPdfUrl(pdfBlobUrl);
+        // Revoca la URL solo después de que la descarga se ha iniciado
+        URL.revokeObjectURL(pdfBlobUrl);
+      }
     } catch (err) {
       console.error("Error generating PDF:", err);
       setError("Error al generar el PDF.");
+      setPdfUrl(null); // Limpia la URL del PDF en caso de error
     }
   }, [selectedMonth, selectedYear, formatCurrency, getCurrentMonthData, monthNames]);
 
@@ -327,7 +331,7 @@ const GananciasMensuales = () => {
 
       const workbook = XLSX.utils.book_new();
 
-      
+      // Hoja de resumen general
       const summaryData = [
         ["Cuenta", "Total Ventas (CLP)", "Total Productos"],
         ...monthData.companies_data.map((companyData) => [
@@ -377,7 +381,7 @@ const GananciasMensuales = () => {
 
       XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen General");
 
-      
+      // Hojas individuales por compañía con detalles de pedidos
       monthData.companies_data.forEach((companyData) => {
         const companyName = companyData.company_name;
 
@@ -413,7 +417,7 @@ const GananciasMensuales = () => {
         });
 
         if (ordersArray.length > 0) {
-          
+          // Encabezados de la hoja de detalles de pedidos
           const sheetData = [
             ["ID Pedido", "Fecha", "Productos", "Monto Total", "Estado"]
           ];
@@ -433,7 +437,7 @@ const GananciasMensuales = () => {
         if (ws["!ref"]) {
               const range = XLSX.utils.decode_range(ws["!ref"]);
               
-              
+              // Estilos para los encabezados
               for (let C = range.s.c; C <= range.e.c; ++C) {
                   const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
                   if (!ws[headerCell]) continue;
@@ -444,18 +448,18 @@ const GananciasMensuales = () => {
                   };
               }
 
-              
+              // Formato de moneda para la columna 'Monto Total'
               for (let R = range.s.r + 1; R <= range.e.r; ++R) {
                   const amountCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 }); 
                   const cell = ws[amountCellAddress];
                   
                   if (cell) {
-                      cell.t = 'n'; 
-                      cell.z = '"$"#,##0;[Red]\-"$"#,##0'; 
+                      cell.t = 'n'; // Tipo de celda numérica
+                      cell.z = '"$"#,##0;[Red]\-"$"#,##0'; // Formato de moneda CLP
                   }
               }
 
-              
+              // Ajustar ancho de las columnas
               ws['!cols'] = [
                   { wch: 15 }, // ID Pedido
                   { wch: 15 }, // Fecha
@@ -648,7 +652,7 @@ const GananciasMensuales = () => {
             <Col xs={24} sm={8} lg={6}>
               <button
                 type="button"
-                onClick={generatePDF}
+                onClick={() => generatePDF(false)} // Pasa `false` para descarga
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
                 style={{
                   backgroundColor: "white",
@@ -691,7 +695,7 @@ const GananciasMensuales = () => {
               <button
                 type="button"
                 onClick={async () => {
-                  await generatePDF();
+                  await generatePDF(true); // Pasa `true` para previsualización
                   setIsModalVisible(true);
                 }}
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
@@ -791,7 +795,13 @@ const GananciasMensuales = () => {
           monthNames[parseInt(selectedMonth?.split("-")[1]) - 1]
         } ${selectedYear}`}
         open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        onCancel={() => {
+          setIsModalVisible(false);
+          if (pdfUrl) {
+            URL.revokeObjectURL(pdfUrl); // Revoca la URL cuando el modal se cierra
+            setPdfUrl(null); // Limpia el estado
+          }
+        }}
         footer={null}
         width="90%"
         style={{ top: 20 }}
