@@ -1,7 +1,6 @@
 import React, { useState, useContext } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import styles from '../Css/Login.module.css';
 import { LoadingDinamico } from '../../components/LoadingDinamico/LoadingDinamico';
 import { UserContext } from '../../Sync/Context/UserContext';
@@ -14,23 +13,44 @@ export const Login: React.FC = () => {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
   const userContext = useContext(UserContext);
+
   if (!userContext) {
     throw new Error('UserContext must be used within a UserProvider');
   }
+
   const { setUser } = userContext;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setError('');
+
     try {
-      const response = await axios.post(`${process.env.VITE_API_URL}/login`, { email, password });
+      const response = await axios.post(`${process.env.VITE_API_URL}/login`, {
+        email,
+        password,
+      });
+
+      const userData = response.data.user;
+
+      // Verificar que role_id exista
+      if (userData.role_id === null || userData.role_id === undefined) {
+        setError('Este usuario aún no tiene un rol asignado. Contacte al administrador.');
+        setLoading(false);
+        return;
+      }
+
+      // Guardar token y usuario en localStorage
       localStorage.setItem('token', response.data.token);
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      setUser(response.data.user);
-      navigate("/sync/seleccionar-conexion"); // Redirigir a la página de selección de conexión
+      localStorage.setItem('user', JSON.stringify(userData));
+
+      // Actualizar contexto
+      setUser(userData);
+
+      navigate('/sync/seleccionar-conexion');
     } catch (err) {
-      setError((err as any).response?.data?.message || 'Credenciales inválidas');
       console.log(err);
+      setError((err as any).response?.data?.message || 'Credenciales inválidas');
     } finally {
       setLoading(false);
     }
@@ -40,31 +60,36 @@ export const Login: React.FC = () => {
     <>
       {loading && <LoadingDinamico variant="container" />}
       {!loading && (
-        <div className={`${styles.loginContainer}`}>
-          <div className={`${styles.loginBox__loginContainer}`}>
-            <header className={`${styles.header__loginBox}`}>
-              <h1 className={`${styles.title__header}`}>Multi-Stock-Sync</h1>
+        <div className={styles.loginContainer}>
+          <div className={styles.loginBox__loginContainer}>
+            <header className={styles.header__loginBox}>
+              <h1 className={styles.title__header}>Multi-Stock-Sync</h1>
               <p>Iniciar sesión</p>
             </header>
-            <hr/>
+            <hr />
             <form className="form" onSubmit={handleSubmit}>
               <div className="mb-3">
-                <label htmlFor="username" className="form-label">Nombre de Usuario</label>
+                <label htmlFor="username" className="form-label">
+                  Nombre de Usuario
+                </label>
                 <input
                   type="text"
                   className="form-control"
                   id="username"
-                  placeholder="Ejemplo: luismiguel@email.com"
+                  placeholder="Ejemplo: usuario@email.com"
                   value={email}
                   required
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+
               <div className="mb-3">
-                <label htmlFor="password" className="form-label">Contraseña</label>
+                <label htmlFor="password" className="form-label">
+                  Contraseña
+                </label>
                 <div className="input-group">
                   <input
-                    type={showPassword ? "text" : "password"}
+                    type={showPassword ? 'text' : 'password'}
                     className="form-control"
                     id="password"
                     placeholder="Tu contraseña"
@@ -77,14 +102,21 @@ export const Login: React.FC = () => {
                     className="btn btn-outline-secondary"
                     onClick={() => setShowPassword(!showPassword)}
                   >
-                    {showPassword ? "Ocultar" : "Mostrar"}
+                    {showPassword ? 'Ocultar' : 'Mostrar'}
                   </button>
                 </div>
               </div>
+
               {error && <div className="alert alert-danger">{error}</div>}
-              <button type="submit" className="btn btn-primary w-100">Iniciar Sesión</button>
+
+              <button type="submit" className="btn btn-primary w-100">
+                Iniciar Sesión
+              </button>
+
               <div className="mt-3">
-                <Link to="/sync/register" className="d-block text-decoration-none text-primary text-center">Registrarse</Link>
+                <Link to="/sync/register" className="d-block text-decoration-none text-primary text-center">
+                  Registrarse
+                </Link>
               </div>
             </form>
           </div>

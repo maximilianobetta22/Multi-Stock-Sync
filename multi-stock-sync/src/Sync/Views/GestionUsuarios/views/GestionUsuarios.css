@@ -1,0 +1,23 @@
+.user-row {
+  transition: all 0.3s ease;
+}
+
+.user-row-modified {
+  background-color: #f0f7ff;
+  border-left: 3px solid #1890ff;
+}
+
+.user-row:hover {
+  background-color: #f9f9f9;
+}
+
+/* Estilos para la tabla */
+.ant-table-thead > tr > th {
+  font-weight: 600 !important;
+  background-color: #fafafa !important;
+}
+
+/* Estilos para los tags de roles */
+.ant-tag {
+  margin-right: 0 !important;
+}
