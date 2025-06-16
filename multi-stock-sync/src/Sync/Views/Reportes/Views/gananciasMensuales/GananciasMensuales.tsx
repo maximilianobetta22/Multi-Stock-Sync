@@ -45,13 +45,13 @@ interface ProductDetail {
   quantity: number;
   price: number;
   order_id: number;
-  date_created: string; 
+  date_created: string;
 }
 
 interface CompanySalesData {
   total_sales: number;
   total_products: number;
-  products: ProductDetail[]; 
+  products: ProductDetail[];
   company_name: string;
 }
 
@@ -123,7 +123,7 @@ const GananciasMensuales = () => {
   const populateAvailableYears = useCallback(() => {
     const currentFullYear = new Date().getFullYear();
     const years = [];
-    for (let i = currentFullYear; i >= currentFullYear - 4; i--) {
+    for (let i = currentFullYear; i >= currentFullYear - 3; i--) {
       years.push(i.toString());
     }
     setAvailableYears(years.sort((a, b) => b.localeCompare(a)));
@@ -153,8 +153,7 @@ const GananciasMensuales = () => {
           );
         }
 
-        if (data.sales_by_company && data.sales_by_company.length > 0) {
-          
+        if (data.sales_by_company && data.sales_by_company.length > 0 && data.sales_by_company[0] && data.sales_by_company[0].length > 0) {
           setCurrentMonthAggregatedData({
             total_sales: data.total_sales,
             companies_data: data.sales_by_company[0],
@@ -208,7 +207,19 @@ const GananciasMensuales = () => {
   }, []);
 
   const getAvailableMonths = useCallback(() => {
-    return monthNames.map((name, index) => {
+    const now = new Date();
+    const currentFullYear = now.getFullYear();
+    const currentMonthIndex = now.getMonth();
+
+    let monthsToDisplay = monthNames;
+
+    if (parseInt(selectedYear) === currentFullYear) {
+      monthsToDisplay = monthNames.slice(0, currentMonthIndex + 1);
+    } else if (parseInt(selectedYear) > currentFullYear) {
+      monthsToDisplay = [];
+    }
+
+    return monthsToDisplay.map((name, index) => {
       const monthNum = (index + 1).toString().padStart(2, "0");
       const monthKey = `${selectedYear}-${monthNum}`;
       return {
@@ -228,8 +239,7 @@ const GananciasMensuales = () => {
       pdf.setFontSize(18);
       pdf.setTextColor(40, 40, 40);
       pdf.text(
-        `Reporte de Ganancias Consolidadas - ${
-          monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
+        `Reporte de Ganancias Consolidadas - ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
         } ${selectedYear}`,
         105,
         15,
@@ -300,7 +310,6 @@ const GananciasMensuales = () => {
       const pdfBlob = pdf.output("blob");
       const pdfBlobUrl = URL.createObjectURL(pdfBlob);
 
-      
       const link = document.createElement("a");
       link.href = pdfBlobUrl;
       link.download = `Ganancias_Consolidadas_${selectedMonth}.pdf`;
@@ -308,7 +317,6 @@ const GananciasMensuales = () => {
       link.click();
       document.body.removeChild(link);
 
-      
       URL.revokeObjectURL(pdfBlobUrl);
       setPdfUrl(pdfBlobUrl);
     } catch (err) {
@@ -326,7 +334,6 @@ const GananciasMensuales = () => {
       }
 
       const workbook = XLSX.utils.book_new();
-
       
       const summaryData = [
         ["Cuenta", "Total Ventas (CLP)", "Total Productos"],
@@ -377,10 +384,8 @@ const GananciasMensuales = () => {
 
       XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen General");
 
-      
       monthData.companies_data.forEach((companyData) => {
         const companyName = companyData.company_name;
-
         const ordersMap = new Map<number, {
           order_id: number;
           date_created: string;
@@ -409,15 +414,13 @@ const GananciasMensuales = () => {
         });
 
         const ordersArray = Array.from(ordersMap.values()).sort((a, b) => {
-            return new Date(a.date_created).getTime() - new Date(b.date_created).getTime();
+          return new Date(a.date_created).getTime() - new Date(b.date_created).getTime();
         });
 
         if (ordersArray.length > 0) {
-          
           const sheetData = [
             ["ID Pedido", "Fecha", "Productos", "Monto Total", "Estado"]
           ];
-
           ordersArray.forEach(order => {
             sheetData.push([
               order.order_id.toString(),
@@ -430,43 +433,40 @@ const GananciasMensuales = () => {
 
           const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
-        if (ws["!ref"]) {
-              const range = XLSX.utils.decode_range(ws["!ref"]);
-              
-              
-              for (let C = range.s.c; C <= range.e.c; ++C) {
-                  const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
-                  if (!ws[headerCell]) continue;
-                  ws[headerCell].s = {
-                      font: { bold: true, color: { rgb: "FFFFFF" } },
-                      fill: { fgColor: { rgb: "6A3093" } },
-                      alignment: { horizontal: "center" }
-                  };
-              }
+          if (ws["!ref"]) {
+            const range = XLSX.utils.decode_range(ws["!ref"]);
 
-              
-              for (let R = range.s.r + 1; R <= range.e.r; ++R) {
-                  const amountCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 }); 
-                  const cell = ws[amountCellAddress];
-                  
-                  if (cell) {
-                      cell.t = 'n'; 
-                      cell.z = '"$"#,##0;[Red]\-"$"#,##0'; 
-                  }
-              }
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+              const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+              if (!ws[headerCell]) continue;
+              ws[headerCell].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "6A3093" } },
+                alignment: { horizontal: "center" }
+              };
+            }
 
-              
-              ws['!cols'] = [
-                  { wch: 15 }, // ID Pedido
-                  { wch: 15 }, // Fecha
-                  { wch: 10 }, // Productos
-                  { wch: 15 }, // Monto Total
-                  { wch: 15 }, // Estado
-              ];
+            for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+              const amountCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 });
+              const cell = ws[amountCellAddress];
+
+              if (cell) {
+                cell.t = 'n';
+                cell.z = '"$"#,##0;[Red]\-"$"#,##0';
+              }
+            }
+
+            ws['!cols'] = [
+              { wch: 15 }, // ID Pedido
+              { wch: 15 }, // Fecha
+              { wch: 10 }, // Productos
+              { wch: 15 }, // Monto Total
+              { wch: 15 }, // Estado
+            ];
           }
 
-        const sheetName = companyName.replace(/[/\\?*[\]:]/g, '').substring(0, 31);
-        XLSX.utils.book_append_sheet(workbook, ws, sheetName);
+          const sheetName = companyName.replace(/[/\\?*[\]:]/g, '').substring(0, 31);
+          XLSX.utils.book_append_sheet(workbook, ws, sheetName);
         }
       });
 
@@ -531,12 +531,18 @@ const GananciasMensuales = () => {
           <Select
             placeholder="Seleccione un año"
             style={{ width: "100%" }}
-            onChange={(value) => {
-              setSelectedYear(value);
-              const monthPart = selectedMonth
-                ? selectedMonth.split("-")[1]
-                : (new Date().getMonth() + 1).toString().padStart(2, "0");
-              setSelectedMonth(`${value}-${monthPart}`);
+            onChange={(newYear) => {
+              const now = new Date();
+              const currentFullYear = now.getFullYear();
+              const currentMonth = now.getMonth() + 1; // 1-12
+              let monthToSet = selectedMonth ? parseInt(selectedMonth.split("-")[1]) : currentMonth;
+
+              if (parseInt(newYear) === currentFullYear && monthToSet > currentMonth) {
+                monthToSet = currentMonth;
+              }
+              const newMonthString = monthToSet.toString().padStart(2, "0");
+              setSelectedYear(newYear);
+              setSelectedMonth(`${newYear}-${newMonthString}`);
             }}
             value={selectedYear || undefined}
             loading={loading}
@@ -565,9 +571,8 @@ const GananciasMensuales = () => {
 
       {chartData && selectedMonth && currentMonthAggregatedData ? (
         <Card
-          title={`Ganancias Mensuales Consolidadas - ${
-            monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
-          } ${selectedYear}`}
+          title={`Ganancias Mensuales Consolidadas - ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
+            } ${selectedYear}`}
           extra={
             <Text strong>
               Total Consolidado:{" "}
@@ -598,9 +603,8 @@ const GananciasMensuales = () => {
                   tooltip: {
                     callbacks: {
                       label: (context) => {
-                        return ` ${
-                          context.dataset.label
-                        }: ${formatCurrency(context.raw as number)}`;
+                        return ` ${context.dataset.label
+                          }: ${formatCurrency(context.raw as number)}`;
                       },
                     },
                   },
@@ -787,9 +791,8 @@ const GananciasMensuales = () => {
       )}
 
       <Modal
-        title={`Vista previa del PDF - Ganancias Consolidadas ${
-          monthNames[parseInt(selectedMonth?.split("-")[1]) - 1]
-        } ${selectedYear}`}
+        title={`Vista previa del PDF - Ganancias Consolidadas ${monthNames[parseInt(selectedMonth?.split("-")[1]) - 1]
+          } ${selectedYear}`}
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
