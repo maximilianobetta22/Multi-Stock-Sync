@@ -54,7 +54,7 @@ const OpinionesClients = () => {
     setError(null);
     setLoading(true);
 
-    let apiUrl = `${process.env.VITE_API_URL}/reviews/${clientId}`;
+    let apiUrl = `${process.env.VITE_API_URL}/mercadolibre/review/${clientId}`;
     const params = new URLSearchParams();
     if (sDate) {
       params.append('start_date', formatDateFns(sDate, 'yyyy-MM-dd'));
