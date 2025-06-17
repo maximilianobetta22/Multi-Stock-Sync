@@ -390,184 +390,205 @@ const IngresosSemana: React.FC = () => {
                   type="submit"
                   disabled={loading}
                   className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
-                  style={{ 
-                    backgroundColor: 'white',
-                    color: '#6a3093',
-                    border: '2px solid #ba68c8',
-                    transition: 'all 0.3s',
-                    zIndex: 1
+                  style={{
+                    backgroundColor: "white",
+                    color: "#cf1322",
+                    border: "2px solid #cf1322",
+                    transition: "all 0.3s",
+                    zIndex: 1,
                   }}
                   onMouseOver={(e) => {
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.borderColor = '#6a3093';
+                    e.currentTarget.style.color = "white";
+                    e.currentTarget.style.borderColor = "#cf1322";
+                    (e.currentTarget.children[1] as HTMLElement).style.width = "100%";
                   }}
                   onMouseOut={(e) => {
-                    e.currentTarget.style.color = '#6a3093';
-                    e.currentTarget.style.borderColor = '#ba68c8';
+                    e.currentTarget.style.color = "#cf1322";
+                    e.currentTarget.style.borderColor = "#cf1322";
+                    (e.currentTarget.children[1] as HTMLElement).style.width = "0%";
                   }}
                 >
-                  <span style={{ position: 'relative', zIndex: 2 }}>
+                  <span style={{ position: "relative", zIndex: 2 }}>
                     {loading ? "Cargando..." : "Consultar"}
                   </span>
-                  <span style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '0%',
-                    height: '100%',
-                    backgroundColor: '#6a3093',
-                    transition: 'all 0.3s ease',
-                    zIndex: 0
-                  }}></span>
+                  <span
+                    style={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "0%",
+                      height: "100%",
+                      backgroundColor: "#cf1322",
+                      transition: "all 0.3s ease",
+                      zIndex: 0,
+                    }}
+                  ></span>
                 </button>
               </form>
+                {totalSales !== null && (
+                  <div className="alert alert-info text-start">
+                    <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
+                  </div>
+                )}
 
-              {totalSales !== null && ( // Muestra el total de ventas si está disponible
-                <div className="alert alert-info text-start">
-                  <h2>Ingreso Semanal: ${totalSales.toLocaleString()}</h2>
-                </div>
-              )}
+                <div className="text-start">
+                  <Link
+                    to="/sync/home"
+                    className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                    style={{
+                      backgroundColor: "white",
+                      color: "#cf1322",
+                      border: "2px solid #cf1322",
+                      transition: "all 0.3s",
+                      zIndex: 1,
+                      display: "inline-block",
+                      textAlign: "center",
+                      textDecoration: "none",
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.color = "white";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "100%";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.color = "#cf1322";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "0%";
+                    }}
+                  >
+                    <span style={{ position: "relative", zIndex: 2 }}>
+                      <i className="fas fa-home me-2"></i> Volver al inicio
+                    </span>
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "0%",
+                        height: "100%",
+                        backgroundColor: "#cf1322",
+                        transition: "all 0.3s ease",
+                        zIndex: 0,
+                      }}
+                    ></span>
+                  </Link>
 
-              <div className="text-start"> {/* Botones de navegación y exportación */}
-                <Link
-                  to="/sync/home"
-                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
-                  style={{ 
-                    backgroundColor: 'white',
-                    color: '#6a3093',
-                    border: '2px solid #ba68c8',
-                    transition: 'all 0.3s',
-                    zIndex: 1,
-                    display: 'inline-block',
-                    textAlign: 'center',
-                    textDecoration: 'none'
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.borderColor = '#6a3093';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.color = '#6a3093';
-                    e.currentTarget.style.borderColor = '#ba68c8';
-                  }}
-                >
-                  <span style={{ position: 'relative', zIndex: 2 }}>
-                    <i className="fas fa-home me-2"></i> Volver al inicio
-                  </span>
-                  <span style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '0%',
-                    height: '100%',
-                    backgroundColor: '#6a3093',
-                    transition: 'all 0.3s ease',
-                    zIndex: 0
-                  }}></span>
-                </Link>
+                  <button
+                    type="button"
+                    onClick={handleNavigate}
+                    className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                    style={{
+                      backgroundColor: "white",
+                      color: "#cf1322",
+                      border: "2px solid #cf1322",
+                      transition: "all 0.3s",
+                      zIndex: 1,
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.color = "white";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "100%";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.color = "#cf1322";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "0%";
+                    }}
+                  >
+                    <span style={{ position: "relative", zIndex: 2 }}>
+                      <i className="fas fa-calendar-alt me-2"></i> Ver Ventas por Mes
+                    </span>
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "0%",
+                        height: "100%",
+                        backgroundColor: "#cf1322",
+                        transition: "all 0.3s ease",
+                        zIndex: 0,
+                      }}
+                    ></span>
+                  </button>
 
-                <button
-                  type="button"
-                  onClick={handleNavigate}
-                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
-                  style={{ 
-                    backgroundColor: 'white',
-                    color: '#6a3093',
-                    border: '2px solid #ba68c8',
-                    transition: 'all 0.3s',
-                    zIndex: 1
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.borderColor = '#6a3093';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.color = '#6a3093';
-                    e.currentTarget.style.borderColor = '#ba68c8';
-                  }}
-                >
-                  <span style={{ position: 'relative', zIndex: 2 }}>
-                    <i className="fas fa-calendar-alt me-2"></i> Ver Ventas por Mes
-                  </span>
-                  <span style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '0%',
-                    height: '100%',
-                    backgroundColor: '#6a3093',
-                    transition: 'all 0.3s ease',
-                    zIndex: 0
-                  }}></span>
-                </button>
-                <button
-                  type="button"
-                  onClick={generatePDF}
-                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
-                  style={{ 
-                    backgroundColor: 'white',
-                    color: '#6a3093',
-                    border: '2px solid #ba68c8',
-                    transition: 'all 0.3s',
-                    zIndex: 1
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.borderColor = '#6a3093';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.color = '#6a3093';
-                    e.currentTarget.style.borderColor = '#ba68c8';
-                  }}
-                >
-                  <span style={{ position: 'relative', zIndex: 2 }}>
-                    <i className="fas fa-file-pdf me-2"></i> Descargar PDF
-                  </span>
-                  <span style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '0%',
-                    height: '100%',
-                    backgroundColor: '#6a3093',
-                    transition: 'all 0.3s ease',
-                    zIndex: 0
-                  }}></span>
-                </button>
-                <button
-                  type="button"
-                  onClick={generateExcel}
-                  className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
-                  style={{ 
-                    backgroundColor: 'white',
-                    color: '#6a3093',
-                    border: '2px solid #ba68c8',
-                    transition: 'all 0.3s',
-                    zIndex: 1
-                  }}
-                  onMouseOver={(e) => {
-                    e.currentTarget.style.color = 'white';
-                    e.currentTarget.style.borderColor = '#6a3093';
-                  }}
-                  onMouseOut={(e) => {
-                    e.currentTarget.style.color = '#6a3093';
-                    e.currentTarget.style.borderColor = '#ba68c8';
-                  }}
-                >
-                  <span style={{ position: 'relative', zIndex: 2 }}>
-                    <i className="fas fa-file-excel me-2"></i> Descargar Excel
-                  </span>
-                  <span style={{
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    width: '0%',
-                    height: '100%',
-                    backgroundColor: '#6a3093',
-                    transition: 'all 0.3s ease',
-                    zIndex: 0
-                  }}></span>
-                </button>
+                  <button
+                    type="button"
+                    onClick={generatePDF}
+                    className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                    style={{
+                      backgroundColor: "white",
+                      color: "#cf1322",
+                      border: "2px solid #cf1322",
+                      transition: "all 0.3s",
+                      zIndex: 1,
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.color = "white";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "100%";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.color = "#cf1322";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "0%";
+                    }}
+                  >
+                    <span style={{ position: "relative", zIndex: 2 }}>
+                      <i className="fas fa-file-pdf me-2"></i> Descargar PDF
+                    </span>
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "0%",
+                        height: "100%",
+                        backgroundColor: "#cf1322",
+                        transition: "all 0.3s ease",
+                        zIndex: 0,
+                      }}
+                    ></span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={generateExcel}
+                    className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3"
+                    style={{
+                      backgroundColor: "white",
+                      color: "#cf1322",
+                      border: "2px solid #cf1322",
+                      transition: "all 0.3s",
+                      zIndex: 1,
+                    }}
+                    onMouseOver={(e) => {
+                      e.currentTarget.style.color = "white";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "100%";
+                    }}
+                    onMouseOut={(e) => {
+                      e.currentTarget.style.color = "#cf1322";
+                      e.currentTarget.style.borderColor = "#cf1322";
+                      (e.currentTarget.children[1] as HTMLElement).style.width = "0%";
+                    }}
+                  >
+                    <span style={{ position: "relative", zIndex: 2 }}>
+                      <i className="fas fa-file-excel me-2"></i> Descargar Excel
+                    </span>
+                    <span
+                      style={{
+                        position: "absolute",
+                        top: 0,
+                        left: 0,
+                        width: "0%",
+                        height: "100%",
+                        backgroundColor: "#cf1322",
+                        transition: "all 0.3s ease",
+                        zIndex: 0,
+                      }}
+                    ></span>
+                  </button>
               </div>
             </div>
 

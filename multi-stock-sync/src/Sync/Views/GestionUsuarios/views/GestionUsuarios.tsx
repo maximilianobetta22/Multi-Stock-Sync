@@ -43,6 +43,8 @@ const rolesDisponibles = [
   { id: 2, nombre: "Logística" },
   { id: 3, nombre: "Finanzas" },
   { id: 4, nombre: "RRHH" },
+  { id: 5, nombre: "vendedor" },
+  { id: 6, nombre: "plugin" },
 ];
 
 const getRolColor = (roleId: number | null) => {
@@ -51,6 +53,8 @@ const getRolColor = (roleId: number | null) => {
     case 2: return "blue";
     case 3: return "green";
     case 4: return "orange";
+    case 5: return "red";
+    case 6: return "yellow";
     default: return "gray";
   }
 };
@@ -96,6 +100,24 @@ const GestionUsuarios: React.FC = () => {
   }, [tieneAcceso]);
 
   const manejarCambioRol = (userId: number, nuevoRolId: number) => {
+    const usuarioSeleccionado = usuarios.find(u => u.id === userId);
+
+    if (!usuarioSeleccionado) return;
+
+    const esAdminActual = usuarioSeleccionado.role_id === 1;
+
+    // Si RRHH intenta asignar el rol de Admin a alguien
+    if (roleId === 4 && nuevoRolId === 1) {
+      message.warning("RRHH no puede asignar el rol de Admin.");
+      return;
+    }
+
+    // Si RRHH intenta quitar el rol de Admin a alguien que ya es Admin
+    if (roleId === 4 && esAdminActual && nuevoRolId !== 1) {
+      message.warning("RRHH no puede modificar usuarios con rol de Admin.");
+      return;
+    }
+
     setCambiosPendientes(prev => ({
       ...prev,
       [userId]: nuevoRolId,
@@ -271,7 +293,11 @@ const GestionUsuarios: React.FC = () => {
           disabled={saving}
         >
           {rolesDisponibles.map(rol => (
-            <Option key={rol.id} value={rol.id}>
+            <Option
+              key={rol.id}
+              value={rol.id}
+              disabled={roleId === 4 && rol.id === 1}
+            >
               {rol.nombre}
             </Option>
           ))}
