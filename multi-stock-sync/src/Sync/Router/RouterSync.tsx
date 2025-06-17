@@ -13,10 +13,13 @@ import { Login } from "../../Auth/Pages";
 import Register from "../../Auth/Pages/Register";
 import Logout from "../../Auth/Pages/Logout";
 import SeleccionConexion from "../Views/SeleccionConexion/SeleccionConexion";
-import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; // ✅ Nuevo
+import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; 
 import RouterGestionEnvio from "../Views/GestionEnvios/Router/RouterGestionEnvio";
 import RouterPuntodeVenta from "../Views/PuntoVenta/Router/RouterPuntodeVenta"
- // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
+import RouterGestionUsuarios from "../Views/GestionUsuarios/Router/RouterGestionUsuarios";
+
+
+ 
 
 function RouterSync() {
   return (
@@ -38,7 +41,9 @@ function RouterSync() {
         <Route path="/about" element={<About />} />
         <Route path="/seleccionar-conexion" element={<SeleccionConexion />} />
         <Route path="/envios/*" element={<RouterGestionEnvio />} />
+        <Route path="/usuarios/*" element={<RouterGestionUsuarios />} />
 
+        
 
         <Route path="/*" element={<Navigate to="/sync/landing" />} />
       </Routes>

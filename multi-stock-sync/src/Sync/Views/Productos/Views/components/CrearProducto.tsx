@@ -1,4 +1,4 @@
-import React from "react";
+import React from "react"
 import {
   Form,
   Input,
@@ -13,15 +13,17 @@ import {
   Alert,
   Row,
   Col,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
-import { useCrearProducto } from "../hook/useCrearProducto";
+  Checkbox,
+  Tooltip,
+} from "antd"
+import { PlusOutlined, DeleteOutlined, InfoCircleOutlined, UploadOutlined } from "@ant-design/icons"
+import { useCrearProducto } from "../hook/useCrearProducto"
 
-const { Title } = Typography;
-const { TextArea } = Input;
+const { Title } = Typography
+const { TextArea } = Input
 
 const CrearProducto: React.FC = () => {
-  const [form] = Form.useForm();
+  const [form] = Form.useForm()
 
   const {
     loading,
@@ -32,49 +34,44 @@ const CrearProducto: React.FC = () => {
     catalogProducts,
     catalogProductId,
     condicionesCategoria,
-    categoriasConCatalogoObligatorio,
+    tieneVariaciones,
+    variaciones,
+    guiasTallas,
+    tallasDisponibles,
+    loadingGuiasTallas,
+    marcaSeleccionada,
+    generoSeleccionado,
+    dominioId,
     setCatalogProductId,
+    setTieneVariaciones,
+    agregarVariacion,
+    eliminarVariacion,
+    actualizarVariacion,
+    onAtributoChange,
     onTitleChange,
     handleAgregarImagen,
     onFinish,
-  } = useCrearProducto(form);
+  } = useCrearProducto(form)
 
-  const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
+  const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}")
   if (!conexion?.nickname) {
     return (
       <Card style={{ maxWidth: 800, margin: "0 auto" }}>
         <Alert message="Por favor, selecciona una conexión de Mercado Libre." type="error" />
       </Card>
-    );
+    )
   }
 
-  const requiereCatalogo = categoriasConCatalogoObligatorio.includes(categoryId);
+  const colorAttr = Array.isArray(atributosCategoria)
+    ? atributosCategoria.find((a) => a.id === "COLOR")
+    : undefined
+  const sizeAttr = Array.isArray(atributosCategoria)
+    ? atributosCategoria.find((a) => a.id === "SIZE")
+    : undefined
 
   return (
     <Card style={{ maxWidth: 900, margin: "0 auto" }}>
-      <p style={{ fontWeight: 500, marginBottom: 10 }}>
-        🛒 Estás subiendo un producto a: <strong>{conexion.nickname}</strong>
-      </p>
-
       <Title level={3}>Subir Producto a Mercado Libre</Title>
-
-      {!categoryId && (
-        <Alert
-          type="info"
-          message="Escribe un título para predecir la categoría automáticamente."
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
-      )}
-
-      {requiereCatalogo && !catalogProductId && (
-        <Alert
-          message="⚠️ Esta categoría exige seleccionar un producto del catálogo para poder publicarlo."
-          type="warning"
-          showIcon
-          style={{ marginBottom: 16 }}
-        />
-      )}
 
       <Form layout="vertical" form={form} onFinish={onFinish}>
         {!catalogProductId && (
@@ -159,27 +156,61 @@ const CrearProducto: React.FC = () => {
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
 
-        {atributosCategoria.map((atributo) => {
-          if (atributo.id === "SIZE_GRID_ID") {
-            return (
+        {/* OCULTA TALLA GENERAL SI HAY VARIACIONES */}
+        {!catalogProductId &&
+          Array.isArray(atributosCategoria) &&
+          atributosCategoria
+            .filter(
+              (attr: any) =>
+                (attr.tags?.required || attr.tags?.catalog_required) &&
+                !(tieneVariaciones && attr.id === "SIZE")
+            )
+            .map((attr: any) => (
               <Form.Item
-                key={atributo.id}
-                label="Guía de Tallas"
-                name="size_grid_id"
-                rules={[{ required: true, message: "Selecciona una guía de tallas" }]}
+                key={attr.id}
+                name={["attributes", attr.id]}
+                label={
+                  <Space>
+                    {attr.name}
+                    {attr.tooltip && (
+                      <Tooltip title={attr.tooltip}>
+                        <InfoCircleOutlined style={{ color: "#1890ff" }} />
+                      </Tooltip>
+                    )}
+                  </Space>
+                }
+                rules={[{ required: true }]}
               >
-                <Select placeholder="Selecciona una guía de tallas">
-                  {atributo.values?.map((value: any) => (
-                    <Select.Option key={value.id} value={value.id}>
-                      {value.name}
-                    </Select.Option>
-                  ))}
-                </Select>
+                {attr.value_type === "list" && attr.values?.length > 0 ? (
+                  <Select
+                    mode={attr.tags?.multivalued ? "multiple" : undefined}
+                    showSearch
+                    optionFilterProp="children"
+                    onChange={(value) => onAtributoChange(attr.id, value)}
+                    placeholder={attr.hint || `Selecciona ${attr.name.toLowerCase()}`}
+                  >
+                    {attr.values.map((v: any) => (
+                      <Select.Option key={v.id} value={v.name}>
+                        {v.name}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                ) : attr.value_type === "number" ? (
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    placeholder={attr.hint || `Ingrese ${attr.name.toLowerCase()}`}
+                    min={0}
+                  />
+                ) : attr.value_type === "boolean" ? (
+                  <Switch />
+                ) : (
+                  <Input
+                    placeholder={attr.hint || `Ingrese ${attr.name.toLowerCase()}`}
+                    maxLength={attr.value_max_length}
+                  />
+                )}
               </Form.Item>
-            );
-          }
-          return null;
-        })}
+            ))}
 
         {!catalogProductId && (
           <Form.Item
@@ -210,7 +241,7 @@ const CrearProducto: React.FC = () => {
             {imagenes.map((src, idx) => (
               <li key={idx}>
                 <a href={src} target="_blank" rel="noreferrer">
-                  <img src={src} alt={`Imagen ${idx + 1}`} style={{ maxWidth: 100 }} />
+                  <img src={src || "/placeholder.svg"} alt={`Imagen ${idx + 1}`} style={{ maxWidth: 100 }} />
                 </a>
               </li>
             ))}
@@ -219,6 +250,139 @@ const CrearProducto: React.FC = () => {
             Agregar imagen por URL
           </Button>
         </Form.Item>
+
+        <Divider />
+
+        {/* Sección de Variaciones */}
+        <Card title="Variaciones del Producto" size="small" style={{ marginBottom: 16 }}>
+          <Form.Item label="¿Este producto tiene variaciones?" style={{ marginBottom: 16 }}>
+            <Checkbox checked={tieneVariaciones} onChange={(e) => setTieneVariaciones(e.target.checked)}>
+              Sí, este producto tiene variaciones (colores, tallas, diseños, etc.)
+            </Checkbox>
+          </Form.Item>
+
+          {tieneVariaciones && (
+            <div>
+              {/* Información de guías de tallas */}
+              {marcaSeleccionada && generoSeleccionado && (
+                <Alert
+                  message="Guías de Tallas"
+                  description={
+                    loadingGuiasTallas ? (
+                      "Cargando guías de tallas..."
+                    ) : guiasTallas.length > 0 ? (
+                      <div>
+                        <p>Se encontraron {guiasTallas.length} guías de tallas disponibles.</p>
+                        <p>Tallas disponibles: {tallasDisponibles.map((t: any) => t.name).join(", ")}</p>
+                        <p>Dominio: {dominioId}</p>
+                      </div>
+                    ) : (
+                      "No se encontraron guías de tallas para esta combinación."
+                    )
+                  }
+                  type="info"
+                  showIcon
+                  style={{ marginBottom: 16 }}
+                />
+              )}
+
+              {/* Lista de variaciones */}
+              {variaciones.map((variacion: any, index: number) => (
+                <Card
+                  key={variacion.id}
+                  size="small"
+                  title={`Variación ${index + 1}`}
+                  extra={
+                    <Button
+                      type="text"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => eliminarVariacion(variacion.id)}
+                    >
+                      Eliminar
+                    </Button>
+                  }
+                  style={{ marginBottom: 16 }}
+                >
+                  <Row gutter={16}>
+                    <Col span={6}>
+                      <Form.Item label="Color">
+                        <Select
+                          value={variacion.color}
+                          onChange={(value) => actualizarVariacion(variacion.id, "color", value)}
+                          placeholder="Selecciona color"
+                          allowClear
+                        >
+                          {colorAttr?.values?.map((color: any) => (
+                            <Select.Option key={color.id} value={color.name}>
+                              {color.name}
+                            </Select.Option>
+                          ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+
+                    <Col span={6}>
+                      <Form.Item label="Talla">
+                        <Select
+                          value={variacion.size}
+                          onChange={(value) => actualizarVariacion(variacion.id, "size", value)}
+                          placeholder="Selecciona talla"
+                          allowClear
+                        >
+                          {tallasDisponibles.length > 0
+                            ? tallasDisponibles.map((talla: any) => (
+                                <Select.Option key={talla.id} value={talla.name}>
+                                  {talla.name}
+                                </Select.Option>
+                              ))
+                            : sizeAttr?.values?.map((talla: any) => (
+                                <Select.Option key={talla.id} value={talla.name}>
+                                  {talla.name}
+                                </Select.Option>
+                              ))}
+                        </Select>
+                      </Form.Item>
+                    </Col>
+
+                    <Col span={6}>
+                      <Form.Item label="Precio" rules={[{ required: true }]}>
+                        <InputNumber
+                          value={variacion.price}
+                          onChange={(value) => actualizarVariacion(variacion.id, "price", value || 0)}
+                          min={0}
+                          style={{ width: "100%" }}
+                          formatter={(value) => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                          parser={(value) => value!.replace(/\$\s?|(,*)/g, "")}
+                        />
+                      </Form.Item>
+                    </Col>
+
+                    <Col span={6}>
+                      <Form.Item label="Stock" rules={[{ required: true }]}>
+                        <InputNumber
+                          value={variacion.available_quantity}
+                          onChange={(value) => actualizarVariacion(variacion.id, "available_quantity", value || 1)}
+                          min={1}
+                          style={{ width: "100%" }}
+                        />
+                      </Form.Item>
+                    </Col>
+                  </Row>
+                </Card>
+              ))}
+
+              <Button
+                type="dashed"
+                onClick={agregarVariacion}
+                icon={<PlusOutlined />}
+                style={{ width: "100%", marginBottom: 16 }}
+              >
+                Agregar Variación
+              </Button>
+            </div>
+          )}
+        </Card>
 
         <Divider />
 
@@ -239,34 +403,6 @@ const CrearProducto: React.FC = () => {
           </Form.Item>
         </Space>
 
-        {!catalogProductId &&
-          atributosCategoria
-            .filter((attr: any) => attr.tags?.required || attr.tags?.catalog_required)
-            .map((attr: any) => (
-              <Form.Item
-                key={attr.id}
-                name={["attributes", attr.id]}
-                label={attr.name}
-                rules={[{ required: true }]}
-              >
-                {attr.value_type === "list" && attr.values?.length > 0 ? (
-                  <Select
-                    mode={attr.tags?.multivalued ? "multiple" : undefined}
-                    showSearch
-                    optionFilterProp="children"
-                  >
-                    {attr.values.map((v: any) => (
-                      <Select.Option key={v.id} value={v.name}>
-                        {v.name}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                ) : (
-                  <Input placeholder={attr.hint || `Ingrese ${attr.name.toLowerCase()}`} />
-                )}
-              </Form.Item>
-            ))}
-
         <Form.Item>
           <Button
             type="primary"
@@ -279,7 +415,7 @@ const CrearProducto: React.FC = () => {
         </Form.Item>
       </Form>
     </Card>
-  );
-};
+  )
+}
 
-export default CrearProducto;
+export default CrearProducto
