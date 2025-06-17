@@ -673,20 +673,20 @@ const GananciasMensuales = () => {
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
                 style={{
                   backgroundColor: "white",
-                  color: "#6a3093",
-                  border: "2px solid #ba68c8",
+                  color: "#cf1322",
+                  border: "2px solid #cf1322",
                   transition: "all 0.3s",
                   zIndex: 1,
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.color = "white";
-                  e.currentTarget.style.borderColor = "#6a3093";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "100%";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = "#6a3093";
-                  e.currentTarget.style.borderColor = "#ba68c8";
+                  e.currentTarget.style.color = "#cf1322";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "0%";
                 }}
@@ -701,7 +701,7 @@ const GananciasMensuales = () => {
                     left: 0,
                     width: "0%",
                     height: "100%",
-                    backgroundColor: "#6a3093",
+                    backgroundColor: "#cf1322",
                     transition: "all 0.3s ease",
                     zIndex: 0,
                   }}
@@ -718,20 +718,20 @@ const GananciasMensuales = () => {
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
                 style={{
                   backgroundColor: "white",
-                  color: "#6a3093",
-                  border: "2px solid #ba68c8",
+                  color: "#cf1322",
+                  border: "2px solid #cf1322",
                   transition: "all 0.3s",
                   zIndex: 1,
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.color = "white";
-                  e.currentTarget.style.borderColor = "#6a3093";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "100%";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = "#6a3093";
-                  e.currentTarget.style.borderColor = "#ba68c8";
+                  e.currentTarget.style.color = "#cf1322";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "0%";
                 }}
@@ -746,7 +746,7 @@ const GananciasMensuales = () => {
                     left: 0,
                     width: "0%",
                     height: "100%",
-                    backgroundColor: "#6a3093",
+                    backgroundColor: "#cf1322",
                     transition: "all 0.3s ease",
                     zIndex: 0,
                   }}
@@ -760,20 +760,20 @@ const GananciasMensuales = () => {
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
                 style={{
                   backgroundColor: "white",
-                  color: "#6a3093",
-                  border: "2px solid #ba68c8",
+                  color: "#cf1322",
+                  border: "2px solid #cf1322",
                   transition: "all 0.3s",
                   zIndex: 1,
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.color = "white";
-                  e.currentTarget.style.borderColor = "#6a3093";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "100%";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = "#6a3093";
-                  e.currentTarget.style.borderColor = "#ba68c8";
+                  e.currentTarget.style.color = "#cf1322";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "0%";
                 }}
@@ -788,7 +788,7 @@ const GananciasMensuales = () => {
                     left: 0,
                     width: "0%",
                     height: "100%",
-                    backgroundColor: "#6a3093",
+                    backgroundColor: "#cf1322",
                     transition: "all 0.3s ease",
                     zIndex: 0,
                   }}
