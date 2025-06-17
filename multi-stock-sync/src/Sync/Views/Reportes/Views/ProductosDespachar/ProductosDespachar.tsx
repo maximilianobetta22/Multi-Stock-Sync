@@ -8,11 +8,14 @@ import {
   Container,
   Modal,
   Spinner,
+  Badge, // Importa Badge
 } from "react-bootstrap";
 import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import styles from "./Despacho.module.css";
+// Importa el ícono que usaremos
+import { BsBoxSeam } from "react-icons/bs";
 
 const ProductosDespachar: React.FC = () => {
   const { client_id } = useParams();
@@ -29,9 +32,9 @@ const ProductosDespachar: React.FC = () => {
 
   const itemsPerPage = 10;
 
-  // Cargar productos listos para despacho
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       try {
         const response = await axiosInstance.get(
           `${import.meta.env.VITE_API_URL}/mercadolibre/products-to-dispatch/${client_id}`,
@@ -41,14 +44,19 @@ const ProductosDespachar: React.FC = () => {
             },
           }
         );
-        if (response.data.status === "success") {
+        if (response.data.status === "success" && response.data.data.length > 0) {
           setProductos(response.data.data);
           setProductosOriginal(response.data.data);
+          setError(null);
         } else {
-          setError("No se encontraron productos disponibles.");
+          setProductos([]);
+          setProductosOriginal([]);
+          // No establecemos error aquí, la tabla mostrará que no hay productos
         }
       } catch {
-        setError("Error al conectar con la API.");
+        setError("Error al conectar con la API. Intente de nuevo más tarde.");
+        setProductos([]);
+        setProductosOriginal([]);
       } finally {
         setLoading(false);
       }
@@ -56,8 +64,8 @@ const ProductosDespachar: React.FC = () => {
     fetchData();
   }, [client_id]);
 
-  // Filtrar productos por SKU o nombre
-  const handleFiltrar = () => {
+  // Filtrado en tiempo real al escribir en el input de búsqueda
+  useEffect(() => {
     const filtrados = productosOriginal.filter(
       (p) =>
         p.sku.toString().toLowerCase().includes(filtro.toLowerCase()) ||
@@ -65,9 +73,9 @@ const ProductosDespachar: React.FC = () => {
     );
     setProductos(filtrados);
     setCurrentPage(1);
-  };
+  }, [filtro, productosOriginal]);
 
-  // Exportar datos a Excel
+  // Funciones de exportación
   const exportToExcel = () => {
     const datos = productos.map((p) => ({
       SKU: p.sku,
@@ -81,7 +89,6 @@ const ProductosDespachar: React.FC = () => {
     XLSX.writeFile(wb, "productos_despachar.xlsx");
   };
 
-  // Generar vista previa de PDF
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text("Productos Listos para Despacho", 14, 10);
@@ -94,7 +101,6 @@ const ProductosDespachar: React.FC = () => {
     setShowModal(true);
   };
 
-  // Descargar directamente el PDF
   const handleDownloadPDF = () => {
     const doc = new jsPDF();
     doc.text("Productos Listos para Despacho", 14, 10);
@@ -105,8 +111,8 @@ const ProductosDespachar: React.FC = () => {
     doc.save("productos_despachar.pdf");
     setShowModal(false);
   };
-
-  // Traducción de campos de historial de envíos
+  
+  // Función de traducción
   const traducirCampo = (campo: string): string => {
     const map: Record<string, string> = {
       date_created: "Creación",
@@ -122,147 +128,160 @@ const ProductosDespachar: React.FC = () => {
     return map[campo] || campo;
   };
 
-  // Paginación
+  // Lógica de paginación
   const totalPages = Math.ceil(productos.length / itemsPerPage);
   const currentData = productos.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
+  const startItem = productos.length > 0 ? (currentPage - 1) * itemsPerPage + 1 : 0;
+  const endItem = Math.min(currentPage * itemsPerPage, productos.length);
 
-  if (loading)
-    return (
-      <div className="text-center">
-        <Spinner animation="border" /> Cargando...
-      </div>
-    );
-  if (error) return <p className="text-danger text-center">{error}</p>;
+  if (error && !loading) return <p className="text-danger text-center mt-4">{error}</p>;
 
   return (
-    <Container className={styles.container}>
-      <h2 className={styles.titulo}>Productos Listos para Despacho</h2>
+    <Container>
+      <div className={styles.mainContainer}>
 
-      {/* Formulario de búsqueda */}
-      <Form
-        className={styles.filtroContainer}
-        onSubmit={(e) => {
-          e.preventDefault();
-          handleFiltrar();
-        }}
-      >
-        <Form.Control
-          type="text"
-          placeholder="Buscar por SKU o nombre"
-          value={filtro}
-          onChange={(e) => setFiltro(e.target.value)}
-        />
-        <Button variant="dark" onClick={handleFiltrar}>
-          Buscar
-        </Button>
-      </Form>
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <BsBoxSeam className={styles.headerIcon} />
+            <h2 className={styles.headerTitle}>Productos para Despacho</h2>
+            <Badge pill bg="danger">
+              {productos.length}
+            </Badge>
+          </div>
+          <Form onSubmit={(e) => e.preventDefault()} style={{ minWidth: '300px' }}>
+            <Form.Control
+              type="text"
+              placeholder="Buscar por SKU o nombre..."
+              value={filtro}
+              onChange={(e) => setFiltro(e.target.value)}
+            />
+          </Form>
+        </div>
 
-      {/* Tabla de productos */}
-      <Table responsive bordered hover className={styles.tabla}>
-        <thead className="table-light text-center">
-          <tr>
-            <th>SKU</th>
-            <th>Producto</th>
-            <th>Talla</th>
-            <th>Cantidad</th>
-            <th>Estado</th>
-            <th>Detalle</th>
-          </tr>
-        </thead>
-        <tbody>
-          {currentData.map((p, i) => (
-            <tr key={i}>
-              <td>{p.sku}</td>
-              <td>{p.title}</td>
-              <td>{p.size}</td>
-              <td>{p.quantity}</td>
-              <td>{p.shipment_history?.status || "Desconocido"}</td>
-              <td>
-                <Button
-                  size="sm"
-                  variant="outline-primary"
-                  onClick={() => setSelectedProduct(p)}
-                >
-                  Ver
-                </Button>
-              </td>
+        <div className={styles.paginationInfo}>
+             <span>
+              Mostrando {startItem}-{endItem} de {productos.length} productos
+            </span>
+            <div className={styles.paginationControls}>
+               <Button className={styles.btnRojoOutline} onClick={exportToExcel} size="sm">
+                  Exportar Excel
+               </Button>
+               <Button className={styles.btnRojoOutline} onClick={exportToPDF} size="sm">
+                  Exportar PDF
+               </Button>
+            </div>
+          </div>
+          <br />
+        <Table responsive bordered hover>
+          <thead className="table-light text-center">
+            <tr>
+              <th>SKU</th>
+              <th>Producto</th>
+              <th>Talla</th>
+              <th>Cantidad</th>
+              <th>Estado</th>
+              <th>Detalle</th>
             </tr>
-          ))}
-        </tbody>
-      </Table>
-
-      {/* Botones para exportar */}
-      <div className={styles.exportaciones}>
-        <Button variant="outline-success" onClick={exportToExcel}>
-          Exportar Excel
-        </Button>
-        <Button variant="outline-primary" onClick={exportToPDF}>
-          Exportar PDF
-        </Button>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan={6} className={styles.tableInfoCell}>
+                  <Spinner animation="border" variant="danger" />
+                  <span className="ms-2">Cargando productos...</span>
+                </td>
+              </tr>
+            ) : currentData.length > 0 ? (
+              currentData.map((p, i) => (
+                <tr key={`${p.sku}-${i}`}>
+                  <td>{p.sku}</td>
+                  <td>{p.title}</td>
+                  <td>{p.size}</td>
+                  <td>{p.quantity}</td>
+                  <td>{p.shipment_history?.status || "Desconocido"}</td>
+                  <td className="text-center">
+                    <Button
+                      size="sm"
+                      className={styles.btnRojoOutline}
+                      onClick={() => setSelectedProduct(p)}
+                    >
+                      Ver
+                    </Button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={6} className={styles.tableInfoCell}>
+                  {filtro
+                    ? `No se encontraron resultados para "${filtro}"`
+                    : "No hay productos listos para despacho."}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </Table>
+        
+        {productos.length > 0 && !loading && (
+          <div className={styles.paginationInfo}>
+             <span>
+              Mostrando {startItem}-{endItem} de {productos.length} productos
+            </span>
+            <div className={styles.paginationControls}>
+               <Button
+                  className={styles.btnRojo}
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage(currentPage - 1)}
+                  size="sm"
+               >
+                  Anterior
+               </Button>
+               <span className="text-muted">Página {currentPage} de {totalPages}</span>
+               <Button
+                  className={styles.btnRojo}
+                  disabled={currentPage === totalPages || totalPages === 0}
+                  onClick={() => setCurrentPage(currentPage + 1)}
+                  size="sm"
+               >
+                  Siguiente
+               </Button>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Navegación de páginas */}
-      <div className="d-flex justify-content-center mt-3 gap-2 flex-wrap">
-        <Button
-          disabled={currentPage === 1}
-          onClick={() => setCurrentPage(currentPage - 1)}
-        >
-          Anterior
-        </Button>
-        {[...Array(totalPages)].map((_, i) => (
-          <Button
-            key={i}
-            variant={currentPage === i + 1 ? "dark" : "outline-secondary"}
-            onClick={() => setCurrentPage(i + 1)}
-          >
-            {i + 1}
-          </Button>
-        ))}
-        <Button
-          disabled={currentPage === totalPages}
-          onClick={() => setCurrentPage(currentPage + 1)}
-        >
-          Siguiente
-        </Button>
-      </div>
-
-      {/* Modal de vista previa del PDF */}
       <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
         <Modal.Header closeButton>
           <Modal.Title>Vista previa PDF</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {pdfUrl && (
-            <iframe src={pdfUrl} width="100%" height="500px" title="PDF" />
-          )}
+          {pdfUrl && <iframe src={pdfUrl} width="100%" height="500px" title="PDF" />}
         </Modal.Body>
         <Modal.Footer>
-          <Button variant="dark" onClick={handleDownloadPDF}>
+          <Button className={styles.btnRojo} onClick={handleDownloadPDF}>
             Descargar PDF
           </Button>
         </Modal.Footer>
       </Modal>
 
-      {/* Modal de historial de envío */}
-      <Modal
-        show={!!selectedProduct}
-        onHide={() => setSelectedProduct(null)}
-        centered
-      >
+      <Modal show={!!selectedProduct} onHide={() => setSelectedProduct(null)} centered>
         <Modal.Header closeButton>
           <Modal.Title>Historial de Envío</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           {selectedProduct?.shipment_history?.date_history ? (
             <ul>
-              {Object.entries(selectedProduct.shipment_history.date_history).map(([key, value], i) => (
-                <li key={i}>
-                  <strong>{traducirCampo(key)}:</strong> {String(value) || "No disponible"}
-                </li>
-              ))}
+              {Object.entries(selectedProduct.shipment_history.date_history).map(
+                ([key, value], i) => (
+                  <li key={i}>
+                    <strong>{traducirCampo(key)}:</strong>{" "}
+                    {String(value) || "No disponible"}
+                  </li>
+                )
+              )}
             </ul>
           ) : (
             <p>No hay historial disponible.</p>
