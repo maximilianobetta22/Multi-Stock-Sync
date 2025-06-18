@@ -435,7 +435,7 @@ const HistorialStock: React.FC = () => {
   return (
     <Container fluid className={styles.customContainer}>
       <Row className="justify-content-center">
-        <Col md={10} lg={8}>
+        <Col md={12} lg={11} xl={11}>
           <Card className={styles.customCard}>
             <div className={styles.customHeader}>
               <h1>Historial de Stock</h1>
