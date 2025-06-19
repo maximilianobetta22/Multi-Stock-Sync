@@ -151,21 +151,71 @@ const EstadosOrdenesAnual: React.FC = () => {
     }
     const pages = [];
     if (currentPage > 1) {
-      pages.push(<Button key="prev" variant="secondary" size="sm" className="mx-1" onClick={() => paginate(currentPage - 1)}>Anterior</Button>);
+      pages.push(
+        <Button
+          key="prev"
+          variant="secondary"
+          size="sm"
+          className={`mx-1 ${styles.btnRojoOutline}`}
+          onClick={() => paginate(currentPage - 1)}
+        >
+          Anterior
+        </Button>
+      );
     }
     if (startPage > 1) {
-      pages.push(<Button key={1} variant="secondary" size="sm" className="mx-1" onClick={() => paginate(1)}>1</Button>);
+      pages.push(
+        <Button
+          key={1}
+          variant="secondary"
+          size="sm"
+          className={`mx-1 ${styles.btnRojoOutline}`}
+          onClick={() => paginate(1)}
+        >
+          1
+        </Button>
+      );
       if (startPage > 2) pages.push(<span key="dots-start" className="mx-1">...</span>);
     }
     for (let i = startPage; i <= endPage; i++) {
-      pages.push(<Button key={i} variant={currentPage === i ? "primary" : "secondary"} size="sm" className="mx-1" onClick={() => paginate(i)}>{i}</Button>);
+      pages.push(
+        <Button
+          key={i}
+          variant={currentPage === i ? "primary" : "secondary"}
+          size="sm"
+          className={`mx-1 ${currentPage === i ? styles.btnRojo : styles.btnRojoOutline}`}
+          onClick={() => paginate(i)}
+        >
+          {i}
+        </Button>
+      );
     }
     if (endPage < totalPages) {
       if (endPage < totalPages - 1) pages.push(<span key="dots-end" className="mx-1">...</span>);
-      pages.push(<Button key={totalPages} variant="secondary" size="sm" className="mx-1" onClick={() => paginate(totalPages)}>{totalPages}</Button>);
+      pages.push(
+        <Button
+          key={totalPages}
+          variant="secondary"
+          size="sm"
+          className={`mx-1 ${styles.btnRojoOutline}`}
+          onClick={() => paginate(totalPages)}
+        >
+          {totalPages}
+        </Button>
+      );
     }
     if (currentPage < totalPages) {
-      pages.push(<Button key="next" variant="secondary" size="sm" className="mx-1" onClick={() => paginate(currentPage + 1)}>Siguiente</Button>);
+      pages.push(
+        <Button
+          key="next"
+          variant="secondary"
+          size="sm"
+          className={`mx-1 ${styles.btnRojoOutline}`}
+          onClick={() => paginate(currentPage + 1)}
+        >
+          Siguiente
+        </Button>
+      );
     }
     return pages;
   };
@@ -301,8 +351,12 @@ const EstadosOrdenesAnual: React.FC = () => {
 
   return (
     <>
-      <div className={`container-fluid ${styles.container} mt-4`}>
-        <h1 className="text-center mb-2">Estado de Órdenes Anuales</h1>
+      <div className={`container-fluid ${styles.mainContainer} mt-4`}>
+        <div className={styles.header}>
+          <div className={styles.headerLeft}>
+            <h1 className={styles.headerTitle}>Estado de Órdenes Anuales</h1>
+          </div>
+        </div>
         <p className="text-center text-muted mb-4">
           Visualice la distribución de los estados de las órdenes finalizadas para un cliente.
         </p>
@@ -334,10 +388,18 @@ const EstadosOrdenesAnual: React.FC = () => {
               </Col>
               <Col md={4}>
                 <Stack direction="horizontal" gap={2}>
-                  <Button variant="primary" onClick={handleGenerateChart}>
+                  <Button
+                    variant="primary" // You can keep variant="primary" or change to "outline-danger" if you want Bootstrap's default outline styling initially
+                    onClick={handleGenerateChart}
+                    className={styles.btnRojoOutline} // Apply custom outline red style for the hover effect
+                  >
                     Generar Gráfico
                   </Button>
-                  <Button variant="outline-secondary" onClick={() => navigate("/sync/reportes/home")}>
+                  <Button
+                    variant="outline-secondary"
+                    onClick={() => navigate("/sync/reportes/home")}
+                    className={styles.btnRojoOutline}
+                  >
                     Volver
                   </Button>
                 </Stack>
@@ -389,8 +451,22 @@ const EstadosOrdenesAnual: React.FC = () => {
                     </ProgressBar>
 
                     <Stack direction="horizontal" gap={2} className="mt-5">
-                      <Button variant="info" size="sm" onClick={generatePDF}>Exportar a PDF</Button>
-                      <Button variant="success" size="sm" onClick={generateExcel}>Exportar a Excel</Button>
+                      <Button
+                        variant="info"
+                        size="sm"
+                        onClick={generatePDF}
+                        className={styles.btnRojoOutline} // Apply custom outline red style for the hover effect
+                      >
+                        Exportar a PDF
+                      </Button>
+                      <Button
+                        variant="success"
+                        size="sm"
+                        onClick={generateExcel}
+                        className={styles.btnRojoOutline} // Apply custom outline red style for the hover effect
+                      >
+                        Exportar a Excel
+                      </Button>
                     </Stack>
                   </Col>
                 </Row>
@@ -401,7 +477,7 @@ const EstadosOrdenesAnual: React.FC = () => {
       </div>
 
       {chartVisible && !loading && (
-        <div className="container-fluid mt-4">
+        <div className={`container-fluid mt-4 ${styles.mainContainer}`}>
           <Card className="shadow-sm">
             <Card.Header as="h5">Productos Relacionados</Card.Header>
             <Card.Body>
@@ -432,15 +508,18 @@ const EstadosOrdenesAnual: React.FC = () => {
                       )
                     }) : (
                       <tr>
-                        <td colSpan={5} className="text-center">No se encontraron productos con el filtro seleccionado.</td>
+                        <td colSpan={5} className={styles.tableInfoCell}>No se encontraron productos con el filtro seleccionado.</td>
                       </tr>
                     )}
                   </tbody>
                 </table>
               </div>
               {totalPages > 1 && (
-                <div className="d-flex justify-content-center mt-3">
-                  {renderPaginationButtons()}
+                <div className={styles.paginationInfo}>
+                  <span>Página {currentPage} de {totalPages}</span>
+                  <div className={styles.paginationControls}>
+                    {renderPaginationButtons()}
+                  </div>
                 </div>
               )}
             </Card.Body>
