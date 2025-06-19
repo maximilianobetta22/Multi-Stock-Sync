@@ -16,6 +16,8 @@ import SeleccionConexion from "../Views/SeleccionConexion/SeleccionConexion";
 import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; // ✅ Nuevo
 import RouterGestionEnvio from "../Views/GestionEnvios/Router/RouterGestionEnvio";
 import RouterPuntodeVenta from "../Views/PuntoVenta/Router/RouterPuntodeVenta"
+import RouterPerfil from "../Views/Perfil/Router/RouterPerfil";
+import RouterConfiguracion from "../Views/Configuracion/Router/RouterConfiguracion";
  // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 
 function RouterSync() {
@@ -32,6 +34,8 @@ function RouterSync() {
         <Route path="/info" element={<Info />} />
         <Route path="/envios" element={<GestionEnvios />} />
         <Route path="/punto-de-venta/*" element={<RouterPuntodeVenta />} />
+        <Route path="/perfil/*" element={<RouterPerfil />} />
+        <Route path="/configuracion/*" element={<RouterConfiguracion />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/logout" element={<Logout />} />

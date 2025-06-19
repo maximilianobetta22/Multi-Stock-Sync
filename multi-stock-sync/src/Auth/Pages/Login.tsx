@@ -45,6 +45,7 @@ export const Login: React.FC = () => {
       const response = await axios.post(`${process.env.VITE_API_URL}/login`, { email, password })
       localStorage.setItem("token", response.data.token)
       localStorage.setItem("user", JSON.stringify(response.data.user))
+      localStorage.setItem("role", JSON.stringify(response.data.role))
       setUser(response.data.user)
       navigate("/sync/seleccionar-conexion")
     } catch (err) {
