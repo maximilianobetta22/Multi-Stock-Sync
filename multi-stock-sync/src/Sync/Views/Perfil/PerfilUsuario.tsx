@@ -26,7 +26,7 @@ const PerfilUsuario: React.FC = () => {
   if (error) return <Alert message={error} type="error" />;
 
   // Función para obtener color del rol
-  const getRoleColor = (role: string) => {
+  const getRoleColor = (role: string | undefined) => {
     switch (role?.toLowerCase()) {
       case 'admin': return '#f50';
       case 'manager': return '#108ee9';
@@ -36,14 +36,14 @@ const PerfilUsuario: React.FC = () => {
   };
 
   // Función para obtener las iniciales
-  const getInitials = (nombre: string, apellidos: string) => {
+  const getInitials = (nombre: string | undefined, apellidos: string | undefined) => {
     const firstInitial = nombre?.charAt(0).toUpperCase() || '';
     const lastInitial = apellidos?.charAt(0).toUpperCase() || '';
     return firstInitial + lastInitial;
   };
 
   // Función para formatear teléfono
-  const formatPhone = (phone: string) => {
+  const formatPhone = (phone: string | undefined) => {
     if (!phone) return 'No especificado';
     // Remover cualquier caracter que no sea número
     const cleaned = phone.replace(/\D/g, '');
@@ -92,6 +92,8 @@ const PerfilUsuario: React.FC = () => {
             }}
           >
             {getInitials(usuario?.nombre, usuario?.apellidos)}
+          
+
           </Avatar>
           
           <Title level={2} style={{ color: '#fff', margin: '16px 0 8px 0' }}>

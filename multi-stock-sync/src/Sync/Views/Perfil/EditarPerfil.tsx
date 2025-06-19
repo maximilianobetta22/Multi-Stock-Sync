@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { UserOutlined, SaveOutlined, MailOutlined, PhoneOutlined, EditOutlined, CloseOutlined } from "@ant-design/icons";
 import { usuarioService } from "./Service/usuarioService";
 import { UserContext } from "../../Context/UserContext"; // ← Importar el Context
+import { User } from "./Types/usuarioTypes";
 
 const { Title, Text } = Typography;
 
@@ -20,6 +21,7 @@ const EditarPerfil = () => {
     throw new Error("UserContext must be used within a UserProvider");
   }
   const { user: currentUser, setUser } = userContext;
+console.log(userContext)
 
   const userId = currentUser?.id;
 
