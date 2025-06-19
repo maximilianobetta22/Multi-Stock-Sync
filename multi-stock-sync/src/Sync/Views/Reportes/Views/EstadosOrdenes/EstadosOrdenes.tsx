@@ -36,7 +36,7 @@ const EstadosOrdenes: React.FC = () => {
             setLoading(false);
         }
 
-        // Fetch client name
+        
         try {
             const clientApiUrl = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`;
             const response = await axiosInstance.get(clientApiUrl);
@@ -178,7 +178,7 @@ const EstadosOrdenes: React.FC = () => {
         let y = 20;
 
         data.products.forEach((product: any, index: number) => {
-            if (y > pageHeight - 30) { // Adjusted to leave space for the footer
+            if (y > pageHeight - 30) { 
                 doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
                 doc.addPage();
                 y = 20;
@@ -211,7 +211,7 @@ const EstadosOrdenes: React.FC = () => {
             y += 6;
         });
 
-        // Add footer to the last page
+        
         doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
 
         const pdfData = doc.output('datauristring');
@@ -229,7 +229,7 @@ const EstadosOrdenes: React.FC = () => {
         let y = 20;
 
         data.products.forEach((product: any, index: number) => {
-            if (y > pageHeight - 30) { // Adjusted to leave space for the footer
+            if (y > pageHeight - 30) { 
                 doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
                 doc.addPage();
                 y = 20;
@@ -262,7 +262,7 @@ const EstadosOrdenes: React.FC = () => {
             y += 6;
         });
 
-        // Add footer to the last page
+        
         doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" });
 
         const pdfFilename = `DetallesProductos_${client_id}_${year}_${month}.pdf`;
