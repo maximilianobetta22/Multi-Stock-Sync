@@ -56,7 +56,7 @@ export default function PerdidasEmpresa() {
                 if (monthData?.cancelled_by_company) {
                     Object.assign(allMonthsData, monthData.cancelled_by_company);
                 }
-                await sleep(200);
+                await sleep(50); //el delay para que no se caiga la pagina (quitar si es muy molesto :p)
                 setYearlyData(allMonthsData);
             }
         } catch (e) {

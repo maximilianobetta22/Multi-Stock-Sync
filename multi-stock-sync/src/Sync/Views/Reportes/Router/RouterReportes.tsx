@@ -29,7 +29,6 @@ import Plantilla from "../Views/Plantillas/plantillas";
 
 // ✅ Nueva vista unificada de comparación
 import Compare from "../Views/Compare/Compare";
-import StockCritico from "../Views/StockCritico/ReporteStockCritico";
 import GananciasMensuales from "../Views/gananciasMensuales/GananciasMensuales";
 import PerdidasEmpresa from "../Views/Perdidas/PerdidasEmpresa";
 
@@ -51,7 +50,6 @@ function RouterReportes() {
       <Route path="filtrar-datos/:client_id" element={<FiltrarDatos />} />
       <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
       <Route path="historial-Stock/:client_id" element={<ReporteHistorialStock />} />
-      <Route path="stock-critico/:client_id" element={<StockCritico />} />
       <Route path="ingreso-semana/:client_id" element={<IngresosSemana />} />
       <Route path="Reporte-Disponible/:client_id" element={<ReporteDisponible />} />
       <Route path="Reporte-Recepcion/:client_id" element={<ReporteRecepcion />} />

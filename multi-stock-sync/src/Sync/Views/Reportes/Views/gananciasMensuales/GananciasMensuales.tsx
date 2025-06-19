@@ -45,13 +45,13 @@ interface ProductDetail {
   quantity: number;
   price: number;
   order_id: number;
-  date_created: string; 
+  date_created: string;
 }
 
 interface CompanySalesData {
   total_sales: number;
   total_products: number;
-  products: ProductDetail[]; 
+  products: ProductDetail[];
   company_name: string;
 }
 
@@ -123,7 +123,7 @@ const GananciasMensuales = () => {
   const populateAvailableYears = useCallback(() => {
     const currentFullYear = new Date().getFullYear();
     const years = [];
-    for (let i = currentFullYear; i >= currentFullYear - 4; i--) {
+    for (let i = currentFullYear; i >= currentFullYear - 3; i--) {
       years.push(i.toString());
     }
     setAvailableYears(years.sort((a, b) => b.localeCompare(a)));
@@ -153,8 +153,7 @@ const GananciasMensuales = () => {
           );
         }
 
-        if (data.sales_by_company && data.sales_by_company.length > 0) {
-          
+        if (data.sales_by_company && data.sales_by_company.length > 0 && data.sales_by_company[0] && data.sales_by_company[0].length > 0) {
           setCurrentMonthAggregatedData({
             total_sales: data.total_sales,
             companies_data: data.sales_by_company[0],
@@ -208,7 +207,19 @@ const GananciasMensuales = () => {
   }, []);
 
   const getAvailableMonths = useCallback(() => {
-    return monthNames.map((name, index) => {
+    const now = new Date();
+    const currentFullYear = now.getFullYear();
+    const currentMonthIndex = now.getMonth();
+
+    let monthsToDisplay = monthNames;
+
+    if (parseInt(selectedYear) === currentFullYear) {
+      monthsToDisplay = monthNames.slice(0, currentMonthIndex + 1);
+    } else if (parseInt(selectedYear) > currentFullYear) {
+      monthsToDisplay = [];
+    }
+
+    return monthsToDisplay.map((name, index) => {
       const monthNum = (index + 1).toString().padStart(2, "0");
       const monthKey = `${selectedYear}-${monthNum}`;
       return {
@@ -218,7 +229,7 @@ const GananciasMensuales = () => {
     });
   }, [selectedYear, monthNames]);
 
-  const generatePDF = useCallback(async () => {
+  const generatePDF = useCallback(async (preview: boolean = false) => {
     try {
       const monthData = getCurrentMonthData();
       if (!monthData) return;
@@ -228,8 +239,7 @@ const GananciasMensuales = () => {
       pdf.setFontSize(18);
       pdf.setTextColor(40, 40, 40);
       pdf.text(
-        `Reporte de Ganancias Consolidadas - ${
-          monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
+        `Reporte de Ganancias Consolidadas - ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
         } ${selectedYear}`,
         105,
         15,
@@ -291,7 +301,7 @@ const GananciasMensuales = () => {
       pdf.setTextColor(40, 40, 40);
       pdf.text(
         `El total general de las ganancias obtenidas en las cuatro tiendas es de: ${formatCurrency(monthData.total_sales)}
-         en el mes de ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]} ${selectedYear}.`,
+          en el mes de ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]} ${selectedYear}.`,
         105,
         (pdf as any).lastAutoTable.finalY + 10,
         { align: "center" }
@@ -300,7 +310,21 @@ const GananciasMensuales = () => {
       const pdfBlob = pdf.output("blob");
       const pdfBlobUrl = URL.createObjectURL(pdfBlob);
 
-      
+      if (preview) {
+        setPdfUrl(pdfBlobUrl); // Establece la URL para la previsualización
+      } else {
+        // Lógica de descarga
+        const link = document.createElement("a");
+        link.href = pdfBlobUrl;
+        link.download = `Ganancias_Consolidadas_${selectedMonth}.pdf`;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Revoca la URL solo después de que la descarga se ha iniciado
+        URL.revokeObjectURL(pdfBlobUrl);
+      }
+
       const link = document.createElement("a");
       link.href = pdfBlobUrl;
       link.download = `Ganancias_Consolidadas_${selectedMonth}.pdf`;
@@ -308,12 +332,12 @@ const GananciasMensuales = () => {
       link.click();
       document.body.removeChild(link);
 
-      
       URL.revokeObjectURL(pdfBlobUrl);
       setPdfUrl(pdfBlobUrl);
     } catch (err) {
       console.error("Error generating PDF:", err);
       setError("Error al generar el PDF.");
+      setPdfUrl(null); // Limpia la URL del PDF en caso de error
     }
   }, [selectedMonth, selectedYear, formatCurrency, getCurrentMonthData, monthNames]);
 
@@ -326,8 +350,7 @@ const GananciasMensuales = () => {
       }
 
       const workbook = XLSX.utils.book_new();
-
-      
+      // Hoja de resumen general
       const summaryData = [
         ["Cuenta", "Total Ventas (CLP)", "Total Productos"],
         ...monthData.companies_data.map((companyData) => [
@@ -376,11 +399,9 @@ const GananciasMensuales = () => {
       }
 
       XLSX.utils.book_append_sheet(workbook, summarySheet, "Resumen General");
-
-      
+// Hojas individuales por compañía con detalles de pedidos
       monthData.companies_data.forEach((companyData) => {
         const companyName = companyData.company_name;
-
         const ordersMap = new Map<number, {
           order_id: number;
           date_created: string;
@@ -409,15 +430,14 @@ const GananciasMensuales = () => {
         });
 
         const ordersArray = Array.from(ordersMap.values()).sort((a, b) => {
-            return new Date(a.date_created).getTime() - new Date(b.date_created).getTime();
+          return new Date(a.date_created).getTime() - new Date(b.date_created).getTime();
         });
 
         if (ordersArray.length > 0) {
-          
+          // Encabezados de la hoja de detalles de pedidos
           const sheetData = [
             ["ID Pedido", "Fecha", "Productos", "Monto Total", "Estado"]
           ];
-
           ordersArray.forEach(order => {
             sheetData.push([
               order.order_id.toString(),
@@ -430,43 +450,40 @@ const GananciasMensuales = () => {
 
           const ws = XLSX.utils.aoa_to_sheet(sheetData);
 
-        if (ws["!ref"]) {
-              const range = XLSX.utils.decode_range(ws["!ref"]);
-              
-              
-              for (let C = range.s.c; C <= range.e.c; ++C) {
-                  const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
-                  if (!ws[headerCell]) continue;
-                  ws[headerCell].s = {
-                      font: { bold: true, color: { rgb: "FFFFFF" } },
-                      fill: { fgColor: { rgb: "6A3093" } },
-                      alignment: { horizontal: "center" }
-                  };
-              }
+          if (ws["!ref"]) {
+            const range = XLSX.utils.decode_range(ws["!ref"]);
+// Estilos para los encabezados
+            for (let C = range.s.c; C <= range.e.c; ++C) {
+              const headerCell = XLSX.utils.encode_cell({ r: range.s.r, c: C });
+              if (!ws[headerCell]) continue;
+              ws[headerCell].s = {
+                font: { bold: true, color: { rgb: "FFFFFF" } },
+                fill: { fgColor: { rgb: "6A3093" } },
+                alignment: { horizontal: "center" }
+              };
+            }
+// Formato de moneda para la columna 'Monto Total'
+            for (let R = range.s.r + 1; R <= range.e.r; ++R) {
+              const amountCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 });
+              const cell = ws[amountCellAddress];
 
-              
-              for (let R = range.s.r + 1; R <= range.e.r; ++R) {
-                  const amountCellAddress = XLSX.utils.encode_cell({ r: R, c: 3 }); 
-                  const cell = ws[amountCellAddress];
-                  
-                  if (cell) {
-                      cell.t = 'n'; 
-                      cell.z = '"$"#,##0;[Red]\-"$"#,##0'; 
-                  }
+              if (cell) {
+                cell.t = 'n';// Tipo de celda numérica
+                cell.z = '"$"#,##0;[Red]\-"$"#,##0';// Formato de moneda CLP
               }
-
-              
-              ws['!cols'] = [
-                  { wch: 15 }, // ID Pedido
-                  { wch: 15 }, // Fecha
-                  { wch: 10 }, // Productos
-                  { wch: 15 }, // Monto Total
-                  { wch: 15 }, // Estado
-              ];
+            }
+// Ajustar ancho de las columnas
+            ws['!cols'] = [
+              { wch: 15 }, // ID Pedido
+              { wch: 15 }, // Fecha
+              { wch: 10 }, // Productos
+              { wch: 15 }, // Monto Total
+              { wch: 15 }, // Estado
+            ];
           }
 
-        const sheetName = companyName.replace(/[/\\?*[\]:]/g, '').substring(0, 31);
-        XLSX.utils.book_append_sheet(workbook, ws, sheetName);
+          const sheetName = companyName.replace(/[/\\?*[\]:]/g, '').substring(0, 31);
+          XLSX.utils.book_append_sheet(workbook, ws, sheetName);
         }
       });
 
@@ -531,12 +548,18 @@ const GananciasMensuales = () => {
           <Select
             placeholder="Seleccione un año"
             style={{ width: "100%" }}
-            onChange={(value) => {
-              setSelectedYear(value);
-              const monthPart = selectedMonth
-                ? selectedMonth.split("-")[1]
-                : (new Date().getMonth() + 1).toString().padStart(2, "0");
-              setSelectedMonth(`${value}-${monthPart}`);
+            onChange={(newYear) => {
+              const now = new Date();
+              const currentFullYear = now.getFullYear();
+              const currentMonth = now.getMonth() + 1; // 1-12
+              let monthToSet = selectedMonth ? parseInt(selectedMonth.split("-")[1]) : currentMonth;
+
+              if (parseInt(newYear) === currentFullYear && monthToSet > currentMonth) {
+                monthToSet = currentMonth;
+              }
+              const newMonthString = monthToSet.toString().padStart(2, "0");
+              setSelectedYear(newYear);
+              setSelectedMonth(`${newYear}-${newMonthString}`);
             }}
             value={selectedYear || undefined}
             loading={loading}
@@ -565,9 +588,8 @@ const GananciasMensuales = () => {
 
       {chartData && selectedMonth && currentMonthAggregatedData ? (
         <Card
-          title={`Ganancias Mensuales Consolidadas - ${
-            monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
-          } ${selectedYear}`}
+          title={`Ganancias Mensuales Consolidadas - ${monthNames[parseInt(selectedMonth.split("-")[1]) - 1]
+            } ${selectedYear}`}
           extra={
             <Text strong>
               Total Consolidado:{" "}
@@ -598,9 +620,8 @@ const GananciasMensuales = () => {
                   tooltip: {
                     callbacks: {
                       label: (context) => {
-                        return ` ${
-                          context.dataset.label
-                        }: ${formatCurrency(context.raw as number)}`;
+                        return ` ${context.dataset.label
+                          }: ${formatCurrency(context.raw as number)}`;
                       },
                     },
                   },
@@ -648,24 +669,24 @@ const GananciasMensuales = () => {
             <Col xs={24} sm={8} lg={6}>
               <button
                 type="button"
-                onClick={generatePDF}
+                onClick={() => generatePDF(false)} // Pasa `false` para descarga
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
                 style={{
                   backgroundColor: "white",
-                  color: "#6a3093",
-                  border: "2px solid #ba68c8",
+                  color: "#cf1322",
+                  border: "2px solid #cf1322",
                   transition: "all 0.3s",
                   zIndex: 1,
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.color = "white";
-                  e.currentTarget.style.borderColor = "#6a3093";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "100%";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = "#6a3093";
-                  e.currentTarget.style.borderColor = "#ba68c8";
+                  e.currentTarget.style.color = "#cf1322";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "0%";
                 }}
@@ -680,7 +701,7 @@ const GananciasMensuales = () => {
                     left: 0,
                     width: "0%",
                     height: "100%",
-                    backgroundColor: "#6a3093",
+                    backgroundColor: "#cf1322",
                     transition: "all 0.3s ease",
                     zIndex: 0,
                   }}
@@ -691,26 +712,26 @@ const GananciasMensuales = () => {
               <button
                 type="button"
                 onClick={async () => {
-                  await generatePDF();
+                  await generatePDF(true); // Pasa `true` para previsualización
                   setIsModalVisible(true);
                 }}
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
                 style={{
                   backgroundColor: "white",
-                  color: "#6a3093",
-                  border: "2px solid #ba68c8",
+                  color: "#cf1322",
+                  border: "2px solid #cf1322",
                   transition: "all 0.3s",
                   zIndex: 1,
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.color = "white";
-                  e.currentTarget.style.borderColor = "#6a3093";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "100%";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = "#6a3093";
-                  e.currentTarget.style.borderColor = "#ba68c8";
+                  e.currentTarget.style.color = "#cf1322";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "0%";
                 }}
@@ -725,7 +746,7 @@ const GananciasMensuales = () => {
                     left: 0,
                     width: "0%",
                     height: "100%",
-                    backgroundColor: "#6a3093",
+                    backgroundColor: "#cf1322",
                     transition: "all 0.3s ease",
                     zIndex: 0,
                   }}
@@ -739,20 +760,20 @@ const GananciasMensuales = () => {
                 className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
                 style={{
                   backgroundColor: "white",
-                  color: "#6a3093",
-                  border: "2px solid #ba68c8",
+                  color: "#cf1322",
+                  border: "2px solid #cf1322",
                   transition: "all 0.3s",
                   zIndex: 1,
                 }}
                 onMouseOver={(e) => {
                   e.currentTarget.style.color = "white";
-                  e.currentTarget.style.borderColor = "#6a3093";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "100%";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.color = "#6a3093";
-                  e.currentTarget.style.borderColor = "#ba68c8";
+                  e.currentTarget.style.color = "#cf1322";
+                  e.currentTarget.style.borderColor = "#cf1322";
                   (e.currentTarget.children[1] as HTMLElement).style.width =
                     "0%";
                 }}
@@ -767,7 +788,7 @@ const GananciasMensuales = () => {
                     left: 0,
                     width: "0%",
                     height: "100%",
-                    backgroundColor: "#6a3093",
+                    backgroundColor: "#cf1322",
                     transition: "all 0.3s ease",
                     zIndex: 0,
                   }}
@@ -787,11 +808,16 @@ const GananciasMensuales = () => {
       )}
 
       <Modal
-        title={`Vista previa del PDF - Ganancias Consolidadas ${
-          monthNames[parseInt(selectedMonth?.split("-")[1]) - 1]
-        } ${selectedYear}`}
+        title={`Vista previa del PDF - Ganancias Consolidadas ${monthNames[parseInt(selectedMonth?.split("-")[1]) - 1]
+          } ${selectedYear}`}
         open={isModalVisible}
-        onCancel={() => setIsModalVisible(false)}
+        onCancel={() => {
+          setIsModalVisible(false);
+          if (pdfUrl) {
+            URL.revokeObjectURL(pdfUrl); // Revoca la URL cuando el modal se cierra
+            setPdfUrl(null); // Limpia el estado
+          }
+        }}
         footer={null}
         width="90%"
         style={{ top: 20 }}
