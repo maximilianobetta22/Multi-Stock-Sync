@@ -4,12 +4,10 @@ import { Bar } from "react-chartjs-2"; // Componente para gráficos de barras de
 import { ChartOptions } from "chart.js"; // Tipo para definir opciones del gráfico
 import { useParams, useNavigate, Link } from "react-router-dom"; // Herramientas de react-router para parámetros de URL, navegación y enlaces
 import { Modal } from "react-bootstrap"; // Componente Modal de Bootstrap para mostrar el PDF
-import { jsPDF } from "jspdf"; // Librería para generar documentos PDF
-import autoTable from "jspdf-autotable"; // Plugin para agregar tablas automáticas en PDFs
-import * as XLSX from "xlsx"; // Librería para crear y exportar archivos Excel
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico"; // Componente personalizado para mostrar un indicador de carga
 import axiosInstance from "../../../../../axiosConfig"; // Instancia preconfigurada de Axios para realizar peticiones HTTP
-
+import { generarReporteSemanal } from "../PdfExcelCodigos/CodigoPDF.ts"; // Función para generar el reporte semanal en PDF
+import { generarReporteSemanalExcel } from "../PdfExcelCodigos/CodigoExcel.ts"; // Función para generar el reporte semanal en Excel
 
 
 // Definición del componente funcional IngresosSemana
@@ -137,7 +135,7 @@ const IngresosSemana: React.FC = () => {
             },
           },
           {
-            label: "Cantidad Vendida",
+            label: "Cantidad Vendida", // Label para la cantidad vendida
             data: result.data.sold_products.map((product: any) => product.quantity), // Datos de cantidades
             backgroundColor: "rgba(153, 102, 255, 0.6)",
             borderColor: "rgb(212, 102, 255)",
@@ -260,66 +258,29 @@ const IngresosSemana: React.FC = () => {
   }, [client_id]); // Dependencia: se ejecuta cuando cambia client_id
 
   // Función para generar y descargar un PDF con el reporte
-  const generatePDF = (): void => {
-    if (!userData || !userData.nickname) return; // No hace nada si no hay datos del usuario
-
-    const doc = new jsPDF(); // Crea un nuevo documento PDF
-    doc.setFont("helvetica", "bold"); // Fuente en negrita
-    doc.setFontSize(20); // Tamaño de fuente
-    doc.text("Reporte Semanal de Ingresos", 105, 20, { align: "center" }); // Título centrado
-    doc.line(20, 25, 190, 25); // Línea horizontal decorativa
-
-    doc.setFont("helvetica", "normal"); // Fuente normal
-    doc.setFontSize(12); // Tamaño de fuente más pequeño
-    doc.text(`Usuario: ${userData.nickname}`, 20, 35); // Información del usuario
-    doc.text(`Año: ${year}`, 20, 42); // Año seleccionado
-    doc.text(`Mes: ${month}`, 20, 49); // Mes seleccionado
-    doc.text(`Semana: ${selectedWeek}`, 20, 56); // Semana seleccionada
-
-    if (totalSales !== null) { // Si hay total de ventas, lo muestra
-      doc.text(`Total de Ingresos: $${totalSales.toLocaleString()}`, 20, 63);
-    }
-
-    autoTable(doc, { // Genera una tabla con los datos del gráfico
-      startY: 70, // Posición inicial en Y
-      head: [["Producto", "Ingresos Totales", "Cantidad Vendida"]], // Encabezados de la tabla
-      body: chartData.labels.map((label: string, index: number) => [ // Filas de la tabla
-        label, // Nombre del producto
-        `$${chartData.datasets[0].data[index]}`, // Ingresos totales
-        chartData.datasets[1].data[index], // Cantidad vendida
-      ]),
-    });
-
-    const pageHeight = doc.internal.pageSize.height; // Altura de la página
-    doc.setFontSize(10); // Tamaño de fuente pequeño
-    doc.setTextColor(150, 150, 150); // Color gris
-    doc.text("----------Multi Stock Sync----------", 105, pageHeight - 10, { align: "center" }); // Pie de página
-
-    const pdfData = doc.output("datauristring"); // Genera el PDF como string para el modal
-    const pdfFilename = `ReporteIngresosSemana_${client_id}_${userData.nickname}.pdf`; // Nombre del archivo
-
-    setShowModal(true); // Muestra el modal
-    setPdfDataUrl(pdfData); // Establece la URL del PDF para el iframe
-    doc.save(pdfFilename); // Descarga el archivo PDF
-  };
+const generatePDF = (): void => { // función para generar el PDF
+generarReporteSemanal({ // función para generar el reporte en PDF
+  userData,
+  client_id: client_id!, // esto le dice a TypeScript que no es undefined
+  year,
+  month,
+  selectedWeek,
+  chartData,
+  totalSales,
+  setPdfDataUrl,
+  setShowModal
+});
+};
 
   // Función para generar y descargar un archivo Excel
-  const generateExcel = (): void => {
-    if (!userData || !userData.nickname) return; // No hace nada si no hay datos del usuario
+const generateExcel = (): void => { //  función para generar el Excel
+  generarReporteSemanalExcel({ //  función para generar el reporte en Excel
+    userData,
+    chartData,
+    client_id: client_id!, // usa `!` si es seguro que no es undefined
+  });
+};
 
-    const worksheetData = chartData.labels.map((label: string, index: number) => ({ // Datos para la hoja de cálculo
-      Producto: label, // Nombre del producto
-      "Ingresos Totales": chartData.datasets[0].data[index], // Ingresos
-      "Cantidad Vendida": chartData.datasets[1].data[index], // Cantidad
-    }));
-
-    const worksheet = XLSX.utils.json_to_sheet(worksheetData); // Convierte los datos a formato de hoja de cálculo
-    const workbook = XLSX.utils.book_new(); // Crea un nuevo libro de Excel
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Ingresos"); // Añade la hoja al libro
-
-    const excelFilename = `IngresosSemana_${client_id}_${userData.nickname}.xlsx`; // Nombre del archivo
-    XLSX.writeFile(workbook, excelFilename); // Descarga el archivo Excel
-  };
 
   // Renderizado del componente
   return (
