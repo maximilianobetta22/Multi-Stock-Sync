@@ -823,20 +823,21 @@ const Productos: React.FC = () => {
                   size="middle"
                 />
                 {/* Paginación personalizada */}
-                <div style={{ marginTop: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ marginTop: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px', flexDirection: screens.xs ? 'column' : 'row', }}>
                   <Text type="secondary">
                     Mostrando {indexOfFirstProduct + 1}-{Math.min(indexOfLastProduct, productos.length)} de{" "}
                     {productos.length} productos
                   </Text>
-                  <Space>
+                  {/* Para un mejor control del tamaño se agregó otro div */}
+                  <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '4px' }}>
                     <Button onClick={() => paginate(currentPage - 1)} disabled={currentPage === 1}>
                       Anterior
                     </Button>
-                    <div style={{ display: "flex", alignItems: "center" }}>{renderPaginationButtons()}</div>
+                    {renderPaginationButtons()}
                     <Button onClick={() => paginate(currentPage + 1)} disabled={currentPage === totalPages}>
                       Siguiente
                     </Button>
-                  </Space>
+                  </div>
                 </div>
               </>
             ) : (
