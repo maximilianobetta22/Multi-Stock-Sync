@@ -25,19 +25,21 @@ import {
 const { Title, Text } = Typography;
 const { Option } = Select;
 
+// Definición de la interfaz Usuario que representa cada usuario
 interface Usuario {
   id: number;
   nombre: string;
   apellidos: string;
   telefono: string;
   email: string;
-  role_id: number | null;
-  rol?: {
+  role_id: number | null;  // Puede ser null si no tiene rol asignado
+  rol?: {                  // Información del rol asociada (opcional)
     id: number;
     nombre: string;
   };
 }
 
+// Array con los roles disponibles en el sistema, con id y nombre
 const rolesDisponibles = [
   { id: 1, nombre: "Admin" },
   { id: 2, nombre: "Logística" },
@@ -47,6 +49,7 @@ const rolesDisponibles = [
   { id: 6, nombre: "plugin" },
 ];
 
+// Función para obtener el color del tag según el id del rol
 const getRolColor = (roleId: number | null) => {
   switch (roleId) {
     case 1: return "purple";
@@ -60,15 +63,20 @@ const getRolColor = (roleId: number | null) => {
 };
 
 const GestionUsuarios: React.FC = () => {
+  // Obtener usuario actual y rol desde localStorage (debería manejarse mejor en contexto global)
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const roleId = user?.role_id;
+
+  // Solo Admin (1) y RRHH (4) tienen acceso a la gestión
   const tieneAcceso = roleId === 1 || roleId === 4;
 
+  // Estados para usuarios, carga, guardado y cambios pendientes en roles
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [cambiosPendientes, setCambiosPendientes] = useState<Record<number, number>>({});
 
+  // Efecto para cargar usuarios solo si se tiene acceso
   useEffect(() => {
     if (!tieneAcceso) return;
 
@@ -99,6 +107,7 @@ const GestionUsuarios: React.FC = () => {
     fetchData();
   }, [tieneAcceso]);
 
+  // Función para manejar el cambio de rol en el selector
   const manejarCambioRol = (userId: number, nuevoRolId: number) => {
     const usuarioSeleccionado = usuarios.find(u => u.id === userId);
 
@@ -106,24 +115,25 @@ const GestionUsuarios: React.FC = () => {
 
     const esAdminActual = usuarioSeleccionado.role_id === 1;
 
-    // Si RRHH intenta asignar el rol de Admin a alguien
+    // Validaciones de permisos para rol RRHH (no puede asignar ni quitar Admin)
     if (roleId === 4 && nuevoRolId === 1) {
       message.warning("RRHH no puede asignar el rol de Admin.");
       return;
     }
 
-    // Si RRHH intenta quitar el rol de Admin a alguien que ya es Admin
     if (roleId === 4 && esAdminActual && nuevoRolId !== 1) {
       message.warning("RRHH no puede modificar usuarios con rol de Admin.");
       return;
     }
 
+    // Guardar cambio pendiente en estado
     setCambiosPendientes(prev => ({
       ...prev,
       [userId]: nuevoRolId,
     }));
   };
 
+  // Función para guardar todos los cambios pendientes en la API
   const guardarCambios = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -134,6 +144,7 @@ const GestionUsuarios: React.FC = () => {
     try {
       setSaving(true);
 
+      // Actualizamos uno por uno (podría optimizarse a paralelo)
       for (const [userId, nuevoRolId] of Object.entries(cambiosPendientes)) {
         try {
           const response = await axiosInstance.put(
@@ -146,6 +157,7 @@ const GestionUsuarios: React.FC = () => {
           );
 
           if (response.data.message === "Rol asignado correctamente") {
+            // Actualizamos el usuario en el estado local
             setUsuarios(prev =>
               prev.map(user =>
                 user.id === Number(userId)
@@ -160,7 +172,7 @@ const GestionUsuarios: React.FC = () => {
           }
         } catch (error) {
           console.error(`Error al actualizar usuario ${userId}:`, error);
-          throw error;
+          throw error; // Para que se capture en el catch general
         }
       }
 
@@ -192,6 +204,7 @@ const GestionUsuarios: React.FC = () => {
     }
   };
 
+  // Función para eliminar usuario desde la API
   const eliminarUsuario = async (userId: number) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -206,6 +219,7 @@ const GestionUsuarios: React.FC = () => {
 
       message.success("Usuario eliminado correctamente");
 
+      // Actualizar lista local eliminando al usuario
       setUsuarios(prev => prev.filter(user => user.id !== userId));
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
@@ -228,6 +242,7 @@ const GestionUsuarios: React.FC = () => {
     }
   };
 
+  // Definición de columnas para la tabla Ant Design
   const columns = [
     {
       title: "Usuario",
@@ -235,10 +250,13 @@ const GestionUsuarios: React.FC = () => {
       key: "usuario",
       render: (_: any, record: Usuario) => (
         <Space>
+          {/* Avatar con iniciales */}
           <Avatar style={{ backgroundColor: "#1890ff" }} icon={<UserOutlined />}>
             {record.nombre.charAt(0)}
             {record.apellidos.charAt(0)}
           </Avatar>
+
+          {/* Datos del usuario */}
           <div>
             <Text strong>
               {record.nombre} {record.apellidos}
@@ -256,7 +274,7 @@ const GestionUsuarios: React.FC = () => {
       dataIndex: "role_id",
       key: "rol",
       render: (roleId: number | null, record: Usuario) => {
-        const rolPendiente = cambiosPendientes[record.id];
+        const rolPendiente = cambiosPendientes[record.id]; // Si hay cambio pendiente para este usuario
         const rolActual = record.rol?.nombre || (roleId
           ? rolesDisponibles.find(r => r.id === roleId)?.nombre
           : "Sin rol");
@@ -264,6 +282,7 @@ const GestionUsuarios: React.FC = () => {
         return (
           <Space direction="vertical">
             {rolPendiente ? (
+              // Mostramos rol pendiente con badge
               <Badge dot>
                 <Tag color={getRolColor(rolPendiente)}>
                   {rolesDisponibles.find(r => r.id === rolPendiente)?.nombre}
@@ -290,13 +309,16 @@ const GestionUsuarios: React.FC = () => {
           placeholder="Seleccionar rol"
           value={cambiosPendientes[record.id] ?? record.role_id ?? undefined}
           onChange={(value) => manejarCambioRol(record.id, value)}
-          disabled={saving}
+          disabled={
+            saving || 
+            (roleId === 4 && record.role_id === 1) // RRHH no puede cambiar admin
+          }
         >
           {rolesDisponibles.map(rol => (
             <Option
               key={rol.id}
               value={rol.id}
-              disabled={roleId === 4 && rol.id === 1}
+              disabled={roleId === 4 && rol.id === 1} // RRHH no puede asignar admin
             >
               {rol.nombre}
             </Option>
@@ -322,6 +344,7 @@ const GestionUsuarios: React.FC = () => {
     },
   ];
 
+  // Si el usuario no tiene permiso para esta sección, mostramos mensaje
   if (!tieneAcceso) {
     return (
       <div style={{ padding: "2rem", textAlign: "center" }}>
@@ -331,6 +354,7 @@ const GestionUsuarios: React.FC = () => {
     );
   }
 
+  // Renderizado principal con Card, Spinner y Tabla
   return (
     <div style={{ padding: 24 }}>
       <Card
@@ -373,6 +397,7 @@ const GestionUsuarios: React.FC = () => {
           )
         }
       >
+        {/* Spinner mientras se cargan usuarios */}
         <Spin spinning={loading} tip="Cargando usuarios...">
           <Table
             columns={columns}

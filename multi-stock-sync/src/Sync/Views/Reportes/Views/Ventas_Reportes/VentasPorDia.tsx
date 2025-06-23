@@ -8,13 +8,14 @@ import {
   Modal,
   message,
   Spin,
+  Row,
+  Col,
 } from "antd";
 import dayjs from "dayjs";
 import GraficoPorDia from "./components/GraficoPorDia";
 import axiosInstance from "../../../../../axiosConfig";
 import { generarPDFPorDiaBlobURL } from "./utils/exportUtils";
-import './VentasPorDia.Module.css'; 
-
+import './VentasPorDia.Module.css';
 
 const { Title, Text } = Typography;
 
@@ -30,11 +31,8 @@ const VentasPorDia: React.FC = () => {
   const [totalIngresos, setTotalIngresos] = useState<number>(0);
   const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
 
-  // Función para formatear en CLP
-  const formatCLP = (value: number) =>
-    `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
+  const formatCLP = (value: number) => `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
 
-  // Obtener ventas del día seleccionado
   const fetchIncomes = async () => {
     if (!client_id || !fecha) return;
     setLoading(true);
@@ -77,7 +75,6 @@ const VentasPorDia: React.FC = () => {
     }
   };
 
-  // Obtener datos del usuario (nickname, imagen)
   const fetchUserData = async () => {
     if (!client_id) return;
     try {
@@ -91,17 +88,15 @@ const VentasPorDia: React.FC = () => {
     }
   };
 
-  // Al cargar o cambiar la fecha
   useEffect(() => {
     fetchIncomes();
     fetchUserData();
   }, [client_id, fecha]);
 
-  // Generar y mostrar PDF
   const generatePdf = () => {
     if (!userData) {
-    message.error("Faltan datos del usuario para generar el PDF.");
-    return null;
+      message.error("Faltan datos del usuario para generar el PDF.");
+      return null;
     }
     try {
       const pdfUrl = generarPDFPorDiaBlobURL(
@@ -131,35 +126,32 @@ const VentasPorDia: React.FC = () => {
   };
 
   return (
-    <div
-      className="container"
-      style={{ maxWidth: 1200, margin: "0 auto", paddingTop: 70 }}
-    >
-      <Title className="titulo">Ventas por Día</Title>
+    <div className="container" style={{ maxWidth: "100%", padding: 24 }}>
+      <Title className="titulo" style={{ textAlign: "center" }}>Ventas por Día</Title>
 
-      {/* Panel de resumen */}
-      <div className="fechaSelector">
-        <Card>
-          <Text strong>Usuario:</Text>{" "}
-          {userData?.nickname || <Text type="secondary">Cargando...</Text>}
-          <br />
-          <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)}
-        </Card>
+      <Row gutter={[16, 16]} justify="center">
+        <Col xs={24} md={12} lg={8}>
+          <Card hoverable>
+            <Text strong>Usuario:</Text> {userData?.nickname || <Text type="secondary">Cargando...</Text>}
+            <br />
+            <Text strong>Total Ingresos:</Text> {formatCLP(totalIngresos)}
+          </Card>
+        </Col>
+        <Col xs={24} md={12} lg={8}>
+          <Card hoverable>
+            <Text strong>Selecciona una Fecha:</Text>
+            <br />
+            <DatePicker
+              value={fecha}
+              onChange={(date) => date && setFecha(date)}
+              format="YYYY-MM-DD"
+              style={{ marginTop: 8, width: "100%" }}
+            />
+          </Card>
+        </Col>
+      </Row>
 
-        <Card>
-          <Text strong>Selecciona una Fecha:</Text>
-          <br />
-          <DatePicker
-            value={fecha}
-            onChange={(date) => date && setFecha(date)}
-            format="YYYY-MM-DD"
-            style={{ marginTop: 8 }}
-          />
-        </Card>
-      </div>
-
-      {/* Gráfico */}
-      <div className="graficoContenedor">
+      <div className="graficoContenedor" style={{ marginTop: 24 }}>
         {loading ? (
           <div style={{ textAlign: "center", padding: 40 }}>
             <Spin size="large" />
@@ -176,42 +168,57 @@ const VentasPorDia: React.FC = () => {
         )}
       </div>
 
-      {/* Botón */}
       <div style={{ textAlign: "center", marginTop: 32 }}>
-        <Button
-          type="primary"
+        <button
+          type="button"
           onClick={handleExportPDF}
+          className="btn w-100 py-2 fw-medium rounded-pill shadow-sm position-relative overflow-hidden mb-3 export-button"
+          style={{
+            backgroundColor: "white",
+            color: "#cf1322",
+            border: "2px solid #cf1322",
+            transition: "all 0.3s",
+            zIndex: 1,
+            maxWidth: 300,
+          }}
+          onMouseOver={(e) => {
+            e.currentTarget.style.color = "white";
+            e.currentTarget.style.borderColor = "#cf1322";
+            (e.currentTarget.children[1] as HTMLElement).style.width = "100%";
+          }}
+          onMouseOut={(e) => {
+            e.currentTarget.style.color = "#cf1322";
+            e.currentTarget.style.borderColor = "#cf1322";
+            (e.currentTarget.children[1] as HTMLElement).style.width = "0%";
+          }}
           disabled={chartData.labels.length === 0}
         >
-          Exportar PDF
-        </Button>
+          <span style={{ position: "relative", zIndex: 2 }}>
+            <i className="fas fa-file-pdf me-2"></i> Exportar PDF
+          </span>
+          <span
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              width: "0%",
+              height: "100%",
+              backgroundColor: "#cf1322",
+              transition: "all 0.3s ease",
+              zIndex: 0,
+            }}
+          ></span>
+        </button>
       </div>
 
-      {/* Modal */}
       {pdfDataUrl && (
         <Modal
           open={showModal}
           onCancel={() => setShowModal(false)}
           centered
-          width="80vw"
+          width="90vw"
           style={{ maxWidth: 900 }}
-          footer={[
-            <Button
-              key="descargar"
-              type="primary"
-              onClick={() => {
-                const link = document.createElement("a");
-                link.href = pdfDataUrl;
-                link.download = `Ventas_${fecha.format("YYYY-MM-DD")}.pdf`;
-                link.click();
-              }}
-            >
-              Guardar PDF
-            </Button>,
-            <Button key="cerrar" onClick={() => setShowModal(false)}>
-              Cerrar
-            </Button>,
-          ]}
+          footer={null}
         >
           <div style={{ textAlign: "center" }}>
             <iframe
@@ -220,11 +227,26 @@ const VentasPorDia: React.FC = () => {
               style={{ width: "100%", height: "80vh", border: "none", minHeight: 400 }}
             />
             <p style={{ fontSize: "0.9em", marginTop: 8 }}>
-              ¿No se muestra el PDF?{" "}
+              ¿No se muestra el PDF?{' '}
               <a href={pdfDataUrl} target="_blank" rel="noopener noreferrer">
                 Ábrelo en una nueva pestaña
               </a>
             </p>
+            <div style={{ marginTop: 16 }}>
+              <Button
+                type="primary"
+                onClick={() => {
+                  const link = document.createElement("a");
+                  link.href = pdfDataUrl;
+                  link.download = `Ventas_${fecha.format("YYYY-MM-DD")}.pdf`;
+                  link.click();
+                }}
+                style={{ marginRight: 8 }}
+              >
+                Guardar PDF
+              </Button>
+              <Button onClick={() => setShowModal(false)}>Cerrar</Button>
+            </div>
           </div>
         </Modal>
       )}
@@ -233,5 +255,3 @@ const VentasPorDia: React.FC = () => {
 };
 
 export default VentasPorDia;
-// este componente es para mostrar un reporte de ventas por día en una aplicación de React.
-// utiliza la librería Ant Design para el diseño y la librería dayjs para manejar fechas.

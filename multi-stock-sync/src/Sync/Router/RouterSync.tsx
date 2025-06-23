@@ -13,13 +13,12 @@ import { Login } from "../../Auth/Pages";
 import Register from "../../Auth/Pages/Register";
 import Logout from "../../Auth/Pages/Logout";
 import SeleccionConexion from "../Views/SeleccionConexion/SeleccionConexion";
-import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; 
+import GestionEnvios from "../Views/GestionEnvios/GestionEnvios"; // ✅ Nuevo
 import RouterGestionEnvio from "../Views/GestionEnvios/Router/RouterGestionEnvio";
 import RouterPuntodeVenta from "../Views/PuntoVenta/Router/RouterPuntodeVenta"
-import RouterGestionUsuarios from "../Views/GestionUsuarios/Router/RouterGestionUsuarios";
-
-
- 
+import RouterPerfil from "../Views/Perfil/Router/RouterPerfil";
+import RouterConfiguracion from "../Views/Configuracion/Router/RouterConfiguracion";
+ // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 
 function RouterSync() {
   return (
@@ -35,15 +34,15 @@ function RouterSync() {
         <Route path="/info" element={<Info />} />
         <Route path="/envios" element={<GestionEnvios />} />
         <Route path="/punto-de-venta/*" element={<RouterPuntodeVenta />} />
+        <Route path="/perfil/*" element={<RouterPerfil />} />
+        <Route path="/configuracion/*" element={<RouterConfiguracion />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/logout" element={<Logout />} />
         <Route path="/about" element={<About />} />
         <Route path="/seleccionar-conexion" element={<SeleccionConexion />} />
         <Route path="/envios/*" element={<RouterGestionEnvio />} />
-        <Route path="/usuarios/*" element={<RouterGestionUsuarios />} />
 
-        
 
         <Route path="/*" element={<Navigate to="/sync/landing" />} />
       </Routes>

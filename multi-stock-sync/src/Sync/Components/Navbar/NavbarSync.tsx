@@ -7,6 +7,7 @@ import { Button, Avatar, Dropdown, Space } from "antd"
 import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons"
 import type { MenuProps } from "antd"
 
+
 const Navbar = () => {
   const userContext = useContext(UserContext)
   if (!userContext) {
@@ -25,11 +26,13 @@ const Navbar = () => {
       key: "profile",
       icon: <UserOutlined />,
       label: "Mi Perfil",
+      onClick: () => navigate('/sync/perfil'),
     },
     {
       key: "settings",
       icon: <SettingOutlined />,
       label: "Configuración",
+      onClick: () => navigate('/sync/configuracion'),
     },
     {
       type: "divider",
