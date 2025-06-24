@@ -6,8 +6,8 @@ import { useParams, useNavigate, Link } from "react-router-dom"; // Herramientas
 import { Modal } from "react-bootstrap"; // Componente Modal de Bootstrap para mostrar el PDF
 import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico"; // Componente personalizado para mostrar un indicador de carga
 import axiosInstance from "../../../../../axiosConfig"; // Instancia preconfigurada de Axios para realizar peticiones HTTP
-import { generarReporteSemanal } from "../PdfExcelCodigos/CodigoPDF.ts"; // Función para generar el reporte semanal en PDF
-import { generarReporteSemanalExcel } from "../PdfExcelCodigos/CodigoExcel.ts"; // Función para generar el reporte semanal en Excel
+import { generarReporteSemanal } from "../PdfExcelCodigos/PDF/GenerarReporteSemanalPdf.ts"; // Función para generar el reporte semanal en PDF
+import { generarReporteSemanalExcel } from "../PdfExcelCodigos/Excel/generarReporteSemanalExcel.ts"; // Función para generar el reporte semanal en Excel
 
 
 // Definición del componente funcional IngresosSemana

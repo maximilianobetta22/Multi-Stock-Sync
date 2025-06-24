@@ -165,7 +165,7 @@ const EnviosDia: React.FC = () => {
       <Card className="shadow-sm">
         <div className="mb-6">
           <Title level={3} className="mb-2 text-gray-800">
-            📦 Envíos del Día
+             Envíos del Día
           </Title>
           <Text type="secondary">Envíos con límite de despacho para hoy ({fechaHoy})</Text>
         </div>
@@ -178,7 +178,7 @@ const EnviosDia: React.FC = () => {
             description={
               <div className="text-center">
                 <Text className="text-gray-500 text-lg">
-                  🎉 ¡Excelente! No hay envíos con límite de despacho para hoy
+                  No se han programado envíos con restricciones de despacho para la jornada de hoy.
                 </Text>
                 <br />
                 <Text type="secondary">Todos los envíos están al día</Text>

@@ -175,7 +175,7 @@ const EnviosProximos: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <Title level={3} className="mb-2 text-gray-800">
-              📅 Próximos Envíos
+              Próximos Envíos
             </Title>
             <Text type="secondary">Envíos programados para los próximos días</Text>
           </div>

@@ -92,11 +92,14 @@ export default function EnviosCancelados() {
       dataIndex: "status",
       key: "status",
       align: "center" as const,
-      render: (status: string) => (
-        <Tag color="volcano" icon={<CloseCircleOutlined />} className="px-3 py-1 text-sm font-medium">
-          {status.toUpperCase()}
-        </Tag>
-      ),
+      render: (status: string) => {
+        const traducido = status.toUpperCase() === "CANCELLED" ? "CANCELADO" : status.toUpperCase()
+        return (
+          <Tag color="volcano" icon={<CloseCircleOutlined />} className="px-3 py-1 text-sm font-medium">
+            {traducido}
+          </Tag>
+        )
+      },
     },
   ]
 
@@ -147,7 +150,7 @@ export default function EnviosCancelados() {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <Title level={3} className="mb-2 text-gray-800">
-              🚫 Envíos Cancelados
+              Envíos Cancelados
             </Title>
             <Text type="secondary">Lista de todos los envíos que han sido cancelados</Text>
           </div>
@@ -168,25 +171,29 @@ export default function EnviosCancelados() {
             description={<span className="text-gray-500">No hay envíos cancelados disponibles</span>}
           />
         ) : (
-          <Table
-            dataSource={data}
-            columns={columns}
-            pagination={{
-              pageSize: 10,
-              showSizeChanger: true,
-              showQuickJumper: true,
-              showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} envíos cancelados`,
-            }}
-            className="custom-table"
-            scroll={{ x: 800 }}
-            locale={{
-              emptyText: searchText
-                ? `No se encontraron productos que contengan "${searchText}"`
-                : "No hay envíos cancelados",
+<Table
+        dataSource={data}
+        columns={columns}
+        pagination={{
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} envíos cancelados`,
+          locale: {
+              items_per_page: "envíos por página",
+              jump_to: "Ir a",
+              jump_to_confirm: "confirmar",
+              page: "Página",
+          },
+        }}
+        locale={{
+          emptyText: searchText
+            ? `No se encontraron productos que contengan "${searchText}"`
+            : "No hay envíos cancelados",
             }}
           />
         )}
       </Card>
-    </div>
+    </div>  
   )
 }

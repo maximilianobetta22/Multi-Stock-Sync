@@ -75,7 +75,7 @@ const GestionEnvios: React.FC = () => {
       <Card className="shadow-lg">
         <div className="mb-6">
           <Title level={2} className="text-gray-800 mb-2">
-            📦 Gestión de Envíos
+           Gestión de Envíos
           </Title>
           <p className="text-gray-600">Administra y monitorea todos tus envíos desde un solo lugar</p>
         </div>
