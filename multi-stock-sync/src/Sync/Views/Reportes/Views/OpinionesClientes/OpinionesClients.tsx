@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
-import { Container, Form, Spinner, Alert } from 'react-bootstrap';
+import { Container, Form, Spinner, Alert, Col, Row } from 'react-bootstrap';
 import styles from './OpinionesClients.module.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStar } from '@fortawesome/free-solid-svg-icons';
@@ -27,6 +27,18 @@ interface ProductReview {
   review: Review;
 }
 
+const SkeletonCard = () => (
+  <div className={styles.skeletonCard}>
+    <div className={`${styles.skeletonLine} ${styles.title}`}></div>
+    <div className={`${styles.skeletonLine} ${styles.subtitle}`}></div>
+    <div style={{ margin: '24px 0' }}>
+      <div className={`${styles.skeletonLine} ${styles.text}`}></div>
+      <div className={`${styles.skeletonLine} ${styles.text}`}></div>
+    </div>
+    <div className={`${styles.skeletonLine} ${styles.rating}`}></div>
+  </div>
+);
+
 const OpinionesClients = () => {
   const [clients, setClients] = useState<Client[]>([]);
   const [selectedClient, setSelectedClient] = useState<string>('');
@@ -35,6 +47,7 @@ const OpinionesClients = () => {
   const [error, setError] = useState<string | null>(null);
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [endDate, setEndDate] = useState<Date | null>(null);
+  const [sortOrder, setSortOrder] = useState<string>('');
 
   // Obtiene las credenciales de las tiendas conectadas
   const fetchClients = async () => {
@@ -79,7 +92,7 @@ const OpinionesClients = () => {
 
       Object.values(rawData).forEach((data: any) => {
         const title = data.product?.name ?? 'Producto sin nombre';
-        const reviews = data.reviews || [];
+        const reviews = Array.isArray(data.reviews) ? data.reviews : [];
 
         reviews.forEach((review: any) => {
           const rate = review?.rate ?? review.full_review?.rate ?? null;
@@ -121,19 +134,36 @@ const OpinionesClients = () => {
 
   // Cada vez que se selecciona un cliente, carga sus opiniones
   useEffect(() => {
+    setReviewsList([]);
+    setError(null);
+    setStartDate(null);
+    setEndDate(null);
+
     if (selectedClient) {
-      setStartDate(null);
-      setEndDate(null);
-      setReviewsList([]);
-      setError(null);
-      fetchProductsWithReviews(selectedClient, startDate, endDate);
-    } else {
-      setStartDate(null);
-      setEndDate(null);
-      setReviewsList([]);
-      setError(null);
+      fetchProductsWithReviews(selectedClient, null, null);
     }
   }, [selectedClient]);
+
+  const sortedReviewsList = useMemo(() => {
+    if (!sortOrder) {
+      return reviewsList;
+    }
+
+    const sorted = [...reviewsList];
+
+    sorted.sort((a, b) => {
+      const rateA = a.review.rate ?? 0;
+      const rateB = b.review.rate ?? 0;
+
+      if (sortOrder === 'asc') {
+        return rateA - rateB;
+      } else {
+        return rateB - rateA;
+      }
+    });
+
+    return sorted;
+  }, [reviewsList, sortOrder]);
 
   return (
     <Container className={styles.container}>
@@ -160,65 +190,78 @@ const OpinionesClients = () => {
       </Form.Group>
 
       {/* Filtrar por fecha */}
-      {!loading && !error && selectedClient && (
+      {selectedClient && (
         <div className={styles.filtersSection}>
-          <Form.Label> Filtrar reseñas por fecha: </Form.Label>
-          <div className={styles.dateFilterContainer}>
-            <div className={styles.datePickerGroup}>
-              <label htmlFor="startDatePicker" className={styles.datePickerLabel}> Fecha de inicio: </label>
-              <DatePicker
-                id="startDatePicker"
-                selected={startDate}
-                locale={es}
-                onChange={(date: Date | null) => setStartDate(date)}
-                selectsStart
-                startDate={startDate}
-                endDate={endDate}
-                maxDate={endDate || new Date()}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Seleccione inicio"
-                isClearable
-                className={styles.datePickerInput}
-                wrapperClassName={styles.datePickerWrapper}
-                popperPlacement="bottom-start"
-                
-              />
-            </div>
+          <Row className="g-3 align-items-end">
+            <Col md>
+              <div className={styles.datePickerGroup}>
+                <label htmlFor="startDatePicker" className={styles.datePickerLabel}> Fecha de inicio: </label>
+                <DatePicker
+                    id="startDatePicker"
+                    selected={startDate}
+                    locale={es}
+                    onChange={(date: Date | null) => setStartDate(date)}
+                    selectsStart
+                    startDate={startDate}
+                    endDate={endDate}
+                    maxDate={endDate || new Date()}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Seleccione inicio"
+                    isClearable
+                    className={styles.datePickerInput}
+                    wrapperClassName={styles.datePickerWrapper}
+                    popperPlacement="bottom-start"
+                />
+              </div>
+            </Col>
 
-            <div className={styles.datePickerGroup}>
-              <label htmlFor="endDatePicker" className={styles.datePickerLabel}> Fecha de termino: </label>
-              <DatePicker
-                id="endDatePicker"
-                selected={endDate}
-                locale={es}
-                onChange={(date: Date | null) => setEndDate(date)}
-                selectsEnd
-                startDate={startDate}
-                endDate={endDate}
-                maxDate={new Date()}
-                dateFormat="dd/MM/yyyy"
-                placeholderText="Seleccione fin"
-                isClearable
-                className={styles.datePickerInput}
-                wrapperClassName={styles.datePickerWrapper}
-              />
-            </div>
+            <Col md>
+              <div className={styles.datePickerGroup}>
+                <label htmlFor="endDatePicker" className={styles.datePickerLabel}> Fecha de termino: </label>
+                <DatePicker
+                    id="endDatePicker"
+                    selected={endDate}
+                    locale={es}
+                    onChange={(date: Date | null) => setEndDate(date)}
+                    selectsEnd
+                    startDate={startDate}
+                    endDate={endDate}
+                    maxDate={new Date()}
+                    dateFormat="dd/MM/yyyy"
+                    placeholderText="Seleccione fin"
+                    isClearable
+                    className={styles.datePickerInput}
+                    wrapperClassName={styles.datePickerWrapper}
+                />
+              </div>
+            </Col>
 
-            <div>
+            <Col md={3} xs={12}>
+                <Form.Group>
+                    <Form.Label className={styles.datePickerLabel}>Ordenar por:</Form.Label>
+                    <Form.Select
+                        value={sortOrder}
+                        onChange={(e) => setSortOrder(e.target.value)}
+                        className={styles.select}
+                        disabled={loading}
+                    >
+                        <option value="desc">Mejor a peor calificación</option>
+                        <option value="asc">Peor a mejor calificación</option>
+                    </Form.Select>
+                </Form.Group>
+            </Col>
+            
+            <Col md="auto">
               <button
                 type="button"
                 className={styles.applyFilterButton}
-                onClick={() => {
-                  if (selectedClient) {
-                    fetchProductsWithReviews(selectedClient, startDate, endDate);
-                  }
-                }}
-                disabled={loading || !selectedClient}
+                onClick={() => fetchProductsWithReviews(selectedClient, startDate, endDate)}
+                disabled={loading}
               >
-                Aplicar Fechas
+                {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : 'Aplicar Fechas'}
               </button>
-            </div>
-          </div>
+            </Col>
+          </Row>
         </div>
       )}
 
@@ -266,53 +309,51 @@ const OpinionesClients = () => {
       {/* Loader mientras carga opiniones */}
       {loading && (
         <div style={{ textAlign: 'center', margin: '20px 0' }}>
-          <Spinner animation= "border" role= "status">
+          <Spinner animation="border" role="status">
           </Spinner>
         </div>
       )}
 
       {/* Lista de reseñas o mensaje de "no hay reseñas" */}
-      {!loading && !error && selectedClient && (
+      {selectedClient && (
         <>
-          {reviewsList.length > 0 ? (
+          {loading && sortedReviewsList.length === 0 ? (
             <div className={styles.grid}>
-              {reviewsList.map((entry, index) => (
-                <div key={index} className= {styles.card}>
+              {Array.from({ length: 6 }).map((_, index) => <SkeletonCard key={index} />)}
+            </div>
+          ) : !loading && sortedReviewsList.length > 0 ? (
+            <div className={styles.grid}>
+              {sortedReviewsList.map((entry, index) => (
+                <div key={`${entry.review.id}-${index}`} className={styles.card}>
                   <div className={styles.header}>
-                    <span className= {styles.client}>
-                      {entry.review.user_name}
-                    </span>
-                    <span className={styles.product}>
-                      {entry.productTitle}
-                    </span>
+                    <span className={styles.client}>{entry.review.user_name}</span>
+                    <span className={styles.product}>{entry.productTitle}</span>
                   </div>
-                  <div className={styles.comment}>
-                    {entry.review.comment || 'Sin comentario'}
-                  </div>
-                  <div className={styles.rating}>
-                    {entry.review.rate !== null ? (
-                      <>
-                        <FontAwesomeIcon icon={faStar} />{entry.review.rate} / 5
-                      </>) : ('No disponible')}
-                  </div>
+                  <p className={styles.comment}>{entry.review.comment || 'Sin comentario.'}</p>
+                  {entry.review.rate !== null && (
+                    <div className={styles.rating}>
+                      <FontAwesomeIcon icon={faStar} />{entry.review.rate} / 5
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
-          ) : (
-            <div>
-              <p> No hay reseñas disponibles para esta tienda.</p>
+          ) : !loading && sortedReviewsList.length === 0 && (
+            <div className={styles.emptyStateContainer}>
+              <h3>No se encontraron opiniones</h3>
+              <p>Intenta seleccionar un rango de fechas diferente o verifica más tarde.</p>
             </div>
           )}
         </>
       )}
 
-      {/* Mensaje si no se ha seleccionado ningun cliente */}
+      {/* Mensaje si no se ha seleccionado ningún cliente */}
       {!loading && !error && !selectedClient && (
-        <div className={styles.noReviewsMessage}>
-          <p> Por favor, selecciona una tienda para ver las opiniones </p>
+        <div className={styles.emptyStateContainer}>
+          <h3>Bienvenido</h3>
+          <p>Por favor, selecciona una tienda para ver sus opiniones.</p>
         </div>
       )}
-
     </Container>
   );
 };

@@ -209,7 +209,7 @@ const VentasPorMes: React.FC = () => {
           </Row>
 
           <Card>
-            {error && <Text type="danger">{error}</Text>}
+            {error && <Text type="danger"> {error} </Text>}
             {!error && chartData.labels.length > 0 ? (
               <Bar data={chartData} options={{ indexAxis: 'y' as const, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top 10 Ingresos por Producto', font: { size: 16 } }, tooltip: { callbacks: { label: (context) => `Ingresos: ${formatCLP(context.raw as number)}` } } }, scales: { x: { ticks: { callback: (value) => formatCLP(value as number) } } } }} style={{ minHeight: '400px', maxHeight: '600px' }} />
             ) : (
