@@ -1,10 +1,10 @@
-import React, { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext } from "react";
 import { Form, Input, Button, Card, Typography, Space, Alert, Avatar, Row, Col } from "antd";
 import { useNavigate } from "react-router-dom";
 import { UserOutlined, SaveOutlined, MailOutlined, PhoneOutlined, EditOutlined, CloseOutlined } from "@ant-design/icons";
 import { usuarioService } from "./Service/usuarioService";
 import { UserContext } from "../../Context/UserContext"; // ← Importar el Context
-import { User } from "./Types/usuarioTypes";
+import type { User } from "./Types/usuarioTypes";
 
 const { Title, Text } = Typography;
 
@@ -16,7 +16,7 @@ const EditarPerfil = () => {
   const [showToast, setShowToast] = useState(false);
 
   // ← Usar el Context existente
-  const userContext = useContext(UserContext);
+  const userContext = useContext(UserContext) as { user: Partial<User>; setUser: (u: Partial<User>) => void };
   if (!userContext) {
     throw new Error("UserContext must be used within a UserProvider");
   }
@@ -66,8 +66,10 @@ console.log(userContext)
     setSuccessMessage(null);
 
     const { email, ...datosSinEmail } = values;
-
     try {
+      if (userId === undefined) {
+        throw new Error("El ID de usuario no está definido.");
+      }
       const response = await usuarioService.actualizarUsuario(userId, datosSinEmail);
       console.log("✅ Respuesta del servidor:", response);
 
@@ -89,7 +91,7 @@ console.log(userContext)
     } finally {
       setLoading(false);
     }
-  };
+};
 
   const onFinishFailed = (errorInfo: any) => {
     console.warn("❌ Falló la validación del formulario:", errorInfo);
@@ -152,7 +154,7 @@ console.log(userContext)
               border: '3px solid rgba(255,255,255,0.3)'
             }}
           >
-            {getInitials(currentUser?.nombre, currentUser?.apellidos)}
+            {getInitials(currentUser?.nombre ??'', currentUser?.apellidos ?? '')}
           </Avatar>
           
           <div>
