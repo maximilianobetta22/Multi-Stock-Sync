@@ -57,7 +57,7 @@ const WooCommerceProductsList: React.FC = () => {
 
   const handleEditClick = (product: WooCommerceProduct) => {
     setEditingProduct(product)
-    setIsEditModalVisible(true)
+    setIsEditModalVisible (true)
   }
 
   const handleCloseModal = () => {
@@ -101,7 +101,7 @@ const WooCommerceProductsList: React.FC = () => {
   setPageSize,
 } = useWooCommerceProducts({ autoLoad: false })
 
-  // Obtener el ID mapeado cuando cambia la conexión
+  // Obtener el ID mapeado cuando cambia la conexión xd
   useEffect(() => {
     if (connectionInfo) {
       const storeId = WooCommerceService.getCurrentWooCommerceStoreId()
