@@ -154,7 +154,6 @@ const WooCommerceProductsList: React.FC = () => {
     setPageSize,
   } = useWooCommerceProducts({ autoLoad: false })
 
-<<<<<<< HEAD
   // FUNCIÓN PARA MANEJAR CAMBIO DE TIENDA
   const handleStoreChange = (value: string) => {
     const store = WooCommerceService.getAvailableStores().find(
@@ -184,9 +183,6 @@ const WooCommerceProductsList: React.FC = () => {
   }
 
   // Obtener el ID mapeado cuando cambia la conexión Y cargar productos automáticamente
-=======
-  // Obtener el ID mapeado cuando cambia la conexión xd
->>>>>>> 93253d5473f0ef392531613951bef439baa60be7
   useEffect(() => {
     if (connectionInfo) {
       const storeId = WooCommerceService.getCurrentWooCommerceStoreId()
