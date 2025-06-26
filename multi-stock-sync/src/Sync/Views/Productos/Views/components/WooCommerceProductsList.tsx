@@ -1,7 +1,8 @@
 import type React from "react"
 import { useState, useEffect } from "react"
-import { MoreOutlined, EditOutlined } from "@ant-design/icons"
+import { MoreOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons"
 import EditarProductoModal from "./EditarProductoModal"
+import CrearProductoWooModal from "./CrearProductoWooModal"
 import {
   Dropdown,
   Menu,
@@ -15,14 +16,12 @@ import {
   Typography,
   Empty,
   Spin,
-  Alert,
   Image,
   Row,
   Col,
   Statistic,
   Badge,
   Tooltip,
-  Descriptions,
   message,
 } from "antd"
 import {
@@ -54,6 +53,10 @@ const WooCommerceProductsList: React.FC = () => {
 
   const [editingProduct, setEditingProduct] = useState<WooCommerceProduct | null>(null)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
+  
+  // Estados para crear producto
+  const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
+  const [creatingProduct, setCreatingProduct] = useState(false)
 
   const handleEditClick = (product: WooCommerceProduct) => {
     setEditingProduct(product)
@@ -63,6 +66,10 @@ const WooCommerceProductsList: React.FC = () => {
   const handleCloseModal = () => {
     setIsEditModalVisible(false)
     setEditingProduct(null)
+  }
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalVisible(false)
   }
 
   const handleSaveProduct = async (updatedValues: any) => {
@@ -83,31 +90,113 @@ const WooCommerceProductsList: React.FC = () => {
     }
   }
 
+  // FUNCIÓN MEJORADA: Crear producto
+  const handleCreateProduct = async (productData: any) => {
+    console.log("🚀 Iniciando creación de producto...");
+    console.log("📋 Datos del producto:", productData);
+    console.log("🏪 Store ID mapeado:", mappedStoreId);
 
+    if (!mappedStoreId) {
+      console.error("❌ No hay Store ID mapeado");
+      message.error("No se ha seleccionado una tienda válida")
+      return
+    }
+
+    setCreatingProduct(true)
+    try {
+      console.log("📡 Enviando petición al backend...");
+      
+      const response = await WooCommerceService.createProduct({
+        storeId: mappedStoreId,
+        productData: productData,
+      })
+      
+      console.log("✅ Respuesta del backend:", response);
+      message.success("¡Producto creado correctamente en WooCommerce!")
+      
+      // Cerrar modal y recargar productos
+      handleCloseCreateModal()
+      console.log("🔄 Recargando lista de productos...");
+      await loadProducts(currentPage, pageSize)
+      console.log("✅ Lista de productos recargada");
+      
+    } catch (error: any) {
+      console.error("❌ Error al crear producto:", error)
+      console.error("❌ Error completo:", error.response?.data || error.message);
+      
+      // Mostrar error más específico al usuario
+      if (error.message.includes('Errores de validación:')) {
+        message.error({
+          content: error.message,
+          duration: 8,
+        });
+      } else {
+        message.error(error.message || "Error al crear el producto")
+      }
+    } finally {
+      setCreatingProduct(false)
+    }
+  }
 
   const {
-  products,
-  totalProducts,
-  userEmail,
-  connectionInfo,
-  loading,
-  error,
-  hasSelectedConnection,
-  loadProducts,
-  clearError,
-  currentPage,
-  pageSize,
-  setCurrentPage,
-  setPageSize,
-} = useWooCommerceProducts({ autoLoad: false })
+    products,
+    totalProducts,
+    userEmail,
+    connectionInfo,
+    loading,
+    error,
+    hasSelectedConnection,
+    loadProducts,
+    clearError,
+    currentPage,
+    pageSize,
+    setCurrentPage,
+    setPageSize,
+  } = useWooCommerceProducts({ autoLoad: false })
 
-  // Obtener el ID mapeado cuando cambia la conexión
+  // FUNCIÓN PARA MANEJAR CAMBIO DE TIENDA
+  const handleStoreChange = (value: string) => {
+    const store = WooCommerceService.getAvailableStores().find(
+      (s) => s.nickname === value
+    )
+    if (store) {
+      // Guardar la nueva conexión
+      localStorage.setItem(
+        "conexionSeleccionada",
+        JSON.stringify({ nickname: store.nickname, storeId: store.id })
+      )
+      
+      // Actualizar estado local inmediatamente
+      setMappedStoreId(store.id);
+      console.log("🔄 Cambiando a tienda:", store.name, "ID:", store.id);
+      
+      // Limpiar búsqueda y productos actuales
+      setSearchTerm("");
+      setFilteredProducts([]);
+      
+      // Cargar productos de la nueva tienda
+      loadProducts(1, pageSize);
+      setCurrentPage(1);
+      
+      message.success(`Cambiado a tienda: ${store.name}`);
+    }
+  }
+
+  // Obtener el ID mapeado cuando cambia la conexión Y cargar productos automáticamente
   useEffect(() => {
     if (connectionInfo) {
       const storeId = WooCommerceService.getCurrentWooCommerceStoreId()
       setMappedStoreId(storeId)
+      console.log("🔗 Store ID mapeado:", storeId);
+      
+      // NUEVO: Cargar productos automáticamente cuando cambia la tienda
+      if (storeId) {
+        console.log("🔄 Cargando productos automáticamente para nueva tienda...");
+        loadProducts(1, pageSize);
+        setCurrentPage(1);
+      }
     }
-  }, [connectionInfo])
+  }, [connectionInfo, loadProducts, pageSize, setCurrentPage])
 
   // Probar diferentes IDs para debug
   const testDifferentIds = async () => {
@@ -155,212 +244,312 @@ const WooCommerceProductsList: React.FC = () => {
     }
   }, [products, searchTerm])
 
-
-
   // Columnas de la tabla
   const columns: ColumnsType<WooCommerceProduct> = [
-  {
-    title: "Nombre",
-    dataIndex: "name",
-    key: "name",
-    render: (text) => (
-      <Tooltip title={text}>
-        <Text strong ellipsis style={{ maxWidth: 220, display: "block" }}>{text}</Text>
-      </Tooltip>
-    ),
-  },
-  {
-    title: "SKU",
-    dataIndex: "sku",
-    key: "sku",
-    render: (text) => (
-      <Tooltip title={text}>
-        <Text ellipsis style={{ maxWidth: 160, display: "block" }}>{text}</Text>
-      </Tooltip>
-    ),
-  },
-  {
-    title: "Precio",
-    dataIndex: "regular_price",
-    key: "regular_price",
-    render: (_, record) => {
-      const precio = record.regular_price || record.price || "-"
-      return precio !== "-"
-        ? `$${parseInt(precio).toLocaleString("es-CL")}`
-        : "-"
+    {
+      title: "Nombre",
+      dataIndex: "name",
+      key: "name",
+      render: (text) => (
+        <Tooltip title={text}>
+          <Text strong ellipsis style={{ maxWidth: 220, display: "block" }}>{text}</Text>
+        </Tooltip>
+      ),
     },
-  },
-  {
-    title: "Stock",
-    dataIndex: "stock_quantity",
-    key: "stock_quantity",
-    render: (stock) => {
-      let color = stock <= 0 ? "red" : stock < 10 ? "orange" : "green"
-      return <Tag color={color}>{stock > 0 ? stock : "N/A"}</Tag>
+    {
+      title: "SKU",
+      dataIndex: "sku",
+      key: "sku",
+      render: (text) => (
+        <Tooltip title={text}>
+          <Text ellipsis style={{ maxWidth: 160, display: "block" }}>{text}</Text>
+        </Tooltip>
+      ),
     },
-  },
-  {
-    title: "Peso",
-    dataIndex: "weight",
-    key: "weight",
-    render: (weight) =>
-      weight
-        ? `${parseFloat(weight).toLocaleString("es-CL", {
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
-          })} kg`
-        : <Text type="secondary">-</Text>,
-  },
-  {
-    title: "Dimensiones",
-    key: "dimensions",
-    render: (_, record) => {
-      const d = record.dimensions
-      return d?.length && d?.width && d?.height
-        ? `${d.length} x ${d.width} x ${d.height} cm`
-        : <Text type="secondary">-</Text>
+    {
+      title: "Precio",
+      dataIndex: "regular_price",
+      key: "regular_price",
+      render: (_, record) => {
+        const precio = record.regular_price || record.price || "-"
+        return precio !== "-"
+          ? `${parseInt(precio).toLocaleString("es-CL")}`
+          : "-"
+      },
     },
-  },
-  {
-    title: "Imagen",
-    key: "image",
-    render: (_, record) => {
-      const src = record.images?.[0]?.src
-      return src ? (
-        <Image
-          src={src}
-          width={48}
-          height={48}
-          preview={false}
-          style={{ objectFit: "cover", borderRadius: 6 }}
-          fallback="/placeholder.svg"
-        />
-      ) : (
-        <Tag color="default">Sin imagen</Tag>
-      )
+    {
+      title: "Stock",
+      dataIndex: "stock_quantity",
+      key: "stock_quantity",
+      render: (stock) => {
+        let color = stock <= 0 ? "red" : stock < 10 ? "orange" : "green"
+        return <Tag color={color}>{stock > 0 ? stock : "N/A"}</Tag>
+      },
     },
-  },
-  {
-    title: "Estado",
-    dataIndex: "status",
-    key: "status",
-    render: (status) => {
-      const estadosTraducidos: Record<string, string> = {
-        publish: "Publicado",
-        draft: "Borrador",
-        pending: "Pendiente",
-        private: "Privado",
+    {
+      title: "Peso",
+      dataIndex: "weight",
+      key: "weight",
+      render: (weight) =>
+        weight
+          ? `${parseFloat(weight).toLocaleString("es-CL", {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+            })} kg`
+          : <Text type="secondary">-</Text>,
+    },
+    {
+      title: "Dimensiones",
+      key: "dimensions",
+      render: (_, record) => {
+        const d = record.dimensions
+        return d?.length && d?.width && d?.height
+          ? `${d.length} x ${d.width} x ${d.height} cm`
+          : <Text type="secondary">-</Text>
+      },
+    },
+    {
+      title: "Imagen",
+      key: "image",
+      render: (_, record) => {
+        const src = record.images?.[0]?.src
+        return src ? (
+          <Image
+            src={src}
+            width={48}
+            height={48}
+            preview={false}
+            style={{ objectFit: "cover", borderRadius: 6 }}
+            fallback="/placeholder.svg"
+          />
+        ) : (
+          <Tag color="default">Sin imagen</Tag>
+        )
+      },
+    },
+    {
+      title: "Estado",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const estadosTraducidos: Record<string, string> = {
+          publish: "Publicado",
+          draft: "Borrador",
+          pending: "Pendiente",
+          private: "Privado",
+        }
+        const color = status === "publish" ? "green" : status === "draft" ? "orange" : "default"
+        return <Tag color={color}>{estadosTraducidos[status] || status}</Tag>
+      },
+    },
+    {
+      title: "Tallas",
+      key: "tallas",
+      render: (_, record) => {
+        const tallaAttr = record.attributes?.find(attr => {
+          const nombre = attr.name?.toLowerCase().trim()
+          const slug = attr.slug?.toLowerCase().trim()
+          return nombre?.includes("talla") || slug?.includes("talla")
+        })
+
+        if (!tallaAttr || !tallaAttr.options || tallaAttr.options.length === 0) {
+          return <Text type="secondary">-</Text>
+        }
+
+        return tallaAttr.options.join(", ")
       }
-      const color = status === "publish" ? "green" : status === "draft" ? "orange" : "default"
-      return <Tag color={color}>{estadosTraducidos[status] || status}</Tag>
     },
-  },
-  {
-  title: "Tallas",
-  key: "tallas",
-  render: (_, record) => {
-    console.log(record.name, record.attributes)
-    const tallaAttr = record.attributes?.find(attr => {
-      const nombre = attr.name?.toLowerCase().trim()
-      const slug = attr.slug?.toLowerCase().trim()
-      return nombre?.includes("talla") || slug?.includes("talla")
-    })
+    {
+      title: "Acciones",
+      key: "actions",
+      fixed: "right",
+      render: (_, record) => {
+        const menu = (
+          <Menu>
+            <Menu.Item
+              key="ver"
+              icon={<EyeOutlined />}
+              onClick={() => window.open(record.permalink, "_blank")}
+            >
+              Ver en tienda
+            </Menu.Item>
+            <Menu.Item
+              key="copiar"
+              icon={<LinkOutlined />}
+              onClick={() => {
+                navigator.clipboard.writeText(record.permalink)
+                message.success("Enlace copiado al portapapeles")
+              }}
+            >
+              Copiar enlace
+            </Menu.Item>
+            <Menu.Item
+              key="editar"
+              icon={<EditOutlined />}
+              onClick={() => handleEditClick(record)}
+            >
+              Editar producto
+            </Menu.Item>
+          </Menu>
+        )
 
-    if (!tallaAttr || !tallaAttr.options || tallaAttr.options.length === 0) {
-      return <Text type="secondary">-</Text>
+        return (
+          <Dropdown overlay={menu} trigger={["click"]}>
+            <Button shape="circle" icon={<MoreOutlined />} />
+          </Dropdown>
+        )
+      }
     }
-
-    return tallaAttr.options.join(", ")
-  }
-}
-
-,
-
-  {
-  title: "Acciones",
-  key: "actions",
-  fixed: "right",
-  render: (_, record) => {
-    const menu = (
-      <Menu>
-        <Menu.Item
-          key="ver"
-          icon={<EyeOutlined />}
-          onClick={() => window.open(record.permalink, "_blank")}
-        >
-          Ver en tienda
-        </Menu.Item>
-        <Menu.Item
-          key="copiar"
-          icon={<LinkOutlined />}
-          onClick={() => {
-            navigator.clipboard.writeText(record.permalink)
-            message.success("Enlace copiado al portapapeles")
-          }}
-        >
-          Copiar enlace
-        </Menu.Item>
-        <Menu.Item
-          key="editar"
-          icon={<EditOutlined />}
-          onClick={() => handleEditClick(record)}
-        >
-          Editar producto
-        </Menu.Item>
-      </Menu>
-    )
-
-    return (
-      <Dropdown overlay={menu} trigger={["click"]}>
-        <Button shape="circle" icon={<MoreOutlined />} />
-      </Dropdown>
-    )
-  }
-}
-]
-
-
+  ]
 
   // Productos a mostrar (filtrados o todos)
   const displayProducts = searchTerm ? filteredProducts : products
 
   return (
-    <div style={{ padding: "24px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+    <div style={{ 
+      padding: "40px", 
+      backgroundColor: "#f8f9fa", 
+      minHeight: "100vh",
+      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+    }}>
       <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
-        {/* Header */}
-        <Card bordered={false} style={{ background: "#fff", padding: "24px 32px", marginBottom: 24, borderRadius: 12 }}>
+        
+        {/* Header Principal - Estilo coherente */}
+        <div style={{
+          background: "linear-gradient(135deg, #FF6B35 0%, #FF8E53 100%)",
+          borderRadius: "16px",
+          padding: "32px 40px",
+          marginBottom: "32px",
+          color: "white",
+          boxShadow: "0 8px 32px rgba(255, 107, 53, 0.2)"
+        }}>
           <Row justify="space-between" align="middle">
             <Col>
-              <Title level={2} style={{ margin: 0 }}>
-                <ShopOutlined /> Productos WooCommerce
-              </Title>
-              <Text type="secondary">Gestión y edición de productos sincronizados</Text>
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "16px",
+                marginBottom: "8px"
+              }}>
+                <div style={{
+                  width: "56px",
+                  height: "56px",
+                  backgroundColor: "rgba(255, 255, 255, 0.15)",
+                  borderRadius: "16px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "24px"
+                }}>
+                  <ShopOutlined />
+                </div>
+                <div>
+                  <Title level={1} style={{ 
+                    margin: 0, 
+                    color: "white", 
+                    fontSize: "32px",
+                    fontWeight: "700"
+                  }}>
+                    Productos WooCommerce
+                  </Title>
+                  <Text style={{ 
+                    color: "rgba(255, 255, 255, 0.9)", 
+                    fontSize: "16px",
+                    fontWeight: "400"
+                  }}>
+                    Gestión y edición de productos sincronizados
+                  </Text>
+                </div>
+              </div>
             </Col>
             <Col>
-              <Button
-                type="primary"
-                icon={<ReloadOutlined />}
-                onClick={() => loadProducts()}
-                loading={loading}
-                disabled={!mappedStoreId}
-              >
-                Actualizar
-              </Button>
+              <Space size="large">
+                <Button
+                  type="primary"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsCreateModalVisible(true)}
+                  disabled={!mappedStoreId}
+                  size="large"
+                  style={{ 
+                    backgroundColor: mappedStoreId ? "#52c41a" : "rgba(255, 255, 255, 0.2)",
+                    borderColor: mappedStoreId ? "#52c41a" : "rgba(255, 255, 255, 0.3)",
+                    color: mappedStoreId ? "white" : "rgba(255, 255, 255, 0.7)",
+                    height: "48px",
+                    paddingLeft: "24px",
+                    paddingRight: "24px",
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    borderRadius: "12px"
+                  }}
+                >
+                  Crear Producto
+                </Button>
+                <Button
+                  icon={<ReloadOutlined />}
+                  onClick={() => loadProducts()}
+                  loading={loading}
+                  disabled={!mappedStoreId}
+                  size="large"
+                  style={{
+                    backgroundColor: "rgba(255, 255, 255, 0.15)",
+                    borderColor: "rgba(255, 255, 255, 0.3)",
+                    color: "white",
+                    height: "48px",
+                    paddingLeft: "24px",
+                    paddingRight: "24px",
+                    fontSize: "16px",
+                    fontWeight: "500",
+                    borderRadius: "12px"
+                  }}
+                >
+                  Actualizar
+                </Button>
+              </Space>
             </Col>
           </Row>
-        </Card>
+          
+          {/* Mostrar información del estado de creación */}
+          {!mappedStoreId && connectionInfo && (
+            <div style={{
+              backgroundColor: "rgba(255, 255, 255, 0.1)",
+              border: "1px solid rgba(255, 255, 255, 0.2)",
+              borderRadius: "12px",
+              padding: "16px 20px",
+              marginTop: "24px",
+              display: "flex",
+              alignItems: "center",
+              gap: "12px"
+            }}>
+              <InfoCircleOutlined style={{ fontSize: "18px", color: "rgba(255, 255, 255, 0.9)" }} />
+              <div>
+                <Text style={{ color: "white", fontWeight: "600" }}>
+                  Botón Crear Producto deshabilitado
+                </Text>
+                <br />
+                <Text style={{ color: "rgba(255, 255, 255, 0.8)" }}>
+                  No se ha mapeado esta conexión a una tienda WooCommerce. Contacta al administrador.
+                </Text>
+              </div>
+            </div>
+          )}
+        </div>
 
-
+        {/* Card de Conexión - Estilo mejorado */}
         {connectionInfo && (
-          <Card style={{ marginBottom: 24, borderRadius: 8 }}>
+          <Card style={{ 
+            marginBottom: "32px", 
+            borderRadius: "16px",
+            border: "1px solid #e8ecf0",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+          }}>
             <Row align="middle" justify="space-between">
               <Col span={16}>
-                <Space>
+                <Space size="large">
                   <div
                     style={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: 8,
+                      width: "56px",
+                      height: "56px",
+                      borderRadius: "16px",
                       backgroundColor: mappedStoreId ? "#f6ffed" : "#fff2f0",
                       border: `2px solid ${mappedStoreId ? "#b7eb8f" : "#ffccc7"}`,
                       display: "flex",
@@ -369,62 +558,57 @@ const WooCommerceProductsList: React.FC = () => {
                     }}
                   >
                     {mappedStoreId ? (
-                      <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "18px" }} />
+                      <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "24px" }} />
                     ) : (
-                      <CloseCircleOutlined style={{ color: "#ff4d4f", fontSize: "18px" }} />
+                      <CloseCircleOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />
                     )}
                   </div>
                   <div>
-                    <Text strong style={{ display: "block" }}>
+                    <Text strong style={{ display: "block", fontSize: "18px", marginBottom: "4px" }}>
                       {connectionInfo.nickname || "Conexión WooCommerce"}
                     </Text>
-                    <Descriptions size="small" column={1}>
-                      {mappedStoreId && (
-                        <Descriptions.Item label="WooCommerce Store ID">
-                          <Tag color="green">{mappedStoreId}</Tag>
-                        </Descriptions.Item>
-                      )}
-                    </Descriptions>
+                    {mappedStoreId && (
+                      <div style={{ marginTop: "8px" }}>
+                        <Text type="secondary" style={{ marginRight: "8px" }}>WooCommerce Store ID:</Text>
+                        <Tag color="green" style={{ borderRadius: "8px" }}>{mappedStoreId}</Tag>
+                      </div>
+                    )}
                   </div>
                 </Space>
 
                 {/* Selector visual de tienda */}
-                <Row style={{ marginTop: 12 }}>
-                  <Col span={24}>
-                    <Text strong>Seleccionar tienda WooCommerce:</Text>
-                    <Select
-                      placeholder="Selecciona una tienda"
-                      style={{ width: 300, marginTop: 8 }}
-                      defaultValue={connectionInfo?.nickname}
-                      onChange={(value: string) => {
-                        const store = WooCommerceService.getAvailableStores().find(
-                          (s) => s.nickname === value
-                        )
-                        if (store) {
-                          localStorage.setItem(
-                            "conexionSeleccionada",
-                            JSON.stringify({ nickname: store.nickname, storeId: store.id })
-                          )
-                          window.location.reload()
-                        }
-                      }}
-                      options={WooCommerceService.getAvailableStores().map((store) => ({
-                        label: store.name,
-                        value: store.nickname,
-                      }))}
-                    />
-                  </Col>
-                </Row>
+                <div style={{ marginTop: "20px" }}>
+                  <Text strong style={{ display: "block", marginBottom: "8px" }}>
+                    Seleccionar tienda WooCommerce:
+                  </Text>
+                  <Select
+                    placeholder="Selecciona una tienda"
+                    style={{ width: 350 }}
+                    size="large"
+                    defaultValue={connectionInfo?.nickname}
+                    onChange={handleStoreChange}
+                    options={WooCommerceService.getAvailableStores().map((store) => ({
+                      label: store.name,
+                      value: store.nickname,
+                    }))}
+                  />
+                </div>
               </Col>
 
               <Col span={8} style={{ textAlign: "right" }}>
-                <Space direction="vertical">
+                <Space direction="vertical" size="middle">
                   <Button
                     type="primary"
                     icon={<ReloadOutlined />}
                     onClick={() => loadProducts()}
                     loading={loading}
                     disabled={!mappedStoreId}
+                    size="large"
+                    style={{ 
+                      minWidth: "160px",
+                      borderRadius: "12px",
+                      fontWeight: "600"
+                    }}
                   >
                     Cargar Productos
                   </Button>
@@ -434,7 +618,9 @@ const WooCommerceProductsList: React.FC = () => {
                     onClick={testDifferentIds}
                     loading={testingIds}
                     disabled={!hasSelectedConnection()}
-                    size="small"
+                    style={{
+                      borderRadius: "12px"
+                    }}
                   >
                     Probar Tiendas
                   </Button>
@@ -444,41 +630,77 @@ const WooCommerceProductsList: React.FC = () => {
           </Card>
         )}
 
-
-        {/* Alerta si no hay conexión */}
+        {/* Alertas - Estilo mejorado */}
         {!hasSelectedConnection() && (
-          <Alert
-            message="No hay conexión seleccionada"
-            description="Selecciona una conexión WooCommerce para ver los productos."
-            type="warning"
-            showIcon
-            style={{ marginBottom: 24, borderRadius: 8 }}
-          />
+          <div style={{
+            backgroundColor: "#fff7e6",
+            border: "1px solid #ffd591",
+            borderRadius: "16px",
+            padding: "20px 24px",
+            marginBottom: "32px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px"
+          }}>
+            <InfoCircleOutlined style={{ fontSize: "20px", color: "#d46b08" }} />
+            <div>
+              <Text strong style={{ color: "#d46b08", fontSize: "16px" }}>
+                No hay conexión seleccionada
+              </Text>
+              <br />
+              <Text style={{ color: "#d46b08" }}>
+                Selecciona una conexión WooCommerce para ver los productos.
+              </Text>
+            </div>
+          </div>
         )}
 
-        {/* Alerta si no se puede mapear */}
         {hasSelectedConnection() && !mappedStoreId && (
-          <Alert
-            message="Conexión no mapeada"
-            description={`La conexión "${connectionInfo?.nickname}" no está mapeada a ninguna tienda WooCommerce. Contacta al administrador para agregar el mapeo.`}
-            type="error"
-            showIcon
-            style={{ marginBottom: 24, borderRadius: 8 }}
-            action={
-              <Button size="small" icon={<InfoCircleOutlined />} onClick={testDifferentIds} loading={testingIds}>
-                Ver Tiendas Disponibles
-              </Button>
-            }
-          />
+          <div style={{
+            backgroundColor: "#fff2f0",
+            border: "1px solid #ffccc7",
+            borderRadius: "16px",
+            padding: "20px 24px",
+            marginBottom: "32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <CloseCircleOutlined style={{ fontSize: "20px", color: "#cf1322" }} />
+              <div>
+                <Text strong style={{ color: "#cf1322", fontSize: "16px" }}>
+                  Conexión no mapeada
+                </Text>
+                <br />
+                <Text style={{ color: "#cf1322" }}>
+                  La conexión "{connectionInfo?.nickname}" no está mapeada a ninguna tienda WooCommerce. Contacta al administrador para agregar el mapeo.
+                </Text>
+              </div>
+            </div>
+            <Button 
+              icon={<InfoCircleOutlined />} 
+              onClick={testDifferentIds} 
+              loading={testingIds}
+              style={{ borderRadius: "8px" }}
+            >
+              Ver Tiendas Disponibles
+            </Button>
+          </div>
         )}
 
-        {/* Búsqueda */}
+        {/* Búsqueda - Estilo mejorado */}
         {hasSelectedConnection() && mappedStoreId && (
-          <Card style={{ marginBottom: 24, borderRadius: 8 }}>
+          <Card style={{ 
+            marginBottom: "32px", 
+            borderRadius: "16px",
+            border: "1px solid #e8ecf0",
+            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+          }}>
             <Row gutter={[16, 16]} align="middle">
               <Col xs={24} md={16}>
-                <div style={{ marginBottom: 8 }}>
-                  <Text strong>Buscar Productos</Text>
+                <div style={{ marginBottom: "12px" }}>
+                  <Text strong style={{ fontSize: "16px" }}>Buscar Productos</Text>
                 </div>
                 <Search
                   placeholder="Buscar por nombre o SKU..."
@@ -488,149 +710,222 @@ const WooCommerceProductsList: React.FC = () => {
                   enterButton
                   size="large"
                   allowClear
+                  style={{
+                    borderRadius: "12px"
+                  }}
                 />
-              </Col>
-              <Col xs={24} md={8}>
-                <div style={{ marginBottom: 8 }}>
-                  <Text strong>&nbsp;</Text>
-                </div>
               </Col>
             </Row>
           </Card>
         )}
 
-        {/* Estadísticas */}
+        {/* Estadísticas - Estilo mejorado */}
         {products.length > 0 && (
-          <Row gutter={[16, 16]} style={{ marginBottom: 24 }}>
+          <Row gutter={[24, 24]} style={{ marginBottom: "32px" }}>
             <Col xs={12} sm={8}>
-              <Card>
+              <Card style={{
+                borderRadius: "16px",
+                border: "1px solid #e8ecf0",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+              }}>
                 <Statistic
                   title="Total productos"
                   value={totalProducts}
-                  prefix={<InboxOutlined />}
+                  prefix={<InboxOutlined style={{ color: "#1890ff" }} />}
+                  valueStyle={{ color: "#1890ff", fontWeight: "700" }}
                   suffix={<Tooltip title="Cantidad total de productos sincronizados"><InfoCircleOutlined /></Tooltip>}
                 />
-
               </Card>
             </Col>
             <Col xs={12} sm={8}>
-              <Card>
+              <Card style={{
+                borderRadius: "16px",
+                border: "1px solid #e8ecf0",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+              }}>
                 <Statistic
                   title="Productos Mostrados"
                   value={displayProducts.length}
-                  prefix={<EyeOutlined />}
-                  valueStyle={{ color: "#52c41a" }}
+                  prefix={<EyeOutlined style={{ color: "#52c41a" }} />}
+                  valueStyle={{ color: "#52c41a", fontWeight: "700" }}
                 />
               </Card>
             </Col>
             <Col xs={24} sm={8}>
-              <Card>
+              <Card style={{
+                borderRadius: "16px",
+                border: "1px solid #e8ecf0",
+                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+              }}>
                 <Statistic
                   title="Valor Total"
                   value={displayProducts.reduce((sum, product) => {
-  const price = parseFloat(product.price)
-  return isNaN(price) ? sum : sum + price
-}, 0)}
-
+                    const price = parseFloat(product.price)
+                    return isNaN(price) ? sum : sum + price
+                  }, 0)}
                   precision={2}
-                  prefix={<DollarOutlined />}
-                  valueStyle={{ color: "#722ed1" }}
+                  prefix={<DollarOutlined style={{ color: "#722ed1" }} />}
+                  valueStyle={{ color: "#722ed1", fontWeight: "700" }}
                 />
               </Card>
             </Col>
           </Row>
         )}
 
-        {/* Error */}
+        {/* Error - Estilo mejorado */}
         {error && (
-          <Alert
-            message="Error al cargar productos"
-            description={error}
-            type="error"
-            showIcon
-            closable
-            onClose={clearError}
-            style={{ marginBottom: 24, borderRadius: 8 }}
-            action={
-              <Button size="small" onClick={testDifferentIds} loading={testingIds}>
+          <div style={{
+            backgroundColor: "#fff2f0",
+            border: "1px solid #ffccc7",
+            borderRadius: "16px",
+            padding: "20px 24px",
+            marginBottom: "32px",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+              <CloseCircleOutlined style={{ fontSize: "20px", color: "#cf1322" }} />
+              <div>
+                <Text strong style={{ color: "#cf1322", fontSize: "16px" }}>
+                  Error al cargar productos
+                </Text>
+                <br />
+                <Text style={{ color: "#cf1322" }}>
+                  {error}
+                </Text>
+              </div>
+            </div>
+            <Space>
+              <Button 
+                onClick={testDifferentIds} 
+                loading={testingIds}
+                style={{ borderRadius: "8px" }}
+              >
                 Probar Tiendas
               </Button>
-            }
-          />
+              <Button 
+                type="text" 
+                onClick={clearError}
+                style={{ borderRadius: "8px" }}
+              >
+                ✕
+              </Button>
+            </Space>
+          </div>
         )}
 
-        {/* Tabla de productos */}
-        <Card style={{ borderRadius: 8, boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}>
+        {/* Tabla de productos - Estilo mejorado */}
+        <Card style={{ 
+          borderRadius: "16px", 
+          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
+          border: "1px solid #e8ecf0"
+        }}>
           {!hasSelectedConnection() ? (
-            <Empty
-              description="Selecciona una conexión WooCommerce para ver los productos"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <Empty
+                description={
+                  <Text style={{ fontSize: "16px", color: "#8c8c8c" }}>
+                    Selecciona una conexión WooCommerce para ver los productos
+                  </Text>
+                }
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            </div>
           ) : !mappedStoreId ? (
-            <Empty
-              description="Esta conexión no está mapeada a ninguna tienda WooCommerce"
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <Empty
+                description={
+                  <Text style={{ fontSize: "16px", color: "#8c8c8c" }}>
+                    Esta conexión no está mapeada a ninguna tienda WooCommerce
+                  </Text>
+                }
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            </div>
           ) : loading ? (
-            <div style={{ textAlign: "center", padding: "60px 0" }}>
-              <Spin size="large" tip="Cargando productos..." />
+            <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <Spin size="large" tip={
+                <Text style={{ fontSize: "16px", marginTop: "16px" }}>
+                  Cargando productos...
+                </Text>
+              } />
             </div>
           ) : products.length === 0 ? (
-            <Empty
-              description={
-                searchTerm
-                  ? "No se encontraron productos que coincidan con la búsqueda"
-                  : "No hay productos disponibles en esta tienda"
-              }
-              image={Empty.PRESENTED_IMAGE_SIMPLE}
-            />
+            <div style={{ textAlign: "center", padding: "80px 0" }}>
+              <Empty
+                description={
+                  <Text style={{ fontSize: "16px", color: "#8c8c8c" }}>
+                    {searchTerm
+                      ? "No se encontraron productos que coincidan con la búsqueda"
+                      : "No hay productos disponibles en esta tienda"}
+                  </Text>
+                }
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            </div>
           ) : (
             <>
-              <div style={{ marginBottom: 16 }}>
-                <Space>
-                  <Badge count={displayProducts.length} style={{ backgroundColor: "#1890ff" }} />
-                  <Text>
-                    {searchTerm
-                      ? `Resultados para "${searchTerm}"`
-                      : `Mostrando ${displayProducts.length} de ${totalProducts} productos`}
-                  </Text>
-                  {userEmail && (
-                    <Text type="secondary">
-                      <UserOutlined style={{ marginRight: 4 }} />
-                      {userEmail}
+              <div style={{ marginBottom: "20px", padding: "0 4px" }}>
+                <Space size="large" style={{ width: "100%", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                    <Badge 
+                      count={displayProducts.length} 
+                      style={{ 
+                        backgroundColor: "#1890ff",
+                        fontSize: "12px",
+                        fontWeight: "600"
+                      }} 
+                    />
+                    <Text style={{ fontSize: "16px", fontWeight: "500" }}>
+                      {searchTerm
+                        ? `Resultados para "${searchTerm}"`
+                        : `Mostrando ${displayProducts.length} de ${totalProducts} productos`}
                     </Text>
+                  </div>
+                  {userEmail && (
+                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <UserOutlined style={{ color: "#8c8c8c" }} />
+                      <Text type="secondary" style={{ fontSize: "14px" }}>
+                        {userEmail}
+                      </Text>
+                    </div>
                   )}
                 </Space>
               </div>
 
-                      <Table
-                        dataSource={displayProducts}
-                        columns={columns}
-                        rowKey="id"
-                        scroll={{ x: 'max-content' }} // ← Importante si hay muchas columnas
-                        pagination={{
-                          current: currentPage,
-                          pageSize,
-                          total: totalProducts,
-                          showSizeChanger: true,
-                          showQuickJumper: true,
-                          pageSizeOptions: ["10", "20", "50", "100"],
-                          onChange: (page, size) => {
-                            setCurrentPage(page)
-                            setPageSize(size)
-                            loadProducts(page, size) // ← ESTA ES LA CLAVE
-                          },
-                          showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
-                          position: ["bottomRight"], // ← Agrega esto si el paginador no se ve
-                        }}
-                      />
-
-
-
-
+              <Table
+                dataSource={displayProducts}
+                columns={columns}
+                rowKey="id"
+                scroll={{ x: 'max-content' }}
+                pagination={{
+                  current: currentPage,
+                  pageSize,
+                  total: totalProducts,
+                  showSizeChanger: true,
+                  showQuickJumper: true,
+                  pageSizeOptions: ["10", "20", "50", "100"],
+                  onChange: (page, size) => {
+                    setCurrentPage(page)
+                    setPageSize(size)
+                    loadProducts(page, size)
+                  },
+                  showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
+                  position: ["bottomRight"],
+                  style: {
+                    marginTop: "24px"
+                  }
+                }}
+                style={{
+                  borderRadius: "12px"
+                }}
+              />
             </>
           )}
         </Card>
+
+        {/* Modal para editar producto */}
         <EditarProductoModal
           visible={isEditModalVisible}
           product={editingProduct}
@@ -638,6 +933,13 @@ const WooCommerceProductsList: React.FC = () => {
           onSave={handleSaveProduct}
         />
 
+        {/* MODAL PARA CREAR PRODUCTO - MEJORADO */}
+        <CrearProductoWooModal
+          visible={isCreateModalVisible}
+          onClose={handleCloseCreateModal}
+          onSave={handleCreateProduct}
+          loading={creatingProduct}
+        />
       </div>
     </div>
   )
