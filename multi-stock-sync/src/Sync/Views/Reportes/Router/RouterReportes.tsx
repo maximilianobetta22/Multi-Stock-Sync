@@ -20,7 +20,6 @@ import { IngresosProductosProvider } from "../Views/IngresosCategoriaProducto/Co
 import EstadosOrdenes from "../Views/EstadosOrdenes/EstadosOrdenes";
 import EstadosOrdenesAnual from "../Views/EstadoOrdenesAnuales/EstadoOrdenesAnuales";
 
-import ReporteDisponible from "../Views/ReporteDisponible/ReporteDisponible";
 import ReporteRecepcion from "../Views/ReporteRecepcion/ReporteRecepcion";
 import ProductosDespachar from "../Views/ProductosDespachar/ProductosDespachar";
 import HistorialDespacho from "../Views/ProductosDespachar/HistorialDespacho";
@@ -51,7 +50,6 @@ function RouterReportes() {
       <Route path="exportar-datos/:client_id" element={<ExportarDatos />} />
       <Route path="historial-Stock/:client_id" element={<ReporteHistorialStock />} />
       <Route path="ingreso-semana/:client_id" element={<IngresosSemana />} />
-      <Route path="Reporte-Disponible/:client_id" element={<ReporteDisponible />} />
       <Route path="Reporte-Recepcion/:client_id" element={<ReporteRecepcion />} />
       <Route path="Despachar-Producto/:client_id" element={<ProductosDespachar />} />
       <Route path="historial/:client_id" element={<HistorialDespacho />} />

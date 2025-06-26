@@ -47,7 +47,7 @@ const HomeSync: React.FC = () => {
       title: "Gestión de Usuarios",
       description: "Administra los usuarios del sistema y sus roles.",
       icon: <SettingOutlined style={{ fontSize: "40px" }} />,
-      link: "/sync/usuarios", 
+      link: "/sync/Gestion-usuarios", 
     },
   ];
 

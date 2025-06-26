@@ -24,9 +24,9 @@ export interface WooCommerceProduct {
   sale_price?: string
   description?: string
   short_description?: string
-  categories?: { id: number; name: string }[]
-  images?: { id: number; src: string; alt: string }[]
-weight?: string
+  categories?: WooCommerceCategory[]
+  images?: WooCommerceImage[]
+  weight?: string
   dimensions?: {
     length?: string
     width?: string
@@ -41,6 +41,16 @@ export interface WooCommerceCategory {
   id: number
   name: string
   slug: string
+  parent?: number
+  description?: string
+  count?: number
+  image?: {
+    id: number
+    src: string
+    alt: string
+  }
+  display?: string
+  menu_order?: number
 }
 
 export interface WooCommerceTag {
@@ -50,12 +60,13 @@ export interface WooCommerceTag {
 }
 
 export interface WooCommerceImage {
-  id: number
-  date_created: string
-  date_modified: string
+  id?: number
+  date_created?: string
+  date_modified?: string
   src: string
-  name: string
-  alt: string
+  name?: string
+  alt?: string
+  position?: number
 }
 
 export interface WooCommerceAttribute {
@@ -87,4 +98,41 @@ export interface WooCommerceProductsResponse {
   user: string
   total_products: number
   products: WooCommerceProduct[]
+}
+
+// Nuevos tipos para categorías
+export interface WooCommerceCategoriesResponse {
+  categories: WooCommerceCategory[]
+  total_categories: number
+  status: string
+}
+
+// Tipo para crear productos con imágenes
+export interface CreateProductData {
+  name: string
+  type?: string
+  regular_price: number
+  sale_price?: number
+  description?: string
+  short_description?: string
+  sku: string
+  manage_stock?: boolean
+  stock_quantity?: number
+  stock_status?: string
+  weight?: string
+  dimensions?: {
+    length?: string
+    width?: string
+    height?: string
+  }
+  status?: string
+  featured?: boolean
+  catalog_visibility?: string
+  virtual?: boolean
+  downloadable?: boolean
+  reviews_allowed?: boolean
+  tax_status?: string
+  categories?: { id: number }[]
+  tags?: { id: number }[]
+  images?: WooCommerceImage[]
 }
