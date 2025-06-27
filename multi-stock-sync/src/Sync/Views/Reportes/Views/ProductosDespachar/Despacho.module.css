@@ -24,6 +24,7 @@
 }
 
 .headerIcon {
+
   font-size: 1.5rem;
   color: #103bbb;
 }
@@ -60,18 +61,22 @@
   margin-top: 16px;
 }
 
+
 /* BOTONES ROJOS */
+
 .btnRojo {
   background-color: #dc3545;
   border-color: #dc3545;
   color: #fff;
   transition: all 0.15s ease-in-out;
+
 }
 
 .btnRojo:hover {
   background-color: #c82333;
   border-color: #bd2130;
 }
+
 
 .btnRojoOutline {
   color: #dc3545;

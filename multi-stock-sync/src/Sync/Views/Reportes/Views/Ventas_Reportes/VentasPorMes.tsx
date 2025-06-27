@@ -1,267 +1,241 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Modal, Button, Container, Row, Col, Form } from "react-bootstrap";
+import {
+  Layout,
+  Row,
+  Col,
+  Select,
+  Button,
+  Typography,
+  Card,
+  Space,
+  Modal,
+  Spin,
+  message,
+} from "antd";
+import {
+  Bar,
+} from "react-chartjs-2";
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title as ChartTitle,
+  Tooltip,
+  Legend,
+} from "chart.js";
+import {
+  BsArrowLeft,
+  BsArrowRight,
+} from "react-icons/bs";
+import {
+  FilePdfOutlined,
+  FileExcelOutlined,
+} from "@ant-design/icons";
+import styles from "./VentasPorMes.module.css"
 import axiosInstance from "../../../../../axiosConfig";
-import GraficoPorMes from "./components/GraficoPorMes";
 import { generarPDFPorMes, exportarExcelPorMes } from "./utils/exportUtils";
-import { LoadingDinamico } from "../../../../../components/LoadingDinamico/LoadingDinamico";
-import styles from "./VentasPorMes.module.css";
 
-const VentasPorMes: React.FC = () => {
-  const { client_id } = useParams<{ client_id: string }>();
-  const currentDate = new Date();
-  const [year, setYear] = useState<number>(currentDate.getFullYear());
-  const [month, setMonth] = useState<number>(currentDate.getMonth() + 1);
-  const [ventas, setVentas] = useState<any[]>([]);
-  const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
-  const [loading, setLoading] = useState<boolean>(false);
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  ChartTitle,
+  Tooltip,
+  Legend
+);
+
+const { Content } = Layout;
+const { Title, Text } = Typography;
+
+// Interfaces
+interface SoldProduct {
+  date: string;
+  title: string;
+  quantity: number;
+  total_amount: number;
+}
+interface UserData {
+  nickname: string;
+  profile_image: string;
+}
+interface KpiData {
+  totalIngresos: number;
+  totalOrdenes: number;
+  totalProductos: number;
+  ticketPromedio: number;
+}
+
+interface AggregatedProduct {
+  title: string;
+  quantity: number;
+  total_amount: number;
+}
+
+// Logica
+const useVentasData = (
+  clientId: string | undefined,
+  year: number,
+  month: number
+) => {
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [showModal, setShowModal] = useState<boolean>(false);
-  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
-  const [totalIngresos, setTotalIngresos] = useState<number>(0);
-  const [userData, setUserData] = useState<{ nickname: string; profile_image: string } | null>(null);
-  
-
-  const formatCLP = (value: number) =>
-    `$ ${new Intl.NumberFormat("es-CL").format(value)}`;
-
-  const fetchVentas = async () => {
-    if (!client_id) return;
-    setLoading(true);
-    try {
-      const { data } = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${client_id}`,
-        { params: { year: year.toString(), month: month.toString().padStart(2, "0") } }
-      );
-
-      const rawData = data.data[`${year}-${month.toString().padStart(2, "0")}`]?.orders || [];
-
-      const ventasData = rawData.flatMap((order: any) =>
-        order.sold_products.map((p: any) => ({
-          date: new Date(order.date_created).toLocaleDateString("es-CL"),
-          title: p.title,
-          quantity: p.quantity,
-          total_amount: p.price * p.quantity,
-        }))
-      );
-
-      setVentas(ventasData);
-
-      const ordenadas = [...ventasData].sort((a, b) => b.total_amount - a.total_amount);
-      const top10 = ordenadas.slice(0, 10);
-      const resto = ordenadas.slice(10);
-
-      const totalOtros = resto.reduce((acc, curr) => acc + curr.total_amount, 0);
-      const total = ordenadas.reduce((acc, curr) => acc + curr.total_amount, 0);
-      setTotalIngresos(total);
-
-      const labels = [...top10.map(v => v.title), ...(resto.length ? ["Otros"] : [])];
-      const ingresos = [...top10.map(v => v.total_amount), ...(resto.length ? [totalOtros] : [])];
-      const cantidades = [...top10.map(v => v.quantity), ...(resto.length ? [null] : [])];
-
-      setChartData({
-        labels,
-        datasets: [
-          {
-            label: "Ingresos Totales",
-            data: ingresos,
-            quantityData: cantidades,
-            backgroundColor: "#8d92ed",
-            borderColor: "#4f5a95",
-            borderWidth: 1.5,
-            borderRadius: 8,
-          },
-        ],
-      });
-
-      setError(null);
-    } catch (err) {
-      console.error("Error al obtener ventas:", err);
-      setVentas([]);
-      setChartData({ labels: [], datasets: [] });
-      setTotalIngresos(0);
-      setError("Error al cargar ventas del mes.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchUserData = async () => {
-    if (!client_id) return;
-    try {
-      const res = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`
-      );
-      const { nickname, profile_image } = res.data.data;
-      setUserData({ nickname, profile_image });
-    } catch (err) {
-      console.error("Error al obtener usuario:", err);
-    }
-  };
+  const [ventasCompletas, setVentasCompletas] = useState<SoldProduct[]>([]);
+  const [ventasAgrupadas, setVentasAgrupadas] = useState<AggregatedProduct[]>([]);
+  const [userData, setUserData] = useState<UserData | null>(null);
+  const [kpis, setKpis] = useState<KpiData>({ totalIngresos: 0, totalOrdenes: 0, totalProductos: 0, ticketPromedio: 0 });
+  const [chartData, setChartData] = useState<any>({ labels: [], datasets: [] });
+  const formatCLP = (value: number) => `$ ${new Intl.NumberFormat("es-CL").format(Math.round(value))}`;
 
   useEffect(() => {
-    fetchVentas();
-    fetchUserData();
-  }, [client_id, year, month]);
+    if (!clientId) { setLoading(false); return; }
+    const fetchData = async () => {
+      setLoading(true); setError(null);
+      try {
+        const [salesRes, userRes] = await Promise.all([
+          axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/sales-by-month/${clientId}`, { params: { year: year.toString(), month: month.toString().padStart(2, "0") } }),
+          axiosInstance.get(`${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${clientId}`)
+        ]);
+        setUserData(userRes.data.data);
+        const rawData = salesRes.data.data[`${year}-${month.toString().padStart(2, "0")}`]?.orders || [];
+        const ventasData: SoldProduct[] = rawData.flatMap((order: any) => order.sold_products.map((p: any) => ({ date: new Date(order.date_created).toLocaleDateString("es-CL"), title: p.title, quantity: p.quantity, total_amount: p.price * p.quantity, })));
+        setVentasCompletas(ventasData);
 
-  const savePDF = () => {
-    if (!pdfDataUrl) return;
-    
-    const link = document.createElement('a');
-    link.href = pdfDataUrl;
-    link.download = `Ventas_Mes_${userData?.nickname || 'Desconocido'}_${month.toString().padStart(2, '0')}-${year}.pdf`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    
-    setShowModal(false);
+        const productosAgrupados = ventasData.reduce((acc, curr) => { const title = curr.title; if (!acc[title]) { acc[title] = { title, quantity: 0, total_amount: 0 }; } acc[title].quantity += curr.quantity; acc[title].total_amount += curr.total_amount; return acc; }, {} as Record<string, { title: string, quantity: number, total_amount: number }>);
+        const ventasAgrupadasOrdenadas = Object.values(productosAgrupados).sort((a, b) => b.total_amount - a.total_amount);
+        setVentasAgrupadas(ventasAgrupadasOrdenadas);
+
+        const totalIngresos = ventasAgrupadasOrdenadas.reduce((sum, item) => sum + item.total_amount, 0);
+        const totalProductos = ventasAgrupadasOrdenadas.reduce((sum, item) => sum + item.quantity, 0);
+        const totalOrdenes = rawData.length;
+        setKpis({ totalIngresos, totalProductos, totalOrdenes, ticketPromedio: totalOrdenes > 0 ? totalIngresos / totalOrdenes : 0, });
+        
+        const top10 = ventasAgrupadasOrdenadas.slice(0, 10);
+        const labels = top10.map(v => v.title.substring(0, 50) + (v.title.length > 50 ? '...' : ''));
+        const ingresos = top10.map(v => v.total_amount);
+        setChartData({ labels: labels.reverse(), datasets: [{ label: "Ingresos Totales", data: ingresos.reverse(), backgroundColor: "rgba(141, 146, 237, 0.7)", borderColor: "rgba(79, 90, 149, 1)", borderWidth: 1.5, borderRadius: 4, }], });
+      } catch (err) {
+        console.error("Error al obtener datos:", err);
+        setError("Error al cargar los datos del mes. Inténtelo de nuevo.");
+        setVentasCompletas([]);
+        setVentasAgrupadas([]);
+        setChartData({ labels: [], datasets: [] });
+        setKpis({ totalIngresos: 0, totalOrdenes: 0, totalProductos: 0, ticketPromedio: 0 });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [clientId, year, month]);
+
+  // Devuelve la lista completa
+  return { loading, error, ventasCompletas, ventasAgrupadas, userData, kpis, chartData, formatCLP };
+};
+
+const VentasPorMes: React.FC = () => {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth() + 1;
+  const { client_id } = useParams<{ client_id: string }>();
+  const [year, setYear] = useState<number>(currentYear);
+  const [month, setMonth] = useState<number>(currentMonth);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
+  const { loading, error, ventasAgrupadas, userData, kpis, chartData, formatCLP } = useVentasData(client_id, year, month);
+
+  useEffect(() => {
+    if (year === currentYear && month > currentMonth) {
+      setMonth(currentMonth);
+    }
+  }, [year, month, currentYear, currentMonth]);
+
+  const handleDateChange = (change: number) => {
+    let newMonth = month + change;
+    let newYear = year;
+    if (newMonth > 12) { newMonth = 1; newYear++; }
+    else if (newMonth < 1) { newMonth = 12; newYear--; }
+    setMonth(newMonth);
+    setYear(newYear);
   };
 
   const handleExportPDF = () => {
-    if (ventas.length === 0) return;
-    
+    if (ventasAgrupadas.length === 0) {
+      message.warning('No hay datos para exportar.');
+      return;
+    }
     const pdfUrl = generarPDFPorMes(
-      ventas,
-      year,
-      month,
-      userData?.nickname || "Desconocido",
-      totalIngresos,
-      formatCLP
+      ventasAgrupadas, year, month, userData?.nickname || "Desconocido", kpis.totalIngresos, formatCLP
     );
-    
     setPdfDataUrl(pdfUrl);
-    setShowModal(true);
+    setIsModalOpen(true);
   };
 
   const handleExportExcel = () => {
-    exportarExcelPorMes(
-      ventas,
-      year,
-      month,
-      userData?.nickname || "Desconocido",
-      formatCLP
-    );
+    if (ventasAgrupadas.length === 0) {
+      message.warning('No hay datos para exportar.');
+      return;
+    }
+    exportarExcelPorMes(ventasAgrupadas, year, month, userData?.nickname || "Desconocido", formatCLP);
+    message.success('El archivo Excel se ha iniciado a descargar.');
   };
 
+  const savePDF = () => { if (!pdfDataUrl) return; const link = document.createElement('a'); link.href = pdfDataUrl; link.download = `Ventas_Mes_${userData?.nickname || 'Desconocido'}_${month.toString().padStart(2, '0')}-${year}.pdf`; document.body.appendChild(link); link.click(); document.body.removeChild(link); setIsModalOpen(false); };
+
+  const startYear = 2023;
+  const yearOptions = Array.from({ length: currentYear - startYear + 1 }, (_, i) => currentYear - i);
+  const maxMonthForSelectedYear = year === currentYear ? currentMonth : 12;
+  const isNextButtonDisabled = year === currentYear && month === currentMonth;
+
   return (
-    <Container className={styles.container} fluid="md">
-      <h2 className={styles.titulo}>Ventas por Mes</h2>
-      <p className={styles.subtitulo}>
-        Usuario: <strong>{userData?.nickname || "Cargando..."}</strong>
-      </p>
+    <Content style={{ padding: '24px', background: '#f0f2f5' }}>
+      <Spin spinning={loading} tip="Cargando datos del mes..." size="large">
+        <Space direction="vertical" size="large" style={{ display: 'flex' }}>
+          <Title level={2}>Ventas por Mes</Title>
+          <Text type="secondary">Usuario: <Text strong>{userData?.nickname || "Cargando..."}</Text></Text>
 
-      {/* Selector año y mes */}
-      <Row className="align-items-center mb-3">
-        <Col xs={6} md={3}>
-          <Form.Group controlId="year">
-            <Form.Label>Año:</Form.Label>
-            <Form.Select
-              value={year}
-              onChange={(e) => setYear(Number(e.target.value))}
-            >
-              {[2023, 2024, 2025, 2026].map((y) => (
-                <option key={y} value={y}>{y}</option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-        <Col xs={6} md={3}>
-          <Form.Group controlId="month">
-            <Form.Label>Mes:</Form.Label>
-            <Form.Select
-              value={month}
-              onChange={(e) => setMonth(Number(e.target.value))}
-            >
-              {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                <option key={m} value={m}>
-                  {m.toString().padStart(2, "0")}
-                </option>
-              ))}
-            </Form.Select>
-          </Form.Group>
-        </Col>
-      </Row>
+          <Card>
+            <Row justify="space-between" align="middle" gutter={[16, 16]}>
+              <Col xs={24} md={14}><Space wrap><Text>Año:</Text><Select value={year} onChange={setYear} style={{ width: 120 }}>{yearOptions.map(y => <Select.Option key={y} value={y}>{y}</Select.Option>)}</Select><Text>Mes:</Text><Select value={month} onChange={setMonth} style={{ width: 140 }}>{Array.from({ length: maxMonthForSelectedYear }, (_, i) => i + 1).map(m => (<Select.Option key={m} value={m}>{new Date(0, m - 1).toLocaleString('es-CL', { month: 'long' })}</Select.Option>))}</Select></Space></Col>
+              <Col xs={24} md={10} style={{ textAlign: 'right' }}><Space><Button icon={<BsArrowLeft />} onClick={() => handleDateChange(-1)}>Mes Anterior</Button><Button icon={<BsArrowRight />} onClick={() => handleDateChange(1)} disabled={isNextButtonDisabled}>Mes Siguiente</Button></Space></Col>
+            </Row>
+          </Card>
 
-      {/* Gráfico o loading */}
-      <div className={styles.graficoContenedor}>
-        {loading ? (
-          <LoadingDinamico variant="fullScreen" />
-        ) : error ? (
-          <p className="text-danger text-center">{error}</p>
-        ) : chartData.labels.length === 0 ? (
-          <p className="text-muted text-center">No hay datos para mostrar.</p>
-        ) : (
-          <GraficoPorMes
-            chartData={chartData}
-            totalVentas={totalIngresos}
-            year={year}
-            month={month}
-          />
-        )}
-      </div>
+          <Row gutter={[16, 16]}>
+            <Col xs={12} sm={12} md={6}><Card><Title level={5}>Ingresos Totales</Title><Text style={{ fontSize: 20 }}>{formatCLP(kpis.totalIngresos)}</Text></Card></Col>
+            <Col xs={12} sm={12} md={6}><Card><Title level={5}>N° de Órdenes</Title><Text style={{ fontSize: 20 }}>{kpis.totalOrdenes}</Text></Card></Col>
+            <Col xs={12} sm={12} md={6}><Card><Title level={5}>Productos Vendidos</Title><Text style={{ fontSize: 20 }}>{kpis.totalProductos}</Text></Card></Col>
+            <Col xs={12} sm={12} md={6}><Card><Title level={5}>Ticket Promedio</Title><Text style={{ fontSize: 20 }}>{formatCLP(kpis.ticketPromedio)}</Text></Card></Col>
+          </Row>
 
-      {/* Botones de exportación */}
-      <Row className="mt-4 mb-2 justify-content-center">
-        <Col xs="auto" className="d-flex flex-column flex-sm-row justify-content-center align-items-center gap-2">
-          <button
-            className={`${styles.boton} ${styles.botonPDF}`}
-            onClick={handleExportPDF}
-            disabled={chartData.labels.length === 0}
-          >
-            Exportar a PDF
-          </button>
-          <button
-            className={`${styles.boton} ${styles.botonExcel}`}
-            onClick={handleExportExcel}
-            disabled={chartData.labels.length === 0}
-          >
-            Exportar a Excel
-          </button>
-        </Col>
-      </Row>
+          <Card>
+            {error && <Text type="danger">{error}</Text>}
+            {!error && chartData.labels.length > 0 ? (
+              <Bar data={chartData} options={{ indexAxis: 'y' as const, responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Top 10 Ingresos por Producto', font: { size: 16 } }, tooltip: { callbacks: { label: (context) => `Ingresos: ${formatCLP(context.raw as number)}` } } }, scales: { x: { ticks: { callback: (value) => formatCLP(value as number) } } } }} style={{ minHeight: '400px', maxHeight: '600px' }} />
+            ) : (
+              !loading && <Text type="secondary" style={{ textAlign: 'center', display: 'block' }}>No hay datos de ventas para mostrar en este período.</Text>
+            )}
+          </Card>
+          {/* Botones de exportacion */}
+          <Row justify="center">
+            <Space>
+              <Button className={styles.btnRojoOutline} onClick={handleExportExcel}>
+                <FileExcelOutlined /> Exportar Excel
+              </Button>
+              <Button className={styles.btnRojoOutline} onClick={handleExportPDF}>
+                <FilePdfOutlined /> Exportar PDF
+              </Button>
+            </Space>
+          </Row>
 
-      <p className="text-center text-muted mt-2">
-        Gráfico basado en los 10 productos con mayor ingreso. El detalle completo está disponible en el PDF o Excel exportado.
-      </p>
+          <Text type="secondary" style={{ textAlign: 'center', display: 'block' }}>El gráfico muestra hasta 10 productos con mayor ingreso. El detalle completo se incluye en la exportación.</Text>
+        </Space>
+      </Spin>
 
-      {/* Modal vista previa del PDF */}
-      {pdfDataUrl && (
-        <Modal
-          show={showModal}
-          onHide={() => setShowModal(false)}
-          size="lg"
-          centered
-          dialogClassName="pdf-modal-fullscreen"
-        >
-          <Modal.Header closeButton>
-            <Modal.Title>Vista Previa del PDF</Modal.Title>
-          </Modal.Header>
-          <Modal.Body style={{ padding: 0 }}>
-            <div style={{ textAlign: "center", height: "80vh", minHeight: 400, display: "flex", flexDirection: "column" }}>
-              <iframe
-                src={`${pdfDataUrl}#zoom=110`}
-                title="Vista Previa PDF"
-                style={{ flexGrow: 1, width: "100%", border: "none" }}
-              />
-              <p style={{ fontSize: "0.9em", margin: "8px 0" }}>
-                ¿No se muestra el PDF?{" "}
-                <a href={pdfDataUrl} target="_blank" rel="noopener noreferrer">
-                  Ábrelo en una nueva pestaña
-                </a>
-              </p>
-            </div>
-          </Modal.Body>
-          <Modal.Footer>
-            <Button variant="primary" onClick={savePDF}>
-              Guardar PDF
-            </Button>
-            <Button variant="secondary" onClick={() => setShowModal(false)}>
-              Cerrar
-            </Button>
-          </Modal.Footer>
-        </Modal>
-      )}
-    </Container>
+      <Modal title="Vista Previa del PDF" open={isModalOpen} onCancel={() => setIsModalOpen(false)} width="80%" style={{ top: 20 }} footer={[<Button key="back" onClick={() => setIsModalOpen(false)}>Cerrar</Button>, <Button key="submit" type="primary" onClick={savePDF}>Guardar PDF</Button>]}>
+        {pdfDataUrl && (<iframe src={pdfDataUrl} title="Vista Previa PDF" style={{ width: '100%', height: '75vh', border: 'none' }} />)}
+      </Modal>
+    </Content>
   );
 };
 
