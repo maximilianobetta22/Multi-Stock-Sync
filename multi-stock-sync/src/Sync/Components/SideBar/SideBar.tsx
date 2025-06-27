@@ -37,7 +37,7 @@ const SideBar = () => {
       <ul className={styles.NavList}>
         <div className={styles.NavItems}>
           <li>
-            <NavLink to="/sync" className={styles.NavLink}>
+            <NavLink to="/sync/perfil" className={styles.NavLink}>
               <UserOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
               Perfil
             </NavLink>
@@ -49,7 +49,7 @@ const SideBar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/productos/home" className={styles.NavLink}>
+            <NavLink to="/sync/productos" className={styles.NavLink}>
               <FontAwesomeIcon icon={faBoxOpen} />
               Productos
             </NavLink>
@@ -79,7 +79,7 @@ const SideBar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync" className={styles.NavLink}>
+            <NavLink to="/sync/" className={styles.NavLink}>
               <SettingOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
               Configuración
             </NavLink>
