@@ -1,20 +1,25 @@
-import React, { useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { Card, Row, Col, Typography } from "antd";
-import { ShoppingOutlined, 
-ShopOutlined, 
-CarOutlined, 
-SettingOutlined } from "@ant-design/icons";
+// src/pages/HomeSync.tsx
+import React, { useEffect } from 'react'; // import React from 'react';
+import { useNavigate, Link } from 'react-router-dom'; 
+import { Row, Col, Typography } from 'antd';
+import {
+  ShoppingOutlined,
+  ShopOutlined,
+  CarOutlined,
+  SettingOutlined,
+} from '@ant-design/icons'; // importa los iconos que necesitas
+import Card from './card'; // importa tu componente Card
+import styles from './HomeSync.module.css'; 
 
 const { Title } = Typography;
+
 
 const HomeSync: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const conexionSeleccionada = localStorage.getItem("conexionSeleccionada");
-    if (!conexionSeleccionada) {
-      navigate("/sync/seleccionar-conexion");
+    if (!localStorage.getItem('conexionSeleccionada')) {
+      navigate('/sync/seleccionar-conexion');
     }
   }, [navigate]);
 
@@ -52,29 +57,29 @@ const HomeSync: React.FC = () => {
   ];
 
   return (
-    <div style={{ padding: "2rem" }}>
-      <Title level={2} style={{ textAlign: "center", marginBottom: "2rem" }}>
-        Panel de Sincronización
-      </Title>
+    <div className={styles.container}>
+      <div className={styles.inner}>
+        <Title level={2} className={styles.title}>
+          Panel de Sincronización
+        </Title>
 
-      <Row gutter={[24, 24]} justify="center">
-        {modules.map((module, index) => (
-          <Col xs={24} sm={12} md={8} key={index}>
-            <Link to={module.link}>
-              <Card
-                hoverable
-                style={{ textAlign: "center", height: "100%" }}
-              >
-                <div style={{ marginBottom: "1rem" }}>
-                  {module.icon}
+        <Row gutter={[32, 60]} justify="center">
+          {modules.map((m, i) => (
+            <Col xs={24} sm={12} md={8} key={i}>
+              <Link to={m.link}>
+                <div className={styles.cardWrapper}>
+                  <div className={styles.blob} />
+                  <Card
+                    icon={m.icon}
+                    title={m.title}
+                    description={m.description}
+                  />
                 </div>
-                <Title level={4}>{module.title}</Title>
-                <p>{module.description}</p>
-              </Card>
-            </Link>
-          </Col>
-        ))}
-      </Row>
+              </Link>
+            </Col>
+          ))}
+        </Row>
+      </div>
     </div>
   );
 };

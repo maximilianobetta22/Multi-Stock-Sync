@@ -1,4 +1,4 @@
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import styles from "./SideBar.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -9,14 +9,41 @@ import {
   faFolderOpen,
   faHandshake
 } from "@fortawesome/free-solid-svg-icons";
+import {
+  UserOutlined,
+  LogoutOutlined,
+  SettingOutlined
+} from "@ant-design/icons";
+import { useContext } from "react";
+import { UserContext } from "../../Context/UserContext";
 
 const SideBar = () => {
+  const navigate = useNavigate();
+  const userContext = useContext(UserContext);
+
+  if (!userContext) {
+    throw new Error("UserContext must be used within a UserProvider");
+  }
+
+  const { setUser } = userContext;
+
+  const handleLogout = () => {
+    navigate("/sync/logout");
+    setUser(null);
+  };
+
   return (
-    <div>
-      <div className={styles.container}>
-        <ul className={styles.NavList}>
+    <div className={styles.container}>
+      <ul className={styles.NavList}>
+        <div className={styles.NavItems}>
           <li>
-            <NavLink to={"/sync/home"} className={styles.NavLink}>
+            <NavLink to="/sync" className={styles.NavLink}>
+              <UserOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
+              Perfil
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/sync/home" className={styles.NavLink}>
               <FontAwesomeIcon icon={faHouse} />
               Inicio
             </NavLink>
@@ -51,8 +78,33 @@ const SideBar = () => {
               Sobre el proyecto <br /> (Developers)
             </NavLink>
           </li>
-        </ul>
-      </div>
+          <li>
+            <NavLink to="/sync" className={styles.NavLink}>
+              <SettingOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
+              Configuración
+            </NavLink>
+          </li>
+        </div>
+        <div className={styles.BottomSection}>
+          <li
+            onClick={handleLogout}
+            className={styles.NavLink}
+            style={{ cursor: "pointer" }}
+          >
+            <LogoutOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
+            Cerrar sesión
+          </li>
+          <div className={styles.LogoWrapper}>
+            <NavLink to="/sync/home" className={styles.LogoLink}>
+              <img
+                src="/assets/img/logo/logo-blanco-text.svg"
+                alt="Multi Stock Sync"
+                className={styles.LogoImage}
+              />
+            </NavLink>
+          </div>
+        </div>
+      </ul>
     </div>
   );
 };
