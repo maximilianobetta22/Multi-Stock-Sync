@@ -179,7 +179,7 @@ const EnviosTransito: React.FC = () => {
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <Title level={3} className="mb-2 text-gray-800">
-              🚛 Envíos en Tránsito
+             Envíos en Tránsito
             </Title>
             <Text type="secondary">Seguimiento de envíos que están en proceso de entrega</Text>
           </div>
@@ -220,6 +220,11 @@ const EnviosTransito: React.FC = () => {
               showSizeChanger: true,
               showQuickJumper: true,
               showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} envíos en tránsito`,
+              locale: {
+                items_per_page: "envíos por página",
+                jump_to: "Ir a",
+                jump_to_confirm: "confirmar",
+              },
             }}
             locale={{
               emptyText: error ? "No se pudieron cargar los datos" : "No hay envíos en tránsito",
