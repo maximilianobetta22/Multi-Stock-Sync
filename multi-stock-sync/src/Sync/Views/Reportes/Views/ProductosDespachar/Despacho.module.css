@@ -24,8 +24,9 @@
 }
 
 .headerIcon {
-  font-size: 24px;
-  color: #dc3545;
+
+  font-size: 1.5rem;
+  color: #103bbb;
 }
 
 .headerTitle {
@@ -56,51 +57,27 @@
 /* EXPORTACIONES */
 .exportaciones {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 16px;
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #f0f0f0;
+  gap: 12px;
+  margin-top: 16px;
 }
 
-.paginationControls {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
+
+/* BOTONES ROJOS */
 
 .btnRojo {
   background-color: #dc3545;
   border-color: #dc3545;
   color: #fff;
-  transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  transition: all 0.15s ease-in-out;
+
 }
 
-/* Animación al pasar el mouse por encima (hover) */
 .btnRojo:hover {
   background-color: #c82333;
   border-color: #bd2130;
-  color: #fff;
 }
 
-/* Estilo cuando el botón está activo o enfocado */
-.btnRojo:focus, .btnRojo.focus {
-  box-shadow: 0 0 0 0.2rem rgba(225, 83, 97, 0.5);
-}
 
-.btnRojo:active, .btnRojo.active {
-  background-color: #bd2130;
-  border-color: #b21f2d;
-}
-
-.btnRojo:disabled {
-  background-color: #dc3545;
-  border-color: #dc3545;
-}
-
-/* Boton rojo con borde*/
 .btnRojoOutline {
   color: #dc3545;
   border-color: #dc3545;
@@ -108,19 +85,8 @@
   transition: all 0.15s ease-in-out;
 }
 
-/* Animación al pasar el mouse */
 .btnRojoOutline:hover {
   color: #fff;
   background-color: #dc3545;
   border-color: #dc3545;
-}
-
-.btnRojoOutline:focus, .btnRojoOutline.focus {
-  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5);
-}
-
-.btnRojoOutline:active, .btnRojoOutline.active {
-  color: #fff;
-  background-color: #c82333;
-  border-color: #c82333;
 }
