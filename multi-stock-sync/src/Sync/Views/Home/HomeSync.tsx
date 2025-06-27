@@ -37,7 +37,7 @@ const HomeSync: React.FC = () => {
     { title: 'Punto de Venta',          description: 'Crea y gestiona ventas de forma rápida y ordenada. Selecciona la bodega, agrega productos, asigna un cliente y genera tus notas de venta en segundos. Todo desde una interfaz simple y eficiente.', icon: <ShopOutlined     style={iconStyle} />, link: '/sync/punto-de-venta' },
     { title: 'Gestión de Envíos',       description: 'Administra y monitorea todos tus envíos desde un solo lugar. Consulta los envíos del día, revisa próximos despachos, sigue el estado de los que están en tránsito y mantén el control de los finalizados o cancelados.', icon: <CarOutlined      style={iconStyle} />, link: '/sync/envios' },
     { title: 'Otros / Configuración',   description: 'Personaliza y ajusta las opciones clave de tu sistema. Define preferencias generales, integra servicios externos y adapta la plataforma a las necesidades de tu negocio.', icon: <SettingOutlined style={iconStyle} />, link: '/sync/otros' },
-    { title: 'Gestión de Usuarios',     description: 'Administra los accesos y roles dentro de la plataforma. Crea, edita o elimina usuarios, y asigna permisos para mantener el control y la seguridad de tu operación.', icon: <UserOutlined     style={iconStyle} />, link: '/sync/usuarios' },
+    { title: 'Gestión de Usuarios',     description: 'Administra los accesos y roles dentro de la plataforma. Crea, edita o elimina usuarios, y asigna permisos para mantener el control y la seguridad de tu operación.', icon: <UserOutlined     style={iconStyle} />, link: '/sync/Gestionusuarios' },
   ];
 
   return (
