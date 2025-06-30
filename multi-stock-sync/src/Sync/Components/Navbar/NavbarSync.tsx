@@ -50,7 +50,7 @@ const Navbar = () => {
     top: 0,
     left: 0,
     right: 0,
-    background: "linear-gradient(135deg, #FF5722 0%, #FF7043 50%, #FF8A65 100%)",
+    background: "rgb(0, 58, 142)",
     boxShadow: "0 4px 20px rgba(255, 87, 34, 0.3)",
     backdropFilter: "blur(10px)",
     borderBottom: "1px solid rgba(255, 255, 255, 0.1)",
