@@ -8,6 +8,7 @@ import ComparisonTable from './components/ComparisonTable';
 import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
 import { Modal } from 'react-bootstrap';
 import styles from './Compare.module.css';
+import saveAs from 'file-saver';
 
 const Compare: React.FC = () => {
   const { mode, client_id } = useParams<{ mode?: string; client_id?: string }>();
@@ -88,6 +89,33 @@ const Compare: React.FC = () => {
     const pdfUrl = generatePDF(validMode, nickname, result);
     setPdfDataUrl(pdfUrl);
     setShowModal(true);
+  };
+
+  const handleDownloadPDF = () => {
+    if (!pdfDataUrl) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: 'No se ha podido generar el PDF para la descarga.',
+      });
+      return;
+    }
+    const base64Data = pdfDataUrl.substring(pdfDataUrl.indexOf(',') + 1);
+    const byteCharacters = atob(base64Data);
+    const byteNumbers = new Array(byteCharacters.length);
+    for (let i = 0; i < byteCharacters.length; i++) {
+      byteNumbers[i] = byteCharacters.charCodeAt(i);
+    }
+    const byteArray = new Uint8Array(byteNumbers);
+    const blob = new Blob([byteArray], { type: 'application/pdf' });
+
+    // Generar nombre de archivo dinámico
+    const data1 = validMode === 'month' ? result.data.month1 : result.data.year1;
+    const data2 = validMode === 'month' ? result.data.month2 : result.data.year2;
+    const label1 = validMode === 'month' ? `${months[data1.month]}-${data1.year}` : data1.year;
+    const label2 = validMode === 'month' ? `${months[data2.month]}-${data2.year}` : data2.year;
+
+    saveAs(blob, `Reporte_Comparacion_${label1}_vs_${label2}.pdf`);
   };
 
   // Exporta la comparación a un archivo Excel
@@ -200,11 +228,18 @@ const Compare: React.FC = () => {
           <Modal.Title>Reporte de Comparación</Modal.Title>
         </Modal.Header>
         <Modal.Body>
-          {pdfDataUrl && <iframe src={pdfDataUrl} width="100%" height="500px" />}
+          {pdfDataUrl ? (
+            <iframe src={pdfDataUrl} width="100%" height="500px" title="Reporte PDF" />
+          ) : (
+            <div className="alert alert-info">Generando previsualización del PDF...</div>
+          )}
         </Modal.Body>
         <Modal.Footer>
           <button onClick={() => setShowModal(false)} className="btn btn-secondary">
             Cerrar
+          </button>
+          <button onClick={handleDownloadPDF} className="btn btn-primary" disabled={!pdfDataUrl}>
+            Descargar PDF
           </button>
         </Modal.Footer>
       </Modal>

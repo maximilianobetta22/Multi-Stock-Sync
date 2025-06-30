@@ -37,7 +37,6 @@ const reportLinks = [
   { path: "plantillas", label: "Plantilla", icon: faClipboardList, category: "Productos" },
   { path: "Despachar-Producto", label: "A despachar", icon: faClipboardList, category: "Productos" },
   { path: "historial-Stock", label: "Historial Stock", icon: faChartLine, category: "Stock" },
-  { path: "Reporte-Disponible", label: "Disponibilidad", icon: faClipboardList, category: "Stock" },
   { path: "Reporte-Recepcion", label: "Recepción", icon: faClipboardList, category: "Stock" },
   { path: "opiniones-clientes", label: "Opiniones", icon: faComments, category: "Clientes" },
   { path: "devoluciones-reembolsos", label: "Devoluciones", icon: faUndo, category: "Clientes" },
