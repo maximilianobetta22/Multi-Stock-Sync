@@ -46,13 +46,8 @@ const Styled = styled.div` /* Estilos del componente Card */
   .front {
     background: linear-gradient(
       to bottom,
-      #333333 0%,
-      #333333 80%,
-      #C0C0C0 80%,
-      #C0C0C0 85%,
-      #FF6A00 85%,
-      #FF6A00 100%
-    );
+rgb(132, 0, 107) 0%, 
+rgb(67, 0, 54) 100%);
     justify-content: center;
   }
 

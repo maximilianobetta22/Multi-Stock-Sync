@@ -79,7 +79,7 @@ const SideBar = () => {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/sync/" className={styles.NavLink}>
+            <NavLink to="/sync/configuracion" className={styles.NavLink}>
               <SettingOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
               Configuración
             </NavLink>
@@ -95,9 +95,9 @@ const SideBar = () => {
             Cerrar sesión
           </li>
           <div className={styles.LogoWrapper}>
-            <NavLink to="/sync/home" className={styles.LogoLink}>
+            <NavLink to="/sync/lading" className={styles.LogoLink}>
               <img
-                src="/assets/img/logo/logo-blanco-text.svg"
+                src="/assets/img/logo/Crazy_logo_bordes.png"
                 alt="Multi Stock Sync"
                 className={styles.LogoImage}
               />
