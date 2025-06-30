@@ -9,8 +9,9 @@ import ItemTableConexion from "../../Components/ItemTableConexion";
 import { SyncData } from "../../interface";
 import { copyToClipboard } from "../../helpers";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faList } from "@fortawesome/free-solid-svg-icons";
+import { faEllipsisV, faPlus, faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 import axiosInstance from "../../../../../axiosConfig";
+
 const MySwal = withReactContent(Swal);
 
 const ListConexiones: React.FC = () => {
@@ -21,6 +22,7 @@ const ListConexiones: React.FC = () => {
   const API_URL = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials`;
 
   const confirmDisconnect = async (clientId: string, rowId: number) => {
+    // Lógica original mantenida - solo deshabilitada visualmente
     const result = await MySwal.fire({
       title: '¿Está seguro que desea desconectar esta conexión?',
       icon: 'warning',
@@ -36,6 +38,7 @@ const ListConexiones: React.FC = () => {
   };
 
   const disconnectConexion = async (clientId: string) => {
+    // Lógica original mantenida - solo deshabilitada visualmente
     if (!clientId) return;
     const url = `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${clientId}`;
     MySwal.fire({
@@ -110,9 +113,23 @@ const ListConexiones: React.FC = () => {
     }
   };
 
-  const handleMenuToggle = (id: number) => {
+  const handleMenuToggle = (id: number, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation(); // Prevenir que se cierre inmediatamente
+    }
     setOpenDropdownId(openDropdownId === id ? null : id);
   };
+
+  // Función removida para habilitar el botón
+  // const handleAddConnectionClick = (e: React.MouseEvent) => {
+  //   e.preventDefault();
+  //   MySwal.fire({
+  //     title: 'Función no disponible',
+  //     text: 'La función de agregar conexiones está temporalmente deshabilitada.',
+  //     icon: 'info',
+  //     confirmButtonText: 'Entendido'
+  //   });
+  // };
 
   useEffect(() => {
     const fetchConexiones = async () => {
@@ -131,6 +148,25 @@ const ListConexiones: React.FC = () => {
     fetchConexiones();
   }, []);
 
+  // Cerrar dropdown al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      
+      // No cerrar si se hace click en el botón del dropdown o dentro del dropdown
+      if (target.closest('[data-dropdown-trigger]') || target.closest('[data-dropdown-menu]')) {
+        return;
+      }
+      
+      setOpenDropdownId(null);
+    };
+
+    if (openDropdownId !== null) {
+      document.addEventListener('click', handleClickOutside);
+      return () => document.removeEventListener('click', handleClickOutside);
+    }
+  }, [openDropdownId]);
+
   if (loading) {
     return <LoadingDinamico variant="container" />;
   }
@@ -140,10 +176,14 @@ const ListConexiones: React.FC = () => {
       <header className={styles.container__header}>
         <h1 className={styles.header__title}>Lista de conexiones a MercadoLibre</h1>
       </header>
+
       {conexiones.length === 0 ? (
-        <div className={styles.container__table}>
+        <div className={styles.empty__state}>
           <img src="/assets/img/icons/link_notfound.svg" alt="No Connections" />
-          <strong className="mb-5">No se han encontrado conexiones guardadas en el sistema, por favor, cree una nueva conexión.</strong>
+          <p className={styles.empty__state__text}>
+            No se han encontrado conexiones guardadas en el sistema. 
+            Las conexiones te permiten sincronizar tus datos con MercadoLibre.
+          </p>
         </div>
       ) : (
         <div className={styles.container__table}>
@@ -152,12 +192,12 @@ const ListConexiones: React.FC = () => {
               <tr className={styles.tHead__row}>
                 <th className={styles.rowHead__item1}>ID</th>
                 <th className={styles.rowHead__item2}>Profile</th>
-                <th className={styles.rowHead__item3}>Client ID</th>
-                <th className={styles.rowHead__item4}>Nickname</th>
+                <th className={styles.rowHead__item3}>Cliente ID</th>
+                <th className={styles.rowHead__item4}>Nombre de la Tienda</th>
                 <th className={styles.rowHead__item5}>Email</th>
-                <th className={styles.rowHead__item6}>Updated At</th>
+                <th className={styles.rowHead__item6}>Última actualización</th>
                 <th className={styles.rowHead__item7}>
-                  <FontAwesomeIcon className={styles.item__icon} icon={faList} />
+                  <FontAwesomeIcon className={styles.item__icon} icon={faEllipsisV} />
                 </th>
               </tr>
             </thead>
@@ -178,10 +218,20 @@ const ListConexiones: React.FC = () => {
           </table>
         </div>
       )}
-      <footer className={styles.container__footer}>
-        <Link to="/sync/conexiones/login" className="btn btn-primary">Agregar Conexiones</Link>
-        <Link to="/sync/home" className="btn btn-secondary ms-2">Volver al Inicio</Link>
-      </footer>
+
+      {/* <footer className={styles.container__footer}>
+        <Link 
+          to="/sync/conexiones/login" 
+          className="btn btn-primary"
+        >
+          <FontAwesomeIcon icon={faPlus} />
+          Agregar Conexiones
+        </Link>
+        <Link to="/sync/home" className="btn btn-secondary">
+          <FontAwesomeIcon icon={faArrowLeft} />
+          Volver al Inicio
+        </Link>
+      </footer> */}
     </div>
   );
 };
