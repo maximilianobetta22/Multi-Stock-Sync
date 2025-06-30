@@ -6,7 +6,7 @@
 .bodegas_box {
   display: flex;
   flex-wrap: wrap;
-  justify-content: space-between;
+  justify-content: center;
   width: 100%; /* Asegúrate de que ocupe todo el ancho disponible */
 }
 
@@ -84,7 +84,7 @@
 .bodega_item_bg {
   height: 128px;
   width: 128px;
-  background-color: #ef4624;
+  background-color: #e61919;
 
   z-index: 1;
   position: absolute;
@@ -110,8 +110,12 @@
   background-color: #ff9800; /* Naranja */
 }
 
-.bodega_item:nth-child(5n + 1) .bodega_item_bg {
-  background-color: #ef4624; /* Morado */
+.bodega_item:nth-child(5) .bodega_item_bg {
+  background-color: #980ec2; /* Morado */
+}
+
+.bodega_item:nth-child(6) .bodega_item_bg {
+  background-color: #2b00ff; /* Morado */
 }
 
 .menu {
@@ -160,8 +164,8 @@
   margin-top: 30px;
   height: 45px;
   padding: 4px 8px;
-  background-color: #ef4624;
-  color: #fff;
+  background-color: #01b7ff;
+  color: #000000;
   font-size: 14px;
   font-weight: 500;
   border-radius: 6px;
@@ -174,5 +178,50 @@
 
 .title {
   margin: 10px 0px 10px 0px;
-  text-align: start;
+  text-align: center;
+  text-decoration: underline;
+}
+
+.delete_button {
+  margin-top: 16px;
+  padding: 8px 12px;
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s ease;
+}
+
+.delete_button:hover {
+  background-color: #d9363e;
+}
+
+.confirm_box {
+  margin-top: 12px;
+  padding: 10px;
+  background-color: #fff3cd;
+  border: 1px solid #ffeeba;
+  border-radius: 6px;
+  color: #856404;
+}
+
+.confirm_yes,
+.confirm_no {
+  margin-right: 8px;
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.confirm_yes {
+  background-color: #d9534f;
+  color: white;
+}
+
+.confirm_no {
+  background-color: #ccc;
+  color: black;
 }

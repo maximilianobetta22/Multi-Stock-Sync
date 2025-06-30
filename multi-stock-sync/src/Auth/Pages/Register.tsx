@@ -12,7 +12,6 @@ import {
   EyeTwoTone,
   UserAddOutlined,
   LoginOutlined,
-  SyncOutlined,
   PhoneOutlined,
   MailOutlined,
   TeamOutlined,
@@ -39,7 +38,7 @@ const Register: React.FC = () => {
   const navigate = useNavigate()
 
   const brandColors = {
-    primary: "#FF5722",
+    primary: "#df0000",
     primaryDark: "#D84315",
     secondary: "#FF9800",
     accent: "#FFC107",
@@ -245,7 +244,7 @@ const Register: React.FC = () => {
                 {/* Header compacto */}
                 <div
                   style={{
-                    background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.primaryDark} 100%)`,
+                    background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
                     padding: "20px",
                     textAlign: "center",
                     color: "white",
@@ -253,8 +252,6 @@ const Register: React.FC = () => {
                 >
                   <div
                     style={{
-                      background: "rgba(255, 255, 255, 0.2)",
-                      borderRadius: "50%",
                       width: "50px",
                       height: "50px",
                       display: "flex",
@@ -263,11 +260,15 @@ const Register: React.FC = () => {
                       margin: "0 auto 10px",
                     }}
                   >
-                    <SyncOutlined style={{ fontSize: "25px", color: "white" }} />
+                    <img
+                      src="/assets/img/logo/Crazy_logo_bordes.png"
+                      alt="Icono"
+                      style={{ width: "100px", height: "100px", objectFit: "contain" }}
+                    />
                   </div>
 
                   <Title level={4} style={{ color: "white", margin: 0, fontWeight: "bold" }}>
-                    Multi Stock Sync
+                    Software de Gestión
                   </Title>
                   <Text style={{ color: "rgba(255, 255, 255, 0.9)", fontSize: "12px" }}>
                     Únete a la gestión inteligente
@@ -469,7 +470,7 @@ const Register: React.FC = () => {
                   }}
                 >
                   <Text type="secondary" style={{ fontSize: "10px" }}>
-                    © 2024 Multi Stock Sync
+                    © 2024 Software de Gestión Crazy Family
                   </Text>
                 </div>
               </Card>

@@ -28,7 +28,7 @@ const PerfilUsuario: React.FC = () => {
   // Función para obtener color del rol
   const getRoleColor = (role: string | undefined) => {
     switch (role?.toLowerCase()) {
-      case 'admin': return '#f50';
+      case 'admin': return '#8b0000';
       case 'manager': return '#108ee9';
       case 'user': return '#87d068';
       default: return '#666';
@@ -72,7 +72,7 @@ const PerfilUsuario: React.FC = () => {
       <Card 
         style={{ 
           marginBottom: '24px',
-          background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+          background: 'linear-gradient(135deg,rgb(100, 27, 152) 0%,rgb(208, 142, 255) 100%)',
           border: 'none',
           borderRadius: '16px'
         }}
@@ -83,7 +83,7 @@ const PerfilUsuario: React.FC = () => {
             size={120} 
             style={{ 
               backgroundColor: "#fff", 
-              color: "#FF6B35",
+              color: "#000",
               fontSize: '48px',
               fontWeight: 'bold',
               marginBottom: '16px',
@@ -119,7 +119,7 @@ const PerfilUsuario: React.FC = () => {
       <Card 
         title={
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <UserOutlined style={{ marginRight: '8px', color: '#FF6B35' }} />
+            <UserOutlined style={{ marginRight: '8px', color: '#1e8449' }} />
             Información Personal
           </div>
         }
@@ -134,7 +134,7 @@ const PerfilUsuario: React.FC = () => {
             onClick={() => navigate("/sync/perfil/editar")}
             style={{ 
               borderRadius: '8px',
-              background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+              background: 'linear-gradient(135deg, #145a32  0%, #1e8449 100%)',
               border: 'none'
             }}
           >
@@ -146,7 +146,7 @@ const PerfilUsuario: React.FC = () => {
           <Col xs={24} sm={12}>
             <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <UserOutlined style={{ color: '#FF6B35', marginRight: '8px' }} />
+                <UserOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
                 <Text strong style={{ color: '#666' }}>Nombre Completo</Text>
               </div>
               <Text style={{ fontSize: '16px', color: '#333' }}>
@@ -158,7 +158,7 @@ const PerfilUsuario: React.FC = () => {
           <Col xs={24} sm={12}>
             <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <MailOutlined style={{ color: '#FF6B35', marginRight: '8px' }} />
+                <MailOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
                 <Text strong style={{ color: '#666' }}>Correo Electrónico</Text>
               </div>
               <Text style={{ fontSize: '16px', color: '#333' }}>
@@ -170,7 +170,7 @@ const PerfilUsuario: React.FC = () => {
           <Col xs={24} sm={12}>
             <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <PhoneOutlined style={{ color: '#FF6B35', marginRight: '8px' }} />
+                <PhoneOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
                 <Text strong style={{ color: '#666' }}>Teléfono</Text>
               </div>
               <Text style={{ fontSize: '16px', color: '#333' }}>
@@ -182,7 +182,7 @@ const PerfilUsuario: React.FC = () => {
           <Col xs={24} sm={12}>
             <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
               <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                <CrownOutlined style={{ color: '#FF6B35', marginRight: '8px' }} />
+                <CrownOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
                 <Text strong style={{ color: '#666' }}>Rol del Sistema</Text>
               </div>
               <Tag 

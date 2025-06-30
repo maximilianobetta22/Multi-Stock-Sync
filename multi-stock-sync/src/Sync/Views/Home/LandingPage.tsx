@@ -20,7 +20,7 @@ const LandingPage: React.FC = () => {
   const brandColors = {
     primary: "#6c3baa",
     primaryDark: "#D84315",
-    secondary: "#8B0000",
+    secondary: "#cf1020",
     accent: "#FFC107",
   }
 
@@ -78,7 +78,7 @@ const LandingPage: React.FC = () => {
                     sin complicaciones
                   </Title>
                   <Paragraph style={{ fontSize: "20px", color: "#666", lineHeight: "1.6" }}>
-                    Si tienes una tienda online o vendes en varias plataformas, el Software de Gestion de Crazy Family te ayudara mantener
+                    Si tienes una tienda online o vendes en varias plataformas, el Software de Gestión de Crazy Family te ayudara mantener
                     todo organizado automáticamente. Sin dolores de cabeza, sin errores.
                   </Paragraph>
                 </div>
@@ -228,7 +228,7 @@ const LandingPage: React.FC = () => {
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "60px" }}>
             <Title level={2} style={{ color: "#333", marginBottom: "20px" }}>
-              ¿Qué hace el Software de Gestion Crazy Family por ti?
+              ¿Qué hace el Software de Gestión Crazy Family por ti?
             </Title>
             <Paragraph style={{ fontSize: "18px", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
               Te ayudamos a que tu negocio funcione solo, para que puedas enfocarte en lo que realmente importa.
@@ -318,7 +318,7 @@ const LandingPage: React.FC = () => {
           </Row>
           <Divider style={{ borderColor: "#555", margin: "40px 0 20px" }} />
           <div style={{ textAlign: "center" }}>
-            <Text style={{ color: "#999" }}>© 2024 Software de Gestion Crazy Family. Hecho con amor para emprendedores como tú.</Text>
+            <Text style={{ color: "#999" }}>© 2024 Software de Gestión Crazy Family. Hecho con amor para emprendedores como tú.</Text>
           </div>
         </div>
       </div>

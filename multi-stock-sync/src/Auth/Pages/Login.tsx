@@ -13,7 +13,6 @@ import {
   EyeTwoTone,
   LoginOutlined,
   UserAddOutlined,
-  SyncOutlined,
 } from "@ant-design/icons"
 
 const { Title, Text } = Typography
@@ -26,7 +25,7 @@ export const Login: React.FC = () => {
   const navigate = useNavigate()
 
   const brandColors = {
-    primary: "#FF5722",
+    primary: "#df0000",
     primaryDark: "#D84315",
     secondary: "#FF9800",
     accent: "#FFC107",
@@ -192,7 +191,7 @@ export const Login: React.FC = () => {
                 {/* Header compacto */}
                 <div
                   style={{
-                    background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.primaryDark} 100%)`,
+                    background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
                     padding: "25px 20px",
                     textAlign: "center",
                     color: "white",
@@ -201,8 +200,6 @@ export const Login: React.FC = () => {
                 >
                   <div
                     style={{
-                      background: "rgba(255, 255, 255, 0.2)",
-                      borderRadius: "50%",
                       width: "60px",
                       height: "60px",
                       display: "flex",
@@ -211,14 +208,18 @@ export const Login: React.FC = () => {
                       margin: "0 auto 15px",
                     }}
                   >
-                    <SyncOutlined style={{ fontSize: "30px", color: "white" }} />
+                    <img
+                      src="/assets/img/logo/Crazy_logo_bordes.png"
+                      alt="Icono"
+                      style={{ width: "100px", height: "100px", objectFit: "contain" }}
+                    />
                   </div>
 
                   <Title level={3} style={{ color: "white", margin: 0, fontWeight: "bold" }}>
-                    Multi Stock Sync
+                    Software de Gestión
                   </Title>
                   <Text style={{ color: "rgba(255, 255, 255, 0.9)", fontSize: "13px" }}>
-                    Gestión de Inventario Multi-Plataforma
+                    De Inventario Multi-Plataforma
                   </Text>
 
                   <div style={{ display: "flex", justifyContent: "center", gap: "8px", marginTop: "12px" }}>
@@ -348,7 +349,7 @@ export const Login: React.FC = () => {
                   }}
                 >
                   <Text type="secondary" style={{ fontSize: "10px" }}>
-                    © 2024 Multi Stock Sync
+                    © 2024 Software de Gestión Crazy Family
                   </Text>
                 </div>
               </Card>

@@ -15,13 +15,14 @@ export const useWarehouseManagement = () => {
     setError(null);
     try {
       const response = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/warehouses`,
+        `${import.meta.env.VITE_API_URL}/warehouses-list`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
           },
         }
       );
+      
       console.log("Warehouses API response:", response.data);
       if (!response.data) {
         throw new Error("Invalid API response structure");
@@ -49,7 +50,7 @@ export const useWarehouseManagement = () => {
 
     try {
       const response = await axiosInstance.get(
-        `${import.meta.env.VITE_API_URL}/warehouses/${id}}}`,
+        `${import.meta.env.VITE_API_URL}/warehouses/${id}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,
@@ -130,7 +131,35 @@ export const useWarehouseManagement = () => {
       );
     }
   };
+const deleteWarehouse = async (id: string) => {
+  setLoading(true);
+  setError(null);
 
+  try {
+    const response = await axiosInstance.delete(
+      `${import.meta.env.VITE_API_URL}/warehouses/${id}`,
+      {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }
+    );
+
+    console.log("Bodega eliminada:", response.data);
+
+    // Actualizar el estado local eliminando la bodega
+    setWarehouses((prev) => prev.filter((w) => w.id !== Number(id)))
+  } catch (error) {
+    console.error("Error al eliminar la bodega:", error);
+    if (axios.isAxiosError(error) && error.response) {
+      setError(error.response.data.message || "No se pudo eliminar la bodega.");
+    } else {
+      setError("Error inesperado al eliminar la bodega.");
+    }
+  } finally {
+    setLoading(false);
+  }
+};
   return {
     fetchWarehouses, //fetch de bodegas, trae todas las bodegas
     warehouses, //devolver bodegas
@@ -140,5 +169,6 @@ export const useWarehouseManagement = () => {
     fetchWarehouse, //fetch bodega según id
     products, //devuelve productos
     fetchProducts, //fetch de productos de bodega
+    deleteWarehouse, //para eliminar una bodega
   };
 };
