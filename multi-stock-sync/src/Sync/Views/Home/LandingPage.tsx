@@ -18,9 +18,9 @@ const { Title, Text, Paragraph } = Typography
 
 const LandingPage: React.FC = () => {
   const brandColors = {
-    primary: "#FF5722",
+    primary: "#6c3baa",
     primaryDark: "#D84315",
-    secondary: "#FF9800",
+    secondary: "#8B0000",
     accent: "#FFC107",
   }
 
@@ -70,7 +70,7 @@ const LandingPage: React.FC = () => {
                           left: 0,
                           right: 0,
                           height: "4px",
-                          background: `linear-gradient(90deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                          background: brandColors.secondary,
                           borderRadius: "2px",
                         }}
                       />
@@ -78,7 +78,7 @@ const LandingPage: React.FC = () => {
                     sin complicaciones
                   </Title>
                   <Paragraph style={{ fontSize: "20px", color: "#666", lineHeight: "1.6" }}>
-                    Si tienes una tienda online o vendes en varias plataformas, Multi Stock Sync te ayuda a mantener
+                    Si tienes una tienda online o vendes en varias plataformas, el Software de Gestion de Crazy Family te ayudara mantener
                     todo organizado automáticamente. Sin dolores de cabeza, sin errores.
                   </Paragraph>
                 </div>
@@ -94,7 +94,7 @@ const LandingPage: React.FC = () => {
                         padding: "0 30px",
                         fontSize: "16px",
                         fontWeight: "bold",
-                        background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                        background: brandColors.primary,
                         border: "none",
                         borderRadius: "8px",
                       }}
@@ -228,7 +228,7 @@ const LandingPage: React.FC = () => {
         <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "60px" }}>
             <Title level={2} style={{ color: "#333", marginBottom: "20px" }}>
-              ¿Qué hace Multi Stock Sync por ti?
+              ¿Qué hace el Software de Gestion Crazy Family por ti?
             </Title>
             <Paragraph style={{ fontSize: "18px", color: "#666", maxWidth: "600px", margin: "0 auto" }}>
               Te ayudamos a que tu negocio funcione solo, para que puedas enfocarte en lo que realmente importa.
@@ -269,7 +269,7 @@ const LandingPage: React.FC = () => {
                 <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                   <div
                     style={{
-                      background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.secondary} 100%)`,
+                      background: brandColors.primary,
                       borderRadius: "50%",
                       width: "40px",
                       height: "40px",
@@ -281,7 +281,7 @@ const LandingPage: React.FC = () => {
                     <SyncOutlined style={{ fontSize: "20px", color: "white" }} />
                   </div>
                   <Title level={4} style={{ color: "white", margin: 0 }}>
-                    Multi Stock Sync
+                    Software de Gestion
                   </Title>
                 </div>
                 <Text style={{ color: "#ccc" }}>
@@ -318,7 +318,7 @@ const LandingPage: React.FC = () => {
           </Row>
           <Divider style={{ borderColor: "#555", margin: "40px 0 20px" }} />
           <div style={{ textAlign: "center" }}>
-            <Text style={{ color: "#999" }}>© 2024 Multi Stock Sync. Hecho con ❤️ para emprendedores como tú.</Text>
+            <Text style={{ color: "#999" }}>© 2024 Software de Gestion Crazy Family. Hecho con amor para emprendedores como tú.</Text>
           </div>
         </div>
       </div>
