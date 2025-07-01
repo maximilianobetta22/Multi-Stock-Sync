@@ -64,13 +64,57 @@ const CrearProducto: React.FC = () => {
     )
   }
 
-  const colorAttr = Array.isArray(atributosCategoria) ? atributosCategoria.find((a) => a.id === "COLOR") : undefined
-  const sizeAttr = Array.isArray(atributosCategoria) ? atributosCategoria.find((a) => a.id === "SIZE") : undefined
+  const colorValuesFallback = [ 
+    { id: "1", name: "Negro" },
+    { id: "2", name: "Blanco" },
+    { id: "3", name: "Rojo" },
+  ]
+
+  const sizeValuesFallback = [
+    { id: "1", name: "S" },
+    { id: "2", name: "M" },
+    { id: "3", name: "L" },
+    { id: "4", name: "XL" },
+  ]
+
+  let colorAttr = Array.isArray(atributosCategoria) 
+    ? atributosCategoria.find((a) => a.id === "COLOR") || {
+        id: "COLOR",
+        name: "Color",
+        value_type: "list",
+        values: colorValuesFallback,
+        tags: { required: false },
+      }
+    : {
+        id: "COLOR",
+        name: "Color",
+        value_type: "list",
+        values: colorValuesFallback,
+        tags: { required: false },
+      }
+
+  let sizeAttr = Array.isArray(atributosCategoria)
+    ? atributosCategoria.find((a) => a.id === "SIZE") || {
+        id: "SIZE",
+        name: "Talla",
+        value_type: "list",
+        values: sizeValuesFallback,
+        tags: { required: false },
+      }
+    : {
+        id: "SIZE",
+        name: "Talla",
+        value_type: "list",
+        values: sizeValuesFallback,
+        tags: { required: false },
+      }
   const sizeGridAttr = Array.isArray(atributosCategoria)
     ? atributosCategoria.find((a) => a.id === "SIZE_GRID_ID")
     : undefined
 
-  const sizeGridRequired = sizeGridAttr && (sizeGridAttr.tags?.required || sizeGridAttr.tags?.catalog_required)
+    
+
+  const sizeGridRequired = sizeGridAttr && (sizeGridAttr.tags?.required || sizeGridAttr.tags?.catalog_required) 
 
   return (
     <Card style={{ maxWidth: 900, margin: "0 auto" }}>
@@ -78,12 +122,12 @@ const CrearProducto: React.FC = () => {
 
       <Form layout="vertical" form={form} onFinish={onFinish}>
         {!catalogProductId && (
-          <Form.Item name="title" label="Título" rules={[{ required: true }]}>
-            <Input onChange={onTitleChange} placeholder="Ej: Polera de algodón" />
+          <Form.Item name="title" label="Título" rules={[{ required: true }]} help={''} status="" hasFeedback={false} validateTrigger="none">
+            <Input onChange={onTitleChange} placeholder="Ej: Polera de algodón" /> 
           </Form.Item>
         )}
 
-        <Form.Item name="category_id" label="Categoría (ID)">
+        <Form.Item name="category_id" label="Categoría (ID)" help={null}>
           <Input disabled value={categoryId} />
         </Form.Item>
 
@@ -92,12 +136,13 @@ const CrearProducto: React.FC = () => {
             name="catalog_product_id"
             label="Producto del catálogo"
             rules={[{ required: true, message: "Selecciona un producto del catálogo" }]}
+             help={null}
           >
             <Select
               showSearch
               onChange={setCatalogProductId}
               optionFilterProp="children"
-              placeholder="Selecciona el producto del catálogo"
+              placeholder="Selecciona el producto del catálogo" 
             >
               {catalogProducts.map((p: any) => (
                 <Select.Option key={p.id} value={p.id}>
@@ -108,7 +153,7 @@ const CrearProducto: React.FC = () => {
           </Form.Item>
         )}
 
-        <Form.Item name="condition" label="Condición" rules={[{ required: true }]}>
+        <Form.Item name="condition" label="Condición" rules={[{ required: true }]}  help={''}  status=""  hasFeedback={false} validateTrigger="none" >
           <Select placeholder="Selecciona una condición">
             {condicionesCategoria.map((c: string) => (
               <Select.Option key={c} value={c}>
@@ -141,12 +186,12 @@ const CrearProducto: React.FC = () => {
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="price" label="Precio" rules={[{ required: true }]}>
+            <Form.Item name="price" label="Precio" rules={[{ required: true }]} help={''}  status=""  hasFeedback={false} validateTrigger="none"> 
               <InputNumber min={0} style={{ width: "100%" }} />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="currency_id" label="Moneda" rules={[{ required: true }]}>
+            <Form.Item name="currency_id" label="Moneda" rules={[{ required: true }]} help={''}  status=""  hasFeedback={false} validateTrigger="none">
               <Select>
                 <Select.Option value="CLP">CLP</Select.Option>
                 <Select.Option value="USD">USD</Select.Option>
@@ -155,7 +200,7 @@ const CrearProducto: React.FC = () => {
           </Col>
         </Row>
 
-        <Form.Item name="quantity" label="Cantidad" rules={[{ required: true }]}>
+        <Form.Item name="quantity" label="Cantidad" rules={[{ required: true }]} help={''}  status=""  hasFeedback={false} validateTrigger="none">
           <InputNumber min={1} style={{ width: "100%" }} />
         </Form.Item>
 
@@ -171,6 +216,7 @@ const CrearProducto: React.FC = () => {
               <Form.Item
                 key={attr.id}
                 name={["attributes", attr.id]}
+                
                 label={
                   <Space>
                     {attr.name}
@@ -181,7 +227,7 @@ const CrearProducto: React.FC = () => {
                     )}
                   </Space>
                 }
-                rules={[{ required: true }]}
+                rules={[{ required: true }]} help={''}  status=""  hasFeedback={false} validateTrigger="none"
               >
                 {attr.value_type === "list" && attr.values?.length > 0 ? (
                   <Select
@@ -235,7 +281,12 @@ const CrearProducto: React.FC = () => {
           <Form.Item
             name="size_grid_id"
             label="Guía de Tallas"
-            rules={[{ required: sizeGridRequired || tieneVariaciones, message: "Selecciona una guía de tallas" }]}
+              rules={[
+                {
+                  required: (sizeGridRequired || tieneVariaciones) && (guiasTallas.length > 0 || sizeGridAttr?.values?.length > 0),
+                  message: "Selecciona una guía de tallas",
+                },
+              ]}
           >
             <Select
               placeholder="Selecciona una guía de tallas"
@@ -270,7 +321,7 @@ const CrearProducto: React.FC = () => {
           </Form.Item>
         )}
 
-        <Form.Item name="listing_type_id" label="Tipo de publicación" rules={[{ required: true }]}>
+        <Form.Item name="listing_type_id" label="Tipo de publicación" rules={[{ required: true }]}help={''}  status=""  hasFeedback={false} validateTrigger="none">
           <Select>
             <Select.Option value="gold_special">Clásica</Select.Option>
             <Select.Option value="gold_pro">Premium</Select.Option>
@@ -278,7 +329,7 @@ const CrearProducto: React.FC = () => {
         </Form.Item>
 
         {!catalogProductId && (
-          <Form.Item name="description" label="Descripción" rules={[{ required: true }]}>
+          <Form.Item name="description" label="Descripción" rules={[{ required: true }]} help={''}  status=""  hasFeedback={false} validateTrigger="none">
             <TextArea rows={4} placeholder="Describe tu producto..." />
           </Form.Item>
         )}
