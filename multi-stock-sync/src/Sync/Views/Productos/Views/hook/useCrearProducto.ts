@@ -16,6 +16,8 @@ export const useCrearProducto = (form: FormInstance) => {
   const debounceTimeout = useRef<NodeJS.Timeout | null>(null)
   const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}")
 
+debounceTimeout
+
   // Variaciones y tallas
   const [tieneVariaciones, setTieneVariaciones] = useState(false)
   const [variaciones, setVariaciones] = useState<any[]>([])
@@ -310,15 +312,19 @@ export const useCrearProducto = (form: FormInstance) => {
   }
 
   // 7. Handler de título (predice categoría)
-  const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const titulo = e.target.value
-    const currentFamilyName = form.getFieldValue("family_name")
-    if (!currentFamilyName) form.setFieldsValue({ family_name: titulo })
-    if (debounceTimeout.current) clearTimeout(debounceTimeout.current)
-    debounceTimeout.current = setTimeout(() => {
-      if (titulo.length > 4) predecirCategoria(titulo)
-    }, 500)
-  }
+const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const nuevoTitulo = e.target.value
+
+  // ⚠️ Resetea todos los campos EXCEPTO el título
+  const camposARespetar = ["title"]
+  const todosLosCampos = form.getFieldsValue()
+  const camposParaResetear = Object.keys(todosLosCampos).filter((key) => !camposARespetar.includes(key))
+
+  form.resetFields(camposParaResetear)
+
+  // Continúa como normal (si usas predicción de categoría, inclúyela aquí)
+  predecirCategoria(nuevoTitulo)
+}
 
   // 8. Agregar imagen
   const handleAgregarImagen = () => {
