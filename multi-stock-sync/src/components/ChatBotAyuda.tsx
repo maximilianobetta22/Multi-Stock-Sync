@@ -120,12 +120,44 @@ const ChatBotAyuda = () => {
 
   const seleccionarConexion = (conexion: any) => {
     if (conexion.tokenVigente) {
+      // Guardar la nueva conexión
       localStorage.setItem("conexionSeleccionada", JSON.stringify(conexion));
+      
+      // Mostrar mensaje de éxito
       message.success(`✅ Conexión cambiada exitosamente a: ${conexion.nickname}`);
+      
+      // Actualizar estado local
       setConexionActual(conexion);
       setMostrarCambioConexion(false);
       setOpen(false);
-      window.location.reload();
+      
+      // Obtener la URL actual
+      const currentUrl = window.location.pathname + window.location.search;
+      
+      // Si la URL actual contiene un client_id, reemplazarlo con el nuevo
+      const newClientId = conexion.client_id;
+      let newUrl = currentUrl;
+      
+      // Buscar patrones como /client_id/123456 y reemplazarlos
+      const clientIdPattern = /\/client_id\/\d+/g;
+      if (clientIdPattern.test(currentUrl)) {
+        newUrl = currentUrl.replace(clientIdPattern, `/client_id/${newClientId}`);
+      }
+      
+      // Buscar patrones como /123456/ (client_id directo en la ruta)
+      const directClientIdPattern = /\/\d{10,}/g; // Asumiendo que client_id tiene al menos 10 dígitos
+      if (directClientIdPattern.test(currentUrl) && !clientIdPattern.test(currentUrl)) {
+        newUrl = currentUrl.replace(directClientIdPattern, `/${newClientId}`);
+      }
+      
+      // Si no se detectó ningún client_id en la URL, solo recargar
+      if (newUrl === currentUrl) {
+        window.location.reload();
+      } else {
+        // Redirigir a la nueva URL con el client_id actualizado
+        window.location.href = newUrl;
+      }
+      
     } else {
       message.warning("⚠️ No puedes seleccionar una conexión con el token vencido.");
     }
