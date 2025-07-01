@@ -14,10 +14,10 @@ import * as XLSX from "xlsx";
 import jsPDF from "jspdf";
 import "jspdf-autotable";
 import styles from "./Despacho.module.css";
-import { 
-  FilePdfOutlined, 
+import {
+  FilePdfOutlined,
   FileExcelOutlined,
-  BoxPlotOutlined 
+  BoxPlotOutlined,
 } from "@ant-design/icons";
 
 const ProductosDespachar: React.FC = () => {
@@ -66,7 +66,6 @@ const ProductosDespachar: React.FC = () => {
     fetchData();
   }, [client_id]);
 
-  // Filtrado en tiempo real al escribir
   useEffect(() => {
     const filtrados = productosOriginal.filter(
       (p) =>
@@ -77,7 +76,6 @@ const ProductosDespachar: React.FC = () => {
     setCurrentPage(1);
   }, [filtro, productosOriginal]);
 
-  // Funciones de exportación
   const exportToExcel = () => {
     const datos = productos.map((p) => ({
       SKU: p.sku,
@@ -90,7 +88,7 @@ const ProductosDespachar: React.FC = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Despacho");
     XLSX.writeFile(wb, "productos_despachar.xlsx");
   };
-  // Funcion para exportar a PDF
+
   const exportToPDF = () => {
     const doc = new jsPDF();
     doc.text("Productos Listos para Despacho", 14, 10);
@@ -114,7 +112,6 @@ const ProductosDespachar: React.FC = () => {
     setShowModal(false);
   };
 
-  // Función de traducción
   const traducirCampo = (campo: string): string => {
     const map: Record<string, string> = {
       date_created: "Creación",
@@ -126,11 +123,29 @@ const ProductosDespachar: React.FC = () => {
       date_not_delivered: "No entregado",
       date_returned: "Devuelto",
       date_cancelled: "Cancelado",
+      date_delivered_estimated: "Fecha estimada de entrega",
     };
     return map[campo] || campo;
   };
 
-  // Lógica de paginación
+  const formatHistoryValue = (value: string | null): string => {
+    if (!value) {
+      return "Pendiente"; // Mensaje para valores null o undefined
+    }
+    try {
+      // Formatea la fecha a un formato más legible (ej: 30 de junio de 2025, 20:03)
+      return new Date(value).toLocaleString("es-CL", {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+      });
+    } catch (e) {
+      return value; // Si no es una fecha válida, devuelve el valor original
+    }
+  };
+
   const totalPages = Math.ceil(productos.length / itemsPerPage);
   const currentData = productos.slice(
     (currentPage - 1) * itemsPerPage,
@@ -144,7 +159,6 @@ const ProductosDespachar: React.FC = () => {
   return (
     <Container>
       <div className={styles.mainContainer}>
-
         <div className={styles.header}>
           <div className={styles.headerLeft}>
             <BoxPlotOutlined className={styles.headerIcon} />
@@ -152,6 +166,18 @@ const ProductosDespachar: React.FC = () => {
             <Badge pill bg="danger">
               {productos.length}
             </Badge>
+          </div>
+        </div>
+
+        {/* Btones exportar a excel y pdf */}
+        <div className={styles.controlsBar}>
+          <div className={styles.exportButtons}>
+            <Button className={styles.btnRojoOutline} onClick={exportToExcel} size="sm">
+              <FileExcelOutlined /> Exportar Excel
+            </Button>
+            <Button className={styles.btnRojoOutline} onClick={exportToPDF} size="sm">
+              <FilePdfOutlined /> Exportar PDF
+            </Button>
           </div>
           <Form onSubmit={(e) => e.preventDefault()} style={{ minWidth: '300px' }}>
             <Form.Control
@@ -163,20 +189,12 @@ const ProductosDespachar: React.FC = () => {
           </Form>
         </div>
 
+        {/* Información de los productos */}
         <div className={styles.paginationInfo}>
           <span>
             Mostrando {startItem}-{endItem} de {productos.length} productos
           </span>
-          <div className={styles.paginationControls}>
-            <Button className={styles.btnRojoOutline} onClick={exportToExcel} size="sm">
-              <FileExcelOutlined /> Exportar Excel
-            </Button>
-            <Button className={styles.btnRojoOutline} onClick={exportToPDF} size="sm">
-              <FilePdfOutlined /> Exportar PDF
-            </Button>
-          </div>
         </div>
-        <br />
         <Table responsive bordered hover>
           <thead className="table-light text-center">
             <tr>
@@ -228,7 +246,7 @@ const ProductosDespachar: React.FC = () => {
         </Table>
 
         {productos.length > 0 && !loading && (
-          <div className={styles.paginationInfo}>
+          <div className={styles.paginationFooter}>
             <span>
               Mostrando {startItem}-{endItem} de {productos.length} productos
             </span>
@@ -277,10 +295,11 @@ const ProductosDespachar: React.FC = () => {
           {selectedProduct?.shipment_history?.date_history ? (
             <ul>
               {Object.entries(selectedProduct.shipment_history.date_history).map(
-                ([key, value], i) => (
-                  <li key={i}>
+                ([key, value]) => (
+                  <li key={key}>
                     <strong>{traducirCampo(key)}:</strong>{" "}
-                    {String(value) || "No disponible"}
+                    {/* Se usa la nueva función de formato */}
+                    {formatHistoryValue(value as string | null)}
                   </li>
                 )
               )}

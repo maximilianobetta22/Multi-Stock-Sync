@@ -14,7 +14,7 @@
   align-items: center;
   flex-wrap: wrap;
   gap: 16px;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
 }
 
 .headerLeft {
@@ -24,7 +24,6 @@
 }
 
 .headerIcon {
-
   font-size: 1.5rem;
   color: #103bbb;
 }
@@ -35,18 +34,45 @@
   font-weight: 500;
 }
 
-/* FORM BUSCAR */
-.searchGroup {
-  max-width: 480px;
+.controlsBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.exportButtons {
+  display: flex;
+  gap: 12px;
+}
+
+/* INFORMACIÓN DE PAGINACIÓN */
+.paginationInfo {
   margin-bottom: 24px;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.paginationFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+  color: #555;
+  font-size: 0.9rem;
+}
+
+.paginationControls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
 
 /* TABLA */
-.tabla {
-  border-radius: 4px;
-  overflow: hidden;
-}
-
 .tableInfoCell {
   text-align: center;
   padding: 40px;
@@ -54,29 +80,20 @@
   font-size: 1rem;
 }
 
-/* EXPORTACIONES */
-.exportaciones {
-  display: flex;
-  gap: 12px;
-  margin-top: 16px;
-}
-
-
 /* BOTONES ROJOS */
-
 .btnRojo {
   background-color: #dc3545;
   border-color: #dc3545;
   color: #fff;
   transition: all 0.15s ease-in-out;
-
 }
 
-.btnRojo:hover {
+.btnRojo:hover,
+.btnRojo:focus {
   background-color: #c82333;
   border-color: #bd2130;
+  color: #fff;
 }
-
 
 .btnRojoOutline {
   color: #dc3545;
