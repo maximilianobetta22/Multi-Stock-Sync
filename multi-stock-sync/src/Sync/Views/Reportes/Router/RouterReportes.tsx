@@ -30,11 +30,12 @@ import Plantilla from "../Views/Plantillas/plantillas";
 import Compare from "../Views/Compare/Compare";
 import GananciasMensuales from "../Views/gananciasMensuales/GananciasMensuales";
 import PerdidasEmpresa from "../Views/Perdidas/PerdidasEmpresa";
+import Pagina404 from "../../Error/Pagina404";
 
 function RouterReportes() {
   return (
     <Routes>
-      <Route path="/*" element={<Navigate to="/sync/reportes/home" />} />
+       <Route path="*" element={<Pagina404 />} />
       <Route path="home" element={<HomeReportes />} />
 
       {/* Página central de reportes */}
@@ -76,6 +77,7 @@ function RouterReportes() {
       <Route path="compare/:mode/:client_id" element={<Compare />} />
 
       <Route path="plantillas/:client_id" element={<Plantilla />} />
+      
     </Routes>
   );
 }

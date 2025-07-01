@@ -19,6 +19,7 @@ import RouterPuntodeVenta from "../Views/PuntoVenta/Router/RouterPuntodeVenta"
 import RouterPerfil from "../Views/Perfil/Router/RouterPerfil";
 import RouterConfiguracion from "../Views/Configuracion/Router/RouterConfiguracion";
 import RouterGestionUsuarios from "../Views/GestionUsuarios/Router/RouterGestionUsuarios";
+import Pagina404 from "../Views/Error/Pagina404";
  // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 
 function RouterSync() {
@@ -46,7 +47,7 @@ function RouterSync() {
         <Route path="/Gestion-usuarios/*" element={<RouterGestionUsuarios />} />
 
 
-        <Route path="/*" element={<Navigate to="/sync/landing" />} />
+        <Route path="*" element={<Pagina404 />} />
       </Routes>
     </LayoutSync>
   );
