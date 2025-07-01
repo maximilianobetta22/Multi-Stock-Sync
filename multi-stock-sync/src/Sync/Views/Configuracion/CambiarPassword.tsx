@@ -86,7 +86,7 @@ const ConfiguracionUsuario: React.FC = () => {
       <Card 
         style={{ 
           marginBottom: '24px',
-          background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+          background: 'linear-gradient(135deg, #cd853f 0%, #d2691e 100%)',
           border: 'none',
           borderRadius: '16px'
         }}
@@ -98,7 +98,7 @@ const ConfiguracionUsuario: React.FC = () => {
               size={80} 
               style={{ 
                 backgroundColor: "#fff", 
-                color: "#FF6B35",
+                color: "#000000",
                 fontSize: '32px',
                 fontWeight: 'bold',
                 border: '3px solid rgba(255,255,255,0.3)'
@@ -123,7 +123,7 @@ const ConfiguracionUsuario: React.FC = () => {
       <Card 
         title={
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <LockOutlined style={{ marginRight: '8px', color: '#FF6B35' }} />
+            <LockOutlined style={{ marginRight: '8px', color: '#8b008b' }} />
             Seguridad de la Cuenta
           </div>
         }
@@ -154,7 +154,7 @@ const ConfiguracionUsuario: React.FC = () => {
             <Form.Item
               label={
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <LockOutlined style={{ marginRight: '6px', color: '#FF6B35' }} />
+                  <LockOutlined style={{ marginRight: '6px', color: '#8b008b' }} />
                   Contraseña Actual
                 </div>
               }
@@ -172,7 +172,7 @@ const ConfiguracionUsuario: React.FC = () => {
             <Form.Item
               label={
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <LockOutlined style={{ marginRight: '6px', color: '#FF6B35' }} />
+                  <LockOutlined style={{ marginRight: '6px', color: '#8b008b' }} />
                   Nueva Contraseña
                 </div>
               }
@@ -190,7 +190,7 @@ const ConfiguracionUsuario: React.FC = () => {
             <Form.Item
               label={
                 <div style={{ display: 'flex', alignItems: 'center' }}>
-                  <LockOutlined style={{ marginRight: '6px', color: '#FF6B35' }} />
+                  <LockOutlined style={{ marginRight: '6px', color: '#8b008b' }} />
                   Confirmar Nueva Contraseña
                 </div>
               }
@@ -253,7 +253,7 @@ const ConfiguracionUsuario: React.FC = () => {
                 style={{ 
                   borderRadius: '8px',
                   minWidth: '180px',
-                  background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+                  background: '#32cd32',
                   border: 'none'
                 }}
               >

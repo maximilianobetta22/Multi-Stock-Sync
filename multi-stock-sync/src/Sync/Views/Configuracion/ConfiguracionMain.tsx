@@ -1,6 +1,6 @@
-import React from "react";
+/* import React from "react"; */
 import { useNavigate } from "react-router-dom";
-import { Card, Button, Typography, Space, Avatar } from "antd";
+import { Card, /*Button,*/ Typography, Space, Avatar } from "antd"; 
 import { 
   SettingOutlined, 
   LockOutlined, 
@@ -38,7 +38,7 @@ export default function ConfiguracionMain() {
       <Card 
         style={{ 
           marginBottom: '24px',
-          background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+          background: 'linear-gradient(135deg, #dc143c 0%,rgb(146, 32, 32) 100%)',
           border: 'none',
           borderRadius: '16px'
         }}
@@ -50,7 +50,7 @@ export default function ConfiguracionMain() {
               size={80} 
               style={{ 
                 backgroundColor: "#fff", 
-                color: "#FF6B35",
+                color: "#000000",
                 fontSize: '32px',
                 fontWeight: 'bold',
                 border: '3px solid rgba(255,255,255,0.3)'
@@ -75,7 +75,7 @@ export default function ConfiguracionMain() {
       <Card 
         title={
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <SettingOutlined style={{ marginRight: '8px', color: '#FF6B35' }} />
+            <SettingOutlined style={{ marginRight: '8px', color: '#dc143c' }} />
             Opciones de Cuenta
           </div>
         }
@@ -111,7 +111,7 @@ export default function ConfiguracionMain() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  background: '#FF6B35',
+                  background: '#dc143c',
                   borderRadius: '8px',
                   padding: '8px',
                   display: 'flex',
@@ -130,7 +130,7 @@ export default function ConfiguracionMain() {
                   </Text>
                 </div>
               </div>
-              <ArrowRightOutlined style={{ color: '#FF6B35', fontSize: '16px' }} />
+              <ArrowRightOutlined style={{ color: '#dc143c', fontSize: '16px' }} />
             </div>
           </div>
 
@@ -159,7 +159,7 @@ export default function ConfiguracionMain() {
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                 <div style={{
-                  background: '#FF6B35',
+                  background: '#dc143c',
                   borderRadius: '8px',
                   padding: '8px',
                   display: 'flex',
@@ -178,7 +178,7 @@ export default function ConfiguracionMain() {
                   </Text>
                 </div>
               </div>
-              <ArrowRightOutlined style={{ color: '#FF6B35', fontSize: '16px' }} />
+              <ArrowRightOutlined style={{ color: '#dc143c', fontSize: '16px' }} />
             </div>
           </div>
 

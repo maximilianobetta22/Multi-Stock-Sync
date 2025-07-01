@@ -39,7 +39,7 @@ const Styled = styled.div` /* Estilos del componente Card */
     display: flex;
     flex-direction: column;
     align-items: center;
-    color: #fff;
+    color: #000000;
   }
 
   /* FRONT: fondo oscuro + línea plateada + franja naranja */
@@ -73,7 +73,18 @@ rgb(67, 0, 54) 100%);
   /* BACK: diseño original + descripción scrollable */
   .back {
     transform: rotateX(180deg);
-    background: #000;
+      box-shadow: 
+    0 0 5px rgba(255, 255, 255, 0.7),
+    0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 15px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.1),
+    0 0 25px rgba(255, 255, 255, 0.05),
+    0 0 30px rgba(255, 255, 255, 0.02),
+    0 0 35px rgba(255, 255, 255, 0.01),
+    0 0 10px rgba(0, 0, 0, 0.2) inset,
+    0 0 20px rgba(0, 0, 0, 0.1) inset,
+    0 0 30px rgba(0, 0, 0, 0.05) inset;
+    background:rgb(220, 216, 216);
     padding: 0.1rem;
     justify-content: flex-start;
   }
@@ -85,12 +96,12 @@ rgb(67, 0, 54) 100%);
     width: 95%;
     height: 95%;
     background: linear-gradient(
-      #333333 0%,
-      #333333 80%,
+      #efb810 0%,
+      #efb810 80%,
       #C0C0C0 80%,
       #C0C0C0 85%,
-      #FF6A00 85%,
-      #FF6A00 100%);
+rgb(0, 0, 0) 85%,
+rgb(0, 0, 0) 100%);
     border-radius: 1px;
     padding: 1rem;
     display: flex;
@@ -101,7 +112,7 @@ rgb(67, 0, 54) 100%);
   }
 
   .back-content .description // Descripción del componente
-    color:rgb(255, 255, 255); // Color del texto
+    color:rgb(0, 0, 0); // Color del texto
     font-size: 0.85rem; // Tamaño de la fuente
     text-align: left; // Alineación del texto
     line-height: 1.4; // Altura de línea

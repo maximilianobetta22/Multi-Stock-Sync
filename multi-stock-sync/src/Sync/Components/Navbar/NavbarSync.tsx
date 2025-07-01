@@ -77,7 +77,7 @@ const Navbar = () => {
   }
 
   const logoImageStyle: React.CSSProperties = {
-    height: "45px",
+    height: "55px",
     width: "auto",
     filter: "drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1))",
     transition: "all 0.3s ease",
@@ -131,11 +131,11 @@ const Navbar = () => {
         <Link to="/sync/home" style={{ textDecoration: "none" }}>
           <div style={logoContainerStyle}>
             <img
-              src="/assets/img/logo/logo-blanco-text.svg"
-              alt="Multi Stock Sync"
+              src="/assets/img/logo/Software_de_Gestion.png"
+              alt="Software de Gestion"
               style={logoImageStyle}
               onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "scale(1.05)"
+                e.currentTarget.style.transform = "scale(1.1)"
                 e.currentTarget.style.filter = "drop-shadow(0 4px 8px rgba(0, 0, 0, 0.2))"
               }}
               onMouseLeave={(e) => {

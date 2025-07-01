@@ -18,17 +18,30 @@ const HomeBodega = () => {
   const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
   const [companyFilter, setCompanyFilter] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("");
-  const { fetchWarehouses, warehouses, loading, error } =
-    useWarehouseManagement();
+  const {
+    fetchWarehouses,
+    warehouses,
+    loading,
+    error,
+    deleteWarehouse,
+  } = useWarehouseManagement();
+
+  const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
+  const handleDeleteConfirm = async () => {
+    if (pendingDeleteId === null) return;
+    await deleteWarehouse(String(pendingDeleteId));
+    setPendingDeleteId(null);
+  };
+  const cancelDelete = () => setPendingDeleteId(null);
 
   const [messageApi, contextHolder] = message.useMessage();
+
   useEffect(() => {
-    //Traer todas las bodegas
-    fetchWarehouses(); //Función que trae las bodegas desde useWarehouseManagement
+    fetchWarehouses();
   }, []);
 
   useEffect(() => {
-    let filtered = warehouses || [];
+    let filtered = warehouses;
 
     if (companyFilter) {
       filtered = filtered.filter(
@@ -54,7 +67,7 @@ const HomeBodega = () => {
   const companyOptions = [
     { value: "", label: "Todas" },
     ...Array.from(new Set(warehouses.map((w) => w.company?.name || "")))
-      .filter((name) => name) // Filter out empty names
+      .filter((name) => name)
       .map((company) => ({
         value: company,
         label: company,
@@ -97,7 +110,6 @@ const HomeBodega = () => {
           options={companyOptions}
           onChange={(e) => setCompanyFilter(e.target.value)}
         />
-
         <DropdownFilter
           id="sortOrder"
           label="Ordenar por fecha de creación:"
@@ -105,12 +117,7 @@ const HomeBodega = () => {
           options={sortOptions}
           onChange={(e) => setSortOrder(e.target.value)}
         />
-
-        <DrawerCreateWarehouse
-          onWarehouseCreated={() => {
-            fetchWarehouses();
-          }}
-        />
+        <DrawerCreateWarehouse onWarehouseCreated={fetchWarehouses} />
       </div>
 
       <div className={styles.bodegas_box}>
@@ -137,6 +144,31 @@ const HomeBodega = () => {
                 </span>
               </div>
             </Link>
+
+            {pendingDeleteId === warehouse.id ? (
+              <div className={styles.confirm_box}>
+                <p>¿Estás seguro de que quieres eliminar esta bodega?</p>
+                <button
+                  onClick={handleDeleteConfirm}
+                  className={styles.confirm_yes}
+                >
+                  Sí
+                </button>
+                <button
+                  onClick={cancelDelete}
+                  className={styles.confirm_no}
+                >
+                  No
+                </button>
+              </div>
+            ) : (
+              <button
+                className={styles.delete_button}
+                onClick={() => setPendingDeleteId(warehouse.id)}
+              >
+                Eliminar
+              </button>
+            )}
           </div>
         ))}
       </div>

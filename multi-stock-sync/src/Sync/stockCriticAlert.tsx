@@ -175,7 +175,9 @@ export default function StockCriticAlert() {
   // Trigger button con badge si hay productos críticos - Mejorado para header
   const triggerButton = (
     <Tooltip title={loading ? "Cargando alertas..." : `${data?.length || 0} productos con stock crítico`}>
-      <Badge count={loading ? 0 : data?.length || 0} size="small" offset={[0, 0]}>
+      <Badge
+       showZero
+       count={loading ? 0 : data?.length || 0} size="small" offset={[0, 0]}>
         <Button
           type="text"
           icon={<BellOutlined />}
@@ -304,12 +306,13 @@ export default function StockCriticAlert() {
                     dataIndex: "available_quantity",
                     align: "center",
                     width: 100,
-                    render: (stock: number) => (
-                      <Badge
-                        count={stock}
-                        style={{
-                          backgroundColor: stock <= 0 ? "#ff4d4f" : "#faad14",
-                        }}
+                  render: (stock: number | undefined) => (
+                    <Badge
+                      count={typeof stock === "number" ? stock : 0}
+                      showZero
+                      style={{
+                        backgroundColor: stock !== undefined && stock <= 0 ? "#ff4d4f" : "#faad14",
+                      }}
                       />
                     ),
                     sorter: (a: any, b: any) => a.available_quantity - b.available_quantity,
