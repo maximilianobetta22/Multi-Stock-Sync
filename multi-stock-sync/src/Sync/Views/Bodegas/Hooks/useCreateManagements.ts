@@ -13,7 +13,7 @@ export const useCreateManagements = () => {
     location: string;
     assigned_company_id: number;
   }) => {
-    setLoading(false);
+    setLoading(true);
     try {
       const response = await axiosInstance.post(
         `${process.env.VITE_API_URL}/warehouses`,
@@ -82,7 +82,7 @@ export const useCreateManagements = () => {
     setLoading(true); // Activar estado de carga
     try {
       const response = await axiosInstance.get(
-        `${process.env.VITE_API_URL}/companies`
+        `${process.env.VITE_API_URL}/companies-list`
       );
       setCompanies(response.data); // Guardar las compañías en el estado
     } catch (error) {
