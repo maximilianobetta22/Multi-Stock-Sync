@@ -13,7 +13,7 @@ const Logout = () => {
         await axiosInstance.post(`${import.meta.env.VITE_API_URL}/logout`);
         localStorage.removeItem("user");
         localStorage.removeItem("token");
-        navigate("/sync/login");
+        navigate("/sync/landing");
       } catch (error) {
         console.error("Error during logout:", error);
       }

@@ -21,6 +21,8 @@ import RouterConfiguracion from "../Views/Configuracion/Router/RouterConfiguraci
 import RouterGestionUsuarios from "../Views/GestionUsuarios/Router/RouterGestionUsuarios";
 import Pagina404 from "../Views/Error/Pagina404";
 import PrivateRoute from "../../Auth/PrivateRoute";
+import RoleRoute from "../../RoutesProtection/RoleRoute";
+import AccesoDenegado from "../../RoutesProtection/AccesoDenegado"; 
 
  // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 
@@ -28,11 +30,16 @@ function RouterSync() {
   return (
     <LayoutSync>
       <Routes>
- <Route path="/conexiones/*" element={
-  <PrivateRoute>
-    <RouterConexiones />
-  </PrivateRoute>
-} />
+ <Route
+          path="/conexiones/*"
+          element={
+            <PrivateRoute>
+            <RoleRoute allowedRoleIds={[1, 4, 7]}> 
+                <RouterConexiones />
+              </RoleRoute>
+            </PrivateRoute>
+          }
+        />
 
 <Route path="/home" element={
   <PrivateRoute>
@@ -44,25 +51,34 @@ function RouterSync() {
 
 <Route path="/productos/*" element={
   <PrivateRoute>
+    <RoleRoute allowedRoleIds={[1, 4, 7]}> 
     <RouterProductos />
+    </RoleRoute>
   </PrivateRoute>
 } />
 
 <Route path="/companias/*" element={
   <PrivateRoute>
+    <RoleRoute allowedRoleIds={[1, 4, 7]}> 
     <RouterCompania />
+        </RoleRoute>
   </PrivateRoute>
 } />
 
 <Route path="/bodegas/*" element={
   <PrivateRoute>
+    <RoleRoute allowedRoleIds={[1, 4, 7]}> 
     <RouterBodegas />
+    </RoleRoute>
   </PrivateRoute>
 } />
 
 <Route path="/reportes/*" element={
   <PrivateRoute>
+     <RoleRoute allowedRoleIds={[1, 4, 7]}> 
     <RouterReportes />
+        </RoleRoute>
+
   </PrivateRoute>
 } />
 
@@ -74,13 +90,17 @@ function RouterSync() {
 
 <Route path="/envios" element={
   <PrivateRoute>
+    <RoleRoute allowedRoleIds={[1, 4, 7]}> 
     <GestionEnvios />
+    </RoleRoute>
   </PrivateRoute>
 } />
 
 <Route path="/punto-de-venta/*" element={
   <PrivateRoute>
+     <RoleRoute allowedRoleIds={[1, 4, 7]}> 
     <RouterPuntodeVenta />
+    </RoleRoute>
   </PrivateRoute>
 } />
 
@@ -116,10 +136,13 @@ function RouterSync() {
 
 <Route path="/Gestion-usuarios/*" element={
   <PrivateRoute>
+    <RoleRoute allowedRoleIds={[1, 4, 7]}> 
     <RouterGestionUsuarios />
+    </RoleRoute>
   </PrivateRoute>
 } />
 <Route path="/" element={<Navigate to="/sync/landing" />} />
+<Route path="/403" element={  <PrivateRoute><AccesoDenegado /></PrivateRoute>} />
 
         <Route path="*" element={<Pagina404 />} />
       </Routes>
