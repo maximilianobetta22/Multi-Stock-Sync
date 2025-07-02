@@ -38,10 +38,11 @@
   position: relative;
 }
 
-.bodega_item_link:hover,
-.bodega_item_link:hover .bodega_item_date {
-  text-decoration: none;
+.bodega_item_link:hover .bodega_item_title,
+.bodega_item_link:hover .bodega_item_date,
+.bodega_item_link:hover .bodega_item_date_box {
   color: #fff;
+  text-decoration: none;
 }
 
 .bodega_item_link:hover .bodega_item_bg {
@@ -182,22 +183,6 @@
   text-decoration: underline;
 }
 
-.delete_button {
-  margin-top: 16px;
-  padding: 8px 12px;
-  background-color: #ff4d4f;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s ease;
-}
-
-.delete_button:hover {
-  background-color: #d9363e;
-}
-
 .confirm_box {
   margin-top: 12px;
   padding: 10px;
@@ -224,4 +209,43 @@
 .confirm_no {
   background-color: #ccc;
   color: black;
+}
+.button_group {
+  display: flex;
+  margin-top: 12px;
+  width: 100%;
+}
+
+.edit_button,
+.delete_button {
+  flex: 1;
+  padding: 12px 0;
+  font-size: 14px;
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 0;
+}
+
+/* Botón Editar */
+.edit_button {
+  background-color: #1890ff;
+  color: #fff;
+  border-bottom-left-radius: 6px;
+}
+
+.edit_button:hover {
+  background-color: #096dd9;
+}
+
+/* Botón Eliminar */
+.delete_button {
+  background-color: #ff4d4f;
+  color: #fff;
+  border-bottom-right-radius: 6px;
+}
+
+.delete_button:hover {
+  background-color: #d9363e;
 }

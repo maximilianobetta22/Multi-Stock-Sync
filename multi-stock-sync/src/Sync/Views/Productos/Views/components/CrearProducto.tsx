@@ -565,7 +565,10 @@ const CrearProducto: React.FC = () => {
         </Form.Item>
 
         <Form.Item name="warranty_time" label="Duración de Garantía">
-          <Input placeholder="Ej: 90 días" />
+          <Select placeholder="Selecciona una opción">
+            <Select.Option value="90 días">90 días</Select.Option>
+            <Select.Option value="sin garantía">Sin garantía</Select.Option>
+          </Select>
         </Form.Item>
 
         <Space>

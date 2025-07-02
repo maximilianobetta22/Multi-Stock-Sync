@@ -97,7 +97,7 @@ const SideBar = () => {
           </li>
           )}
           <div className={styles.LogoWrapper}>
-            <NavLink to="/sync/lading" className={styles.LogoLink}>
+            <NavLink to="/sync/landing" className={styles.LogoLink}>
               <img
                 src="/assets/img/logo/Crazy_logo_bordes.png"
                 alt="Multi Stock Sync"
