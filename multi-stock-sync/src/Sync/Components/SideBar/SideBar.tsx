@@ -86,6 +86,7 @@ const SideBar = () => {
           </li>
         </div>
         <div className={styles.BottomSection}>
+          {userContext.user && (
           <li
             onClick={handleLogout}
             className={styles.NavLink}
@@ -94,6 +95,7 @@ const SideBar = () => {
             <LogoutOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
             Cerrar sesión
           </li>
+          )}
           <div className={styles.LogoWrapper}>
             <NavLink to="/sync/lading" className={styles.LogoLink}>
               <img

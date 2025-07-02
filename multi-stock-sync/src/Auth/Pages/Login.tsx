@@ -25,9 +25,9 @@ export const Login: React.FC = () => {
   const navigate = useNavigate()
 
   const brandColors = {
-    primary: "#df0000",
+    primary: "rgb(0, 58, 142)",
     primaryDark: "#D84315",
-    secondary: "#FF9800",
+    secondary: "#6e75b4",
     accent: "#FFC107",
   }
 
