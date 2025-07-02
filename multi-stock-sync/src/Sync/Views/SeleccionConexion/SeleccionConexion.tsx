@@ -115,45 +115,85 @@ try {
     );
   }
 
-  return (
-    <div style={{ padding: "2rem" }}>
-      <Title level={2} style={{ textAlign: "center" }}>
-        Selecciona la tienda para trabajar
-      </Title>
+return (
+<div style={{ padding: "2rem", maxWidth: 1200, margin: "0 auto" }}>
+  <div style={{ display: "flex", justifyContent: "center" }}>
+    <Title
+      level={2}
+      style={{
+        textAlign: "center",
+        marginBottom: "2.5rem",
+        color: "#1f2937",
+        borderBottom: "4px solid #f87171",
+        paddingBottom: "0.4rem",
+        display: "inline-block",
+      }}
+    >
+      🛒 Selecciona la tienda con la que vas a trabajar
+    </Title>
+  </div>
 
-      <List
-        grid={{ gutter: 16, column: 2 }}
-        dataSource={conexiones}
-        renderItem={(conexion) => (
-          <List.Item>
-            <Card
-              title={conexion.nickname}
-              bordered
-              actions={[
-                <Button
-                  type="primary"
-                  disabled={!conexion.tokenVigente}
-                  onClick={() => handleSeleccion(conexion)}
-                >
-                  {conexion.tokenVigente ? "Seleccionar" : "Token vencido"}
-                </Button>,
-              ]}
-            >
-              <p>
-                <Text strong>Email:</Text> {conexion.email}
-              </p>
-              <p>
-                <Text strong>Estado del Token:</Text>{" "}
-                <Text type={conexion.tokenVigente ? "success" : "danger"}>
-                  {conexion.tokenVigente ? "Vigente" : "Vencido"}
-                </Text>
-              </p>
-            </Card>
-          </List.Item>
-        )}
-      />
-    </div>
-  );
+  <List
+    grid={{ gutter: 32, column: 2, xs: 1, sm: 1, md: 2 }}
+    dataSource={conexiones}
+    renderItem={(conexion, index) => {
+      const pastelColors = [
+        "#fde68a", // amarillo pastel
+        "#a5f3fc", // celeste pastel
+        "#fbcfe8", // rosado pastel
+        "#c7d2fe", // lavanda pastel
+        "#bbf7d0", // verde menta
+        "#fecaca", // rojo claro
+      ];
+      const color = pastelColors[index % pastelColors.length];
+
+      return (
+        <List.Item>
+          <Card
+            style={{
+              backgroundColor: color,
+              border: "1px solid #d1d5db",
+              borderRadius: 12,
+              minHeight: 260, // Más alto
+              height: "100%",
+              display: "flex",
+              flexDirection: "column",
+              justifyContent: "space-between",
+              boxShadow: "0 6px 14px rgba(0,0,0,0.06)",
+              padding: "1rem",
+            }}
+            title={
+              <Text strong style={{ fontSize: 18, color: "#111827" }}>
+                🏬 {conexion.nickname}
+              </Text>
+            }
+            actions={[
+              <Button
+                block
+                disabled={!conexion.tokenVigente}
+                onClick={() => handleSeleccion(conexion)}
+              >
+                {conexion.tokenVigente ? "Seleccionar" : "Token vencido"}
+              </Button>,
+            ]}
+          >
+            <p>
+              <Text strong>Email:</Text> <br />
+              <Text>{conexion.email}</Text>
+            </p>
+            <p>
+              <Text strong>Estado del Token:</Text> <br />
+              <Text style={{ color: conexion.tokenVigente ? "#16a34a" : "#dc2626", fontWeight: 500 }}>
+                {conexion.tokenVigente ? "Vigente" : "Vencido"}
+              </Text>
+            </p>
+          </Card>
+        </List.Item>
+      );
+    }}
+  />
+</div>
+);
 };
 
 export default SeleccionConexion;

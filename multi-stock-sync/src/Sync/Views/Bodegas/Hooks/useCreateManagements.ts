@@ -17,7 +17,12 @@ export const useCreateManagements = () => {
     try {
       const response = await axiosInstance.post(
         `${process.env.VITE_API_URL}/warehouses`,
-        values
+        values,
+        {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+        },
+      }
       );
       console.log(`Respuesta del servidor: `, response.data);
       return response.data;
@@ -76,22 +81,21 @@ export const useCreateManagements = () => {
     }
   };
 
-  const fetchCompanies = async () => {
-    if (loading) return; // Evitar múltiples peticiones simultáneas
-
-    setLoading(true); // Activar estado de carga
-    try {
-      const response = await axiosInstance.get(
-        `${process.env.VITE_API_URL}/companies-list`
-      );
-      setCompanies(response.data); // Guardar las compañías en el estado
-    } catch (error) {
-      console.error("Error fetching companies:", error);
-      setError("Error al obtener las compañías.");
-    } finally {
-      setLoading(false); // Desactivar estado de carga
-    }
-  };
+const fetchCompanies = async () => {
+  try {
+    const response = await axiosInstance.get<Company[]>(
+      `${import.meta.env.VITE_API_URL}/warehouses-list`
+    );
+    // Extrae solo las compañías sin duplicados
+    const uniqueCompanies = Array.from(
+      new Map(response.data.map((w: any) => [w.company.id, w.company])).values()
+    );
+    setCompanies(uniqueCompanies);
+  } catch (error) {
+    console.error("Error al obtener compañías:", error);
+    setError("No se pudieron cargar las compañías");
+  }
+};
 
   return {
     createWarehouse,

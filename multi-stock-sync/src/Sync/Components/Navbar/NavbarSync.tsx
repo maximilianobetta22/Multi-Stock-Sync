@@ -112,7 +112,7 @@ const Navbar = () => {
     fontWeight: "600",
     fontSize: "14px",
     border: "2px solid rgba(255, 255, 255, 0.3)",
-    background: "rgba(255, 255, 255, 0.1)",
+    background: "rgba(255, 0, 0, 0.8)",
     color: "white",
     backdropFilter: "blur(10px)",
     transition: "all 0.3s ease",
@@ -120,7 +120,7 @@ const Navbar = () => {
 
   const primaryButtonStyle: React.CSSProperties = {
     ...buttonStyle,
-    background: "rgba(255, 255, 255, 0.2)",
+    background: "rgba(255, 0, 0, 0.8)",
     border: "2px solid rgba(255, 255, 255, 0.4)",
   }
 
@@ -165,7 +165,7 @@ const Navbar = () => {
                 <Space style={{ cursor: "pointer" }}>
                   <Avatar
                     style={{
-                      backgroundColor: "rgba(255, 255, 255, 0.2)",
+                      backgroundColor: "rgba(255, 0, 0, 0.2)",
                       border: "2px solid rgba(255, 255, 255, 0.3)",
                       color: "white",
                       fontWeight: "bold",
@@ -192,12 +192,12 @@ const Navbar = () => {
                 <Button
                   style={buttonStyle}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"
+                    e.currentTarget.style.background = "rgba(88, 0, 99, 0.82)"
                     e.currentTarget.style.transform = "translateY(-1px)"
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)"
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgb(0, 0, 0)"
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.1)"
+                    e.currentTarget.style.background = "rgba(255, 0, 0, 0.8)"
                     e.currentTarget.style.transform = "translateY(0)"
                     e.currentTarget.style.boxShadow = "none"
                   }}
@@ -209,12 +209,12 @@ const Navbar = () => {
                 <Button
                   style={primaryButtonStyle}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.3)"
+                    e.currentTarget.style.background = "rgba(88, 0, 99, 0.82)"
                     e.currentTarget.style.transform = "translateY(-1px)"
-                    e.currentTarget.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.15)"
+                    e.currentTarget.style.boxShadow = "0 4px 12px rgb(0, 0, 0)"
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "rgba(255, 255, 255, 0.2)"
+                    e.currentTarget.style.background = "rgba(255, 0, 0, 0.8)"
                     e.currentTarget.style.transform = "translateY(0)"
                     e.currentTarget.style.boxShadow = "none"
                   }}

@@ -13,11 +13,13 @@ import { useWarehouseManagement } from "../../Hooks/useWarehouseManagement";
 import DropdownFilter from "../../Components/DropdownFilterBodega";
 import { DrawerCreateWarehouse } from "../../Components/DrawerCreateWarehouse";
 import { message } from "antd";
+import axiosInstance from "../../../../../axiosConfig";
 
 const HomeBodega = () => {
   const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
   const [companyFilter, setCompanyFilter] = useState<string>("");
   const [sortOrder, setSortOrder] = useState<string>("");
+
   const {
     fetchWarehouses,
     warehouses,
@@ -27,12 +29,11 @@ const HomeBodega = () => {
   } = useWarehouseManagement();
 
   const [pendingDeleteId, setPendingDeleteId] = useState<number | null>(null);
-  const handleDeleteConfirm = async () => {
-    if (pendingDeleteId === null) return;
-    await deleteWarehouse(String(pendingDeleteId));
-    setPendingDeleteId(null);
-  };
-  const cancelDelete = () => setPendingDeleteId(null);
+  const [editingWarehouseId, setEditingWarehouseId] = useState<number | null>(null);
+  const [editedData, setEditedData] = useState<{ name: string; location: string }>({
+    name: "",
+    location: "",
+  });
 
   const [messageApi, contextHolder] = message.useMessage();
 
@@ -80,6 +81,43 @@ const HomeBodega = () => {
     { value: "desc", label: "Descendente" },
   ];
 
+  const handleDeleteConfirm = async () => {
+    if (pendingDeleteId === null) return;
+    await deleteWarehouse(String(pendingDeleteId));
+    setPendingDeleteId(null);
+  };
+
+  const cancelDelete = () => setPendingDeleteId(null);
+
+  const startEditing = (warehouse: Warehouse) => {
+    setEditingWarehouseId(warehouse.id);
+    setEditedData({ name: warehouse.name, location: warehouse.location });
+  };
+
+  const saveEditedWarehouse = async () => {
+    if (editingWarehouseId === null) return;
+
+    try {
+      await axiosInstance.patch(
+        `${import.meta.env.VITE_API_URL}/warehouses/${editingWarehouseId}`,
+        editedData,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          },
+        }
+      );
+      setEditingWarehouseId(null);
+      fetchWarehouses();
+    } catch (error) {
+      console.error("Error al editar la bodega:", error);
+      messageApi.open({
+        type: "error",
+        content: "No se pudo actualizar la bodega.",
+      });
+    }
+  };
+
   useEffect(() => {
     if (error) {
       messageApi.open({
@@ -123,51 +161,96 @@ const HomeBodega = () => {
       <div className={styles.bodegas_box}>
         {filteredWarehouses.map((warehouse) => (
           <div className={styles.bodega_item} key={warehouse.id}>
-            <Link
-              to={`../DetalleBodega/${warehouse.id}`}
-              className={styles.bodega_item_link}
-            >
-              <div className={styles.bodega_item_bg}></div>
-              <div className={styles.bodega_item_title}>
-                <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
-              </div>
-              <div className={styles.bodega_item_date_box}>
-                <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
-                <span className={styles.bodega_item_date}>
-                  {new Date(warehouse.updated_at).toLocaleDateString()}
-                </span>
-              </div>
-              <div className={styles.bodega_item_date_box}>
-                <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
-                <span className={styles.bodega_item_date}>
-                  {warehouse.location}
-                </span>
-              </div>
-            </Link>
-
-            {pendingDeleteId === warehouse.id ? (
-              <div className={styles.confirm_box}>
-                <p>¿Estás seguro de que quieres eliminar esta bodega?</p>
-                <button
-                  onClick={handleDeleteConfirm}
-                  className={styles.confirm_yes}
-                >
-                  Sí
-                </button>
-                <button
-                  onClick={cancelDelete}
-                  className={styles.confirm_no}
-                >
-                  No
-                </button>
+            {editingWarehouseId === warehouse.id ? (
+              <div className={styles.bodega_item_link}>
+                <input
+                  className={styles.input_edit}
+                  value={editedData.name}
+                  onChange={(e) =>
+                    setEditedData({ ...editedData, name: e.target.value })
+                  }
+                  placeholder="Nombre"
+                />
+                <input
+                  className={styles.input_edit}
+                  value={editedData.location}
+                  onChange={(e) =>
+                    setEditedData({ ...editedData, location: e.target.value })
+                  }
+                  placeholder="Ubicación"
+                />
+                <div className={styles.button_group}>
+                  <button onClick={saveEditedWarehouse} className={styles.confirm_yes}>
+                    Guardar
+                  </button>
+                  <button
+                    onClick={() => setEditingWarehouseId(null)}
+                    className={styles.confirm_no}
+                  >
+                    Cancelar
+                  </button>
+                </div>
               </div>
             ) : (
-              <button
-                className={styles.delete_button}
-                onClick={() => setPendingDeleteId(warehouse.id)}
-              >
-                Eliminar
-              </button>
+              <>
+                <Link
+                  to={`../DetalleBodega/${warehouse.id}`}
+                  className={styles.bodega_item_link}
+                >
+                  <div className={styles.bodega_item_bg}></div>
+                  <div className={styles.bodega_item_title}>
+                    <FontAwesomeIcon icon={faWarehouse} /> {warehouse.name}
+                  </div>
+                  <div className={styles.bodega_item_date_box}>
+                    <FontAwesomeIcon icon={faCalendarPlus} /> Actualizado:{" "}
+                    <span className={styles.bodega_item_date}>
+                      {new Date(warehouse.updated_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                  <div className={styles.bodega_item_date_box}>
+                    <FontAwesomeIcon icon={faMapPin} /> Ubicación:{" "}
+                    <span className={styles.bodega_item_date}>
+                      {warehouse.location}
+                    </span>
+                  </div>
+                  <div className={styles.bodega_item_date_box}>
+                    <FontAwesomeIcon icon={faWarehouse} /> Compañía:{" "}
+                    <span className={styles.bodega_item_date}>
+                      {warehouse.company?.name || "Sin asignar"}
+                    </span>
+                  </div>
+                </Link>
+
+                {pendingDeleteId === warehouse.id ? (
+                  <div className={styles.confirm_box}>
+                    <p>¿Estás seguro de que querés eliminar esta bodega?</p>
+                    <button
+                      onClick={handleDeleteConfirm}
+                      className={styles.confirm_yes}
+                    >
+                      Sí
+                    </button>
+                    <button onClick={cancelDelete} className={styles.confirm_no}>
+                      No
+                    </button>
+                  </div>
+                ) : (
+                  <div className={styles.button_group}>
+                    <button
+                      className={styles.edit_button}
+                      onClick={() => startEditing(warehouse)}
+                    >
+                      ✏️ Editar
+                    </button>
+                    <button
+                      className={styles.delete_button}
+                      onClick={() => setPendingDeleteId(warehouse.id)}
+                    >
+                      🗑 Eliminar
+                    </button>
+                  </div>
+                )}
+              </>
             )}
           </div>
         ))}
