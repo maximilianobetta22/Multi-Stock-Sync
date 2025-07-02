@@ -20,32 +20,106 @@ import RouterPerfil from "../Views/Perfil/Router/RouterPerfil";
 import RouterConfiguracion from "../Views/Configuracion/Router/RouterConfiguracion";
 import RouterGestionUsuarios from "../Views/GestionUsuarios/Router/RouterGestionUsuarios";
 import Pagina404 from "../Views/Error/Pagina404";
+import PrivateRoute from "../../Auth/PrivateRoute";
+
  // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 
 function RouterSync() {
   return (
     <LayoutSync>
       <Routes>
-        <Route path="/conexiones/*" element={<RouterConexiones />} />
-        <Route path="/home" element={<HomeSync />} />
-        <Route path="/landing" element={<LandingPage />} />
-        <Route path="/productos/*" element={<RouterProductos />} />
-        <Route path="/companias/*" element={<RouterCompania />} />
-        <Route path="/bodegas/*" element={<RouterBodegas />} />
-        <Route path="/reportes/*" element={<RouterReportes />} />
-        <Route path="/info" element={<Info />} />
-        <Route path="/envios" element={<GestionEnvios />} />
-        <Route path="/punto-de-venta/*" element={<RouterPuntodeVenta />} />
-        <Route path="/perfil/*" element={<RouterPerfil />} />
-        <Route path="/configuracion/*" element={<RouterConfiguracion />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/logout" element={<Logout />} />
-        <Route path="/about" element={<About />} />
-        <Route path="/seleccionar-conexion" element={<SeleccionConexion />} />
-        <Route path="/envios/*" element={<RouterGestionEnvio />} />
-        <Route path="/Gestion-usuarios/*" element={<RouterGestionUsuarios />} />
+ <Route path="/conexiones/*" element={
+  <PrivateRoute>
+    <RouterConexiones />
+  </PrivateRoute>
+} />
 
+<Route path="/home" element={
+  <PrivateRoute>
+    <HomeSync />
+  </PrivateRoute>
+} />
+
+<Route path="/landing" element={<LandingPage />} />
+
+<Route path="/productos/*" element={
+  <PrivateRoute>
+    <RouterProductos />
+  </PrivateRoute>
+} />
+
+<Route path="/companias/*" element={
+  <PrivateRoute>
+    <RouterCompania />
+  </PrivateRoute>
+} />
+
+<Route path="/bodegas/*" element={
+  <PrivateRoute>
+    <RouterBodegas />
+  </PrivateRoute>
+} />
+
+<Route path="/reportes/*" element={
+  <PrivateRoute>
+    <RouterReportes />
+  </PrivateRoute>
+} />
+
+<Route path="/info" element={
+  <PrivateRoute>
+    <Info />
+  </PrivateRoute>
+} />
+
+<Route path="/envios" element={
+  <PrivateRoute>
+    <GestionEnvios />
+  </PrivateRoute>
+} />
+
+<Route path="/punto-de-venta/*" element={
+  <PrivateRoute>
+    <RouterPuntodeVenta />
+  </PrivateRoute>
+} />
+
+<Route path="/perfil/*" element={
+  <PrivateRoute>
+    <RouterPerfil />
+  </PrivateRoute>
+} />
+
+<Route path="/configuracion/*" element={
+  <PrivateRoute>
+    <RouterConfiguracion />
+  </PrivateRoute>
+} />
+
+<Route path="/login" element={<Login />} />
+<Route path="/register" element={<Register />} />
+<Route path="/logout" element={<Logout />} />
+
+<Route path="/about" element={<About />} />
+
+<Route path="/seleccionar-conexion" element={
+  <PrivateRoute>
+    <SeleccionConexion />
+  </PrivateRoute>
+} />
+
+<Route path="/envios/*" element={
+  <PrivateRoute>
+    <RouterGestionEnvio />
+  </PrivateRoute>
+} />
+
+<Route path="/Gestion-usuarios/*" element={
+  <PrivateRoute>
+    <RouterGestionUsuarios />
+  </PrivateRoute>
+} />
+<Route path="/" element={<Navigate to="/sync/home" />} />
 
         <Route path="*" element={<Pagina404 />} />
       </Routes>
