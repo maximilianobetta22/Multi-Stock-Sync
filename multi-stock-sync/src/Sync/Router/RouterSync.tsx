@@ -119,7 +119,7 @@ function RouterSync() {
     <RouterGestionUsuarios />
   </PrivateRoute>
 } />
-<Route path="/" element={<Navigate to="/sync/home" />} />
+<Route path="/" element={<Navigate to="/sync/landing" />} />
 
         <Route path="*" element={<Pagina404 />} />
       </Routes>
