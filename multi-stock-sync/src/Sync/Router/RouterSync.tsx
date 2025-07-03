@@ -23,6 +23,7 @@ import Pagina404 from "../Views/Error/Pagina404";
 import PrivateRoute from "../../Auth/PrivateRoute";
 import RoleRoute from "../../RoutesProtection/RoleRoute";
 import AccesoDenegado from "../../RoutesProtection/AccesoDenegado"; 
+import PublicRoute from "../../Auth/PublicRoute";
 
  // ✅ Nuevo from "../Views/GestionVentas/Router/RouterGestionVentas";
 
@@ -116,8 +117,15 @@ function RouterSync() {
   </PrivateRoute>
 } />
 
-<Route path="/login" element={<Login />} />
-<Route path="/register" element={<Register />} />
+<Route path="/login" element={
+  <PublicRoute>
+    <Login />
+  </PublicRoute>
+} /><Route path="/register" element={
+  <PublicRoute>
+    <Register />
+  </PublicRoute>
+} />
 <Route path="/logout" element={<Logout />} />
 
 <Route path="/about" element={<About />} />
