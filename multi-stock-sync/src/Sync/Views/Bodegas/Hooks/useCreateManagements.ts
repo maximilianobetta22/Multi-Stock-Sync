@@ -83,14 +83,8 @@ export const useCreateManagements = () => {
 
 const fetchCompanies = async () => {
   try {
-    const response = await axiosInstance.get<Company[]>(
-      `${import.meta.env.VITE_API_URL}/warehouses-list`
-    );
-    // Extrae solo las compañías sin duplicados
-    const uniqueCompanies = Array.from(
-      new Map(response.data.map((w: any) => [w.company.id, w.company])).values()
-    );
-    setCompanies(uniqueCompanies);
+    const response = await axiosInstance.get(`${import.meta.env.VITE_API_URL}/companies`);
+    setCompanies(response.data);
   } catch (error) {
     console.error("Error al obtener compañías:", error);
     setError("No se pudieron cargar las compañías");
