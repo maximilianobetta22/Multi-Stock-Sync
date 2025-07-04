@@ -1,4 +1,4 @@
-import { Navigate, Route, Routes } from "react-router-dom";
+import {Route, Routes } from "react-router-dom";
 
 import FiltrarDatos from "../Views/FiltrarDatos/FiltrarDatos";
 import ExportarDatos from "../Views/ExportarDatos/ExportarDatos";
@@ -25,6 +25,8 @@ import ProductosDespachar from "../Views/ProductosDespachar/ProductosDespachar";
 import HistorialDespacho from "../Views/ProductosDespachar/HistorialDespacho";
 import ReporteHistorialStock from "../Views/HistorialStock/ReporteHistorialStock";
 import Plantilla from "../Views/Plantillas/plantillas";
+
+import ProductosInternacionales from "../Views/ProductosInternacionales/ProductosInternacionales";
 
 // ✅ Nueva vista unificada de comparación
 import Compare from "../Views/Compare/Compare";
@@ -61,6 +63,9 @@ function RouterReportes() {
       <Route path="opiniones-clientes/:client_id" element={<OpinionesClientes />} />
       <Route path="/ganancias-mensuales/:conexionId" element={<GananciasMensuales />} />
       <Route path="perdidas-empresa/:client_id" element={<PerdidasEmpresa />} />
+      <Route path="/productos-internacionales/:id" element={<ProductosInternacionales />} />
+
+
 
       <Route
         path="ingresos-categoria-producto/:client_id"

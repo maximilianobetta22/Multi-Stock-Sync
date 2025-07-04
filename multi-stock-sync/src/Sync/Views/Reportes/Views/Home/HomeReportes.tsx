@@ -44,6 +44,12 @@ const reportLinks = [
   { path: "historial", label: "Historial despacho", icon: faClipboardList, category: "Órdenes" },
   { path: "ganancias-mensuales", label: "Ganancias mensuales", icon: faChartLine, category: "Ventas" },
   { path: "perdidas-empresa", label: "Perdidas de la empresa", icon: faClipboardList, category: "Ventas" },
+  {
+  path: "productos-internacionales",
+  label: "Productos Internacionales",
+  icon: faClipboardList,
+  category: "Productos"
+},
 ];
 
 // Categorías disponibles para filtrar reportes

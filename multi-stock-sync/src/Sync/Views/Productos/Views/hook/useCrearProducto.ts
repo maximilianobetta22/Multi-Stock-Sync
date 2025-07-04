@@ -2,10 +2,14 @@ import type React from "react"
 import { useState, useRef, useEffect } from "react"
 import { type FormInstance, message } from "antd"
 import axios from "axios"
+import axiosInstance from "../../../../../axiosConfig";
 
 export const useCrearProducto = (form: FormInstance) => {
   const [loading, setLoading] = useState(false)
   const [imagenes, setImagenes] = useState<string[]>([])
+  const eliminarImagen = (index: number) => {
+  setImagenes((prev) => prev.filter((_, i) => i !== index))
+}
   const [atributosCategoria, setAtributosCategoria] = useState<any[]>([])
   const [specsDominio, setSpecsDominio] = useState<any[]>([])
   const [categoryId, setCategoryId] = useState<string>("")
@@ -52,54 +56,55 @@ debounceTimeout
     return sanitized
   }
 
-  // 1. Predecir categoría y dominio por título
-  const predecirCategoria = async (titulo: string) => {
-    try {
-      const response = await axios.get(
-        `${import.meta.env.VITE_API_URL}/mercadolibre/products/${conexion.client_id}/catalogo`,
-        {
-          params: { title: titulo },
-          ...authHeader(),
-        },
-      )
-      const data = response.data
-      if (!data.category_id) return message.error("No se pudo predecir la categoría.")
+// 1. Predecir categoría y dominio por título
+const predecirCategoria = async (titulo: string) => {
+  console.log("🔍 Ejecutando predecirCategoria con título:", titulo)
 
-      setCategoryId(data.category_id)
-      setDominioId(data.domain_id || "")
-      form.setFieldsValue({ category_id: data.category_id })
-
-      if (data.family_name) {
-        form.setFieldsValue({ family_name: data.family_name })
-      } else {
-        form.setFieldsValue({ family_name: "" })
-        message.info("Ingresa el nombre de familia manualmente.")
+  try {
+    const response = await axios.get(
+      `${import.meta.env.VITE_API_URL}/mercadolibre/products/${conexion.client_id}/catalogo`,
+      {
+        params: { title: titulo },
+        ...authHeader(),
       }
+    )
 
-      await obtenerInfoCategoria(data.category_id, data.domain_id || "")
-      await obtenerAtributos(data.category_id)
+    const data = response.data
+    console.log("📄 Data recibida:", JSON.stringify(data, null, 2))
 
-      if (data.products?.length > 0) {
-        setCatalogProducts(data.products)
-        if (data.products.length === 1) {
-          const unico = data.products[0]
-          setCatalogProductId(unico.id)
-          form.setFieldsValue({ catalog_product_id: unico.id })
-          message.info("Se seleccionó automáticamente el único producto del catálogo disponible.")
-        } else {
-          message.info("Hay productos de catálogo disponibles. Selecciona uno.")
-        }
-      } else {
-        setCatalogProducts([])
-        setCatalogProductId("")
-        form.setFieldsValue({ catalog_product_id: undefined })
-      }
-    } catch (error) {
-      console.error("❌ Error al predecir categoría:", error)
-      message.error("Error al intentar predecir la categoría.")
+    if (!data.category_id) {
+      message.error("No se pudo predecir la categoría.")
+      return null
     }
-  }
 
+    setCategoryId(data.category_id)
+    setDominioId(data.domain_id || "")
+    form.setFieldsValue({ category_id: data.category_id })
+
+    if (data.family_name) {
+      form.setFieldsValue({ family_name: data.family_name })
+    } else {
+      form.setFieldsValue({ family_name: "" })
+      message.info("Ingresa el nombre de familia manualmente.")
+    }
+
+    await obtenerInfoCategoria(data.category_id, data.domain_id || "")
+    await obtenerAtributos(data.category_id)
+
+    if (data.products && data.products.length > 0) {
+      const productoConSKU = data.products.find((p: any) => p.sku)
+      console.log("✅ Producto detectado:", productoConSKU)
+      return productoConSKU || null
+    }
+
+    console.log("⚠️ No se encontró ningún producto con SKU")
+    return null
+  } catch (error) {
+    console.error("❌ Error en predecirCategoria:", error)
+    message.error("Hubo un error al predecir la categoría.")
+    return null
+  }
+}
   // 2. Obtener info de la categoría y specs
   const obtenerInfoCategoria = async (category: string, domainId: string) => {
     const client_id = conexion.client_id
@@ -253,7 +258,7 @@ debounceTimeout
       price: form.getFieldValue("price") || 0,
       available_quantity: 1,
       pictures: imagenes.length > 0 ? [imagenes[0]] : [], // Asignar la primera imagen por defecto
-      seller_sku: "",
+      sku: "",
       size_grid_row_id: "",
     }
     setVariaciones((prev) => [...prev, nuevaVariacion])
@@ -311,20 +316,73 @@ debounceTimeout
     }
   }
 
+  const debounceRef = useRef<NodeJS.Timeout | null>(null);
+
   // 7. Handler de título (predice categoría)
 const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  const nuevoTitulo = e.target.value
+  const nuevoTitulo = e.target.value;
+  const tituloActual = nuevoTitulo;
 
-  // ⚠️ Resetea todos los campos EXCEPTO el título
-  const camposARespetar = ["title"]
-  const todosLosCampos = form.getFieldsValue()
-  const camposParaResetear = Object.keys(todosLosCampos).filter((key) => !camposARespetar.includes(key))
+  form.setFieldValue("title", nuevoTitulo);
 
-  form.resetFields(camposParaResetear)
+  if (debounceRef.current) {
+    clearTimeout(debounceRef.current);
+  }
 
-  // Continúa como normal (si usas predicción de categoría, inclúyela aquí)
-  predecirCategoria(nuevoTitulo)
-}
+  debounceRef.current = setTimeout(async () => {
+    const camposARespetar = ["title"];
+    const todosLosCampos = form.getFieldsValue();
+    const camposParaResetear = Object.keys(todosLosCampos).filter(
+      (key) => !camposARespetar.includes(key)
+    );
+    form.resetFields(camposParaResetear);
+
+    await predecirCategoria(tituloActual); // si deseas seguir usando esto
+
+    const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
+    const client_id = conexion?.client_id;
+    const token = localStorage.getItem("token");
+    if (!client_id || !token) return;
+
+    try {
+      const response = await axiosInstance.get(
+        `${import.meta.env.VITE_API_URL}/mercadolibre/all-products/${client_id}`,
+        {
+          params: { page: 1, perPage: 100 },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const productos = response.data?.products || [];
+      const match = productos.find((p: any) =>
+        p.title?.toLowerCase().includes(tituloActual.toLowerCase())
+      );
+
+      if (match) {
+        if (match.sku) {
+          console.log("✅ SKU ya existente:", match.sku);
+          form.setFieldValue("sku", match.sku);
+        } else {
+          // ⚠️ Si no hay SKU, generamos uno automáticamente
+          const nuevoSku = `SKU-${Math.floor(Math.random() * 1000000)}`; // O usa slugify(titulo)
+          await actualizarSkuProducto(client_id, match.id, nuevoSku);
+          form.setFieldValue("sku", nuevoSku);
+        }
+        if (match?.pictures && match.pictures.length > 0) {
+  const urls = match.pictures.map((pic: any) => pic.secure_url || pic.url || pic);
+  console.log("🖼️ Imágenes detectadas:", urls);
+  setImagenes(urls); // << ESTO asigna automáticamente las imágenes al estado
+} 
+      }
+    } catch (error) {
+      console.error("❌ Error al buscar productos:", error);
+    }
+  }, 600);
+};
+
 
   // 8. Agregar imagen
   const handleAgregarImagen = () => {
@@ -401,6 +459,7 @@ const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         local_pick_up: values.local_pick_up || false,
         free_shipping: values.free_shipping || false,
       },
+      seller_custom_field: values.sku || "", 
     }
 
     // Variaciones
@@ -515,25 +574,51 @@ const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       setGuiaSeleccionada("")
       setMarcaSeleccionada("")
       setGeneroSeleccionado("")
-    } catch (error: any) {
-      const data = error.response?.data
-      console.error("❌ Error al crear producto:", data)
+} catch (error: any) {
+  const data = error.response?.data;
+  console.error("❌ Error al crear producto:", data);
 
-      if (data?.ml_error?.cause?.length) {
-        const errores = data.ml_error.cause.map((c: any) => `• ${c.message}`).join("\n")
-        message.error(`Mercado Libre rechazó el producto:\n${errores}`)
-      } else {
-        const msg = data?.message || "Hubo un error al subir el producto."
-        message.error(msg)
-      }
-    } finally {
-      setLoading(false)
-    }
+  // 👇 Mostrar error completo de Mercado Libre si existe
+  if (data?.ml_error) {
+    console.error("🔍 Detalle de ml_error:", JSON.stringify(data.ml_error, null, 2));
   }
+
+  // 👇 Mostrar en UI
+  if (data?.ml_error?.cause?.length) {
+    const errores = data.ml_error.cause.map((c: any) => `• ${c.message}`).join("\n")
+    console.error("📋 Errores listados:", errores)
+    message.error("Mercado Libre rechazó el producto:\n" + errores)
+  } else {
+    const msg = data?.message || "Hubo un error al subir el producto."
+    message.error(msg)
+  }
+}
+  }
+
+useEffect(() => {
+  const values = form.getFieldsValue();
+
+  const camposCompletos =
+    values.title &&
+    values.condition &&
+    values.price &&
+    values.quantity &&
+    values.currency_id &&
+    values.description &&
+    imagenes.length > 0;
+
+  if (camposCompletos) {
+    console.log("🟢 Todos los campos están completos. Enviando automáticamente...");
+    onFinish(values);
+  } else {
+    console.log("🟡 Esperando más campos para enviar automáticamente.");
+  }
+}, [form, imagenes]); // <-- close useEffect and add dependencies
 
   return {
     loading,
     imagenes,
+    eliminarImagen,
     atributosCategoria,
     specsDominio,
     categoryId,
@@ -560,5 +645,36 @@ const onTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onTitleChange,
     handleAgregarImagen,
     onFinish,
+  }
+}
+
+// Esta función debe estar fuera del hook
+export const actualizarSkuProducto = async (
+  clientId: string,
+  itemId: string,
+  nuevoSku: string
+): Promise<void> => {
+  const token = localStorage.getItem("token")
+  if (!token) {
+    message.error("Token no encontrado.")
+    return
+  }
+
+  try {
+    const response = await axiosInstance.put(
+      `${import.meta.env.VITE_API_URL}/products/${clientId}/${itemId}/sku`,
+      { sku: nuevoSku },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      }
+    )
+    console.log("✅ SKU actualizado vía API:", response.data)
+    message.success("SKU actualizado correctamente")
+  } catch (error) {
+    console.error("❌ Error al actualizar SKU:", error)
+    message.error("No se pudo actualizar el SKU")
   }
 }
