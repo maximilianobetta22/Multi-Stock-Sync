@@ -416,7 +416,7 @@ const WooCommerceProductsList: React.FC = () => {
         
         {/* Header Principal */}
         <div style={{
-          background: "linear-gradient(135deg, #FF6B35 0%, #FF8E53 100%)",
+          background: "linear-gradient(135deg, #003a8e 0%, #003a8e 100%)",
           borderRadius: "16px",
           padding: "32px 40px",
           marginBottom: "32px",

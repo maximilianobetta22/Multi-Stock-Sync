@@ -21,6 +21,7 @@ interface ProductoML {
   atributes?: any[];
   date_created?: string;
   permalink?: string;
+  sku?: string;
 }
 
 interface Props {
@@ -108,11 +109,20 @@ export const TablaProductos = ({
       ),
     },
     {
+      title: "SKU",
+      dataIndex: "sku",
+      render: (sku) => (
+        <span style={{ fontFamily: "monospace", fontSize: "12px" }}>
+          {sku || "No disponible"}
+        </span>
+      ),
+    },
+    {
       title: "Título",
       dataIndex: "title",
       render: (_, record) => {
         const textoResaltado = resaltarTexto(record.title, busquedaActual);
-        const link = (record as any).permalink; // 👈 Aquí accedemos directo
+        const link = (record as any).permalink;
 
         return (
           <a
@@ -139,7 +149,6 @@ export const TablaProductos = ({
         );
       },
     },
-
     {
       title: "Fecha",
       dataIndex: "date_created",

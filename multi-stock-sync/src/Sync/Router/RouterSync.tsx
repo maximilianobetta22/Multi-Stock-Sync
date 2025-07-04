@@ -52,7 +52,7 @@ function RouterSync() {
 
 <Route path="/productos/*" element={
   <PrivateRoute>
-    <RoleRoute allowedRoleIds={[1, 4, 7]}> 
+    <RoleRoute allowedRoleIds={[1, 4, 5,  7]}> 
     <RouterProductos />
     </RoleRoute>
   </PrivateRoute>
@@ -68,7 +68,7 @@ function RouterSync() {
 
 <Route path="/bodegas/*" element={
   <PrivateRoute>
-    <RoleRoute allowedRoleIds={[1, 4, 7]}> 
+    <RoleRoute allowedRoleIds={[1, 4, 6, 7, 5]}> 
     <RouterBodegas />
     </RoleRoute>
   </PrivateRoute>
@@ -121,11 +121,13 @@ function RouterSync() {
   <PublicRoute>
     <Login />
   </PublicRoute>
+
 } /><Route path="/register" element={
   <PublicRoute>
     <Register />
   </PublicRoute>
 } />
+
 <Route path="/logout" element={<Logout />} />
 
 <Route path="/about" element={<About />} />
