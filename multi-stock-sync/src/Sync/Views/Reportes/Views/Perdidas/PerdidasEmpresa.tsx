@@ -383,7 +383,7 @@ export default function PerdidasEmpresa() {
         messageApi.success("Reporte por tienda generado correctamente");
     }, [processedData, yearlyData, selectedMonth, selectedYear, totalPeriodoSeleccionado, messageApi]);
 
-    // Mostrar loading con progreso
+    
     if (isYearlyLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
