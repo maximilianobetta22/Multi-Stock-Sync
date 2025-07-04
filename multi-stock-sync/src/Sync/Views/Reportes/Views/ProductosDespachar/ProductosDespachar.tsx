@@ -298,7 +298,6 @@ const ProductosDespachar: React.FC = () => {
                 ([key, value]) => (
                   <li key={key}>
                     <strong>{traducirCampo(key)}:</strong>{" "}
-                    {/* Se usa la nueva función de formato */}
                     {formatHistoryValue(value as string | null)}
                   </li>
                 )

@@ -7,6 +7,13 @@
     color: #2a2a2a;
   }
   
+  .pageCard {
+    background-color: #ffffff;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  }
+
   /* Títulos de secciones con separador */
   .sectionTitle {
     margin-top: 3rem;
@@ -21,6 +28,10 @@
     gap: 0.5rem;
   }
   
+  .filtersContainer {
+    margin-bottom: 2rem;
+  }
+
   /* Grid con espaciado, sin estirar feo */
   .reportGrid {
     display: grid;
@@ -43,11 +54,28 @@
     align-items: center;
     gap: 0.75rem;
     height: 100%;
+    transition: all 0.2s ease-in-out;
+    font-weight: 500;
   }
   
   .reportCard:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    transform: translateY(-1px);
+    transform: translateY(-4px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    border-color: #d1e0ff;
+  }
+
+  /* El ícono dentro de la tarjeta */
+  .reportIcon {
+    font-size: 1.8rem;
+    padding: 12px;
+    border-radius: 50%;
+    color: white;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 0.5rem;
   }
   
   /* Íconos suaves */
@@ -134,3 +162,14 @@
     }
   }
   
+  /* (se pueden cambiar los clores x categoria si es que se ve necesario) */
+  .iconVentas { background-color: #0c67cf; }
+  .iconProductos { background-color: #007bff; }
+  .iconStock { background-color: #4613ff; }
+  .iconClientes { background-color: #135ecf; }
+  .iconOrdenes { background-color: #6026cc; }
+
+  .backButtonContainer {
+    text-align: center;
+    margin-top: 2rem;
+  }

@@ -8,6 +8,8 @@ import {
   Divider,
   Spin,
   Input,
+  Button,
+  Space,
 } from "antd";
 import { Link } from "react-router-dom";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -19,10 +21,16 @@ import {
   faClipboardList,
   faComments,
   faUndo,
+  faFileInvoiceDollar,
+  faExclamationTriangle,
+  faBoxOpen,
+  faArchive,
+  faHistory,
 } from "@fortawesome/free-solid-svg-icons";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useReceptionManagements } from "../../hooks/useReceptionManagements";
 import ToastComponent from "../../../../Components/ToastComponent/ToastComponent";
+import styles from "./HomeReportes.module.css";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -30,23 +38,35 @@ const { Search } = Input;
 
 // Definición de los reportes disponibles junto con su categoría e ícono
 const reportLinks = [
+  // Ventas (Verde)
   { path: "ventas", label: "Ventas", icon: faChartLine, category: "Ventas" },
   { path: "ingreso-semana", label: "Ingresos por semana", icon: faCalendarWeek, category: "Ventas" },
   { path: "ingresos-categoria-producto", label: "Ingresos por categoría", icon: faTags, category: "Ventas" },
+  { path: "ganancias-mensuales", label: "Ganancias mensuales", icon: faFileInvoiceDollar, category: "Ventas" },
+  { path: "perdidas-empresa", label: "Perdidas de la empresa", icon: faExclamationTriangle, category: "Ventas" },
+  // Productos (Azul)
   { path: "productos-mas-vendidos", label: "Más vendidos", icon: faStar, category: "Productos" },
   { path: "plantillas", label: "Plantilla", icon: faClipboardList, category: "Productos" },
-  { path: "Despachar-Producto", label: "A despachar", icon: faClipboardList, category: "Productos" },
-  { path: "historial-Stock", label: "Historial Stock", icon: faChartLine, category: "Stock" },
+  { path: "Despachar-Producto", label: "A despachar", icon: faBoxOpen, category: "Productos" },
+  // Stock (Amarillo)
+  { path: "historial-Stock", label: "Historial Stock", icon: faArchive, category: "Stock" },
   { path: "Reporte-Recepcion", label: "Recepción", icon: faClipboardList, category: "Stock" },
+  // Clientes (Turquesa)
   { path: "opiniones-clientes", label: "Opiniones", icon: faComments, category: "Clientes" },
   { path: "devoluciones-reembolsos", label: "Devoluciones", icon: faUndo, category: "Clientes" },
+  // Órdenes (Morado)
   { path: "estados-ordenes-anual", label: "Estados de órdenes", icon: faClipboardList, category: "Órdenes" },
-  { path: "historial", label: "Historial despacho", icon: faClipboardList, category: "Órdenes" },
-  { path: "ganancias-mensuales", label: "Ganancias mensuales", icon: faChartLine, category: "Ventas" },
-  { path: "perdidas-empresa", label: "Perdidas de la empresa", icon: faClipboardList, category: "Ventas" },
+  { path: "historial", label: "Historial despacho", icon: faHistory, category: "Órdenes" },
 ];
 
 // Categorías disponibles para filtrar reportes
+const categoryColorMap: { [key: string]: string } = {
+  Ventas: styles.iconVentas,
+  Productos: styles.iconProductos,
+  Stock: styles.iconStock,
+  Clientes: styles.iconClientes,
+  Órdenes: styles.iconOrdenes,
+};
 const categories = ["Todos", "Ventas", "Stock", "Clientes", "Productos", "Órdenes"];
 
 const HomeReportes: React.FC = () => {
@@ -78,7 +98,7 @@ const HomeReportes: React.FC = () => {
 
         if (connectionExists) {
           setSelectedConnection(client_id);
-          try { 
+          try {
             setLoadingResumen(true);
             await fetchStoreSummary(client_id);
           } catch {
@@ -92,7 +112,7 @@ const HomeReportes: React.FC = () => {
 
     cargarConexionAnterior();
   }, [connections]);
-  
+
   // Maneja cambio de conexión seleccionada y carga el resumen de tienda
 
   const currentMonth = new Date().toLocaleString("default", { month: "long" });
@@ -181,7 +201,7 @@ const HomeReportes: React.FC = () => {
           <Divider orientation="left">Reportes Disponibles</Divider>
 
           {/* Barra de búsqueda y filtros de categoría */}
-          <div style={{ display: "flex", gap: "1rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+          <Space wrap size="large" className={styles.filtersContainer}>
             <Search
               placeholder="Buscar reporte..."
               onChange={(e) => setSearchText(e.target.value)}
@@ -199,21 +219,17 @@ const HomeReportes: React.FC = () => {
                 </Option>
               ))}
             </Select>
-          </div>
+          </Space>
 
           {/* Grilla de reportes */}
-          <Row gutter={[16, 16]}>
-            {filteredReports.map(({ path, label, icon }, index) => (
-              <Col xs={24} sm={12} md={8} lg={6} key={index}>
-                <Link to={`/sync/reportes/${path}/${selectedConnection}`}>
-                  <Card
-                    hoverable
-                    variant="borderless"
-                    style={{ borderRadius: 8, height: "100%" }}
-                  >
-                    <FontAwesomeIcon icon={icon} style={{ marginRight: 8 }} />
-                    {label}
-                  </Card>
+          <Row gutter={[24, 24]}>
+            {filteredReports.map(({ path, label, icon, category }, index) => (
+              <Col xs={12} sm={8} md={6} key={index}>
+                <Link to={`/sync/reportes/${path}/${selectedConnection}`} className={styles.reportCard}>
+                  <div className={`${styles.reportIcon} ${categoryColorMap[category]}`}>
+                    <FontAwesomeIcon icon={icon} />
+                  </div>
+                  <span>{label}</span>
                 </Link>
               </Col>
             ))}
@@ -226,7 +242,9 @@ const HomeReportes: React.FC = () => {
       {/* Botón para volver a inicio */}
       <div style={{ textAlign: "center", marginTop: "2rem" }}>
         <Link to="/sync/home">
-          <button className="btn btn-primary">Volver a inicio</button>
+          <Button type="primary" size="large">
+            Volver a inicio
+          </Button>
         </Link>
       </div>
     </div>
