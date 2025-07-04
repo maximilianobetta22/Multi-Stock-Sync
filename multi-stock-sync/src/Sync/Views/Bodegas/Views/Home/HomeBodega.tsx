@@ -15,6 +15,10 @@ import { DrawerCreateWarehouse } from "../../Components/DrawerCreateWarehouse";
 import { message } from "antd";
 import axiosInstance from "../../../../../axiosConfig";
 
+const userStr = localStorage.getItem("user");
+const user = userStr ? JSON.parse(userStr) : null;
+const roleId = user?.role_id;
+
 const HomeBodega = () => {
   const [filteredWarehouses, setFilteredWarehouses] = useState<Warehouse[]>([]);
   const [companyFilter, setCompanyFilter] = useState<string>("");
@@ -236,18 +240,39 @@ const HomeBodega = () => {
                   </div>
                 ) : (
                   <div className={styles.button_group}>
-                    <button
-                      className={styles.edit_button}
-                      onClick={() => startEditing(warehouse)}
-                    >
-                      ✏️ Editar
-                    </button>
-                    <button
-                      className={styles.delete_button}
-                      onClick={() => setPendingDeleteId(warehouse.id)}
-                    >
-                      🗑 Eliminar
-                    </button>
+    {![3, 5, 6, 8, 9].includes(roleId) && (
+  pendingDeleteId === warehouse.id ? (
+    <div className={styles.confirm_box}>
+      <p>¿Estás seguro de que querés eliminar esta bodega?</p>
+      <button
+        onClick={handleDeleteConfirm}
+        className={styles.confirm_yes}
+      >
+        Sí
+      </button>
+      <button onClick={cancelDelete} className={styles.confirm_no}>
+        No
+      </button>
+    </div>
+  ) : (
+    <div className={styles.button_group}>
+      <button
+        className={styles.edit_button}
+        onClick={() => startEditing(warehouse)}
+      >
+        ✏️ Editar
+      </button>
+      <button
+        className={styles.delete_button}
+        onClick={() => setPendingDeleteId(warehouse.id)}
+      >
+        🗑 Eliminar
+      </button>
+    </div>
+  )
+)}
+
+
                   </div>
                 )}
               </>

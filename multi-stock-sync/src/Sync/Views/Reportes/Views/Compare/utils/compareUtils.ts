@@ -28,11 +28,23 @@ export const getYears = (): string[] => {
 };
 
 // Formatea un número a moneda chilena
-export const formatCurrency = (value: number): string => {
+export const formatCurrency = (value: string | number | undefined): string => {
+  // Manejar valores nulos, indefinidos o no válidos
+  if (value === null || value === undefined) {
+    return '$0';
+  }
+
+  // Convertir el valor a número
+  const numericValue = Number(value);
+  if (isNaN(numericValue)) {
+    return 'N/A';
+  }
+
+  // Formatear el número válido
   return new Intl.NumberFormat('es-CL', {
     style: 'currency',
     currency: 'CLP',
-  }).format(value);
+  }).format(numericValue);
 };
 
 // Genera un PDF de comparación de ventas basado en meses o años

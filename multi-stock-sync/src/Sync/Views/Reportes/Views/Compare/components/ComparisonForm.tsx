@@ -1,110 +1,90 @@
 import React from "react";
-import styles from "../Compare.module.css";
+import { Form, Select, Button, Space, Row, Col } from "antd";
+import { ArrowLeftOutlined, BarChartOutlined } from "@ant-design/icons";
 
 interface Props {
   mode: "month" | "year";
-  year1: string;
-  setYear1: (val: string) => void;
-  month1: string;
-  setMonth1: (val: string) => void;
-  year2: string;
-  setYear2: (val: string) => void;
-  month2: string;
-  setMonth2: (val: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (values: any) => void;
 }
 
-// Meses del año ordenados
+
 const orderedMonths = [
-  ["01", "Enero"],
-  ["02", "Febrero"],
-  ["03", "Marzo"],
-  ["04", "Abril"],
-  ["05", "Mayo"],
-  ["06", "Junio"],
-  ["07", "Julio"],
-  ["08", "Agosto"],
-  ["09", "Septiembre"],
-  ["10", "Octubre"],
-  ["11", "Noviembre"],
-  ["12", "Diciembre"]
+  { value: "01", label: "Enero" }, { value: "02", label: "Febrero" },
+  { value: "03", label: "Marzo" }, { value: "04", label: "Abril" },
+  { value: "05", label: "Mayo" }, { value: "06", label: "Junio" },
+  { value: "07", label: "Julio" }, { value: "08", label: "Agosto" },
+  { value: "09", label: "Septiembre" }, { value: "10", label: "Octubre" },
+  { value: "11", label: "Noviembre" }, { value: "12", label: "Diciembre" },
 ];
 
-// Últimos 10 años para selección en formulario
-const years = Array.from({ length: 10 }, (_, i) => (new Date().getFullYear() - i).toString());
+const years = Array.from({ length: 10 }, (_, i) => {
+    const year = (new Date().getFullYear() - i).toString();
+    return { value: year, label: year };
+});
 
-const ComparisonForm: React.FC<Props> = ({
-  mode,
-  year1,
-  setYear1,
-  month1,
-  setMonth1,
-  year2,
-  setYear2,
-  month2,
-  setMonth2,
-  onSubmit,
-}) => {
+const ComparisonForm: React.FC<Props> = ({ mode, onSubmit }) => {
+  const [form] = Form.useForm();
+
   return (
-    <form onSubmit={onSubmit}>
-      <div className={styles.formSection}>
-        {/* Año 1 */}
-        <div>
-          <label>Año 1</label>
-          <select className="form-control" value={year1} onChange={(e) => setYear1(e.target.value)} required>
-            <option value="">Seleccione un año</option>
-            {years.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </div>
+    <Form form={form} layout="vertical" onFinish={onSubmit}>
+      <Row gutter={16}>
+        <Col xs={24} sm={12} md={mode === "month" ? 6 : 12}>
+          <Form.Item
+            name="year1"
+            label="Primer Período (Año)"
+            rules={[{ required: true, message: "Por favor, seleccione un año" }]}
+          >
+            <Select placeholder="Seleccione un año" options={years} allowClear />
+          </Form.Item>
+        </Col>
 
-        {/* Mes 1 (solo si se compara por mes) */}
         {mode === "month" && (
-          <div>
-            <label>Mes 1</label>
-            <select className="form-control" value={month1} onChange={(e) => setMonth1(e.target.value)} required>
-              <option value="">Seleccione un mes</option>
-              {orderedMonths.map(([val, label]) => (
-                <option key={val} value={val}>{label}</option>
-              ))}
-            </select>
-          </div>
+          <Col xs={24} sm={12} md={6}>
+            <Form.Item
+              name="month1"
+              label="Mes"
+              rules={[{ required: true, message: "Por favor, seleccione un mes" }]}
+            >
+              <Select placeholder="Seleccione un mes" options={orderedMonths} allowClear />
+            </Form.Item>
+          </Col>
         )}
 
-        {/* Año 2 */}
-        <div>
-          <label>Año 2</label>
-          <select className="form-control" value={year2} onChange={(e) => setYear2(e.target.value)} required>
-            <option value="">Seleccione un año</option>
-            {years.map((y) => (
-              <option key={y} value={y}>{y}</option>
-            ))}
-          </select>
-        </div>
+        <Col xs={24} sm={12} md={mode === "month" ? 6 : 12}>
+          <Form.Item
+            name="year2"
+            label="Segundo Período (Año)"
+            rules={[{ required: true, message: "Por favor, seleccione un año" }]}
+          >
+            <Select placeholder="Seleccione un año" options={years} allowClear />
+          </Form.Item>
+        </Col>
 
-        {/* Mes 2 (solo si se compara por mes) */}
         {mode === "month" && (
-          <div>
-            <label>Mes 2</label>
-            <select className="form-control" value={month2} onChange={(e) => setMonth2(e.target.value)} required>
-              <option value="">Seleccione un mes</option>
-              {orderedMonths.map(([val, label]) => (
-                <option key={val} value={val}>{label}</option>
-              ))}
-            </select>
-          </div>
+          <Col xs={24} sm={12} md={6}>
+            <Form.Item
+              name="month2"
+              label="Mes"
+              rules={[{ required: true, message: "Por favor, seleccione un mes" }]}
+            >
+              <Select placeholder="Seleccione un mes" options={orderedMonths} allowClear />
+            </Form.Item>
+          </Col>
         )}
-      </div>
+      </Row>
 
-      {/* Botones de acción */}
-      <div className={styles.buttonContainer}>
-        <button type="submit" className="btn btn-primary">Comparar</button>
-        <button type="button" className="btn btn-secondary" onClick={() => window.history.back()}>
-          Volver
-        </button>
-      </div>
-    </form>
+      {/* Botones con iconos y espaciado */}
+      <Form.Item>
+        <Space>
+          <Button type="primary" htmlType="submit" icon={<BarChartOutlined />}>
+            Comparar
+          </Button>
+          <Button icon={<ArrowLeftOutlined />} onClick={() => window.history.back()}>
+            Volver
+          </Button>
+        </Space>
+      </Form.Item>
+    </Form>
   );
 };
 

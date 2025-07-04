@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Card, Form, Input, Button, Spin, Alert, Typography, Avatar, Space } from "antd";
+import { Card, Form, Input, Button, Spin, Alert, Typography, Avatar } from "antd";
 import { CheckCircleOutlined, CloseOutlined, LockOutlined, EyeInvisibleOutlined, EyeTwoTone } from "@ant-design/icons";
 import { useConfiguracionManagement } from "./Hooks/useConfiguracionManagement";
 
