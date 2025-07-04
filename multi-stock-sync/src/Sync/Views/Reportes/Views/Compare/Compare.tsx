@@ -1,40 +1,39 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Swal from 'sweetalert2';
-import axiosInstance from '../../../../../axiosConfig';
 import { generatePDF, exportToExcel, formatCurrency, months } from './utils/compareUtils';
 import ComparisonForm from './components/ComparisonForm';
 import ComparisonTable from './components/ComparisonTable';
-import { LoadingDinamico } from '../../../../../components/LoadingDinamico/LoadingDinamico';
-import { Modal } from 'react-bootstrap';
-import styles from './Compare.module.css';
 import saveAs from 'file-saver';
+import axiosInstance from '../../../../../axiosConfig';
+
+import { Layout, Spin, Card, Typography, Space, Button, Modal, message, Alert, Result } from 'antd';
+import { FilePdfOutlined, FileExcelOutlined, DownloadOutlined, CloseCircleOutlined } from '@ant-design/icons';
+
+const { Content } = Layout;
+const { Title, Paragraph, Text } = Typography;
 
 const Compare: React.FC = () => {
   const { mode, client_id } = useParams<{ mode?: string; client_id?: string }>();
 
-  // Validación inicial de parámetros de la URL
   if (!mode || !client_id || (mode !== 'month' && mode !== 'year')) {
-    return <div className="alert alert-danger">Parámetros inválidos en la URL.</div>;
+    return (
+        <Result
+            status="error"
+            title="Parámetros Inválidos"
+            subTitle="Los parámetros proporcionados en la URL no son correctos. Por favor, verifica la dirección."
+        />
+    );
   }
 
   const validMode = mode as 'month' | 'year';
-
-  // Estados principales de control
-  const [year1, setYear1] = useState('');
-  const [month1, setMonth1] = useState('');
-  const [year2, setYear2] = useState('');
-  const [month2, setMonth2] = useState('');
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<any>(null);
   const [nickname, setNickname] = useState('');
-  const [showModal, setShowModal] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
 
-  // Obtiene el nickname del usuario para mostrarlo en los reportes
   useEffect(() => {
     const fetchNickname = async () => {
-      setLoading(true);
       try {
         const response = await axiosInstance.get(
           `${import.meta.env.VITE_API_URL}/mercadolibre/credentials/${client_id}`
@@ -42,18 +41,17 @@ const Compare: React.FC = () => {
         setNickname(response.data.data.nickname);
       } catch (error) {
         console.error(error);
-      } finally {
-        setLoading(false);
+        message.error('No se pudo cargar la información del cliente.');
       }
     };
     fetchNickname();
   }, [client_id]);
 
-  // Maneja el submit del formulario de comparación
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (values: any) => {
     setLoading(true);
+    setResult(null);
 
+    const { year1, month1, year2, month2 } = values;
     const endpoint = validMode === 'month' ? 'compare-sales-data' : 'compare-annual-sales-data';
     const params = validMode === 'month' ? { year1, month1, year2, month2 } : { year1, year2 };
 
@@ -65,39 +63,24 @@ const Compare: React.FC = () => {
       setResult(response.data);
     } catch (error) {
       console.error(error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se pudo obtener el reporte. Intenta más tarde.',
-      });
+      message.error('No se pudo obtener el reporte. Intenta más tarde.');
     } finally {
       setLoading(false);
     }
   };
-
-  // Genera el PDF de la comparación
+  
   const handleGeneratePDF = () => {
     if (!result || !result.data) {
-      Swal.fire({
-        icon: 'warning',
-        title: 'Sin datos',
-        text: 'No hay información para exportar al PDF.',
-      });
+      message.warning('No hay información para exportar al PDF.');
       return;
     }
-
-    const pdfUrl = generatePDF(validMode, nickname, result);
-    setPdfDataUrl(pdfUrl);
-    setShowModal(true);
+    setPdfDataUrl(generatePDF(validMode, nickname, result));
+    setIsModalOpen(true);
   };
 
   const handleDownloadPDF = () => {
     if (!pdfDataUrl) {
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'No se ha podido generar el PDF para la descarga.',
-      });
+      message.error('No se ha podido generar el PDF para la descarga.');
       return;
     }
     const base64Data = pdfDataUrl.substring(pdfDataUrl.indexOf(',') + 1);
@@ -109,7 +92,6 @@ const Compare: React.FC = () => {
     const byteArray = new Uint8Array(byteNumbers);
     const blob = new Blob([byteArray], { type: 'application/pdf' });
 
-    // Generar nombre de archivo dinámico
     const data1 = validMode === 'month' ? result.data.month1 : result.data.year1;
     const data2 = validMode === 'month' ? result.data.month2 : result.data.year2;
     const label1 = validMode === 'month' ? `${months[data1.month]}-${data1.year}` : data1.year;
@@ -118,132 +100,127 @@ const Compare: React.FC = () => {
     saveAs(blob, `Reporte_Comparacion_${label1}_vs_${label2}.pdf`);
   };
 
-  // Exporta la comparación a un archivo Excel
   const handleExportExcel = () => {
     exportToExcel(validMode, result);
   };
 
-  return (
-    <>
-      {/* Loading dinámico mientras se cargan datos */}
-      {loading && <LoadingDinamico variant="container" />}
+  const renderAnalysis = () => {
+    if (!result || !result.data) return null;
+    
+    const isYearMode = validMode === 'year';
+    const data1 = isYearMode ? result.data.year1 : result.data.month1;
+    const data2 = isYearMode ? result.data.year2 : result.data.month2;
 
-      <div className={styles.container} style={{ display: loading ? 'none' : 'block' }}>
-        <h1>Comparar Ventas entre {validMode === 'month' ? 'Meses' : 'Años'}</h1>
-        <p>USUARIO: {nickname}</p>
+    const period1Date = new Date(data1.year, isYearMode ? 0 : data1.month - 1);
+    const period2Date = new Date(data2.year, isYearMode ? 0 : data2.month - 1);
+    
+    const isPeriod2Recent = period2Date > period1Date;
+    
+    const recentData = isPeriod2Recent ? data2 : data1;
+    const previousData = isPeriod2Recent ? data1 : data2;
 
-        {/* Formulario de comparación */}
-        <ComparisonForm
-          mode={validMode}
-          year1={year1} setYear1={setYear1}
-          month1={month1} setMonth1={setMonth1}
-          year2={year2} setYear2={setYear2}
-          month2={month2} setMonth2={setMonth2}
-          onSubmit={handleSubmit}
+    const recentLabel = isYearMode ? recentData.year : `${months[recentData.month]} ${recentData.year}`;
+    const previousLabel = isYearMode ? previousData.year : `${months[previousData.month]} ${previousData.year}`;
+
+    const recent = recentData?.total_sales || 0;
+    const previous = previousData?.total_sales || 0;
+    const difference = recent - previous;
+
+    if (previous === 0) {
+      return (
+        <Alert
+          message="Análisis de la Comparación"
+          description={<Text>En <strong>{recentLabel}</strong> se registraron ventas por <strong>{formatCurrency(recent)}</strong>, mientras que en <strong>{previousLabel}</strong> no hubo ventas. Esto indica el inicio de actividad comercial en el período más reciente.</Text>}
+          type="info"
+          showIcon
         />
+      );
+    }
 
-        {/* Resultados de la comparación */}
-        {result && (
-          <>
-            <ComparisonTable
-              mode={validMode}
-              result={result}
-              months={months}
-              formatCurrency={formatCurrency}
-            />
+    if (difference === 0) {
+      return (
+         <Alert
+          message="Análisis de la Comparación"
+          description={<Text>No hubo variación en las ventas entre <strong>{previousLabel}</strong> y <strong>{recentLabel}</strong>. El rendimiento se mantuvo estable.</Text>}
+          type="info"
+          showIcon
+        />
+      );
+    }
+    
+    const percentage = ((difference / previous) * 100).toFixed(2);
+    const trend = difference > 0 ? 'aumentaron' : 'disminuyeron';
+    const summary = difference > 0 ? 'una mejora significativa' : 'una baja considerable';
+    const type = difference > 0 ? 'success' : 'error';
 
-            {/* Resumen analítico de la comparación */}
-            <div className={styles.summary}>
-              <h4>Resumen de la Comparación</h4>
-              {(() => {
-                const modeIsYear = validMode === 'year';
-                const data1 = modeIsYear ? result.data?.year1 : result.data?.month1;
-                const data2 = modeIsYear ? result.data?.year2 : result.data?.month2;
+    return (
+        <Alert
+          message="Análisis de la Comparación"
+          description={<Text>Las ventas <strong>{trend}</strong> un <strong>{Math.abs(Number(percentage))}%</strong> en <strong>{recentLabel}</strong> con respecto a <strong>{previousLabel}</strong>, reflejando {summary} en el rendimiento.</Text>}
+          type={type}
+          showIcon
+        />
+    );
+  };
 
-                const year1Parsed = parseInt(data1?.year);
-                const year2Parsed = parseInt(data2?.year);
-                const total1 = data1?.total_sales || 0;
-                const total2 = data2?.total_sales || 0;
+  return (
+    <Spin spinning={loading} tip="Cargando..." size="large">
+      <Content style={{ padding: '24px' }}>
+        <Space direction="vertical" size="large" style={{ display: 'flex' }}>
+            <Card>
+                <Title level={2}>Comparar Ventas entre {validMode === 'month' ? 'Meses' : 'Años'}</Title>
+                <Paragraph>Usuario: <Text strong>{nickname || 'Cargando...'}</Text></Paragraph>
+                <ComparisonForm
+                  mode={validMode}
+                  onSubmit={handleSubmit}
+                />
+            </Card>
 
-                const recentIsYear2 = year2Parsed > year1Parsed;
-                const recentLabel = modeIsYear
-                  ? `${recentIsYear2 ? year2Parsed : year1Parsed}`
-                  : `${recentIsYear2 ? months[data2?.month] : months[data1?.month]} ${recentIsYear2 ? data2?.year : data1?.year}`;
+            {result && (
+                <Card title="Resultados de la Comparación">
+                    <Space direction="vertical" size="large" style={{ display: 'flex' }}>
+                        <ComparisonTable
+                            mode={validMode}
+                            result={result}
+                            months={months}
+                            formatCurrency={formatCurrency}
+                        />
+                        
+                        {renderAnalysis()}
 
-                const previousLabel = modeIsYear
-                  ? `${recentIsYear2 ? year1Parsed : year2Parsed}`
-                  : `${recentIsYear2 ? months[data1?.month] : months[data2?.month]} ${recentIsYear2 ? data1?.year : data2?.year}`;
+                        <Space>
+                            <Button icon={<FilePdfOutlined />} onClick={handleGeneratePDF} type="default">
+                                Generar PDF
+                            </Button>
+                            {validMode === 'year' && (
+                                <Button icon={<FileExcelOutlined />} onClick={handleExportExcel} type="primary" style={{ backgroundColor: '#28a745' }}>
+                                    Descargar Excel
+                                </Button>
+                            )}
+                        </Space>
+                    </Space>
+                </Card>
+            )}
+        </Space>
 
-                const recent = recentIsYear2 ? total2 : total1;
-                const previous = recentIsYear2 ? total1 : total2;
-                const difference = recent - previous;
-                const percentage = previous === 0 ? 0 : ((difference / previous) * 100).toFixed(2);
-
-                if (previous === 0) {
-                  return (
-                    <p>
-                      En <strong>{recentLabel}</strong> se registraron ventas por <strong>{formatCurrency(recent)}</strong>, mientras que en <strong>{previousLabel}</strong> no hubo ventas registradas.
-                      Esto indica el inicio de actividad comercial o una apertura significativa en el período actual.
-                    </p>
-                  );
-                }
-
-                if (difference === 0) {
-                  return (
-                    <p>
-                      No hubo variación en las ventas entre <strong>{previousLabel}</strong> y <strong>{recentLabel}</strong>.
-                    </p>
-                  );
-                }
-
-                return (
-                  <p>
-                    Las ventas <strong>{difference > 0 ? 'aumentaron' : 'disminuyeron'}</strong> un{' '}
-                    <strong>{Math.abs(Number(percentage))}%</strong> en <strong>{recentLabel}</strong> con respecto a{' '}
-                    <strong>{previousLabel}</strong>, reflejando{' '}
-                    {difference > 0 ? 'una mejora significativa' : 'una baja considerable'} en el rendimiento.
-                  </p>
-                );
-              })()}
-            </div>
-
-            {/* Botones de acciones: PDF y Excel */}
-            <div className={styles.actions}>
-              <button onClick={handleGeneratePDF} className="btn btn-secondary me-2">
-                Generar PDF
-              </button>
-              {validMode === 'year' && (
-                <button onClick={handleExportExcel} className="btn btn-success">
-                  Descargar Excel
-                </button>
-              )}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* Modal para previsualizar el PDF */}
-      <Modal show={showModal} onHide={() => setShowModal(false)} size="lg">
-        <Modal.Header closeButton>
-          <Modal.Title>Reporte de Comparación</Modal.Title>
-        </Modal.Header>
-        <Modal.Body>
+        <Modal
+          title="Reporte de Comparación"
+          open={isModalOpen}
+          onCancel={() => setIsModalOpen(false)}
+          width={1000}
+          footer={[
+            <Button key="back" onClick={() => setIsModalOpen(false)} icon={<CloseCircleOutlined />}> Cerrar </Button>,
+            <Button key="submit" type="primary" onClick={handleDownloadPDF} disabled={!pdfDataUrl} icon={<DownloadOutlined />}> Descargar PDF </Button>,
+          ]}
+        >
           {pdfDataUrl ? (
-            <iframe src={pdfDataUrl} width="100%" height="500px" title="Reporte PDF" />
+            <iframe src={pdfDataUrl} width="100%" height="600px" title="Reporte PDF" style={{ border: 'none' }}/>
           ) : (
-            <div className="alert alert-info">Generando previsualización del PDF...</div>
+             <Alert message="Generando previsualización del PDF..." type="info" />
           )}
-        </Modal.Body>
-        <Modal.Footer>
-          <button onClick={() => setShowModal(false)} className="btn btn-secondary">
-            Cerrar
-          </button>
-          <button onClick={handleDownloadPDF} className="btn btn-primary" disabled={!pdfDataUrl}>
-            Descargar PDF
-          </button>
-        </Modal.Footer>
-      </Modal>
-    </>
+        </Modal>
+      </Content>
+    </Spin>
   );
 };
 
