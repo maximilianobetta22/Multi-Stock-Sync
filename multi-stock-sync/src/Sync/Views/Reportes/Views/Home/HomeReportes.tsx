@@ -56,7 +56,11 @@ const reportLinks = [
   { path: "devoluciones-reembolsos", label: "Devoluciones", icon: faUndo, category: "Clientes" },
   // Órdenes (Morado)
   { path: "estados-ordenes-anual", label: "Estados de órdenes", icon: faClipboardList, category: "Órdenes" },
-  { path: "historial", label: "Historial despacho", icon: faHistory, category: "Órdenes" },
+  { path: "historial", label: "Historial despacho", icon: faClipboardList, category: "Órdenes" },
+  { path: "ganancias-mensuales", label: "Ganancias mensuales", icon: faChartLine, category: "Ventas" },
+  { path: "perdidas-empresa", label: "Perdidas de la empresa", icon: faClipboardList, category: "Ventas" },
+  { path: "productos-internacionales", label: "Productos Internacionales",  icon: faClipboardList,category: "Productos"},
+
 ];
 
 // Categorías disponibles para filtrar reportes

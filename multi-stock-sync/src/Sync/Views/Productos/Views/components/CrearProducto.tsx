@@ -28,6 +28,7 @@ const CrearProducto: React.FC = () => {
   const {
     loading,
     imagenes,
+    eliminarImagen,
     atributosCategoria,
     specsDominio,
     categoryId,
@@ -127,9 +128,18 @@ const CrearProducto: React.FC = () => {
           </Form.Item>
         )}
 
-        <Form.Item name="category_id" label="Categoría (ID)" help={null}>
-          <Input disabled value={categoryId} />
-        </Form.Item>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item name="category_id" label="Categoría (ID)">
+              <Input disabled value={categoryId} />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item name="sku" label="SKU">
+              <Input/>
+            </Form.Item>
+          </Col>
+        </Row>
 
         {catalogProducts.length > 0 && (
           <Form.Item
@@ -335,19 +345,28 @@ const CrearProducto: React.FC = () => {
         )}
 
         <Form.Item label="Imágenes agregadas">
-          <ul>
+          <ul style={{ listStyle: "none", paddingLeft: 0 }}>
             {imagenes.map((src, idx) => (
-              <li key={idx}>
+              <li key={idx} style={{ marginBottom: 10, display: "flex", alignItems: "center", gap: 12 }}>
                 <a href={src} target="_blank" rel="noreferrer">
-                  <img src={src || "/placeholder.svg"} alt={`Imagen ${idx + 1}`} style={{ maxWidth: 100 }} />
+                  <img
+                    src={src || "/placeholder.svg"}
+                    alt={`Imagen ${idx + 1}`}
+                    style={{ maxWidth: 100, border: "1px solid #ccc", borderRadius: 4 }}
+                  />
                 </a>
+
+                <Button danger size="small" onClick={() => eliminarImagen(idx)}>
+                  Eliminar
+                </Button>
               </li>
             ))}
           </ul>
+
           <Button icon={<UploadOutlined />} onClick={handleAgregarImagen}>
             Agregar imagen por URL
           </Button>
-        </Form.Item>
+</Form.Item>
 
         <Divider />
 
@@ -421,7 +440,7 @@ const CrearProducto: React.FC = () => {
                       </Form.Item>
                     </Col>
 
-                    <Col span={5}>
+                    <Col span={3}>
                       <Form.Item label="Talla">
                         <Select
                           value={variacion.size}
@@ -445,7 +464,7 @@ const CrearProducto: React.FC = () => {
                     </Col>
 
                     {/* Campo para seleccionar la fila de la guía de tallas */}
-                    <Col span={7}>
+                    <Col span={6}>
                       <Form.Item
                         label={
                           <Space>
@@ -519,7 +538,7 @@ const CrearProducto: React.FC = () => {
                       </Form.Item>
                     </Col>
 
-                    <Col span={3}>
+                    <Col span={5}>
                       <Form.Item label="Precio" rules={[{ required: true }]}>
                         <InputNumber
                           value={variacion.price}
