@@ -1,7 +1,6 @@
 import { useState } from "react";
 import axios from "axios";
 import {
-  
   InputNumber,
   Modal,
   Form,
@@ -9,17 +8,27 @@ import {
   Typography,
   message,
   Space,
- 
   DatePicker,
   Input,
+  Button,
 } from "antd";
+import { FilePdfOutlined, FileExcelOutlined } from "@ant-design/icons";
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 
 import { useEditarProductos } from "../hook/useEditarProducto";
 import { TablaProductos } from "./TablaProductos";
 
 const { Title, Text } = Typography;
-
 const { Option } = Select;
+
+// Interfaz para jspdf-autotable
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 interface ProductoML {
   id: string;
@@ -41,7 +50,8 @@ const EditarProductos = () => {
   const [form] = Form.useForm();
   const [productoEditando, setProductoEditando] = useState<ProductoML | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
-  
+  const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
 
@@ -153,11 +163,77 @@ const EditarProductos = () => {
     });
   };
 
+  // Funciones de exportacion
+  const exportToExcel = () => {
+    if (productos.length === 0) {
+      message.warning("No hay productos para exportar.");
+      return;
+    }
+    const datos = productos.map((p) => ({
+      ID: p.id,
+      Título: p.title,
+      Precio: p.price,
+      Stock: p.available_quantity,
+      Estado: p.status,
+      "Ventas Registradas": p.sold_quantity ?? 0,
+      "Fecha Creación": p.date_created ? new Date(p.date_created).toLocaleDateString("es-CL") : "N/A"
+    }));
+    const ws = XLSX.utils.json_to_sheet(datos);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Productos");
+    XLSX.writeFile(wb, "gestion_productos.xlsx");
+  };
+
+  const exportToPDF = () => {
+    if (productos.length === 0) {
+      message.warning("No hay productos para exportar.");
+      return;
+    }
+    const doc = new jsPDF();
+    doc.text("Gestión de Productos", 14, 15);
+    doc.autoTable({
+      head: [["ID", "Título", "Precio", "Stock", "Estado"]],
+      body: productos.map((p) => [
+        p.id,
+        p.title,
+        `$${p.price.toLocaleString("es-CL")}`,
+        p.available_quantity,
+        p.status
+      ]),
+      startY: 20,
+    });
+    const blob = doc.output("blob");
+    setPdfUrl(URL.createObjectURL(blob));
+    setPdfPreviewVisible(true);
+  };
+  
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Gestión de Productos", 14, 15);
+    doc.autoTable({
+      head: [["ID", "Título", "Precio", "Stock", "Estado"]],
+      body: productos.map((p) => [
+        p.id,
+        p.title,
+        `$${p.price.toLocaleString("es-CL")}`,
+        p.available_quantity,
+        p.status
+      ]),
+      startY: 20,
+    });
+    doc.save("gestion_productos.pdf");
+    setPdfPreviewVisible(false);
+  }
+
+  // --- 5. Estilo para los botones de exportación ---
+  const exportButtonStyle = {
+    borderColor: '#dc3545',
+    color: '#dc3545',
+  };
+
   return (
     <div style={{ padding: "2rem" }}>
       <Title level={3}>Gestión de Productos</Title>
-
-      
 
       <Space direction="horizontal" wrap style={{ marginBottom: 16 }}>
         <Input.Search
@@ -206,6 +282,21 @@ const EditarProductos = () => {
           <Option value="paused">Pausado</Option>
           <Option value="under_review">En revisión</Option>
         </Select>
+        {/* --- 4. Botones de exportación --- */}
+        <Button
+          style={exportButtonStyle}
+          icon={<FileExcelOutlined />}
+          onClick={exportToExcel}
+        >
+          Exportar Excel
+        </Button>
+        <Button
+          style={exportButtonStyle}
+          icon={<FilePdfOutlined />}
+          onClick={exportToPDF}
+        >
+          Exportar PDF
+        </Button>
       </Space>
 
       <TablaProductos
@@ -283,6 +374,37 @@ const EditarProductos = () => {
     </>
   )}
 </Modal>
+{/*  Modal para previsualizar el PDF */}
+      <Modal
+        title="Vista Previa del PDF"
+        open={pdfPreviewVisible}
+        onCancel={() => setPdfPreviewVisible(false)}
+        width="80%"
+        footer={[
+          <Button key="back" onClick={() => setPdfPreviewVisible(false)}>
+            Cerrar
+          </Button>,
+          <Button 
+            key="download" 
+            type="primary" 
+            danger // Esto le da el color rojo al botón de descarga
+            icon={<FilePdfOutlined />}
+            onClick={handleDownloadPDF}
+          >
+            Descargar PDF
+          </Button>,
+        ]}
+      >
+        {pdfUrl && (
+          <iframe 
+            src={pdfUrl} 
+            width="100%" 
+            height="600px" 
+            title="PDF Preview"
+            style={{ border: 'none' }}
+          />
+        )}
+      </Modal>
     </div>
   );
 }

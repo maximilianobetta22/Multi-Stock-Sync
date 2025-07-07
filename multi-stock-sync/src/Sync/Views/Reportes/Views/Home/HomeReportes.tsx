@@ -25,7 +25,6 @@ import {
   faExclamationTriangle,
   faBoxOpen,
   faArchive,
-  faHistory,
 } from "@fortawesome/free-solid-svg-icons";
 import { LoadingOutlined } from "@ant-design/icons";
 import { useReceptionManagements } from "../../hooks/useReceptionManagements";
@@ -57,8 +56,6 @@ const reportLinks = [
   // Órdenes (Morado)
   { path: "estados-ordenes-anual", label: "Estados de órdenes", icon: faClipboardList, category: "Órdenes" },
   { path: "historial", label: "Historial despacho", icon: faClipboardList, category: "Órdenes" },
-  { path: "ganancias-mensuales", label: "Ganancias mensuales", icon: faChartLine, category: "Ventas" },
-  { path: "perdidas-empresa", label: "Perdidas de la empresa", icon: faClipboardList, category: "Ventas" },
   { path: "productos-internacionales", label: "Productos Internacionales",  icon: faClipboardList,category: "Productos"},
 
 ];

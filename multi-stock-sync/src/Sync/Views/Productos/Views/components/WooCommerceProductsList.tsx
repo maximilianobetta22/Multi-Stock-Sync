@@ -1,6 +1,6 @@
 import type React from "react"
 import { useState, useEffect } from "react"
-import { MoreOutlined, EditOutlined, PlusOutlined } from "@ant-design/icons"
+import { MoreOutlined, EditOutlined, PlusOutlined, FilePdfOutlined, FileExcelOutlined } from "@ant-design/icons"
 import EditarProductoModal from "./EditarProductoModal"
 import CrearProductoWooModal from "./CrearProductoWooModal"
 import {
@@ -23,6 +23,7 @@ import {
   Badge,
   Tooltip,
   message,
+  Modal,
 } from "antd"
 import {
   ShopOutlined,
@@ -42,8 +43,18 @@ import useWooCommerceProducts from "../hook/useWooCommerceProducts"
 import { WooCommerceService } from "../Services/woocommerceService"
 import type { WooCommerceProduct } from "../Types/woocommerceTypes"
 
+import * as XLSX from "xlsx";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+
 const { Title, Text } = Typography
 const { Search } = Input
+
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
 
 const WooCommerceProductsList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("")
@@ -57,6 +68,9 @@ const WooCommerceProductsList: React.FC = () => {
   // Estados para crear producto
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
   const [creatingProduct, setCreatingProduct] = useState(false)
+
+  const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   const handleEditClick = (product: WooCommerceProduct) => {
     setEditingProduct(product)
@@ -92,9 +106,9 @@ const WooCommerceProductsList: React.FC = () => {
 
   // FUNCIÓN MEJORADA: Crear producto
   const handleCreateProduct = async (productData: any) => {
-    console.log("🚀 Iniciando creación de producto...");
-    console.log("📋 Datos del producto:", productData);
-    console.log("🏪 Store ID mapeado:", mappedStoreId);
+    console.log(" Iniciando creación de producto...");
+    console.log(" Datos del producto:", productData);
+    console.log(" Store ID mapeado:", mappedStoreId);
 
     if (!mappedStoreId) {
       console.error("❌ No hay Store ID mapeado");
@@ -104,7 +118,7 @@ const WooCommerceProductsList: React.FC = () => {
 
     setCreatingProduct(true)
     try {
-      console.log("📡 Enviando petición al backend...");
+      console.log(" Enviando petición al backend...");
       
       const response = await WooCommerceService.createProduct({
         storeId: mappedStoreId,
@@ -153,6 +167,67 @@ const WooCommerceProductsList: React.FC = () => {
     setCurrentPage,
     setPageSize,
   } = useWooCommerceProducts({ autoLoad: false })
+
+  // Funciones de exportqacion
+  const exportToExcel = () => {
+    if (displayProducts.length === 0) {
+      message.warning("No hay productos para exportar.");
+      return;
+    }
+    const datos = displayProducts.map((p) => ({
+      Nombre: p.name,
+      SKU: p.sku,
+      Precio: parseFloat(p.regular_price || p.price || "0"),
+      Stock: p.stock_quantity ?? "N/A",
+      Estado: p.status,
+      Peso_kg: p.weight ?? "N/A",
+    }));
+    const ws = XLSX.utils.json_to_sheet(datos);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Productos_WooCommerce");
+    XLSX.writeFile(wb, "productos_woocommerce.xlsx");
+  };
+
+  const exportToPDF = () => {
+    if (displayProducts.length === 0) {
+      message.warning("No hay productos para exportar.");
+      return;
+    }
+    const doc = new jsPDF();
+    doc.text("Lista de Productos - WooCommerce", 14, 15);
+    doc.autoTable({
+      head: [["Nombre", "SKU", "Precio", "Stock", "Estado"]],
+      body: displayProducts.map((p) => [
+        p.name,
+        p.sku,
+        `$${parseInt(p.regular_price || p.price || "0").toLocaleString("es-CL")}`,
+        p.stock_quantity ?? "N/A",
+        p.status,
+      ]),
+      startY: 20,
+    });
+    const blob = doc.output("blob");
+    setPdfUrl(URL.createObjectURL(blob));
+    setPdfPreviewVisible(true);
+  };
+
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Lista de Productos - WooCommerce", 14, 15);
+    doc.autoTable({
+      head: [["Nombre", "SKU", "Precio", "Stock", "Estado"]],
+      body: displayProducts.map((p) => [
+        p.name,
+        p.sku,
+        `$${parseInt(p.regular_price || p.price || "0").toLocaleString("es-CL")}`,
+        p.stock_quantity ?? "N/A",
+        p.status,
+      ]),
+      startY: 20,
+    });
+    doc.save("productos_woocommerce.pdf");
+    setPdfPreviewVisible(false);
+  }
 
   // FUNCIÓN PARA MANEJAR CAMBIO DE TIENDA
   const handleStoreChange = (value: string) => {
@@ -689,7 +764,7 @@ const WooCommerceProductsList: React.FC = () => {
           </div>
         )}
 
-        {/* Búsqueda - Estilo mejorado */}
+        {/* Búsqueda */}
         {hasSelectedConnection() && mappedStoreId && (
           <Card style={{ 
             marginBottom: "32px", 
@@ -697,11 +772,8 @@ const WooCommerceProductsList: React.FC = () => {
             border: "1px solid #e8ecf0",
             boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
           }}>
-            <Row gutter={[16, 16]} align="middle">
-              <Col xs={24} md={16}>
-                <div style={{ marginBottom: "12px" }}>
-                  <Text strong style={{ fontSize: "16px" }}>Buscar Productos</Text>
-                </div>
+            <Row gutter={[16, 16]} align="middle" justify="space-between">
+              <Col xs={24} md={12}>
                 <Search
                   placeholder="Buscar por nombre o SKU..."
                   value={searchTerm}
@@ -710,10 +782,28 @@ const WooCommerceProductsList: React.FC = () => {
                   enterButton
                   size="large"
                   allowClear
-                  style={{
-                    borderRadius: "12px"
-                  }}
                 />
+              </Col>
+              {/* Exportacion a Excel y PDF */}
+              <Col xs={24} md={12} style={{ textAlign: 'right' }}>
+                <Space>
+                  <Button
+                    type="primary"
+                    icon={<FileExcelOutlined />}
+                    onClick={exportToExcel}
+                    size="large"
+                  >
+                    Exportar Excel
+                  </Button>
+                  <Button
+                    type="primary"
+                    icon={<FilePdfOutlined />}
+                    onClick={exportToPDF}
+                    size="large"
+                  >
+                    Exportar PDF
+                  </Button>
+                </Space>
               </Col>
             </Row>
           </Card>
@@ -940,9 +1030,39 @@ const WooCommerceProductsList: React.FC = () => {
           onSave={handleCreateProduct}
           loading={creatingProduct}
         />
+      {/* Previsualizacion del PDF */}
+        <Modal
+          title="Vista Previa del PDF"
+          open={pdfPreviewVisible}
+          onCancel={() => setPdfPreviewVisible(false)}
+          width="80%"
+          footer={[
+            <Button key="back" onClick={() => setPdfPreviewVisible(false)}>
+              Cerrar
+            </Button>,
+            <Button 
+              key="download" 
+              type="primary" 
+              icon={<FilePdfOutlined />}
+              onClick={handleDownloadPDF}
+            >
+              Descargar PDF
+            </Button>,
+          ]}
+        >
+          {pdfUrl && (
+            <iframe 
+              src={pdfUrl} 
+              width="100%" 
+              height="600px" 
+              title="PDF Preview"
+              style={{ border: 'none' }}
+            />
+          )}
+        </Modal>
       </div>
     </div>
   )
 }
 
-export default WooCommerceProductsList
+export default WooCommerceProductsList;
