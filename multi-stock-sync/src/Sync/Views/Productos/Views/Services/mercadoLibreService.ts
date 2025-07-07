@@ -86,7 +86,7 @@ export const MercadoLibreService = {
       console.log(`Descargando plantilla para categoría ${categoryId} y cliente ${clientId}`)
 
       const response = await axiosInstance.get(
-        `${API_BASE_URL}/mercadolibre/carga-masiva/descargar-plantilla/${clientId}/${categoryId}`,
+        `${API_BASE_URL}/mercadolibre/carga-masiva/descargar-platilla/${clientId}/${categoryId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,

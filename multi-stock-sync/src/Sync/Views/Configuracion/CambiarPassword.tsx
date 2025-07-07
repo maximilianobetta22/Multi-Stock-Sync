@@ -253,7 +253,7 @@ const ConfiguracionUsuario: React.FC = () => {
                 style={{ 
                   borderRadius: '8px',
                   minWidth: '180px',
-                  background: '#32cd32',
+                  background: 'linear-gradient(135deg, #145a32  0%, #1e8449 100%)',
                   border: 'none'
                 }}
               >

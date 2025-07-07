@@ -137,7 +137,7 @@ console.log(userContext)
       <Card 
         style={{ 
           marginBottom: '24px',
-          background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+          background: 'linear-gradient(135deg,rgb(100, 27, 152) 0%,rgb(208, 142, 255) 100%)',
           border: 'none',
           borderRadius: '16px'
         }}
@@ -148,7 +148,7 @@ console.log(userContext)
             size={80} 
             style={{ 
               backgroundColor: "#fff", 
-              color: "#FF6B35",
+              color: "#000",
               fontSize: '32px',
               fontWeight: 'bold',
               border: '3px solid rgba(255,255,255,0.3)'
@@ -175,7 +175,7 @@ console.log(userContext)
       <Card 
         title={
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <EditOutlined style={{ marginRight: '8px', color: '#FF6B35' }} />
+            <EditOutlined style={{ marginRight: '8px', color: '#52c41a' }} />
             Editar Información Personal
           </div>
         }
@@ -196,7 +196,7 @@ console.log(userContext)
               <Form.Item
                 label={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <UserOutlined style={{ marginRight: '6px', color: '#FF6B35' }} />
+                    <UserOutlined style={{ marginRight: '6px', color: '#8b0000' }} />
                     Nombre
                   </div>
                 }
@@ -215,7 +215,7 @@ console.log(userContext)
               <Form.Item
                 label={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <UserOutlined style={{ marginRight: '6px', color: '#FF6B35' }} />
+                    <UserOutlined style={{ marginRight: '6px', color: '#8b0000' }} />
                     Apellidos
                   </div>
                 }
@@ -234,7 +234,7 @@ console.log(userContext)
               <Form.Item
                 label={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <PhoneOutlined style={{ marginRight: '6px', color: '#FF6B35' }} />
+                    <PhoneOutlined style={{ marginRight: '6px', color: '#8b0000' }} />
                     Teléfono
                   </div>
                 }
@@ -253,7 +253,7 @@ console.log(userContext)
               <Form.Item 
                 label={
                   <div style={{ display: 'flex', alignItems: 'center' }}>
-                    <MailOutlined style={{ marginRight: '6px', color: '#FF6B35' }} />
+                    <MailOutlined style={{ marginRight: '6px', color: '#8b0000' }} />
                     Correo Electrónico
                   </div>
                 }
@@ -310,7 +310,7 @@ console.log(userContext)
                 style={{ 
                   borderRadius: '8px',
                   minWidth: '120px',
-                  background: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+                  background: 'linear-gradient(135deg, #145a32  0%, #1e8449 100%)',
                   border: 'none'
                 }}
               >
