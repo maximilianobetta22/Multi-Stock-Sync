@@ -110,4 +110,4 @@ const EditarProductoModal: React.FC<Props> = ({ visible, product, onClose, onSav
   )
 }
 
-export default EditarProductoModal
+export default EditarProductoModal;

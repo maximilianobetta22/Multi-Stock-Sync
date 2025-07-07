@@ -2,8 +2,24 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { message } from "antd";
 
+interface ProductoML {
+  id: string;
+  title: string;
+  price: number;
+  available_quantity: number;
+  status: string;
+  has_bids?: boolean;
+  catalog_listing?: boolean;
+  description?: { plain_text: string };
+  pictures?: { secure_url: string }[];
+  atributes?: any[];
+  date_created?: string;
+  sold_quantity?: number;
+  user_product_id?: string;
+}
+
 export const useEditarProductos = (conexion: any, perPage = 50) => {
-  const [productos, setProductos] = useState([]);
+  const [productos, setProductos] = useState<ProductoML[]>([]);
   const [loading, setLoading] = useState(false);
   const [pagina, setPagina] = useState(1);
   const [total, setTotal] = useState(0);
