@@ -107,7 +107,7 @@ const VentasPorYear: React.FC = () => {
 
   // Handlers de Exportación
   const handlePreviewPDF = () => {
-    const pdfBase64 = generarPDFPorYear(salesData, selectedYear, userName);
+    const pdfBase64 = generarPDFPorYear(salesData, detalleDataSource, selectedYear, userName);
     const blob = new Blob(
       [Uint8Array.from(atob(pdfBase64.split(',')[1]), c => c.charCodeAt(0))],
       { type: "application/pdf" }
@@ -118,7 +118,7 @@ const VentasPorYear: React.FC = () => {
   };
 
   const handleSavePDF = () => {
-    guardarPDFPorYear(salesData, selectedYear, userName);
+    guardarPDFPorYear(salesData, detalleDataSource, selectedYear, userName);
     setIsPdfModalVisible(false);
   };
 
