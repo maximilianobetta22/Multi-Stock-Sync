@@ -23,7 +23,24 @@ interface DetalleVenta {
   precioUnitario: number;
 }
 
-// 🟧 PDF: Ventas por Mes
+// Constantes para cálculos reales
+const IVA_RATE = 0.19; // 19% IVA en Chile
+
+// Funciones de utilidad para cálculos reales (solo datos calculables)
+const calcularPrecioNeto = (precioConIva: number): number => {
+  return precioConIva / (1 + IVA_RATE);
+};
+
+const calcularIVA = (precioNeto: number): number => {
+  return precioNeto * IVA_RATE;
+};
+
+const redondearPrecio = (precio: number): number => {
+  // Redondear a los 10 pesos más cercanos
+  return Math.round(precio / 10) * 10;
+};
+
+// 🟧 PDF: Ventas por Mes (sin cambios)
 export const generarPDFPorMes = (
   ventas: any[],
   year: number,
@@ -61,10 +78,9 @@ export const generarPDFPorMes = (
 
   const pdfBlob = doc.output("blob");
   return URL.createObjectURL(pdfBlob);
-
 };
 
-// 🟧 PDF: Guardar directo Mes
+// 🟧 PDF: Guardar directo Mes (sin cambios)
 export const guardarPDFPorMes = (
   ventas: any[],
   year: number,
@@ -103,7 +119,7 @@ export const guardarPDFPorMes = (
   doc.save(`Ventas_Mes_${userName}_${fecha}.pdf`);
 };
 
-// 🟧 Excel: Ventas por Mes
+// 🟧 Excel: Ventas por Mes (sin cambios)
 export const exportarExcelPorMes = (
   ventas: any[],
   year: number,
@@ -132,7 +148,7 @@ export const exportarExcelPorMes = (
   XLSX.writeFile(workbook, fileName);
 };
 
-// 🟨 PDF: Ventas por Día
+// 🟨 PDF: Ventas por Día (sin cambios)
 export const generarPDFPorDiaBlobURL = (
   fecha: string,
   ventas: any[],
@@ -160,92 +176,276 @@ export const generarPDFPorDiaBlobURL = (
     theme: "striped",
   });
 
-  const pdfBlob = doc.output("blob"); // Genera el PDF como Blob
+  const pdfBlob = doc.output("blob");
   return URL.createObjectURL(pdfBlob);
 };
 
-// 🟦 PDF: Ventas por Año
+// 🟦 PDF: Ventas por Año - CON DATOS CALCULABLES
 export const generarPDFPorYear = (
-  data: any[],
+  salesData: Mes[],
+  detalleVentas: DetalleVenta[],
   year: string,
   userName: string
 ): string => {
   const doc = new jsPDF();
+  
+  // Calcular totales para el resumen
+  const totalVentasConIva = salesData.reduce((acc, mes) => acc + mes.total_sales, 0);
+  const totalVentasSinIva = detalleVentas.reduce((acc, item) => {
+    const precioNeto = calcularPrecioNeto(item.precioUnitario);
+    return acc + (precioNeto * item.cantidad);
+  }, 0);
+  const totalIvaRecaudado = totalVentasConIva - totalVentasSinIva;
+  const cantidadTotalProductos = detalleVentas.reduce((acc, item) => acc + item.cantidad, 0);
+
+  // Encabezado
   doc.setFontSize(16);
   doc.text(`Reporte Anual de Ventas - ${year}`, 10, 10);
   doc.setFontSize(12);
   doc.text(`Usuario: ${userName}`, 10, 20);
+  doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-CL')}`, 10, 30);
+
+  // Resumen Financiero
+  doc.setFontSize(14);
+  doc.text("RESUMEN FINANCIERO", 10, 45);
+  
+  autoTable(doc, {
+    startY: 55,
+    head: [["Métrica", "Valor"]],
+    body: [
+      ["Total Ventas Sin IVA", `${Math.round(totalVentasSinIva).toLocaleString("es-CL")} CLP`],
+      ["Total IVA Recaudado", `${Math.round(totalIvaRecaudado).toLocaleString("es-CL")} CLP`],
+      ["Total Ventas Con IVA", `${totalVentasConIva.toLocaleString("es-CL")} CLP`],
+      ["Productos Vendidos", `${cantidadTotalProductos} unidades`],
+      ["Ticket Promedio", `${Math.round(totalVentasConIva / detalleVentas.length).toLocaleString("es-CL")} CLP`],
+    ],
+    styles: { fontSize: 10, cellPadding: 3 },
+    theme: "grid",
+    headStyles: { fillColor: [41, 128, 185] },
+  });
+
+  // Resumen Mensual
+  const finalY1 = (doc as any).lastAutoTable.finalY || 120;
+  doc.setFontSize(14);
+  doc.text("RESUMEN MENSUAL", 10, finalY1 + 15);
+
+  const resumenMensual = salesData.map(mes => {
+    const ventasDelMes = detalleVentas.filter(item => item.mes === mes.month);
+    const totalSinIvaMes = ventasDelMes.reduce((acc, item) => {
+      const precioNeto = calcularPrecioNeto(item.precioUnitario);
+      return acc + (precioNeto * item.cantidad);
+    }, 0);
+    const totalIvaMes = mes.total_sales - totalSinIvaMes;
+    
+    return [
+      mes.month,
+      `${Math.round(totalSinIvaMes).toLocaleString("es-CL")}`,
+      `${Math.round(totalIvaMes).toLocaleString("es-CL")}`,
+      `${mes.total_sales.toLocaleString("es-CL")}`
+    ];
+  });
 
   autoTable(doc, {
-    startY: 30,
-    head: [["Mes", "Ventas Totales"]],
-    body: data.map((d) => [
-      d.month,
-      `$${d.total_sales.toLocaleString("es-CL")}`,
-    ]),
-    styles: { fontSize: 9 },
+    startY: finalY1 + 25,
+    head: [["Mes", "Sin IVA", "IVA", "Con IVA"]],
+    body: resumenMensual,
+    foot: [
+      [
+        "TOTAL",
+        `${Math.round(totalVentasSinIva).toLocaleString("es-CL")}`,
+        `${Math.round(totalIvaRecaudado).toLocaleString("es-CL")}`,
+        `${totalVentasConIva.toLocaleString("es-CL")}`
+      ]
+    ],
+    styles: { fontSize: 9, cellPadding: 2 },
     theme: "striped",
+    headStyles: { fillColor: [52, 152, 219] },
+    footStyles: { fillColor: [236, 240, 241], fontStyle: 'bold' },
   });
 
   return doc.output("datauristring");
 };
 
-// 🟦 PDF Guardar: Año
+// 🟦 PDF Guardar: Año - CON DATOS CALCULABLES
 export const guardarPDFPorYear = (
-  data: any[],
+  salesData: Mes[],
+  detalleVentas: DetalleVenta[],
   year: string,
   userName: string
 ): void => {
   const doc = new jsPDF();
+  
+  // Calcular totales para el resumen
+  const totalVentasConIva = salesData.reduce((acc, mes) => acc + mes.total_sales, 0);
+  const totalVentasSinIva = detalleVentas.reduce((acc, item) => {
+    const precioNeto = calcularPrecioNeto(item.precioUnitario);
+    return acc + (precioNeto * item.cantidad);
+  }, 0);
+  const totalIvaRecaudado = totalVentasConIva - totalVentasSinIva;
+  const cantidadTotalProductos = detalleVentas.reduce((acc, item) => acc + item.cantidad, 0);
+
+  // Encabezado
   doc.setFontSize(16);
   doc.text(`Reporte Anual de Ventas - ${year}`, 10, 10);
   doc.setFontSize(12);
   doc.text(`Usuario: ${userName}`, 10, 20);
+  doc.text(`Fecha de generación: ${new Date().toLocaleDateString('es-CL')}`, 10, 30);
 
+  // Resumen Financiero
+  doc.setFontSize(14);
+  doc.text("RESUMEN FINANCIERO", 10, 45);
+  
   autoTable(doc, {
-    startY: 30,
-    head: [["Mes", "Ventas Totales"]],
-    body: data.map((d) => [
-      d.month,
-      `$${d.total_sales.toLocaleString("es-CL")}`,
-    ]),
-    styles: { fontSize: 9 },
-    theme: "striped",
+    startY: 55,
+    head: [["Métrica", "Valor"]],
+    body: [
+      ["Total Ventas Sin IVA", `${Math.round(totalVentasSinIva).toLocaleString("es-CL")} CLP`],
+      ["Total IVA Recaudado", `${Math.round(totalIvaRecaudado).toLocaleString("es-CL")} CLP`],
+      ["Total Ventas Con IVA", `${totalVentasConIva.toLocaleString("es-CL")} CLP`],
+      ["Productos Vendidos", `${cantidadTotalProductos} unidades`],
+      ["Ticket Promedio", `${Math.round(totalVentasConIva / detalleVentas.length).toLocaleString("es-CL")} CLP`],
+    ],
+    styles: { fontSize: 10, cellPadding: 3 },
+    theme: "grid",
+    headStyles: { fillColor: [41, 128, 185] },
   });
 
-  doc.save(`Ventas_Anuales_${year}.pdf`);
+  // Resumen Mensual
+  const finalY1 = (doc as any).lastAutoTable.finalY || 120;
+  doc.setFontSize(14);
+  doc.text("RESUMEN MENSUAL", 10, finalY1 + 15);
+
+  const resumenMensual = salesData.map(mes => {
+    const ventasDelMes = detalleVentas.filter(item => item.mes === mes.month);
+    const totalSinIvaMes = ventasDelMes.reduce((acc, item) => {
+      const precioNeto = calcularPrecioNeto(item.precioUnitario);
+      return acc + (precioNeto * item.cantidad);
+    }, 0);
+    const totalIvaMes = mes.total_sales - totalSinIvaMes;
+    
+    return [
+      mes.month,
+      `${Math.round(totalSinIvaMes).toLocaleString("es-CL")}`,
+      `${Math.round(totalIvaMes).toLocaleString("es-CL")}`,
+      `${mes.total_sales.toLocaleString("es-CL")}`
+    ];
+  });
+
+  autoTable(doc, {
+    startY: finalY1 + 25,
+    head: [["Mes", "Sin IVA", "IVA", "Con IVA"]],
+    body: resumenMensual,
+    foot: [
+      [
+        "TOTAL",
+        `${Math.round(totalVentasSinIva).toLocaleString("es-CL")}`,
+        `${Math.round(totalIvaRecaudado).toLocaleString("es-CL")}`,
+        `${totalVentasConIva.toLocaleString("es-CL")}`
+      ]
+    ],
+    styles: { fontSize: 9, cellPadding: 2 },
+    theme: "striped",
+    headStyles: { fillColor: [52, 152, 219] },
+    footStyles: { fillColor: [236, 240, 241], fontStyle: 'bold' },
+  });
+
+  doc.save(`Reporte_Ventas_${userName}_${year}.pdf`);
 };
 
-// 🟦 Excel: Año
+// 🟦 Excel Mejorado: Año - SOLO CON DATOS REALES CALCULABLES
 export const exportarExcelPorYear = (
   salesData: Mes[],
   detalleVentas: DetalleVenta[],
   year: string,
   userName: string
 ): void => {
-  // Hoja de Resumen Mensual 
-  const resumenData = salesData.map(mes => ({
-    "Mes": mes.month,
-    "Ventas Totales (CLP)": mes.total_sales
-  }));
-  const totalSales = salesData.reduce((acc, mes) => acc + mes.total_sales, 0);
-  resumenData.push({ "Mes": "Total Año", "Ventas Totales (CLP)": totalSales });
-  const wsResumen = XLSX.utils.json_to_sheet(resumenData);
-  wsResumen['!cols'] = [{ wch: 20 }, { wch: 25 }];
+  // Procesar datos con cálculos reales únicamente
+  const detalleCalculado = detalleVentas.map(item => {
+    // Valores base reales
+    const precioConIva = item.precioUnitario;
+    const cantidad = item.cantidad;
+    
+    // Cálculos reales (solo datos calculables)
+    const precioNeto = calcularPrecioNeto(precioConIva);
+    const ivaUnitario = calcularIVA(precioNeto);
+    const ivaTotal = ivaUnitario * cantidad;
+    const totalSinIva = precioNeto * cantidad;
+    const totalConIva = precioConIva * cantidad;
+    
+    return {
+      "Mes": item.mes,
+      "Producto": item.producto,
+      "Cantidad": cantidad,
+      "Precio Unitario (Con IVA)": Math.round(precioConIva),
+      "Precio Neto Unitario": Math.round(precioNeto),
+      "IVA Unitario": Math.round(ivaUnitario),
+      "Total Sin IVA": Math.round(totalSinIva),
+      "Total IVA": Math.round(ivaTotal),
+      "Total Con IVA": Math.round(totalConIva)
+    };
+  });
 
-  // Hoja de Detalle de Productos Vendidos
-  const detalleDataForSheet = detalleVentas.map(item => ({
-    "Mes": item.mes,
-    "Producto": item.producto,
-    "Cantidad": item.cantidad,
-    "Precio Unitario (CLP)": item.precioUnitario,
-  }));
-  const wsDetalle = XLSX.utils.json_to_sheet(detalleDataForSheet);
-  wsDetalle['!cols'] = [{ wch: 15 }, { wch: 50 }, { wch: 10 }, { wch: 25 }];
+  // Crear resumen con totales reales
+  const totalVentasConIva = salesData.reduce((acc, mes) => acc + mes.total_sales, 0);
+  const totalVentasSinIva = detalleCalculado.reduce((acc, item) => acc + item["Total Sin IVA"], 0);
+  const totalIvaRecaudado = detalleCalculado.reduce((acc, item) => acc + item["Total IVA"], 0);
+
+  const resumenFinanciero = [
+    { "Métrica": "Total Ventas Sin IVA ", "Valor": totalVentasSinIva },
+    { "Métrica": "Total IVA Recaudado ", "Valor": totalIvaRecaudado },
+    { "Métrica": "Total Ventas Con IVA ", "Valor": totalVentasConIva },
+    { "Métrica": "Cantidad Total Productos Vendidos", "Valor": detalleCalculado.reduce((acc, item) => acc + item.Cantidad, 0) },
+    { "Métrica": "Ticket Promedio (Con IVA)", "Valor": Math.round(totalVentasConIva / detalleCalculado.length) }
+  ];
+
+  // Resumen mensual
+  const resumenMensual = salesData.map(mes => {
+    const ventasDelMes = detalleCalculado.filter(item => item.Mes === mes.month);
+    const totalSinIvaMes = ventasDelMes.reduce((acc, item) => acc + item["Total Sin IVA"], 0);
+    const totalIvaMes = ventasDelMes.reduce((acc, item) => acc + item["Total IVA"], 0);
+    
+    return {
+      "Mes": mes.month,
+      "Ventas Sin IVA ": totalSinIvaMes,
+      "IVA Recaudado ": totalIvaMes,
+      "Ventas Con IVA ": mes.total_sales
+    };
+  });
+
+  // Agregar totales al resumen mensual
+  resumenMensual.push({
+    "Mes": "TOTAL AÑO",
+    "Ventas Sin IVA ": totalVentasSinIva,
+    "IVA Recaudado ": totalIvaRecaudado,
+    "Ventas Con IVA ": totalVentasConIva
+  });
+
+  // Crear hojas de trabajo
+  const wsResumenGeneral = XLSX.utils.json_to_sheet(resumenFinanciero);
+  wsResumenGeneral['!cols'] = [{ wch: 35 }, { wch: 20 }];
+
+  const wsResumenMensual = XLSX.utils.json_to_sheet(resumenMensual);
+  wsResumenMensual['!cols'] = [{ wch: 15 }, { wch: 20 }, { wch: 20 }, { wch: 20 }];
+
+  const wsDetalle = XLSX.utils.json_to_sheet(detalleCalculado);
+  wsDetalle['!cols'] = [
+    { wch: 12 }, // Mes
+    { wch: 50 }, // Producto
+    { wch: 10 }, // Cantidad
+    { wch: 20 }, // Precio Unitario Con IVA
+    { wch: 20 }, // Precio Neto Unitario
+    { wch: 15 }, // IVA Unitario
+    { wch: 18 }, // Total Sin IVA
+    { wch: 15 }, // Total IVA
+    { wch: 18 }  // Total Con IVA
+  ];
+
+  // Crear libro de trabajo
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, wsResumen, "Resumen por Mes");
-  XLSX.utils.book_append_sheet(wb, wsDetalle, "Detalle de Ventas");
+  XLSX.utils.book_append_sheet(wb, wsResumenGeneral, "Resumen Financiero");
+  XLSX.utils.book_append_sheet(wb, wsResumenMensual, "Resumen Mensual");
+  XLSX.utils.book_append_sheet(wb, wsDetalle, "Detalle Completo");
 
-  // Exportar el archivo
+  // Exportar archivo
   XLSX.writeFile(wb, `Reporte_Ventas_Detallado_${userName}_${year}.xlsx`);
 };
