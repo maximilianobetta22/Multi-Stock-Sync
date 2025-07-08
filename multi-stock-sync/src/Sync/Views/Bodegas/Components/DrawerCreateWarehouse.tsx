@@ -22,14 +22,15 @@ export const DrawerCreateWarehouse: React.FC<DrawerCreateWarehouseProps> = ({
     setOpen(false);
   };
 
-  const onFinish = async (values: any) => {
-    try {
-      createWarehouse(values);
-      onWarehouseCreated();
-    } catch (error) {
-      console.error(`Error al crear Bodega: ${error}`);
-    }
-  };
+const onFinish = async (values: any) => {
+  try {
+    await createWarehouse(values);     //  Esperar que termine
+    onWarehouseCreated();              //  Refrescar después
+    setOpen(false);                    //  (Opcional) Cierra el drawer
+  } catch (error) {
+    console.error(`Error al crear Bodega: ${error}`);
+  }
+};
 
   React.useEffect(() => {
     if (companies.length === 0) {

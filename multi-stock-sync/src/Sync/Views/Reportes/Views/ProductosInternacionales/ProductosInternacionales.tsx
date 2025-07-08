@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Card, Table, Image, Typography, Alert, Button, Space, Modal } from "antd";
+import { Card, Table, Image, Typography, Alert, Button, Space, Modal, Tag, } from "antd";
 import { ReloadOutlined, FilePdfOutlined, FileExcelOutlined } from "@ant-design/icons";
 import axiosInstance from "../../../../../axiosConfig";
 import { generarpdfProductosInter } from"../PdfExcelCodigos/PDF/GenerarProductosInterPdf";
@@ -68,7 +68,38 @@ const ProductosInternacionales: React.FC = () => {
     { title: "Nombre", dataIndex: "nombre", key: "nombre" },
     { title: "Precio", dataIndex: "precio", key: "precio" },
     { title: "Stock", dataIndex: "stock", key: "stock" },
-    { title: "Estado", dataIndex: "estado", key: "estado" },
+    {
+      title: "Estado", dataIndex: "estado", key: "estado",
+        render: (estado: string) => {
+          const lower = estado?.toLowerCase();
+          if (lower === "active") {
+            return (
+              <Tag
+                style={{ backgroundColor: "#b9fbc0", color: "#000", borderColor: "#b9fbc0" }}
+              >
+                Activo
+              </Tag>
+            );
+          } else if (lower === "paused") {
+            return (
+              <Tag
+                style={{ backgroundColor: "#ffdab9", color: "#000", borderColor: "#ffdab9" }}
+              >
+                Pausado
+              </Tag>
+            );
+          } else {
+            return (
+              <Tag
+                style={{ backgroundColor: "#e5e7eb", color: "#000", borderColor: "#e5e7eb" }}
+              >
+                {estado}
+              </Tag>
+            );
+          }
+        },
+      },
+
     { title: "Fecha de creación", dataIndex: "fecha", key: "fecha" },
   ];
 
@@ -134,7 +165,22 @@ const ProductosInternacionales: React.FC = () => {
           columns={columnas}
           dataSource={dataSource}
           loading={loading}
-          pagination={{ pageSize: 10 }}
+          pagination={{ 
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          locale: {
+            items_per_page: "por página",
+            jump_to: "Ir a",
+            jump_to_confirm: "confirmar",
+            page: "Página",
+            prev_page: "Página anterior",
+            next_page: "Página siguiente",
+          },
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} de ${total} productos`,
+          }}  
+          
           locale={{ emptyText: "No hay productos disponibles." }}
           rowKey="key"
           className="custom-table"
