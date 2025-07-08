@@ -1,65 +1,79 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useParams } from "react-router-dom";
-import "bootstrap/dist/css/bootstrap.min.css";
+import React, { useEffect, useState } from "react";
+import { useParams, Link } from "react-router-dom";
+import { useReceptionManagements } from "../../hooks/useReceptionManagements";
+import {
+  Table,
+  Button,
+  Card,
+  Input,
+  Space,
+  Typography,
+  Row,
+  Col,
+  Statistic,
+  Modal,
+  message,
+} from "antd";
+import {
+  FileExcelOutlined,
+  FilePdfOutlined,
+  DollarCircleOutlined,
+  InboxOutlined,
+  ReloadOutlined,
+} from "@ant-design/icons";
+import type { ColumnsType } from "antd/es/table";
+
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 import autoTable from "jspdf-autotable";
-import { Link } from "react-router-dom";
-import { useReceptionManagements } from "../../hooks/useReceptionManagements";
+
+declare module "jspdf" {
+  interface jsPDF {
+    autoTable: (options: any) => jsPDF;
+  }
+}
+
+const { Title, Text } = Typography;
+const { Search } = Input;
+
+interface ReporteItem {
+  id: string;
+  sku: string;
+  date_created: string;
+  quantity: number;
+  title: string;
+  unit_price: number;
+  total_amount: number;
+}
 
 const ReporteRecepcion: React.FC = () => {
   const { client_id } = useParams<{ client_id: string }>();
-  const [filteredData, setFilteredData] = useState<any[]>([]);
-  const [filterText, setFilterText] = useState<string>("");
   const { loading, reporte, fetchStockReception } = useReceptionManagements();
 
-  // Paginación
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 10;
+  const [filteredData, setFilteredData] = useState<ReporteItem[]>([]);
+  const [searchText, setSearchText] = useState("");
 
-  const pdfRef = useRef<jsPDF | null>(null);
+  // Estado para la previsualización del PDF
+  const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
   useEffect(() => {
-    loading;
-    fetchStockReception(); // Llama a la función para obtener los datos
-  }, [client_id]);
+    fetchStockReception();
+  }, [client_id, fetchStockReception]);
 
-  // Función para aplicar el filtro por SKU
-  const applyFilter = () => {
-    if (!filterText.trim()) {
-      setFilteredData(reporte); // Si no hay texto de filtro, mostrar todos los datos
-      return;
-    }
+  useEffect(() => {
+    // Aplica el filtro si hay texto de búsqueda.
+    const filtered = searchText
+      ? reporte.filter((item) =>
+        item.sku.toLowerCase().includes(searchText.toLowerCase())
+      )
+      : reporte;
+    setFilteredData(filtered);
+  }, [reporte, searchText]);
 
-    const newFilteredData = reporte.filter((item) =>
-      item.sku.toLowerCase().includes(filterText.toLowerCase())
-    );
-
-    setFilteredData(newFilteredData);
-    setCurrentPage(1);
-  };
-
-  // Limpiar filtro
-  const clearFilter = () => {
-    setFilterText("");
-    setFilteredData(reporte);
-  };
-
-  // Paginación
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentData = filteredData.slice(indexOfFirstItem, indexOfLastItem);
-
-  const nextPage = () => {
-    if (currentPage < Math.ceil(filteredData.length / itemsPerPage)) {
-      setCurrentPage(currentPage + 1);
-    }
-  };
-
-  const prevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(currentPage - 1);
-    }
+  const handleSearch = (value: string) => {
+    setSearchText(value);
   };
 
   // Formatear los valores a CLP
@@ -70,157 +84,270 @@ const ReporteRecepcion: React.FC = () => {
     }).format(value);
   };
 
-  // Exportar a Excel
+  // Calcular total del valor para la estadística
+  const totalValor = filteredData.reduce(
+    (sum, item) => sum + item.total_amount,
+    0
+  );
+
+  // Funciones de Exportación
   const exportToExcel = () => {
+    if (filteredData.length === 0) {
+      message.warning("No hay datos para exportar.");
+      return;
+    }
     const worksheet = XLSX.utils.json_to_sheet(
       filteredData.map((item) => ({
-        ID: `'${item.id}`,
-        Fecha: item.date_created,
+        SKU: item.sku,
+        Producto: item.title,
+        Fecha: new Date(item.date_created).toLocaleDateString("es-CL"),
         Cantidad: item.quantity,
-        Título: item.title,
-        "Costo Neto": formatCLP(item.unit_price),
-        "Valor Total": formatCLP(item.total_amount),
+        "Costo Neto": item.unit_price,
+        "Valor Total": item.total_amount,
       }))
     );
-
+    worksheet["!cols"] = [
+      { wch: 20 },
+      { wch: 40 },
+      { wch: 15 },
+      { wch: 10 },
+      { wch: 15 },
+      { wch: 15 },
+    ];
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "ReporteRecepcion");
     XLSX.writeFile(workbook, `ReporteRecepcion_${client_id}.xlsx`);
   };
 
-  // Generar PDF y abrir en una nueva pestaña
-  const generatePDF = async () => {
+  const exportToPDF = () => {
+    if (filteredData.length === 0) {
+      message.warning("No hay datos para exportar.");
+      return;
+    }
     const doc = new jsPDF();
-    doc.text(`Reporte de Recepción - Cliente: ${client_id}`, 10, 10);
-
+    doc.text(`Reporte de Recepción - Cliente: ${client_id}`, 14, 15);
     autoTable(doc, {
       startY: 20,
-      head: [
-        ["SKU", "Producto", "Fecha", "Cantidad", "Costo Neto", "Valor Total"],
-      ],
+      head: [["SKU", "Producto", "Fecha", "Cantidad", "Costo Neto", "Valor Total"]],
       body: filteredData.map((item) => [
         item.sku,
         item.title,
-        new Date(item.date_created).toLocaleDateString(),
+        new Date(item.date_created).toLocaleDateString("es-CL"),
         item.quantity,
         formatCLP(item.unit_price),
         formatCLP(item.total_amount),
       ]),
     });
-
-    pdfRef.current = doc;
-    window.open(doc.output("bloburl"), "_blank");
+    const blob = doc.output("blob");
+    setPdfUrl(URL.createObjectURL(blob));
+    setPdfPreviewVisible(true);
   };
 
-  // Calcular total de la columna "Valor Total"
-  const totalValor = filteredData.reduce(
-    (sum, item) => sum + parseFloat(item.total_amount),
-    0
-  );
+  const handleDownloadPDF = () => {
+    const doc = new jsPDF();
+    doc.text(`Reporte de Recepción - Cliente: ${client_id}`, 14, 15);
+    autoTable(doc, {
+      startY: 20,
+      head: [["SKU", "Producto", "Fecha", "Cantidad", "Costo Neto", "Valor Total"]],
+      body: filteredData.map((item) => [
+        item.sku,
+        item.title,
+        new Date(item.date_created).toLocaleDateString("es-CL"),
+        item.quantity,
+        formatCLP(item.unit_price),
+        formatCLP(item.total_amount),
+      ]),
+    });
+    doc.save(`ReporteRecepcion_${client_id}.pdf`);
+    setPdfPreviewVisible(false);
+  }
+
+  // Columnas para la tabla
+  const columns: ColumnsType<ReporteItem> = [
+    {
+      title: "SKU",
+      dataIndex: "sku",
+      key: "sku",
+      sorter: (a, b) => a.sku.localeCompare(b.sku),
+    },
+    {
+      title: "Producto",
+      dataIndex: "title",
+      key: "title",
+      ellipsis: true,
+    },
+    {
+      title: "Fecha",
+      dataIndex: "date_created",
+      key: "date_created",
+      render: (date) => new Date(date).toLocaleDateString("es-CL"),
+      sorter: (a, b) => new Date(a.date_created).getTime() - new Date(b.date_created).getTime(),
+    },
+    {
+      title: "Cantidad",
+      dataIndex: "quantity",
+      key: "quantity",
+      align: 'right',
+      sorter: (a, b) => a.quantity - b.quantity,
+    },
+    {
+      title: "Costo Neto",
+      dataIndex: "unit_price",
+      key: "unit_price",
+      align: 'right',
+      render: (price) => formatCLP(price),
+      sorter: (a, b) => a.unit_price - b.unit_price,
+    },
+    {
+      title: "Valor Total",
+      dataIndex: "total_amount",
+      key: "total_amount",
+      align: 'right',
+      render: (total) => formatCLP(total),
+      sorter: (a, b) => a.total_amount - b.total_amount,
+    },
+  ];
 
   return (
-    <div className="container py-4">
-      <h2 className="text-center mb-3">REPORTE DISPONIBLE POR RECEPCIÓN</h2>
+    <div style={{ padding: "2rem", backgroundColor: "#f0f2f5" }}>
+      <Space direction="vertical" size="large" style={{ width: "100%" }}>
+        {/* Encabezado de la página */}
+        <Row justify="space-between" align="middle">
+          <Col>
+            <Title level={2}>Reporte de Recepciones</Title>
+            <Text type="secondary">Visualiza y exporta el historial de productos recibidos.</Text>
+          </Col>
+          <Col>
+            <Button
+              icon={<ReloadOutlined />}
+              onClick={() => fetchStockReception()}
+              loading={loading}
+            >
+              Actualizar
+            </Button>
+          </Col>
+        </Row>
 
-      {/* Controles de filtrado */}
-      <div className="d-flex flex-wrap justify-content-center gap-2 mb-3">
-        <input
-          type="text"
-          placeholder="Ingrese SKU para filtrar"
-          className="form-control text-dark w-50"
-          value={filterText}
-          onChange={(e) => setFilterText(e.target.value)}
-        />
-        <button className="btn btn-primary" onClick={applyFilter}>
-          Filtrar
-        </button>
-        <button className="btn btn-secondary" onClick={clearFilter}>
-          Limpiar
-        </button>
-      </div>
+        {/* Filtros y Exportaciones */}
+        <Card>
+          <Row gutter={[16, 16]} justify="space-between">
+            <Col xs={24} md={8}>
+              <Search
+                placeholder="Buscar por SKU..."
+                onSearch={handleSearch}
+                onChange={(e) => handleSearch(e.target.value)}
+                allowClear
+                enterButton
+              />
+            </Col>
+            <Col xs={24} md={16} style={{ textAlign: "right" }}>
+              <Space wrap>
+                <Button
+                  type="primary"
+                  icon={<FileExcelOutlined />}
+                  onClick={exportToExcel}
+                  disabled={filteredData.length === 0}
+                >
+                  Exportar a Excel
+                </Button>
+                <Button
+                  type="primary"
+                  danger
+                  icon={<FilePdfOutlined />}
+                  onClick={exportToPDF}
+                  disabled={filteredData.length === 0}
+                >
+                  Generar PDF
+                </Button>
+              </Space>
+            </Col>
+          </Row>
+        </Card>
 
-      {/* Tabla con datos paginados */}
-      <div className="bg-light p-3 rounded">
-        <div className="table-responsive">
-          <table className="table table-bordered table-striped">
-            <thead className="table-secondary">
-              <tr>
-                <th>SKU</th>
-                <th>Fecha</th>
-                <th>Cantidad recepcionada</th>
-                <th>Producto</th>
-                <th>Costo neto</th>
-                <th>Valor total</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentData.length > 0 ? (
-                currentData.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.sku}</td>
-                    <td>{new Date(item.date_created).toLocaleDateString()}</td>
-                    <td>{item.quantity}</td>
-                    <td>{item.title}</td>
-                    <td>{formatCLP(item.unit_price)}</td>
-                    <td>{formatCLP(item.total_amount)}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={6} className="text-center">
-                    No hay datos disponibles
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+        {/* Estadísticas */}
+        <Row gutter={16}>
+          <Col xs={24} sm={12}>
+            <Card>
+              <Statistic
+                title="Registros Encontrados"
+                value={filteredData.length}
+                prefix={<InboxOutlined />}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={12}>
+            <Card>
+              <Statistic
+                title="Valor Total de Recepciones"
+                value={totalValor}
+                prefix={<DollarCircleOutlined />}
+                valueStyle={{ color: "#3f8600" }}
+              />
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Tabla de Datos */}
+        <Card>
+          <Table
+            columns={columns}
+            dataSource={filteredData}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              pageSize: 10,
+              showSizeChanger: true,
+              pageSizeOptions: ['10', '20', '50'],
+              showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} registros`
+            }}
+            scroll={{ x: 'max-content' }}
+          />
+        </Card>
+
+        {/* Botones para volver */}
+        <div style={{ textAlign: "center", marginTop: "1rem" }}>
+          <Space size="large">
+            <Link to="/sync/home">
+              <Button type="default">Volver a Inicio</Button>
+            </Link>
+            <Link to="/sync/reportes/home">
+              <Button type="default">Volver a Menú de Reportes</Button>
+            </Link>
+          </Space>
         </div>
+      </Space>
 
-        {/* Tarjeta con total de "Valor Total" */}
-        <div className="card mt-4 text-center">
-          <div className="card-body">
-            <h5 className="card-title">Total de Valor Total</h5>
-            <p className="card-text fw-bold fs-4 text-success">
-              {formatCLP(totalValor)}
-            </p>
-          </div>
-        </div>
-
-        {/* Paginación */}
-        <div className="d-flex justify-content-between mt-2">
-          <button
-            className="btn btn-outline-primary"
-            onClick={prevPage}
-            disabled={currentPage === 1}
+      {/* Previsualizacion del PDF */}
+      <Modal
+        title="Vista Previa del PDF"
+        open={pdfPreviewVisible}
+        onCancel={() => setPdfPreviewVisible(false)}
+        width="80%"
+        footer={[
+          <Button key="back" onClick={() => setPdfPreviewVisible(false)}>
+            Cerrar
+          </Button>,
+          <Button
+            key="download"
+            type="primary"
+            danger
+            icon={<FilePdfOutlined />}
+            onClick={handleDownloadPDF}
           >
-            Anterior
-          </button>
-          <span className="align-self-center">Página {currentPage}</span>
-          <button
-            className="btn btn-outline-primary"
-            onClick={nextPage}
-            disabled={indexOfLastItem >= filteredData.length}
-          >
-            Siguiente
-          </button>
-        </div>
-      </div>
-
-      {/* Botones de exportación */}
-      <div className="d-flex justify-content-center gap-3 mt-3">
-        <button className="btn btn-success mb-5 mx-2" onClick={exportToExcel}>
-          Exportar a Excel
-        </button>
-        <button className="btn btn-danger mb-5 mx-2" onClick={generatePDF}>
-          Generar PDF
-        </button>
-        <Link to="/sync/home" className="btn btn-primary mb-5 mx-2">
-          Volver a inicio
-        </Link>
-        <Link to="/sync/reportes/home" className="btn btn-primary mb-5 mx-2">
-          Volver a Menú de Reportes
-        </Link>
-      </div>
+            Descargar PDF
+          </Button>,
+        ]}
+      >
+        {pdfUrl && (
+          <iframe
+            src={pdfUrl}
+            width="100%"
+            height="600px"
+            title="PDF Preview"
+            style={{ border: 'none' }}
+          />
+        )}
+      </Modal>
     </div>
   );
 };
