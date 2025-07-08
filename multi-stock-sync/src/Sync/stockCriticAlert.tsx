@@ -281,6 +281,14 @@ export default function StockCriticAlert() {
                   pageSize: 10,
                   showSizeChanger: true,
                   showQuickJumper: true,
+                    locale: {
+                      items_per_page: "por página",
+                      jump_to: "Ir a",
+                      jump_to_confirm: "confirmar",
+                      page: "Página",
+                      prev_page: "Página anterior",
+                      next_page: "Página siguiente",
+                    },
                   showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
                 }}
                 scroll={{ y: 400 }}

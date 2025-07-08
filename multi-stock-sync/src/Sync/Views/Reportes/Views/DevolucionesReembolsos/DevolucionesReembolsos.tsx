@@ -302,12 +302,21 @@ const DevolucionesReembolsos: React.FC = () => {
           dataSource={filteredData}
           rowKey="id"
           loading={loading}
-          pagination={{
-            pageSize: 10,
-            showSizeChanger: true,
-            showQuickJumper: true,
-            showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} devoluciones`,
-          }}
+          pagination={{ 
+          pageSize: 10,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          locale: {
+            items_per_page: "por página",
+            jump_to: "Ir a",
+            jump_to_confirm: "confirmar",
+            page: "Página",
+            prev_page: "Página anterior",
+            next_page: "Página siguiente",
+          },
+          showTotal: (total, range) =>
+            `${range[0]}-${range[1]} de ${total} productos`,
+          }}  
           scroll={{ x: 'max-content' }}
           locale={{
             emptyText: searchText ? `No se encontraron resultados para "${searchText}"` : 'No hay devoluciones en este período.',

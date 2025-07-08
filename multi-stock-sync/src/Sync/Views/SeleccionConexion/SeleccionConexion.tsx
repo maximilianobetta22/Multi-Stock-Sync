@@ -129,7 +129,7 @@ return (
         display: "inline-block",
       }}
     >
-      🛒 Selecciona la tienda con la que vas a trabajar
+       Selecciona la tienda con la que vas a trabajar
     </Title>
   </div>
 
@@ -164,7 +164,7 @@ return (
             }}
             title={
               <Text strong style={{ fontSize: 18, color: "#111827" }}>
-                🏬 {conexion.nickname}
+                 {conexion.nickname}
               </Text>
             }
             actions={[
