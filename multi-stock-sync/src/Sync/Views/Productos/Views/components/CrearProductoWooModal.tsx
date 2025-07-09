@@ -53,6 +53,18 @@ const CrearProductoWooModal: React.FC<Props> = ({
   const [loadingCategories, setLoadingCategories] = useState(false);
   const [images, setImages] = useState<string[]>([]);
 
+  // Currency formatter helper
+  const formatCurrency = (value: string | number | undefined): string => {
+    if (!value) return '';
+    return `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  // Currency parser helper
+  const parseCurrency = (value: string | undefined): string | undefined => {
+    if (!value) return undefined;
+    return value.replace(/\$\s?|(,*)/g, '');
+  };
+
   // Obtener Store ID mapeado
   const getStoreId = () => {
     const conexion = JSON.parse(localStorage.getItem("conexionSeleccionada") || "{}");
@@ -236,25 +248,26 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <div style={{
           display: "flex",
           alignItems: "center",
-          gap: "12px",
-          padding: "8px 0"
+          gap: "16px",
+          padding: "4px 0"
         }}>
           <div style={{
-            width: "40px",
-            height: "40px",
-            backgroundColor: "#FF6B35",
-            borderRadius: "12px",
+            width: "44px",
+            height: "44px",
+            backgroundColor: "#1890ff",
+            borderRadius: "10px",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
             color: "white",
-            fontSize: "18px"
+            fontSize: "20px",
+            boxShadow: "0 4px 12px rgba(24, 144, 255, 0.15)"
           }}>
             <ShopOutlined />
           </div>
           <div>
-            <Title level={4} style={{ margin: 0, fontSize: "20px", fontWeight: "700" }}>
-              Crear Nuevo Producto WooCommerce
+            <Title level={4} style={{ margin: 0, fontSize: "22px", fontWeight: "600", color: "#262626" }}>
+              Crear Nuevo Producto
             </Title>
             <Text type="secondary" style={{ fontSize: "14px" }}>
               Completa la información del producto para WooCommerce
@@ -273,46 +286,36 @@ const CrearProductoWooModal: React.FC<Props> = ({
       destroyOnClose={true}
       okButtonProps={{
         style: {
-          backgroundColor: "#FF6B35",
-          borderColor: "#FF6B35",
-          borderRadius: "8px",
-          fontWeight: "600",
-          height: "40px",
-          paddingLeft: "24px",
-          paddingRight: "24px"
+          backgroundColor: "#1890ff",
+          borderColor: "#1890ff",
+          borderRadius: "6px",
+          fontWeight: "500",
+          height: "38px",
+          paddingLeft: "20px",
+          paddingRight: "20px"
         }
       }}
       cancelButtonProps={{
         style: {
-          borderRadius: "8px",
-          height: "40px",
-          paddingLeft: "24px",
-          paddingRight: "24px"
+          borderRadius: "6px",
+          height: "38px",
+          paddingLeft: "20px",
+          paddingRight: "20px"
         }
       }}
     >
       {/* Alert con mejor diseño */}
-      <div style={{
-        backgroundColor: "#e6f4ff",
-        border: "1px solid #91caff",
-        borderRadius: "12px",
-        padding: "16px 20px",
-        marginBottom: "24px",
-        display: "flex",
-        alignItems: "center",
-        gap: "12px"
-      }}>
-        <InfoCircleOutlined style={{ fontSize: "18px", color: "#1677ff" }} />
-        <div>
-          <Text strong style={{ color: "#1677ff", fontSize: "14px" }}>
-            Información importante
-          </Text>
-          <br />
-          <Text style={{ color: "#1677ff", fontSize: "13px" }}>
-            Completa todos los campos obligatorios marcados con *. Las imágenes se pueden agregar por URL.
-          </Text>
-        </div>
-      </div>
+      <Alert
+        message="Información importante"
+        description="Completa todos los campos obligatorios marcados con *. Las imágenes se pueden agregar por URL."
+        type="info"
+        showIcon
+        style={{
+          marginBottom: "24px",
+          borderRadius: "8px",
+          border: "1px solid #d6f7ff"
+        }}
+      />
 
       <Form
         form={form}
@@ -341,19 +344,20 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <Card 
           title={
             <Text strong style={{ fontSize: "16px", color: "#262626" }}>
-              📝 Información Básica
+              Información Básica
             </Text>
           }
           size="small" 
           style={{ 
             marginBottom: 20,
-            borderRadius: "12px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+            borderRadius: "8px",
+            border: "1px solid #e8e8e8",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.02)"
           }}
           headStyle={{
             backgroundColor: "#fafafa",
-            borderRadius: "12px 12px 0 0"
+            borderRadius: "8px 8px 0 0",
+            borderBottom: "1px solid #e8e8e8"
           }}
         >
           <Row gutter={16}>
@@ -373,7 +377,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <Input 
                   placeholder="Ej: Camiseta de algodón azul" 
                   size="large"
-                  style={{ borderRadius: "8px" }}
+                  style={{ borderRadius: "6px" }}
                 />
               </Form.Item>
             </Col>
@@ -385,7 +389,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 name="type" 
                 label={<Text strong>Tipo de Producto</Text>}
               >
-                <Select size="large" style={{ borderRadius: "8px" }}>
+                <Select size="large" style={{ borderRadius: "6px" }}>
                   <Option value="simple">Simple</Option>
                   <Option value="grouped">Agrupado</Option>
                   <Option value="external">Externo</Option>
@@ -409,7 +413,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <Input 
                   placeholder="Código único del producto (ej: CAM-001)" 
                   size="large"
-                  style={{ borderRadius: "8px" }}
+                  style={{ borderRadius: "6px" }}
                 />
               </Form.Item>
             </Col>
@@ -425,7 +429,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                   rows={2}
                   placeholder="Descripción breve que aparece en el listado"
                   maxLength={160}
-                  style={{ borderRadius: "8px" }}
+                  style={{ borderRadius: "6px" }}
                 />
               </Form.Item>
             </Col>
@@ -440,7 +444,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <TextArea
                   rows={4}
                   placeholder="Descripción detallada del producto"
-                  style={{ borderRadius: "8px" }}
+                  style={{ borderRadius: "6px" }}
                 />
               </Form.Item>
             </Col>
@@ -451,19 +455,20 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <Card 
           title={
             <Text strong style={{ fontSize: "16px", color: "#262626" }}>
-              💰 Precios
+              Precios
             </Text>
           }
           size="small" 
           style={{ 
             marginBottom: 20,
-            borderRadius: "12px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+            borderRadius: "8px",
+            border: "1px solid #e8e8e8",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.02)"
           }}
           headStyle={{
             backgroundColor: "#fafafa",
-            borderRadius: "12px 12px 0 0"
+            borderRadius: "8px 8px 0 0",
+            borderBottom: "1px solid #e8e8e8"
           }}
         >
           <Row gutter={16}>
@@ -483,10 +488,10 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <InputNumber
                   min={0}
                   size="large"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                  style={{ width: "100%", borderRadius: "6px" }}
                   placeholder="Ej: 19990"
-                  formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={value => value!.replace(/\$\s?|(,*)/g, '')}
+                  formatter={formatCurrency}
+                  parser={parseCurrency}
                 />
               </Form.Item>
             </Col>
@@ -498,10 +503,10 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <InputNumber
                   min={0}
                   size="large"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                  style={{ width: "100%", borderRadius: "6px" }}
                   placeholder="Ej: 15990"
-                  formatter={value => `$ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                  parser={value => value!.replace(/\$\s?|(,*)/g, '')}
+                  formatter={formatCurrency}
+                  parser={parseCurrency}
                 />
               </Form.Item>
             </Col>
@@ -512,19 +517,20 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <Card 
           title={
             <Text strong style={{ fontSize: "16px", color: "#262626" }}>
-              🏷️ Categorización
+              Categorización
             </Text>
           }
           size="small" 
           style={{ 
             marginBottom: 20,
-            borderRadius: "12px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+            borderRadius: "8px",
+            border: "1px solid #e8e8e8",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.02)"
           }}
           headStyle={{
             backgroundColor: "#fafafa",
-            borderRadius: "12px 12px 0 0"
+            borderRadius: "8px 8px 0 0",
+            borderBottom: "1px solid #e8e8e8"
           }}
         >
           <Row gutter={16}>
@@ -539,7 +545,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                   loading={loadingCategories}
                   showSearch
                   size="large"
-                  style={{ borderRadius: "8px" }}
+                  style={{ borderRadius: "6px" }}
                   optionFilterProp="children"
                   notFoundContent={loadingCategories ? "Cargando..." : "No hay categorías"}
                 >
@@ -558,19 +564,20 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <Card 
           title={
             <Text strong style={{ fontSize: "16px", color: "#262626" }}>
-              🖼️ Imágenes del Producto
+              Imágenes del Producto
             </Text>
           }
           size="small" 
           style={{ 
             marginBottom: 20,
-            borderRadius: "12px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+            borderRadius: "8px",
+            border: "1px solid #e8e8e8",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.02)"
           }}
           headStyle={{
             backgroundColor: "#fafafa",
-            borderRadius: "12px 12px 0 0"
+            borderRadius: "8px 8px 0 0",
+            borderBottom: "1px solid #e8e8e8"
           }}
         >
           <Row gutter={16}>
@@ -583,11 +590,11 @@ const CrearProductoWooModal: React.FC<Props> = ({
                   size="large"
                   style={{ 
                     width: "100%",
-                    borderRadius: "8px",
+                    borderRadius: "6px",
                     borderStyle: "dashed",
-                    borderColor: "#FF6B35",
-                    color: "#FF6B35",
-                    height: "48px"
+                    borderColor: "#1890ff",
+                    color: "#1890ff",
+                    height: "44px"
                   }}
                 >
                   Agregar imagen por URL
@@ -596,7 +603,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 {images.length > 0 && (
                   <div>
                     <Divider orientation="left">
-                      <Text strong style={{ color: "#FF6B35" }}>
+                      <Text strong style={{ color: "#1890ff" }}>
                         Imágenes agregadas ({images.length})
                       </Text>
                     </Divider>
@@ -612,7 +619,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                                 style={{ 
                                   height: 120, 
                                   objectFit: "cover",
-                                  borderRadius: "8px 8px 0 0"
+                                  borderRadius: "6px 6px 0 0"
                                 }}
                                 fallback="/placeholder.svg"
                               />
@@ -624,19 +631,19 @@ const CrearProductoWooModal: React.FC<Props> = ({
                                 size="small"
                                 icon={<DeleteOutlined />}
                                 onClick={() => handleRemoveImage(index)}
-                                style={{ borderRadius: "6px" }}
+                                style={{ borderRadius: "4px" }}
                               >
                                 Eliminar
                               </Button>
                             ]}
                             style={{ 
-                              borderRadius: "8px",
-                              border: "1px solid #e8ecf0" 
+                              borderRadius: "6px",
+                              border: "1px solid #e8e8e8" 
                             }}
                           >
                             <Card.Meta
                               description={
-                                <Tag color="blue" style={{ borderRadius: "6px" }}>
+                                <Tag color="blue" style={{ borderRadius: "4px" }}>
                                   Imagen {index + 1}
                                 </Tag>
                               }
@@ -656,30 +663,32 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <Card 
           title={
             <Text strong style={{ fontSize: "16px", color: "#262626" }}>
-              📦 Inventario
+              Inventario
             </Text>
           }
           size="small" 
           style={{ 
             marginBottom: 20,
-            borderRadius: "12px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+            borderRadius: "8px",
+            border: "1px solid #e8e8e8",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.02)"
           }}
           headStyle={{
             backgroundColor: "#fafafa",
-            borderRadius: "12px 12px 0 0"
+            borderRadius: "8px 8px 0 0",
+            borderBottom: "1px solid #e8e8e8"
           }}
         >
           <Row gutter={16}>
             <Col span={8}>
-              <Form.Item name="manage_stock" valuePropName="checked">
+              <Form.Item 
+                name="manage_stock" 
+                valuePropName="checked"
+                label={<Text strong>Gestionar Stock</Text>}
+              >
                 <Switch 
-                  checkedChildren="Gestionar stock" 
-                  unCheckedChildren="No gestionar stock"
-                  style={{
-                    backgroundColor: "#FF6B35"
-                  }}
+                  checkedChildren="Activo" 
+                  unCheckedChildren="Inactivo"
                   onChange={(checked) => {
                     if (!checked) {
                       form.setFieldsValue({ stock_quantity: null });
@@ -707,7 +716,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <InputNumber 
                   min={0} 
                   size="large"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                  style={{ width: "100%", borderRadius: "6px" }}
                   disabled={!Form.useWatch('manage_stock', form)}
                 />
               </Form.Item>
@@ -717,7 +726,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 name="stock_status" 
                 label={<Text strong>Estado del Stock</Text>}
               >
-                <Select size="large" style={{ borderRadius: "8px" }}>
+                <Select size="large" style={{ borderRadius: "6px" }}>
                   <Option value="instock">En Stock</Option>
                   <Option value="outofstock">Sin Stock</Option>
                   <Option value="onbackorder">En Espera</Option>
@@ -731,19 +740,20 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <Card 
           title={
             <Text strong style={{ fontSize: "16px", color: "#262626" }}>
-              📏 Envío
+              Envío
             </Text>
           }
           size="small" 
           style={{ 
             marginBottom: 20,
-            borderRadius: "12px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+            borderRadius: "8px",
+            border: "1px solid #e8e8e8",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.02)"
           }}
           headStyle={{
             backgroundColor: "#fafafa",
-            borderRadius: "12px 12px 0 0"
+            borderRadius: "8px 8px 0 0",
+            borderBottom: "1px solid #e8e8e8"
           }}
         >
           <Row gutter={16}>
@@ -756,7 +766,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                   min={0} 
                   step={0.1} 
                   size="large"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                  style={{ width: "100%", borderRadius: "6px" }}
                   placeholder="0.5"
                 />
               </Form.Item>
@@ -769,7 +779,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <InputNumber 
                   min={0} 
                   size="large"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                  style={{ width: "100%", borderRadius: "6px" }}
                   placeholder="20"
                 />
               </Form.Item>
@@ -782,7 +792,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <InputNumber 
                   min={0} 
                   size="large"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                  style={{ width: "100%", borderRadius: "6px" }}
                   placeholder="15"
                 />
               </Form.Item>
@@ -795,7 +805,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 <InputNumber 
                   min={0} 
                   size="large"
-                  style={{ width: "100%", borderRadius: "8px" }}
+                  style={{ width: "100%", borderRadius: "6px" }}
                   placeholder="10"
                 />
               </Form.Item>
@@ -807,18 +817,19 @@ const CrearProductoWooModal: React.FC<Props> = ({
         <Card 
           title={
             <Text strong style={{ fontSize: "16px", color: "#262626" }}>
-              ⚙️ Configuración
+              Configuración
             </Text>
           }
           size="small"
           style={{ 
-            borderRadius: "12px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.04)"
+            borderRadius: "8px",
+            border: "1px solid #e8e8e8",
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.02)"
           }}
           headStyle={{
             backgroundColor: "#fafafa",
-            borderRadius: "12px 12px 0 0"
+            borderRadius: "8px 8px 0 0",
+            borderBottom: "1px solid #e8e8e8"
           }}
         >
           <Row gutter={16}>
@@ -827,7 +838,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 name="status" 
                 label={<Text strong>Estado</Text>}
               >
-                <Select size="large" style={{ borderRadius: "8px" }}>
+                <Select size="large" style={{ borderRadius: "6px" }}>
                   <Option value="publish">Publicado</Option>
                   <Option value="draft">Borrador</Option>
                   <Option value="pending">Pendiente</Option>
@@ -840,7 +851,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 name="catalog_visibility" 
                 label={<Text strong>Visibilidad</Text>}
               >
-                <Select size="large" style={{ borderRadius: "8px" }}>
+                <Select size="large" style={{ borderRadius: "6px" }}>
                   <Option value="visible">Visible</Option>
                   <Option value="catalog">Solo Catálogo</Option>
                   <Option value="search">Solo Búsqueda</Option>
@@ -853,7 +864,7 @@ const CrearProductoWooModal: React.FC<Props> = ({
                 name="tax_status" 
                 label={<Text strong>Estado de Impuestos</Text>}
               >
-                <Select size="large" style={{ borderRadius: "8px" }}>
+                <Select size="large" style={{ borderRadius: "6px" }}>
                   <Option value="taxable">Gravable</Option>
                   <Option value="shipping">Solo Envío</Option>
                   <Option value="none">Ninguno</Option>
@@ -864,29 +875,38 @@ const CrearProductoWooModal: React.FC<Props> = ({
 
           <Row gutter={16} style={{ marginTop: 16 }}>
             <Col span={8}>
-              <Form.Item name="featured" valuePropName="checked">
+              <Form.Item 
+                name="featured" 
+                valuePropName="checked"
+                label={<Text strong>Producto Destacado</Text>}
+              >
                 <Switch 
-                  checkedChildren="Destacado" 
-                  unCheckedChildren="Normal"
-                  style={{ backgroundColor: "#FF6B35" }}
+                  checkedChildren="Sí" 
+                  unCheckedChildren="No"
                 />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="virtual" valuePropName="checked">
+              <Form.Item 
+                name="virtual" 
+                valuePropName="checked"
+                label={<Text strong>Producto Virtual</Text>}
+              >
                 <Switch 
-                  checkedChildren="Virtual" 
-                  unCheckedChildren="Físico"
-                  style={{ backgroundColor: "#FF6B35" }}
+                  checkedChildren="Sí" 
+                  unCheckedChildren="No"
                 />
               </Form.Item>
             </Col>
             <Col span={8}>
-              <Form.Item name="reviews_allowed" valuePropName="checked">
+              <Form.Item 
+                name="reviews_allowed" 
+                valuePropName="checked"
+                label={<Text strong>Permitir Reseñas</Text>}
+              >
                 <Switch 
-                  checkedChildren="Permitir reseñas" 
-                  unCheckedChildren="Sin reseñas"
-                  style={{ backgroundColor: "#FF6B35" }}
+                  checkedChildren="Sí" 
+                  unCheckedChildren="No"
                 />
               </Form.Item>
             </Col>
