@@ -1,4 +1,4 @@
-import { Table, Button, Tag, Dropdown, Tooltip } from "antd";
+import { Table, Button, Tag, Dropdown, Tooltip, Image } from "antd";
 import {
   EditOutlined,
   PauseCircleOutlined,
@@ -99,6 +99,57 @@ export const TablaProductos = ({
   };
 
   const columns: ColumnsType<ProductoML> = [
+    {
+      title: "Imagen",
+      dataIndex: "pictures",
+      width: 80,
+      render: (pictures: ProductoML["pictures"]) => {
+        const imagenPrincipal = pictures?.[0]?.secure_url;
+        
+        if (!imagenPrincipal) {
+          return (
+            <div
+              style={{
+                width: 50,
+                height: 50,
+                backgroundColor: "#f5f5f5",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 4,
+                border: "1px solid #d9d9d9",
+                fontSize: 12,
+                color: "#999",
+              }}
+            >
+              Sin imagen
+            </div>
+          );
+        }
+
+        return (
+          <Image
+            width={50}
+            height={50}
+            src={imagenPrincipal}
+            alt="Producto"
+            style={{ 
+              borderRadius: 4,
+              objectFit: "cover",
+              border: "1px solid #d9d9d9"
+            }}
+            preview={{
+              mask: (
+                <div style={{ fontSize: 12, color: "#fff" }}>
+                  Ver
+                </div>
+              ),
+            }}
+            fallback="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAMIAAADDCAYAAADQvc6UAAABRWlDQ1BJQ0MgUHJvZmlsZQAAKJFjYGASSSwoyGFhYGDIzSspCnJ3UoiIjFJgf8LAwSDCIMogwMCcmFxc4BgQ4ANUwgCjUcG3awyMIPqyLsis7PPOq3QdDFcvjV3jOD1boQVTPQrgSkktTgbSf4A4LbmgqISBgTEFyFYuLykAsTuAbJEioKOA7DkgdjqEvQHEToKwj4DVhAQ5A9k3gGyB5IxEoBmML4BsnSQk8XQkNtReEOBxcfXxUQg1Mjc0dyHgXNJBSWpFCYh2zi+oLMpMzyhRcASGUqqCZ16yno6CkYGRAQMDKMwhqj/fAIcloxgHQqxAjIHBEugw5sUIsSQpBobtQPdLciLEVJYzMPBHMDBsayhILEqEO4DxG0txmrERhM29nYGBddr//5/DGRjYNRkY/l7////39v///y4Dmn+LgeHANwDrkl1AuO+pmgAAADhlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAAqACAAQAAAABAAAAwqADAAQAAAABAAAAwwAAAAD9b/HnAAAHlklEQVR4Ae3dP3Ik1RnG4W+FgYxN"
+          />
+        );
+      },
+    },
     {
       title: "ID",
       dataIndex: "id",
