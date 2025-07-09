@@ -416,9 +416,9 @@ const IngresosSemana: React.FC = () => {
             const label = context.dataset.label || '';
             const value = context.raw;
             if (label === "Ingresos Totales") {
-              return `💰 ${label}: ${formatCurrency(value)}`;
+              return ` ${label}: ${formatCurrency(value)}`;
             }
-            return `📦 ${label}: ${value} unidades`;
+            return ` ${label}: ${value} unidades`;
           }
         }
       },
