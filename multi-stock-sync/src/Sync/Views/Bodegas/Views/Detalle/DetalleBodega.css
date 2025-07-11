@@ -1,0 +1,114 @@
+/* Fondo general de los formularios */
+.ant-form-item {
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  padding: 8px 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+/* Títulos principales */
+.ant-typography h2, .ant-typography h5 {
+  color: #004d99;
+}
+
+/* Input y Select */
+.ant-input, .ant-select-selector, .ant-input-number {
+  border-radius: 6px !important;
+  border-color: #049fff !important;
+}
+
+/* Botones */
+.ant-btn-primary {
+  background-color: #1890ff;
+  border-color: #1890ff;
+  border-radius: 6px;
+  font-weight: bold;
+}
+.ant-btn-primary:hover {
+  background-color: #40a9ff;
+  border-color: #40a9ff;
+}
+.ant-btn-dangerous {
+  background-color: #ff4d4f !important; /* rojo vivo */
+  border-color: #ff4d4f !important;
+  color: #fff !important;
+  border-radius: 6px;
+  font-weight: bold;
+  padding: 4px 24px;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ant-btn-dangerous:hover,
+.ant-btn-dangerous:focus {
+  background-color: #ff7875 !important; /* rojo claro al hacer hover */
+  border-color: #ff7875 !important;
+  color: #fff !important;
+}
+
+/* Tabla */
+.tabla-resaltada .ant-table-thead > tr > th {
+  background-color: #bae7ff;
+  font-weight: bold;
+  text-align: center;
+  color: #002766;
+}
+
+.tabla-resaltada .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #d9d9d9;
+  text-align: center;
+}
+
+.tabla-resaltada .ant-table-tbody > tr:nth-child(even) {
+  background-color: #f0faff;
+}
+
+.tabla-resaltada .ant-table-tbody > tr:hover > td {
+  background-color: #e6f7ff;
+}
+
+/* Modal */
+.ant-modal-header {
+  background-color: #e6f7ff;
+}
+.ant-modal-title {
+  color: #0050b3;
+  font-weight: 600;
+}
+.ant-modal-footer .ant-btn-primary {
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+.ant-modal-footer .ant-btn-primary:hover {
+  background-color: #73d13d;
+  border-color: #73d13d;
+}
+
+/* Filtros */
+.ant-input-search,
+.ant-select {
+  border-radius: 6px;
+}
+
+/* Espaciado inferior para inputs largos */
+.ant-input-textarea {
+  border-radius: 6px !important;
+}
+
+/* Card */
+.ant-card {
+  background-color: #ffffff;
+  border: 1px solid #e6f7ff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  padding: 24px;
+}
+
+.ant-btn-primary {
+  background-color: #1890ff;
+  border-radius: 6px;
+  padding: 4px 24px;
+  font-size: 16px;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}
