@@ -338,6 +338,7 @@ const filteredStock = stockList // Sirve para filtrar el stock según el términ
       (!categoryFilter || item.category_id === categoryFilter)
   );
   return ( // Sirve para renderizar el componente DetalleBodega
+    <div className="detalle-bodega">
     <Card>
       <Row gutter={16}>
         <Col span={24} style={{ textAlign: "center" }}>
@@ -589,6 +590,7 @@ const filteredStock = stockList // Sirve para filtrar el stock según el términ
         </Form>
       </Modal>
     </Card>
+    </div>
   );
 };
 
