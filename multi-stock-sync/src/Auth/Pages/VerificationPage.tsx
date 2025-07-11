@@ -156,7 +156,7 @@ export default function VerificationPage() {
       const emailToSend = currentUser.email || userEmail;
       
       
-      // Usar solo el endpoint correcto que confirmaste: /email/resend
+      // Usar solo el endpoint correcto confrimado /email/resend
       await axiosInstance.post(`${import.meta.env.VITE_API_URL}/email/resend`, {
         email: emailToSend
       });
@@ -421,11 +421,11 @@ export default function VerificationPage() {
                   borderRadius: '12px',
                   fontSize: '16px',
                   fontWeight: 'bold',
-                  background: `linear-gradient(135deg, ${brandColors.success} 0%, #389e0d 100%)`,
+                  background: `linear-gradient(135deg, ${brandColors.success} 0%, #145a32  100%)`,
                   border: 'none',
                 }}
               >
-                {loading || checkingStatus ? 'Verificando...' : 'Ya hice clic en el enlace'}
+                {loading || checkingStatus ? 'Verificando...' : 'Ya hice click en el enlace'}
               </Button>
 
               <Button
