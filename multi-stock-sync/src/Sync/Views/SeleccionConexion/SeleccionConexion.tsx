@@ -12,7 +12,7 @@ const SeleccionConexion: React.FC = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    console.log("🧪 TOKEN ENCONTRADO:", token);
+    console.log(" TOKEN ENCONTRADO:", token);
 
     if (!token) {
       navigate("/login");
@@ -26,7 +26,7 @@ try {
 
   // Siempre limpiar para forzar selección manual después de login
   if (parsed && parsed.client_id) {
-    console.log("ℹ️ Limpieza de conexión previa para forzar nueva selección");
+    console.log("ℹ Limpieza de conexión previa para forzar nueva selección");
     localStorage.removeItem("conexionSeleccionada");
   }
 } catch {

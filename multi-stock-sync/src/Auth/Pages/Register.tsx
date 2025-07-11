@@ -35,6 +35,7 @@ const Register: React.FC = () => {
   const [passwordConfirmation, setPasswordConfirmation] = useState("")
   const [errors, setErrors] = useState<{ [key: string]: string[] }>({})
   const [loading, setLoading] = useState(false)
+  
   const navigate = useNavigate()
 
   const brandColors = {
@@ -54,8 +55,11 @@ const Register: React.FC = () => {
     e.preventDefault()
     setLoading(true)
     setErrors({})
+    
     try {
-      await axios.post(`${process.env.VITE_API_URL}/users`, {
+      
+      // 1. REGISTRAR USUARIO
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/users`, {
         nombre,
         apellidos,
         telefono,
@@ -63,10 +67,47 @@ const Register: React.FC = () => {
         password,
         password_confirmation: passwordConfirmation,
       })
-      navigate("/sync/login")
-    } catch (err) {
-      setErrors((err as any).response?.data?.errors || {})
-      console.log(err)
+
+
+      if (response.data.user) {
+        console.log(' Usuario creado:', response.data.user.email) // Debug
+        
+        // 2. HACER LOGIN AUTOMÁTICO (para tener token)
+        console.log(' Haciendo login automático...') // Debug
+        
+        const loginResponse = await axios.post(`${import.meta.env.VITE_API_URL}/login`, {
+          email,
+          password
+        })
+
+
+        // 3. GUARDAR DATOS DEL LOGIN
+        if (loginResponse.data.token) {
+          localStorage.setItem("token", loginResponse.data.token)
+          localStorage.setItem("user", JSON.stringify(loginResponse.data.user))
+          if (loginResponse.data.role) {
+            localStorage.setItem("role", JSON.stringify(loginResponse.data.role))
+          }
+        }
+        
+        // 4. REDIRIGIR A PÁGINA DE VERIFICACIÓN
+        navigate("/sync/verify-email")
+        
+      } else {
+        console.error(' Error: No se recibió información del usuario')
+        setErrors({ general: ['Error al crear el usuario'] })
+      }
+      
+    } catch (err: any) {
+      console.error(' Error en registro/login:', err) // Debug
+      
+      // Si falla el login automático pero el registro fue exitoso
+      if (err.response?.status === 422 && err.config?.url?.includes('/login')) {
+        // Redirigir al login manual
+        navigate("/sync/login?message=registro-exitoso")
+      } else {
+        setErrors(err.response?.data?.errors || { general: ['Error de conexión'] })
+      }
     } finally {
       setLoading(false)
     }
