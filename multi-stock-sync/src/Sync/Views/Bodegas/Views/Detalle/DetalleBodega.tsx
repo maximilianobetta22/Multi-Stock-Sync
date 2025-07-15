@@ -370,6 +370,10 @@ const filteredStock = stockList // Sirve para filtrar el stock según el términ
             onCancel={() => setIsModalVisible(false)}
             footer={null}
             width={1700}
+            destroyOnClose
+            maskClosable
+            transitionName=""
+            maskTransitionName=""
           >
             <Form layout="vertical">
               <Row gutter={16}>
@@ -487,6 +491,7 @@ const filteredStock = stockList // Sirve para filtrar el stock según el términ
       <Row gutter={16} style={{ marginBottom: 16 }}> {/* Sirve para mostrar los filtros de búsqueda y categoría */}
         <Col span={6}>
           <Input.Search
+          className="buscador-stock"
             placeholder="Buscar por título o ID MLC"
             allowClear
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -495,6 +500,7 @@ const filteredStock = stockList // Sirve para filtrar el stock según el términ
         <Col span={6}>
           <Select
             placeholder="Filtrar por categoría"
+            
             allowClear
             style={{ width: "100%" }}
             onChange={(value) => setCategoryFilter(value)}
@@ -541,6 +547,10 @@ const filteredStock = stockList // Sirve para filtrar el stock según el términ
         onCancel={() => setIsEditModalVisible(false)}
         onOk={handleUpdate}
         okText="Guardar cambios"
+          destroyOnClose
+        maskClosable
+        transitionName=""
+        maskTransitionName=""
       >
         <Form layout="vertical">
           <Form.Item label="Título">
