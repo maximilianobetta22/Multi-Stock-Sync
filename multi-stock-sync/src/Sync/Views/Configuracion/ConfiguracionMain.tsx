@@ -76,19 +76,7 @@ export default function ConfiguracionMain() {
           zIndex: 0,
         }}
       />
-      <div
-        style={{
-          position: "fixed",
-          bottom: "10%",
-          left: "10%",
-          width: "120px",
-          height: "120px",
-          background: `radial-gradient(circle, ${brandColors.accent}18 0%, ${brandColors.accent}06 70%, transparent 100%)`,
-          borderRadius: "50%",
-          animation: "float 7s ease-in-out infinite",
-          zIndex: 0,
-        }}
-      />
+      
       <div
         style={{
           position: "fixed",
