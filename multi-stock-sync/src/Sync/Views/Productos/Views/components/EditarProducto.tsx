@@ -348,7 +348,6 @@ const EditarProductos = () => {
         >
           <InputNumber
             style={{ width: "100%" }}
-            disabled={!esEditable(productoEditando)}
           />
         </Form.Item>
 
@@ -360,7 +359,6 @@ const EditarProductos = () => {
           <InputNumber
             min={0}
             style={{ width: "100%" }}
-            disabled={!esEditable(productoEditando)}
           />
         </Form.Item>
 

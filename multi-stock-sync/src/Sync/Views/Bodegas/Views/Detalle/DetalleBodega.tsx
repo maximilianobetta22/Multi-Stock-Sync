@@ -195,31 +195,46 @@ const DetalleBodega: React.FC = () => { // Sirve para mostrar los detalles de un
     }
   };
 
-  const handleUpdate = async () => { // Sirve para actualizar un ítem del stock de la bodega
-    if (!editItem?.id) return;
-    try {
-      const payload = {
-        available_quantity: editItem.quantity,
-        price: editItem.price,
-        condicion: editItem.condicion,
-        currency_id: editItem.currency_id,
-        listing_type_id: editItem.listing_type_id,
-        category_id: editItem.category_id || "N/A",
-        attribute: [
-          { id: "color", value_name: newItem.color || "N/A" },
-          { id: "size", value_name: newItem.size || "N/A" },
-        ],
-        pictures: editItem.picture_src ? [{ src: editItem.picture_src }] : [],
-        description: editItem.description,
-      };
-      await stockService.update(editItem.id!, payload);
-      message.success("Producto actualizado correctamente");
-      setIsEditModalVisible(false);
-      loadStock();
-    } catch (err: any) {
-      message.error("Error al actualizar producto");
-    }
-  };
+const handleUpdate = async () => { // Sirve para actualizar un ítem del stock de la bodega
+  if (!editItem?.id) return;
+  try {
+    const payload = {
+      title: editItem.product_name, // <-- Se envía el título
+      available_quantity: editItem.quantity,
+      price: editItem.price,
+      condicion: editItem.condicion,
+      currency_id: editItem.currency_id,
+      listing_type_id: editItem.listing_type_id,
+      category_id: editItem.category_id || "N/A",
+      attribute: [
+        { id: "color", value_name: editItem.color || "N/A" },
+        { id: "size", value_name: editItem.size || "N/A" },
+      ],
+      pictures: editItem.picture_src ? [{ src: editItem.picture_src }] : [],
+      description: editItem.description,
+    };
+
+    console.log("Payload enviado:", payload); // Para debug
+
+    // Actualiza en el backend
+    await stockService.update(editItem.id!, payload);
+
+    // **Forzar actualización en la tabla (por si backend no devuelve el cambio)**
+    setStockList((prev) =>
+      prev.map((item) =>
+        item.id === editItem.id
+          ? { ...item, title: editItem.product_name, description: editItem.description }
+          : item
+      )
+    );
+
+    message.success("Producto actualizado correctamente");
+    setIsEditModalVisible(false);
+    loadStock(); // Recarga desde el backend
+  } catch (err: any) {
+    message.error("Error al actualizar producto");
+  }
+};
 
 const columns: ColumnsType<StockWarehouse> = [ // Sirve para definir las columnas de la tabla que muestra el stock
   {
@@ -236,6 +251,13 @@ const columns: ColumnsType<StockWarehouse> = [ // Sirve para definir las columna
     align: "center",
     sorter: (a, b) => a.title.localeCompare(b.title),
   },
+  {
+  title: "Descripción",
+  dataIndex: "description",
+  key: "description",
+  align: "center",
+  ellipsis: true, // Para mostrar ... si es largo
+},
   {
     title: "Cantidad",
     dataIndex: "available_quantity",
@@ -313,7 +335,7 @@ const columns: ColumnsType<StockWarehouse> = [ // Sirve para definir las columna
     {
       title: "Acciones",
       key: "actions",
-      width: 130,
+      width: 50,
       fixed: "right",
       align: "center",
       render: (_, record) => (
@@ -553,12 +575,6 @@ const filteredStock = stockList // Sirve para filtrar el stock según el términ
         maskTransitionName=""
       >
         <Form layout="vertical">
-          <Form.Item label="Título">
-            <Input
-              value={editItem.product_name}
-              onChange={(e) => setEditItem((v) => ({ ...v, product_name: e.target.value }))}
-            />
-          </Form.Item>
           <Form.Item label="Descripción">
             <Input.TextArea
               value={editItem.description}
