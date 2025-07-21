@@ -65,7 +65,7 @@ function RouterSync() {
 
         <Route path="/perfil/*" element={
           <PrivateRoute>
-            <VerifiedRoute requireVerification={false}>
+            <VerifiedRoute requireVerification={true}>
               <RouterPerfil />
             </VerifiedRoute>
           </PrivateRoute>

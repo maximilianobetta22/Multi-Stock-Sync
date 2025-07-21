@@ -119,7 +119,7 @@ export const guardarPDFPorMes = (
   doc.save(`Ventas_Mes_${userName}_${fecha}.pdf`);
 };
 
-// 🟧 Excel: Ventas por Mes (sin cambios)
+// 🟧 Excel: Ventas por Mes - MODIFICADO (sin fecha + título con mes/año)
 export const exportarExcelPorMes = (
   ventas: any[],
   year: number,
@@ -127,10 +127,23 @@ export const exportarExcelPorMes = (
   userName: string,
   formatCLP: (value: number) => string
 ): void => {
+  // Crear el nombre del mes en español
+  const nombreMes = new Date(0, month - 1).toLocaleString('es-CL', { month: 'long' });
+  const mesCapitalizado = nombreMes.charAt(0).toUpperCase() + nombreMes.slice(1);
+  
+  // Crear título del reporte
+  const tituloReporte = `Reporte de Ventas - ${mesCapitalizado} ${year}`;
+  const fechaGeneracion = `Generado el: ${new Date().toLocaleDateString('es-CL')}`;
+  const usuario = `Usuario: ${userName}`;
+
+  // Crear datos del worksheet con título y encabezados (SIN columna Fecha)
   const worksheetData = [
-    ["Fecha", "Producto", "Cantidad", "Total"],
+    [tituloReporte], // Título principal
+    [fechaGeneracion], // Fecha de generación
+    [usuario], // Usuario
+    [], // Fila vacía para separar
+    ["Producto", "Cantidad", "Total"], // Encabezados (sin "Fecha")
     ...ventas.map((venta) => [
-      venta.date || "Sin Fecha",
       venta.title,
       venta.quantity,
       formatCLP(venta.total_amount),
@@ -138,6 +151,21 @@ export const exportarExcelPorMes = (
   ];
 
   const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  
+  // Configurar el ancho de las columnas
+  worksheet['!cols'] = [
+    { wch: 60 }, // Producto (más ancho)
+    { wch: 15 }, // Cantidad
+    { wch: 20 }, // Total
+  ];
+
+  // Fusionar celdas para el título (spanning across all columns)
+  worksheet['!merges'] = [
+    { s: { r: 0, c: 0 }, e: { r: 0, c: 2 } }, // Título
+    { s: { r: 1, c: 0 }, e: { r: 1, c: 2 } }, // Fecha generación
+    { s: { r: 2, c: 0 }, e: { r: 2, c: 2 } }, // Usuario
+  ];
+
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, "VentasPorMes");
 
