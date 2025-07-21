@@ -49,7 +49,6 @@ export default function PerdidasEmpresa() {
     const [selectedMonth, setSelectedMonth] = useState<string>("all");
     const [loadingProgress, setLoadingProgress] = useState<number>(0);
 
-  
     const fetchYearlyData = useCallback(async (year: number) => {
         const cacheKey = `year_${year}`;
         
@@ -168,7 +167,6 @@ export default function PerdidasEmpresa() {
         return Object.keys(yearlyData).sort((a, b) => b.localeCompare(a));
     }, [yearlyData]);
 
-   
     const processedData = useMemo((): ProcessedCompanyData[] => {
         if (!yearlyData) return [];
         
@@ -321,69 +319,247 @@ export default function PerdidasEmpresa() {
             }
         }
 
+        // Organizar productos por compañía
         const productsByCompany: { [companyName: string]: Product[] } = {};
+        const companySummary: { [companyName: string]: CompanyMonthlyData[] } = {};
+        
         monthlyDataToProcess.forEach(companyData => {
             const companyName = companyData.company_name;
             if (!productsByCompany[companyName]) {
                 productsByCompany[companyName] = [];
+                companySummary[companyName] = [];
             }
             productsByCompany[companyName].push(...companyData.products);
+            companySummary[companyName].push(companyData);
         });
 
         const wb = XLSX.utils.book_new();
 
-        const summaryData = [...processedData.map(item => ({
-            'Compañía': item.companyName,
-            'Pérdida Total (CLP)': item.totalLost
-        })), { 'Compañía': 'TOTAL GENERAL', 'Pérdida Total (CLP)': totalPeriodoSeleccionado }];
-        
-        const ws_summary = XLSX.utils.json_to_sheet(summaryData);
-        ws_summary['!cols'] = [{ wch: 35 }, { wch: 20 }];
-        
-        for (let i = 2; i <= summaryData.length + 1; i++) {
-            const cellRef = 'B' + i;
-            if (ws_summary[cellRef]) {
-                ws_summary[cellRef].t = 'n';
-                ws_summary[cellRef].z = '$#,##0';
-            }
-        }
-        XLSX.utils.book_append_sheet(wb, ws_summary, "Resumen General");
+        // 1. HOJA DE PORTADA Y RESUMEN EJECUTIVO
+        const coverData = [
+            ['REPORTE DE PÉRDIDAS POR CANCELACIÓN'],
+            [''],
+            ['Información del Reporte'],
+            ['Fecha de Generación:', new Date().toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            })],
+            ['Período Analizado:', selectedMonth === 'all' 
+                ? `Año Completo ${selectedYear}` 
+                : new Date(selectedMonth + '-02').toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })],
+            ['Total de Compañías:', processedData.length],
+            [''],
+            ['Resumen Financiero'],
+            ['Total Pérdida Período:', totalPeriodoSeleccionado.toLocaleString('es-CL')],
+            ['Total Pérdida Anual:', totalAnualGlobal.toLocaleString('es-CL')],
+            ['Promedio por Compañía:', Math.round(totalPeriodoSeleccionado / processedData.length).toLocaleString('es-CL')],
+            [''],
+            ['Top 3 Compañías con Mayores Pérdidas'],
+            ['Ranking', 'Compañía', 'Pérdida ', '% del Total'],
+            ...processedData.slice(0, 3).map((item, index) => [
+                index + 1,
+                item.companyName,
+                item.totalLost.toLocaleString('es-CL'),
+                `${((item.totalLost / totalPeriodoSeleccionado) * 100).toFixed(1)}%`
+            ])
+        ];
 
-        for (const companyName in productsByCompany) {
-            const productList = productsByCompany[companyName];
-            const companySheetData = productList.map(product => ({
-                'Producto': product.title,
-                'Cantidad': product.quantity,
-                'Precio Unitario (CLP)': product.price,
-                'Subtotal (CLP)': (product.quantity || 0) * (product.price || 0)
+        const ws_cover = XLSX.utils.aoa_to_sheet(coverData);
+        ws_cover['!cols'] = [{ wch: 25 }, { wch: 30 }, { wch: 20 }, { wch: 15 }];
+        
+        XLSX.utils.book_append_sheet(wb, ws_cover, "📊 Resumen Ejecutivo");
+
+        // 2. HOJA DE RESUMEN DETALLADO POR COMPAÑÍAS
+        const detailedSummaryData = processedData.map((item, index) => {
+            const companyData = companySummary[item.companyName] || [];
+            const totalOrders = companyData.reduce((sum, data) => sum + (data.total_orders || 0), 0);
+            const totalProducts = productsByCompany[item.companyName]?.length || 0;
+            
+            return {
+                'Ranking': index + 1,
+                'Compañía': item.companyName,
+                'Pérdida Total ': item.totalLost.toLocaleString('es-CL'),
+                '% del Total': `${((item.totalLost / totalPeriodoSeleccionado) * 100).toFixed(2)}%`,
+                'Órdenes Canceladas': totalOrders,
+                'Productos Afectados': totalProducts,
+                'Pérdida Promedio por Orden': totalOrders > 0 ? Math.round(item.totalLost / totalOrders).toLocaleString('es-CL') : 0,
+                'Estado': item.totalLost > (totalPeriodoSeleccionado / processedData.length) ? 'Alto Riesgo' : 'Normal'
+            };
+        });
+
+        // Agregar fila de totales
+        detailedSummaryData.push({
+            'Ranking': detailedSummaryData.length + 1, // Cambiar de '' a número
+            'Compañía': '*** TOTAL GENERAL ***',
+            'Pérdida Total ': totalPeriodoSeleccionado.toLocaleString('es-CL'),
+            '% del Total': '100.00%',
+            'Órdenes Canceladas': detailedSummaryData.reduce((sum, item) => 
+                sum + (typeof item['Órdenes Canceladas'] === 'number' ? item['Órdenes Canceladas'] : 0), 0),
+            'Productos Afectados': detailedSummaryData.reduce((sum, item) => 
+                sum + (typeof item['Productos Afectados'] === 'number' ? item['Productos Afectados'] : 0), 0),
+            'Pérdida Promedio por Orden': 'N/A', // Cambiar de '' a 'N/A'
+            'Estado': 'TOTAL' // Cambiar de '' a 'TOTAL'
+        });
+
+        const ws_detailed = XLSX.utils.json_to_sheet(detailedSummaryData);
+        ws_detailed['!cols'] = [
+            { wch: 8 },  // Ranking
+            { wch: 35 }, // Compañía
+            { wch: 18 }, // Pérdida Total
+            { wch: 12 }, // % del Total
+            { wch: 15 }, // Órdenes
+            { wch: 15 }, // Productos
+            { wch: 20 }, // Promedio
+            { wch: 12 }  // Estado
+        ];
+
+        XLSX.utils.book_append_sheet(wb, ws_detailed, "📈 Análisis Detallado");
+
+        // 3. HOJA DE ANÁLISIS POR PRODUCTOS (TOP PRODUCTOS MÁS CANCELADOS)
+        const allProducts: (Product & { companyName: string })[] = [];
+        Object.entries(productsByCompany).forEach(([companyName, products]) => {
+            products.forEach(product => {
+                allProducts.push({ ...product, companyName });
+            });
+        });
+
+        // Agrupar productos por título y calcular métricas
+        const productAnalysis = new Map<string, {
+            title: string;
+            totalQuantity: number;
+            totalLoss: number;
+            companies: Set<string>;
+            occurrences: number;
+        }>();
+
+        allProducts.forEach(product => {
+            const key = product.title;
+            const existing = productAnalysis.get(key);
+            const productLoss = (product.quantity || 0) * (product.price || 0);
+            
+            if (existing) {
+                existing.totalQuantity += product.quantity || 0;
+                existing.totalLoss += productLoss;
+                existing.companies.add(product.companyName);
+                existing.occurrences += 1;
+            } else {
+                productAnalysis.set(key, {
+                    title: product.title,
+                    totalQuantity: product.quantity || 0,
+                    totalLoss: productLoss,
+                    companies: new Set([product.companyName]),
+                    occurrences: 1
+                });
+            }
+        });
+
+        const topProductsData = Array.from(productAnalysis.values())
+            .sort((a, b) => b.totalLoss - a.totalLoss)
+            .slice(0, 50) // Top 50 productos
+            .map((item, index) => ({
+                'Ranking': index + 1,
+                'Producto': item.title,
+                'Cantidad Total Cancelada': item.totalQuantity,
+                'Pérdida Total ': item.totalLoss.toLocaleString('es-CL'),
+                'Compañías Afectadas': item.companies.size,
+                'Frecuencia de Cancelación': item.occurrences,
+                'Pérdida Promedio por Cancelación': Math.round(item.totalLoss / item.occurrences).toLocaleString('es-CL'),
+                'Compañías': Array.from(item.companies).join(', ')
             }));
 
-            const ws_company = XLSX.utils.json_to_sheet(companySheetData);
-            ws_company['!cols'] = [{ wch: 50 }, { wch: 10 }, { wch: 20 }, { wch: 20 }];
-            
-            for (let i = 2; i <= companySheetData.length + 1; i++) {
-                const priceCell = 'C' + i;
-                const subtotalCell = 'D' + i;
-                if (ws_company[priceCell] && typeof ws_company[priceCell].v === 'number') {
-                    ws_company[priceCell].t = 'n';
-                    ws_company[priceCell].z = '$#,##0';
-                }
-                if (ws_company[subtotalCell] && typeof ws_company[subtotalCell].v === 'number') {
-                    ws_company[subtotalCell].t = 'n';
-                    ws_company[subtotalCell].z = '$#,##0';
-                }
-            }
+        const ws_products = XLSX.utils.json_to_sheet(topProductsData);
+        ws_products['!cols'] = [
+            { wch: 8 },  // Ranking
+            { wch: 50 }, // Producto
+            { wch: 12 }, // Cantidad
+            { wch: 18 }, // Pérdida
+            { wch: 12 }, // Compañías
+            { wch: 12 }, // Frecuencia
+            { wch: 20 }, // Promedio
+            { wch: 40 }  // Lista compañías
+        ];
 
-            const safeSheetName = companyName.replace(/[\/\\?*\[\]]/g, '').substring(0, 31);
+        XLSX.utils.book_append_sheet(wb, ws_products, "🛍️ Top Productos Cancelados");
+
+        // 4. HOJAS INDIVIDUALES POR COMPAÑÍA (solo para las top 10)
+        const topCompanies = processedData.slice(0, 10);
+        
+        topCompanies.forEach((company, companyIndex) => {
+            const companyName = company.companyName;
+            const productList = productsByCompany[companyName] || [];
+            const companyData = companySummary[companyName] || [];
+            
+            // Información de la compañía
+            const companyInfo = [
+                [`*** ANÁLISIS DETALLADO - ${companyName.toUpperCase()} ***`],
+                [''],
+                ['=== MÉTRICAS PRINCIPALES ==='],
+                ['Pérdida Total:', company.totalLost.toLocaleString('es-CL')],
+                ['Ranking General:', companyIndex + 1],
+                ['% del Total Global:', `${((company.totalLost / totalPeriodoSeleccionado) * 100).toFixed(2)}%`],
+                ['Total de Productos:', productList.length],
+                ['Órdenes Canceladas:', companyData.reduce((sum, data) => sum + (data.total_orders || 0), 0)],
+                [''],
+                ['=== DETALLE DE PRODUCTOS CANCELADOS ==='],
+                ['Producto', 'Cantidad', 'Precio Unit. ', 'Subtotal ', '% de Pérdida de la Compañía']
+            ];
+
+            const productDetails = productList
+                .sort((a, b) => ((b.quantity || 0) * (b.price || 0)) - ((a.quantity || 0) * (a.price || 0)))
+                .map(product => {
+                    const subtotal = (product.quantity || 0) * (product.price || 0);
+                    return [
+                        product.title,
+                        product.quantity || 0,
+                        (product.price || 0).toLocaleString('es-CL'),
+                        subtotal.toLocaleString('es-CL'),
+                        `${((subtotal / company.totalLost) * 100).toFixed(1)}%`
+                    ];
+                });
+
+            const companySheetData = [...companyInfo, ...productDetails];
+            const ws_company = XLSX.utils.aoa_to_sheet(companySheetData);
+            
+            ws_company['!cols'] = [{ wch: 50 }, { wch: 12 }, { wch: 18 }, { wch: 18 }, { wch: 15 }];
+
+            const safeSheetName = `${companyIndex + 1}. ${companyName.replace(/[\/\\?*\[\]]/g, '').substring(0, 25)}`;
             XLSX.utils.book_append_sheet(wb, ws_company, safeSheetName);
+        });
+
+        // 5. HOJA DE ANÁLISIS TEMPORAL (si es año completo)
+        if (selectedMonth === 'all' && yearlyData) {
+            const monthlyAnalysis = Object.entries(yearlyData)
+                .sort(([a], [b]) => a.localeCompare(b))
+                .map(([month, companies]) => {
+                    const monthTotal = companies.reduce((sum, company) => sum + company.total_cancelled, 0);
+                    const monthOrders = companies.reduce((sum, company) => sum + (company.total_orders || 0), 0);
+                    
+                    return {
+                        'Mes': new Date(month + '-02').toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+                        'Pérdida Total ': monthTotal.toLocaleString('es-CL'),
+                        'Compañías Afectadas': companies.length,
+                        'Órdenes Canceladas': monthOrders,
+                        'Promedio por Compañía': companies.length > 0 ? Math.round(monthTotal / companies.length).toLocaleString('es-CL') : 0,
+                        'Promedio por Orden': monthOrders > 0 ? Math.round(monthTotal / monthOrders).toLocaleString('es-CL') : 0
+                    };
+                });
+
+            const ws_temporal = XLSX.utils.json_to_sheet(monthlyAnalysis);
+            ws_temporal['!cols'] = [{ wch: 20 }, { wch: 18 }, { wch: 15 }, { wch: 15 }, { wch: 18 }, { wch: 15 }];
+
+            XLSX.utils.book_append_sheet(wb, ws_temporal, "📅 Análisis Temporal");
         }
 
-        const fileName = `Reporte_Perdidas_Por_Tienda_${selectedYear}_${selectedMonth}.xlsx`;
+        // Generar archivo
+        const periodSuffix = selectedMonth === 'all' ? 'Anual' : new Date(selectedMonth + '-02').toLocaleDateString('es-ES', { month: 'short' });
+        const fileName = `Reporte_Perdidas_Detallado_${selectedYear}_${periodSuffix}_${new Date().toISOString().slice(0, 10)}.xlsx`;
+        
         XLSX.writeFile(wb, fileName);
-        messageApi.success("Reporte por tienda generado correctamente");
-    }, [processedData, yearlyData, selectedMonth, selectedYear, totalPeriodoSeleccionado, messageApi]);
+        messageApi.success(`Reporte detallado generado: ${fileName}`);
+    }, [processedData, yearlyData, selectedMonth, selectedYear, totalPeriodoSeleccionado, totalAnualGlobal, messageApi]);
 
-    
     if (isYearlyLoading) {
         return (
             <div className="flex flex-col items-center justify-center min-h-screen">
@@ -524,3 +700,63 @@ export default function PerdidasEmpresa() {
         </div>
     );
 }
+
+/**
+ * ===============================================================================
+ * COMPONENTE REPORTE DE PERDIAS
+ * ===============================================================================
+ 
+ * FUNCIONALIDADES PRINCIPALES:
+ * ----------------------------
+ * 
+ * ANÁLISIS DE DATOS:
+ * - Carga datos de cancelaciones por mes/año con sistema de cache
+ * - Procesa y agrega información de múltiples compañías
+ * - Calcula métricas financieras y estadísticas de rendimiento
+ * - Identifica patrones de cancelación y productos problemáticos
+ * 
+
+ * FILTROS Y NAVEGACIÓN:
+ * - Selector de año (últimos 4 años disponibles)
+ * - Filtro por mes específico o análisis anual completo
+ * - Actualización automática de datos al cambiar filtros
+ * - Sistema de cache para optimizar rendimiento
+ * 
+ * REPORTES EXPORTABLES:
+ * 
+ * PDF Simple:
+ * - Tabla básica con ranking de compañías y pérdidas
+ * - Información del período y totales generales
+ * - Formato corporativo con headers personalizados
+ * 
+ * Excel (5 hojas especializadas):
+ * ┌─  Resumen Ejecutivo: Portada con métricas clave y Top 3
+ * ├─  Análisis Detallado: Ranking completo con KPIs por compañía
+ * ├─ Top Productos: Los 50 productos más cancelados con análisis
+ * ├─  Hojas Individuales: Análisis detallado de Top 10 compañías
+ * └─  Análisis Temporal: Evolución mensual (solo reportes anuales)
+ * 
+ *  MÉTRICAS CALCULADAS:
+ * - Pérdida total por compañía y período
+ * - Porcentaje de participación en pérdidas totales
+ * - Promedio de pérdida por orden cancelada
+ * - Frecuencia de cancelaciones por producto
+ * - Clasificación de riesgo (Alto Riesgo/Normal)
+ * - Análisis de productos más problemáticos
+ * - Evolución temporal de cancelaciones
+ * 
+ *  OPTIMIZACIONES TÉCNICAS:
+ * - Cache inteligente para evitar llamadas API repetitivas
+
+ *  DEPENDENCIAS PRINCIPALES:
+ * - React (hooks: useState, useEffect, useMemo, useCallback)
+ * - Ant Design 
+ * - Chart.js + react-chartjs-2 (visualización de gráficos)
+ * - jsPDF + jspdf-autotable (generación de PDFs)
+ * - SheetJS (xlsx) (generación de archivos Excel)
+ * - Custom hook: usePerdidasManagement 
+ * 
+
+
+ * ===============================================================================
+ */
