@@ -1,0 +1,179 @@
+.detalle-bodega .ant-form-item {
+  background-color: #fffbe6; /* amarillo muy suave */
+  border-radius: 10px;
+  padding: 10px 16px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+.detalle-bodega .ant-typography h2,
+.detalle-bodega .ant-typography h5 {
+  color: #a100dc; /* morado */
+  font-weight: 700;
+}
+
+.detalle-bodega .ant-input,
+.detalle-bodega .ant-input-search,
+.detalle-bodega .ant-select-selector,
+.detalle-bodega .ant-input-number {
+  border-radius: 8px !important;
+  border-color: #ff7a00 !important; /* naranja */
+  font-weight: 600;
+  color: #262626;
+}
+
+.detalle-bodega .ant-input-search::placeholder {
+  color: #595959;
+  font-weight: 500;
+}
+
+.detalle-bodega .ant-btn-primary {
+  background-color: #0070f3;
+  border-color: #0070f3;
+  border-radius: 8px;
+  padding: 6px 28px;
+  font-size: 16px;
+  font-weight: 700;
+  color: white;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
+.detalle-bodega .ant-btn-primary:hover {
+  background-color: #1890ff;
+  border-color: #1890ff;
+}
+
+.detalle-bodega .ant-btn-dangerous {
+  background-color: #ff4d4f !important;
+  border-color: #ff4d4f !important;
+  color: white !important;
+  border-radius: 8px;
+  font-weight: 700;
+  padding: 6px 28px;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.detalle-bodega .ant-btn-dangerous:hover {
+  background-color: #ff7875 !important;
+  border-color: #ff7875 !important;
+}
+
+.detalle-bodega .tabla-resaltada .ant-table-thead > tr > th {
+  background-color: #70b5ff; /* amarillo suave */
+  color: #391085; /* púrpura fuerte */
+  text-align: center;
+  font-weight: bold;
+}
+
+.detalle-bodega .tabla-resaltada .ant-table-tbody > tr > td {
+  border-bottom: 1px solid #e8e8e8;
+  text-align: center;
+}
+
+.detalle-bodega .tabla-resaltada .ant-table-tbody > tr:nth-child(even) {
+  background-color: #fafafa;
+}
+
+.detalle-bodega .tabla-resaltada .ant-table-tbody > tr:hover > td {
+  background-color: #e6f7ff;
+}
+
+.detalle-bodega .ant-modal-header {
+  background-color: #e6f7ff;
+}
+
+.detalle-bodega .ant-modal-title {
+  color: #a100dc;
+  font-weight: 600;
+}
+
+.detalle-bodega .ant-fade-enter-active,
+.detalle-bodega .ant-fade-leave-active {
+  transition: 0.1s;
+}
+
+.detalle-bodega .ant-zoom-enter,
+.detalle-bodega .ant-zoom-appear{
+  animation-duration: 0,1ms
+}
+
+.detalle-bodega .ant-zoom-leave{
+  animation-duration: 0.1s
+}
+
+.detalle-bodega .ant-modal-footer .ant-btn-primary {
+  background-color: #52c41a;
+  border-color: #52c41a;
+}
+
+.detalle-bodega .ant-modal-footer .ant-btn-primary:hover {
+  background-color: #73d13d;
+  border-color: #73d13d;
+}
+
+.detalle-bodega .ant-input-textarea {
+  border-radius: 8px !important;
+}
+
+.detalle-bodega .ant-card {
+  background-color: #ffffff;
+  border: 1px solid #bae7ff;
+  border-radius: 14px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  padding: 28px;
+}
+
+/* PAGINACIÓN */
+.detalle-bodega .ant-pagination {
+  margin-top: 16px;
+}
+
+.detalle-bodega .ant-pagination-item {
+  border-radius: 8px;
+  border: 1px solid #91d5ff;
+  color: #0070f3;
+  font-weight: 600;
+}
+
+.detalle-bodega .ant-pagination-item:hover {
+  border-color: #1890ff;
+  color: #1890ff;
+}
+
+.detalle-bodega .ant-pagination-item-active {
+  background-color: #d2a8ff75;
+  border-color: #a100dc;
+  color: #000d86;
+  font-weight: bold;
+}
+
+.detalle-bodega .ant-pagination-prev .ant-pagination-item-link,
+.detalle-bodega .ant-pagination-next .ant-pagination-item-link {
+  color: #000000f1;
+  border-radius: 6px;
+}
+
+.detalle-bodega .ant-pagination-prev:hover .ant-pagination-item-link,
+.detalle-bodega .ant-pagination-next:hover .ant-pagination-item-link {
+  color: #2b00ff;
+  border-color: #40a9ff;
+}
+
+/* BUSCADOR */
+.detalle-bodega .buscador-stock {
+  border: 2px solid #ff7a00 !important;
+  border-radius: 8px !important;
+  font-weight: 700;
+  color: #000;
+}
+
+.detalle-bodega .buscador-stock::placeholder {
+  color: #595959;
+  font-weight: 500;
+}
+
+.detalle-bodega .buscador-stock:focus,
+.detalle-bodega .buscador-stock-focused {
+  border-color: #95ff00 !important;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}

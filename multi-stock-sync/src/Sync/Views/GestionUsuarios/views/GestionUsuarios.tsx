@@ -47,6 +47,10 @@ const rolesDisponibles = [
   { id: 4, nombre: "RRHH" },
   { id: 5, nombre: "vendedor" },
   { id: 6, nombre: "plugin" },
+  { id: 7, nombre: "admin master" },
+  { id: 8, nombre: "marketing" },
+  { id: 9, nombre: "desarrollo Web" },
+  { id: 10, nombre: "usuario" },
 ];
 
 // Función para obtener el color del tag según el id del rol

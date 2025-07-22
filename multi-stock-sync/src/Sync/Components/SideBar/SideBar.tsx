@@ -12,7 +12,8 @@ import {
 import {
   UserOutlined,
   LogoutOutlined,
-  SettingOutlined
+  SettingOutlined,
+  CloudOutlined
 } from "@ant-design/icons";
 import { useContext } from "react";
 import { UserContext } from "../../Context/UserContext";
@@ -87,14 +88,22 @@ const SideBar = () => {
         </div>
         <div className={styles.BottomSection}>
           {userContext.user && (
-          <li
-            onClick={handleLogout}
-            className={styles.NavLink}
-            style={{ cursor: "pointer" }}
-          >
-            <LogoutOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
-            Cerrar sesión
-          </li>
+            <>
+              <li>
+                <NavLink to="/sync/seleccionar-conexion" className={styles.NavLink}>
+                  <CloudOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
+                  Seleccionar Conexion
+                </NavLink>
+              </li>
+              <li
+                onClick={handleLogout}
+                className={styles.NavLink}
+                style={{ cursor: "pointer" }}
+              >
+                <LogoutOutlined style={{ fontSize: "18px", marginRight: "8px" }} />
+                Cerrar sesión
+              </li>
+            </>
           )}
           <div className={styles.LogoWrapper}>
             <NavLink to="/sync/landing" className={styles.LogoLink}>
