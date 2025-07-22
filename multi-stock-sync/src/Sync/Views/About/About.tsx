@@ -72,7 +72,39 @@ const teamMembers = [
     role: "Desarrollador Front-end.",
     img: "https://avatars.githubusercontent.com/u/205383671?v=4",
   },
+  {
+    name: "Emerson Lemunao",
+    role: "Desarrollador Front-end.",
+    img: "https://avatars.githubusercontent.com/u/151589937?v=4",
+  },
+  {
+    name: "Daniel Órdenes",
+    role: "Desarrollador Back-end.",
+    img: "https://avatars.githubusercontent.com/u/50424623?v=4",
+  },
+  {
+    name: "Fanny Araujo",
+    role: "Desarrollador Back-end.",
+    img: "https://avatars.githubusercontent.com/u/134561771?v=4",
+  },
+  {
+    name: "Lian Venegas",
+    role: "Desarrollador Front-end.",
+    img: "https://avatars.githubusercontent.com/u/198663972?=4",
+  },
+  {
+    name: "Daniel Campos",
+    role: "Desarrollador Front-end.",
+    img: "https://avatars.githubusercontent.com/u/102598967?v=4",
+  },
+{
+    name: "Ignacio ",
+    role: "Desarrollador Front-end.",
+    img: "https://avatars.githubusercontent.com/u/135282759?v=4",
+  },
+
 ];
+
 
 const About: React.FC = () => {
   return (
