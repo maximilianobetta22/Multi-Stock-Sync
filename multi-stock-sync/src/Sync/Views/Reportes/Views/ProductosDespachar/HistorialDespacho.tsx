@@ -164,6 +164,23 @@ const HistorialDespacho: React.FC = () => {
             </ListGroup>
           )}
 
+          {data.length > 0 && (
+            <div className={`${styles.exportaciones} d-flex justify-content-end`}>
+              <Button
+                className={styles.btnRojoOutline}
+                onClick={handleExportExcel}
+              >
+                Exportar Excel
+              </Button>
+              <Button
+                className={`${styles.btnRojoOutline} ms-2`}
+                onClick={handleVerPdf}
+              >
+                Ver/Descargar PDF
+              </Button>
+            </div>
+          )}
+          <br />
           {error && <Alert variant="danger">{error}</Alert>}
           {notFound && (
             <Alert variant="warning">No se encontraron registros.</Alert>
@@ -198,22 +215,6 @@ const HistorialDespacho: React.FC = () => {
             )
           )}
 
-          {data.length > 0 && (
-            <div className={styles.exportaciones}>
-              <Button
-                className={styles.btnRojoOutline}
-                onClick={handleExportExcel}
-              >
-                Exportar Excel
-              </Button>
-              <Button
-                className={styles.btnRojoOutline}
-                onClick={handleVerPdf}
-              >
-                Ver/Descargar PDF
-              </Button>
-            </div>
-          )}
         </Card.Body>
       </Card>
 
@@ -226,13 +227,13 @@ const HistorialDespacho: React.FC = () => {
         <Modal.Header closeButton>
           <Modal.Title>Vista previa PDF</Modal.Title>
         </Modal.Header>
-        <Modal.Body style={{ height: 0, padding: 0 }}>
+        <Modal.Body style={{ height: "70vh", padding: 0 }}>
           {pdfUrl && (
             <iframe
               src={pdfUrl}
               width="100%"
               height="100%"
-              style={{ minHeight: "400px", border: 0 }}
+              style={{ border: 0 }}
               title="PDF Preview"
             />
           )}

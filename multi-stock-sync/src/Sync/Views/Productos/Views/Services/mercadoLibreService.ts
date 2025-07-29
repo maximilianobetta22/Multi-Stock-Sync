@@ -35,7 +35,7 @@ export const MercadoLibreService = {
 
       const response = await axiosInstance.get(`${API_BASE_URL}/mercadolibre/categorias/${clientId}`, {
         headers: {
-          Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       })
 
@@ -86,7 +86,7 @@ export const MercadoLibreService = {
       console.log(`Descargando plantilla para categoría ${categoryId} y cliente ${clientId}`)
 
       const response = await axiosInstance.get(
-        `${API_BASE_URL}/mercadolibre/carga-masiva/descargar-platilla/${clientId}/${categoryId}`,
+        `${API_BASE_URL}/mercadolibre/carga-masiva/descargar-plantilla/${clientId}/${categoryId}`,
         {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("access_token")}`,

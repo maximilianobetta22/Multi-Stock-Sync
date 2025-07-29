@@ -142,7 +142,7 @@ const VentasPorMes: React.FC = () => {
   const [month, setMonth] = useState<number>(currentMonth);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [pdfDataUrl, setPdfDataUrl] = useState<string | null>(null);
-  const { loading, error, ventasAgrupadas, userData, kpis, chartData, formatCLP } = useVentasData(client_id, year, month);
+  const { loading, error, ventasCompletas, ventasAgrupadas, userData, kpis, chartData, formatCLP } = useVentasData(client_id, year, month);
 
   useEffect(() => {
     if (year === currentYear && month > currentMonth) {
@@ -172,11 +172,11 @@ const VentasPorMes: React.FC = () => {
   };
 
   const handleExportExcel = () => {
-    if (ventasAgrupadas.length === 0) {
+    if (ventasCompletas.length === 0) {
       message.warning('No hay datos para exportar.');
       return;
     }
-    exportarExcelPorMes(ventasAgrupadas, year, month, userData?.nickname || "Desconocido", formatCLP);
+    exportarExcelPorMes(ventasCompletas, year, month, userData?.nickname || "Desconocido", formatCLP);
     message.success('El archivo Excel se ha iniciado a descargar.');
   };
 
