@@ -7,7 +7,6 @@ import {
   FaFileAlt,
   FaPlus,
   FaKey,
-  FaQuestionCircle,
   FaExchangeAlt,
 } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
@@ -34,7 +33,6 @@ const ChatBotAyuda = () => {
     { label: "Ir al módulo de reportes", ruta: "/sync/reportes/home", icono: <FaFileAlt /> },
     { label: "Cambiar mi contraseña", ruta: "/sync/usuario/configuracion", icono: <FaKey /> },
     { label: "Cambiar de conexión", ruta: "", icono: <FaExchangeAlt />, esCambioConexion: true },
-    { label: "Necesito ayuda general", ruta: "/sync/contacto", icono: <FaQuestionCircle /> },
   ];
 
   useEffect(() => {

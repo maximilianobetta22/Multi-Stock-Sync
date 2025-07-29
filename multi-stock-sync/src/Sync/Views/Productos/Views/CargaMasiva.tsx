@@ -7,59 +7,85 @@ import {
   Typography,
   Space,
   Card,
+  Tag,
 } from "antd";
-import { UploadOutlined, SendOutlined } from "@ant-design/icons";
-import * as XLSX from "xlsx";
+import { UploadOutlined, SendOutlined, CheckCircleOutlined, PaperClipOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 const { Title, Paragraph, Text } = Typography;
 
 const CargaMasiva: React.FC = () => {
-  const [productos, setProductos] = useState<any[]>([]);
+  const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
+  const [productosProcesados, setProductosProcesados] = useState<any[]>([]);
 
-  const handleUpload = (file: any) => {
-    const reader = new FileReader();
-    reader.onload = (e: any) => {
-      const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: "array" });
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const jsonData = XLSX.utils.sheet_to_json(worksheet);
-      setProductos(jsonData);
-      message.success("Archivo cargado correctamente");
-    };
-    reader.readAsArrayBuffer(file);
+  const handleUpload = (selectedFile: File) => {
+    const isXlsx = selectedFile.type === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+    if (!isXlsx) {
+      message.error('Solo puedes subir archivos .xlsx!');
+      return Upload.LIST_IGNORE;
+    }
+    
+    setFile(selectedFile);
+    setProductosProcesados([]);
+    message.success(`${selectedFile.name} seleccionado correctamente.`);
+
     return false;
   };
 
   const handleEnviar = async () => {
-    if (productos.length === 0) {
-      message.warning("Primero debes subir un archivo Excel.");
+    if (!file) {
+      message.warning("Primero debes seleccionar un archivo Excel.");
       return;
     }
 
     setLoading(true);
+    
+    const formData = new FormData();
+    formData.append('file', file);
+
     try {
-      const client_id = "TU_CLIENT_ID"; // Reemplaza con tu lógica
+      // Obtenemos el token de autenticación.
+      const token = localStorage.getItem('token');
+      if (!token) {
+        message.error("Error de autenticación. Por favor, inicia sesión de nuevo.");
+        setLoading(false);
+        return;
+      }
+      
+      const apiUrl = `${process.env.VITE_API_URL}/mercadolibre/carga-masiva/leer-excel`;
+
       const response = await axios.post(
-        `https://TU_BACKEND_URL/api/mercadolibre/carga-masiva/${client_id}`,
-        { productos }
+        apiUrl,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        }
       );
-      message.success("Productos enviados correctamente a MercadoLibre.");
-      console.log(response.data);
-    } catch (error) {
+      
+      message.success("Archivo procesado correctamente por el servidor.");
+      
+      const productosArray = Object.values(response.data.data || {});
+      setProductosProcesados(productosArray);
+
+      console.log("Respuesta del servidor:", response.data);
+
+    } catch (error: any) {
       console.error(error);
-      message.error("Ocurrió un error al enviar los productos.");
+      const errorMessage = error.response?.data?.message || "Ocurrió un error al procesar el archivo.";
+      message.error(errorMessage);
     } finally {
       setLoading(false);
     }
   };
-
-  const columnas = Object.keys(productos[0] || {}).map((key) => ({
+  
+  const columnas = Object.keys(productosProcesados[0] || {}).map((key) => ({
     title: <Text strong>{key}</Text>,
     dataIndex: key,
     key,
+    render: (text: any) => String(text ?? '') // Asegura que se renderice como string
   }));
 
   return (
@@ -68,36 +94,52 @@ const CargaMasiva: React.FC = () => {
         <Space direction="vertical" size="large" style={{ width: "100%" }}>
           <Title level={3}>Carga masiva de productos</Title>
           <Paragraph>
-            Sube un archivo <Text code>.xlsx</Text> con el formato indicado para publicar varios productos a MercadoLibre de forma automática.
+            Sube un archivo <Text code>.xlsx</Text>
           </Paragraph>
 
-          <Upload
-            beforeUpload={handleUpload}
-            accept=".xlsx"
-            showUploadList={false}
-          >
-            <Button icon={<UploadOutlined />}>Seleccionar archivo Excel</Button>
-          </Upload>
+          <Space>
+            <Upload
+              beforeUpload={handleUpload}
+              accept=".xlsx"
+              showUploadList={false}
+              maxCount={1}
+            >
+              <Button icon={<UploadOutlined />}>Seleccionar archivo</Button>
+            </Upload>
 
-          {productos.length > 0 && (
-            <>
-              <Table
-                dataSource={productos}
-                columns={columnas}
-                rowKey={(_, index) => index?.toString() ?? ""}
-                scroll={{ x: "max-content" }}
-                pagination={{ pageSize: 5 }}
-                bordered
-              />
-
+            {file && (
               <Button
                 type="primary"
                 icon={<SendOutlined />}
                 onClick={handleEnviar}
                 loading={loading}
               >
-                Enviar productos a MercadoLibre
+                Procesar archivo en el servidor
               </Button>
+            )}
+          </Space>
+
+          {file && !loading && (
+             <Tag icon={<PaperClipOutlined />} color="blue">
+               Archivo seleccionado: {file.name}
+             </Tag>
+          )}
+
+          {productosProcesados.length > 0 && (
+            <>
+              <Title level={4}>Resultados del procesamiento</Title>
+              <Paragraph>
+                <CheckCircleOutlined style={{ color: 'green', marginRight: 8 }} />
+                Se encontraron y procesaron <Text strong>{productosProcesados.length}</Text> productos.
+              </Paragraph>
+              <Table
+                dataSource={productosProcesados}
+                columns={columnas}
+                rowKey={(_, index) => index?.toString() ?? ""}
+                scroll={{ x: "max-content" }}
+                pagination={{ pageSize: 5 }}
+                bordered
+              />
             </>
           )}
         </Space>
