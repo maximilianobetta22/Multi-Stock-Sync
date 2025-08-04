@@ -242,6 +242,7 @@ const columns: ColumnsType<StockWarehouse> = [ // Sirve para definir las columna
     dataIndex: "id_mlc",
     key: "id_mlc",
     align: "center",
+    width: 100,
     sorter: (a, b) => a.id_mlc.localeCompare(b.id_mlc),
   },
   {
@@ -249,20 +250,39 @@ const columns: ColumnsType<StockWarehouse> = [ // Sirve para definir las columna
     dataIndex: "title",
     key: "title",
     align: "center",
+    width: 220,
     sorter: (a, b) => a.title.localeCompare(b.title),
   },
   {
-  title: "Descripción",
-  dataIndex: "description",
-  key: "description",
-  align: "center",
-  ellipsis: true, // Para mostrar ... si es largo
-},
+    title: "Descripción",
+    dataIndex: "description",
+    key: "description",
+    align: "left",
+    width: 400,
+    render: (text: string) => {
+      const cleaned = text
+        .replace(/<p>/g, "")
+        .replace(/<\/p>/g, "\n")
+        .replace(/<br\s*\/?>/g, "\n");
+      return (
+        <div
+          style={{
+            whiteSpace: "pre-line",
+            maxHeight: "120px",
+            overflowY: "auto",
+          }}
+        >
+          {cleaned}
+        </div>
+      );
+    },
+  },
   {
     title: "Cantidad",
     dataIndex: "available_quantity",
     key: "available_quantity",
     align: "center",
+    width: 80,
     sorter: (a, b) => a.available_quantity - b.available_quantity,
   },
   {
@@ -270,84 +290,103 @@ const columns: ColumnsType<StockWarehouse> = [ // Sirve para definir las columna
     dataIndex: "price",
     key: "price",
     align: "center",
+    width: 100,
     sorter: (a, b) => a.price - b.price,
     render: (value: number, record) => {
       const showDecimals = record.currency_id === "USD";
       return `${record.currency_id || "CLP"} ${showDecimals ? value.toFixed(2) : Math.round(value)}`;
     },
   },
-    {
-      title: "Condición",
-      dataIndex: "condicion",
-      key: "condicion",
-      align: "center",
-      render: (value: string) => (value === "new" ? "Nuevo" : "Usado"),
+  {
+    title: "Condición",
+    dataIndex: "condicion",
+    key: "condicion",
+    align: "center",
+    width: 60,
+    render: (value: string) => (value === "new" ? "Nuevo" : "Usado"),
+  },
+  {
+    title: "Categoría",
+    dataIndex: "category_id",
+    key: "category_id",
+    align: "center",
+    width: 60,
+  },
+  {
+    title: "Color",
+    key: "color",
+    align: "center",
+    width: 60,
+    render: (_, record) => {
+      try {
+        const attr = typeof record.attribute === "string" ? JSON.parse(record.attribute) : record.attribute;
+        const colorAttr = attr?.find((a: any) => a.id === "color");
+        return colorAttr?.value_name || "N/A";
+      } catch {
+        return "N/A";
+      }
     },
-    {
-      title: "Categoría",
-      dataIndex: "category_id",
-      key: "category_id",
-      align: "center",
+  },
+  {
+    title: "Talla",
+    key: "size",
+    align: "center",
+    width: 60,
+    render: (_, record) => {
+      try {
+        const attr = typeof record.attribute === "string" ? JSON.parse(record.attribute) : record.attribute;
+        const sizeAttr = attr?.find((a: any) => a.id === "size");
+        return sizeAttr?.value_name || "N/A";
+      } catch {
+        return "N/A";
+      }
     },
-    {
-      title: "Color",
-      key: "color",
-      align: "center",
-      render: (_, record) => {
-        try {
-          const attr = typeof record.attribute === "string" ? JSON.parse(record.attribute) : record.attribute;
-          const colorAttr = attr?.find((a: any) => a.id === "color");
-          return colorAttr?.value_name || "N/A";
-        } catch {
-          return "N/A";
-        }
-      },
+  },
+  {
+    title: "Imagen",
+    dataIndex: "pictures",
+    key: "pictures",
+    align: "center",
+    width: 150,
+    render: (pictures: string) => {
+      let arr: any[] = [];
+      try {
+        arr = typeof pictures === "string" ? JSON.parse(pictures) : pictures;
+      } catch {}
+      return arr && arr.length > 0 ? (
+        <img src={arr[0].src} alt="img" style={{ width: 40, height: 40, objectFit: "cover" }} />
+      ) : null;
     },
-    {
-      title: "Talla",
-      key: "size",
-      align: "center",
-      render: (_, record) => {
-        try {
-          const attr = typeof record.attribute === "string" ? JSON.parse(record.attribute) : record.attribute;
-          const sizeAttr = attr?.find((a: any) => a.id === "size");
-          return sizeAttr?.value_name || "N/A";
-        } catch {
-          return "N/A";
-        }
-      },
-    },
-    {
-      title: "Imagen",
-      dataIndex: "pictures",
-      key: "pictures",
-      align: "center",
-      render: (pictures: string) => {
-        let arr: any[] = [];
-        try {
-          arr = typeof pictures === "string" ? JSON.parse(pictures) : pictures;
-        } catch {}
-        return arr && arr.length > 0 ? (
-          <img src={arr[0].src} alt="img" style={{ width: 40, height: 40, objectFit: "cover" }} />
-        ) : null;
-      },
-    },
-    {
-      title: "Acciones",
-      key: "actions",
-      width: 50,
-      fixed: "right",
-      align: "center",
-      render: (_, record) => (
-        <Space>
-          <Button type="primary" size="small" onClick={() => handleEdit(record)}>
-            Editar
-          </Button>
-          <Button danger size="small" onClick={() => handleDelete(record.id)}>
-            Eliminar
-          </Button>
-        </Space>
-      ),
+  },
+{
+  title: "Acciones",
+  key: "actions",
+  align: "center",
+  width: 80,
+  render: (_, record) => (
+    <Space direction="vertical" size="small">
+      <Button type="primary" size="small" onClick={() => handleEdit(record)}>
+        Editar
+      </Button>
+      <Button
+        danger
+        size="small"
+        onClick={() => {
+          Modal.confirm({
+            title: "¿Estás seguro de eliminar este producto?",
+            content: `Esta acción no se puede deshacer. Producto: ${record.title}`,
+            okText: "Sí, eliminar",
+            okType: "danger",
+            cancelText: "Cancelar",
+            centered: true,
+            onOk: () => handleDelete(record.id),
+          });
+        }}
+      >
+        Eliminar
+      </Button>
+    </Space>
+  ),
 },
 
   ];

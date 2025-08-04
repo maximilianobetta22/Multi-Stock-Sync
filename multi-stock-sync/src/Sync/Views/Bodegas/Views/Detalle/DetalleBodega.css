@@ -177,3 +177,7 @@
   border-color: #95ff00 !important;
   box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
 }
+/* Asegura que todas las celdas de la tabla se alineen arriba y tengan la misma altura */
+.tabla-resaltada .ant-table-cell {
+  vertical-align: top;
+}
