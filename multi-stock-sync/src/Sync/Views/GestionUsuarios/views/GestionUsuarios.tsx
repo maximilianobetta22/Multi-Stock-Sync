@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, CSSProperties } from "react";
 import axiosInstance from "../../../../axiosConfig";
 import { AxiosError } from "axios";
 import {
@@ -14,73 +14,79 @@ import {
   Space,
   Badge,
   Popconfirm,
+  Row,
+  Col,
+  Statistic,
+  Tooltip,
+  Input,
+  Divider,
 } from "antd";
 import {
   SaveOutlined,
   LoadingOutlined,
   UserOutlined,
   ExclamationCircleOutlined,
+  UsergroupAddOutlined,
+  SearchOutlined,
+  FilterOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  TeamOutlined,
+  CrownOutlined,
+  ToolOutlined,
+  DollarOutlined,
+  PhoneOutlined,
+  MailOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
+const { Search } = Input;
 
-// Definición de la interfaz Usuario que representa cada usuario
 interface Usuario {
   id: number;
   nombre: string;
   apellidos: string;
   telefono: string;
   email: string;
-  role_id: number | null;  // Puede ser null si no tiene rol asignado
-  rol?: {                  // Información del rol asociada (opcional)
+  role_id: number | null;
+  rol?: {
     id: number;
     nombre: string;
   };
 }
 
-// Array con los roles disponibles en el sistema, con id y nombre
 const rolesDisponibles = [
-  { id: 1, nombre: "Admin" },
-  { id: 2, nombre: "Logística" },
-  { id: 3, nombre: "Finanzas" },
-  { id: 4, nombre: "RRHH" },
-  { id: 5, nombre: "vendedor" },
-  { id: 6, nombre: "plugin" },
-  { id: 7, nombre: "admin master" },
-  { id: 8, nombre: "marketing" },
-  { id: 9, nombre: "desarrollo Web" },
-  { id: 10, nombre: "usuario" },
+  { id: 1, nombre: "Admin", icon: <CrownOutlined />, color: "#722ed1" },
+  { id: 2, nombre: "Logística", icon: <ToolOutlined />, color: "#1890ff" },
+  { id: 3, nombre: "Finanzas", icon: <DollarOutlined />, color: "#52c41a" },
+  { id: 4, nombre: "RRHH", icon: <TeamOutlined />, color: "#fa8c16" },
+  { id: 5, nombre: "Vendedor", icon: <UserOutlined />, color: "#f5222d" },
+  { id: 6, nombre: "Plugin", icon: <ToolOutlined />, color: "#fadb14" },
+  { id: 7, nombre: "Admin Master", icon: <CrownOutlined />, color: "#531dab" },
+  { id: 8, nombre: "Marketing", icon: <UsergroupAddOutlined />, color: "#eb2f96" },
+  { id: 9, nombre: "Desarrollo Web", icon: <ToolOutlined />, color: "#13c2c2" },
+  { id: 10, nombre: "Usuario", icon: <UserOutlined />, color: "#8c8c8c" },
 ];
 
-// Función para obtener el color del tag según el id del rol
-const getRolColor = (roleId: number | null) => {
-  switch (roleId) {
-    case 1: return "purple";
-    case 2: return "blue";
-    case 3: return "green";
-    case 4: return "orange";
-    case 5: return "red";
-    case 6: return "yellow";
-    default: return "gray";
-  }
+const getRolInfo = (roleId: number | null) => {
+  const rol = rolesDisponibles.find(r => r.id === roleId);
+  return rol || { nombre: "Sin rol", color: "#d9d9d9", icon: <UserOutlined /> };
 };
 
 const GestionUsuarios: React.FC = () => {
-  // Obtener usuario actual y rol desde localStorage (debería manejarse mejor en contexto global)
   const user = JSON.parse(localStorage.getItem("user") || "{}");
   const roleId = user?.role_id;
-
-  // Solo Admin (1) y RRHH (4) tienen acceso a la gestión
   const tieneAcceso = roleId === 1 || roleId === 4;
 
-  // Estados para usuarios, carga, guardado y cambios pendientes en roles
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
+  const [usuariosFiltrados, setUsuariosFiltrados] = useState<Usuario[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [cambiosPendientes, setCambiosPendientes] = useState<Record<number, number>>({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filtroRol, setFiltroRol] = useState<number | undefined>(undefined);
 
-  // Efecto para cargar usuarios solo si se tiene acceso
   useEffect(() => {
     if (!tieneAcceso) return;
 
@@ -100,6 +106,7 @@ const GestionUsuarios: React.FC = () => {
           timeout: 5000,
         });
         setUsuarios(response.data || []);
+        setUsuariosFiltrados(response.data || []);
       } catch (error) {
         console.error("Error al cargar usuarios:", error);
         message.error("Error al obtener los datos de usuarios");
@@ -111,15 +118,31 @@ const GestionUsuarios: React.FC = () => {
     fetchData();
   }, [tieneAcceso]);
 
-  // Función para manejar el cambio de rol en el selector
+  // Filtros de búsqueda
+  useEffect(() => {
+    let filtrados = usuarios;
+
+    if (searchTerm) {
+      filtrados = filtrados.filter(usuario =>
+        `${usuario.nombre} ${usuario.apellidos} ${usuario.email}`
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase())
+      );
+    }
+
+    if (filtroRol !== undefined) {
+      filtrados = filtrados.filter(usuario => usuario.role_id === filtroRol);
+    }
+
+    setUsuariosFiltrados(filtrados);
+  }, [usuarios, searchTerm, filtroRol]);
+
   const manejarCambioRol = (userId: number, nuevoRolId: number) => {
     const usuarioSeleccionado = usuarios.find(u => u.id === userId);
-
     if (!usuarioSeleccionado) return;
 
     const esAdminActual = usuarioSeleccionado.role_id === 1;
 
-    // Validaciones de permisos para rol RRHH (no puede asignar ni quitar Admin)
     if (roleId === 4 && nuevoRolId === 1) {
       message.warning("RRHH no puede asignar el rol de Admin.");
       return;
@@ -130,14 +153,12 @@ const GestionUsuarios: React.FC = () => {
       return;
     }
 
-    // Guardar cambio pendiente en estado
     setCambiosPendientes(prev => ({
       ...prev,
       [userId]: nuevoRolId,
     }));
   };
 
-  // Función para guardar todos los cambios pendientes en la API
   const guardarCambios = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -148,7 +169,6 @@ const GestionUsuarios: React.FC = () => {
     try {
       setSaving(true);
 
-      // Actualizamos uno por uno (podría optimizarse a paralelo)
       for (const [userId, nuevoRolId] of Object.entries(cambiosPendientes)) {
         try {
           const response = await axiosInstance.put(
@@ -161,7 +181,6 @@ const GestionUsuarios: React.FC = () => {
           );
 
           if (response.data.message === "Rol asignado correctamente") {
-            // Actualizamos el usuario en el estado local
             setUsuarios(prev =>
               prev.map(user =>
                 user.id === Number(userId)
@@ -176,7 +195,7 @@ const GestionUsuarios: React.FC = () => {
           }
         } catch (error) {
           console.error(`Error al actualizar usuario ${userId}:`, error);
-          throw error; // Para que se capture en el catch general
+          throw error;
         }
       }
 
@@ -208,7 +227,6 @@ const GestionUsuarios: React.FC = () => {
     }
   };
 
-  // Función para eliminar usuario desde la API
   const eliminarUsuario = async (userId: number) => {
     const token = localStorage.getItem("token");
     if (!token) {
@@ -222,8 +240,6 @@ const GestionUsuarios: React.FC = () => {
       });
 
       message.success("Usuario eliminado correctamente");
-
-      // Actualizar lista local eliminando al usuario
       setUsuarios(prev => prev.filter(user => user.id !== userId));
     } catch (error) {
       console.error("Error al eliminar usuario:", error);
@@ -246,59 +262,117 @@ const GestionUsuarios: React.FC = () => {
     }
   };
 
-  // Definición de columnas para la tabla Ant Design
+  const getEstadisticas = () => {
+    const total = usuarios.length;
+    const porRol = rolesDisponibles.map(rol => ({
+      ...rol,
+      cantidad: usuarios.filter(u => u.role_id === rol.id).length
+    }));
+    const sinRol = usuarios.filter(u => !u.role_id).length;
+
+    return { total, porRol, sinRol };
+  };
+
   const columns = [
     {
       title: "Usuario",
       dataIndex: "nombre",
       key: "usuario",
-      render: (_: any, record: Usuario) => (
-        <Space>
-          {/* Avatar con iniciales */}
-          <Avatar style={{ backgroundColor: "#1890ff" }} icon={<UserOutlined />}>
-            {record.nombre.charAt(0)}
-            {record.apellidos.charAt(0)}
-          </Avatar>
-
-          {/* Datos del usuario */}
-          <div>
-            <Text strong>
-              {record.nombre} {record.apellidos}
-            </Text>
-            <br />
-            <Text type="secondary">{record.email}</Text>
-            <br />
-            <Text>{record.telefono}</Text>
-          </div>
-        </Space>
-      ),
+      width: 300,
+      render: (_: any, record: Usuario) => {
+        const rolInfo = getRolInfo(record.role_id);
+        return (
+          <Space size="middle">
+            <div style={{ position: 'relative' }}>
+              <Avatar 
+                size={48}
+                style={{ 
+                  backgroundColor: rolInfo.color,
+                  fontSize: '18px',
+                  fontWeight: '600'
+                }}
+              >
+                {record.nombre.charAt(0)}{record.apellidos.charAt(0)}
+              </Avatar>
+              {record.role_id === 1 && (
+                <Badge
+                  count={<CrownOutlined style={{ color: '#faad14', fontSize: '12px' }} />}
+                  offset={[-8, 8]}
+                />
+              )}
+            </div>
+            <div>
+              <Text strong style={{ fontSize: '16px', display: 'block', marginBottom: '6px' }}>
+                {record.nombre} {record.apellidos}
+              </Text>
+              <div style={{ marginBottom: '4px' }}>
+                <Space size="small" align="center">
+                  <MailOutlined style={{ color: '#8c8c8c', fontSize: '12px' }} />
+                  <Text type="secondary" style={{ fontSize: '13px' }}>
+                    {record.email}
+                  </Text>
+                </Space>
+              </div>
+              <div>
+                <Space size="small" align="center">
+                  <PhoneOutlined style={{ color: '#8c8c8c', fontSize: '12px' }} />
+                  <Text type="secondary" style={{ fontSize: '13px' }}>
+                    {record.telefono}
+                  </Text>
+                </Space>
+              </div>
+            </div>
+          </Space>
+        );
+      },
     },
     {
-      title: "Rol Actual",
+      title: "Rol",
       dataIndex: "role_id",
       key: "rol",
+      width: 200,
       render: (roleId: number | null, record: Usuario) => {
-        const rolPendiente = cambiosPendientes[record.id]; // Si hay cambio pendiente para este usuario
-        const rolActual = record.rol?.nombre || (roleId
-          ? rolesDisponibles.find(r => r.id === roleId)?.nombre
-          : "Sin rol");
+        const rolPendiente = cambiosPendientes[record.id];
+        const rolInfo = getRolInfo(roleId);
+        const rolPendienteInfo = rolPendiente ? getRolInfo(rolPendiente) : null;
 
         return (
-          <Space direction="vertical">
-            {rolPendiente ? (
-              // Mostramos rol pendiente con badge
-              <Badge dot>
-                <Tag color={getRolColor(rolPendiente)}>
-                  {rolesDisponibles.find(r => r.id === rolPendiente)?.nombre}
-                </Tag>
-              </Badge>
+          <Space direction="vertical" size="small">
+            {rolPendienteInfo ? (
+              <div>
+                <Badge dot>
+                  <Tag 
+                    color={rolPendienteInfo.color} 
+                    icon={rolPendienteInfo.icon}
+                    style={{ 
+                      padding: '6px 12px',
+                      borderRadius: '6px',
+                      fontSize: '13px',
+                      fontWeight: '500'
+                    }}
+                  >
+                    {rolPendienteInfo.nombre}
+                  </Tag>
+                </Badge>
+                <div style={{ marginTop: '4px' }}>
+                  <Text type="secondary" style={{ fontSize: '11px' }}>
+                    Actual: {rolInfo.nombre}
+                  </Text>
+                </div>
+              </div>
             ) : (
-              <Tag color={getRolColor(roleId)}>{rolActual}</Tag>
-            )}
-            {rolPendiente && (
-              <Text type="secondary" style={{ fontSize: 12 }}>
-                Actual: {rolActual}
-              </Text>
+              <Tag 
+                color={rolInfo.color}
+                icon={rolInfo.icon}
+                style={{ 
+                  padding: '6px 12px',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontWeight: '500'
+                }}
+              >
+                {rolInfo.nombre}
+              </Tag>
             )}
           </Space>
         );
@@ -306,118 +380,299 @@ const GestionUsuarios: React.FC = () => {
     },
     {
       title: "Cambiar Rol",
-      key: "acciones",
+      key: "cambiarRol",
+      width: 200,
       render: (_: any, record: Usuario) => (
         <Select
-          style={{ width: 180 }}
+          style={{ width: '100%' }}
           placeholder="Seleccionar rol"
           value={cambiosPendientes[record.id] ?? record.role_id ?? undefined}
           onChange={(value) => manejarCambioRol(record.id, value)}
           disabled={
             saving || 
-            (roleId === 4 && record.role_id === 1) // RRHH no puede cambiar admin
+            (roleId === 4 && record.role_id === 1)
           }
+          size="middle"
         >
           {rolesDisponibles.map(rol => (
             <Option
               key={rol.id}
               value={rol.id}
-              disabled={roleId === 4 && rol.id === 1} // RRHH no puede asignar admin
+              disabled={roleId === 4 && rol.id === 1}
             >
-              {rol.nombre}
+              <Space>
+                <span style={{ color: rol.color }}>{rol.icon}</span>
+                {rol.nombre}
+              </Space>
             </Option>
           ))}
         </Select>
       ),
     },
     {
-      title: "Eliminar",
-      key: "eliminar",
-      render: (_: any, record: Usuario) =>
-        (roleId === 1 || roleId === 4) && (
-          <Popconfirm
-            title="¿Estás seguro de eliminar este usuario?"
-            onConfirm={() => eliminarUsuario(record.id)}
-            okText="Sí"
-            cancelText="No"
-            icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
-          >
-            <Button danger size="small">Eliminar</Button>
-          </Popconfirm>
-        ),
+      title: "Acciones",
+      key: "acciones",
+      width: 120,
+      align: 'center' as const,
+      render: (_: any, record: Usuario) => (
+        <Space>
+          <Tooltip title="Editar usuario">
+            <Button 
+              type="text" 
+              icon={<EditOutlined />} 
+              size="small"
+              style={{ color: '#1890ff' }}
+            />
+          </Tooltip>
+          {(roleId === 1 || roleId === 4) && (
+            <Popconfirm
+              title="¿Eliminar usuario?"
+              description={`¿Estás seguro de eliminar a ${record.nombre} ${record.apellidos}?`}
+              onConfirm={() => eliminarUsuario(record.id)}
+              okText="Eliminar"
+              cancelText="Cancelar"
+              okType="danger"
+              icon={<ExclamationCircleOutlined style={{ color: "red" }} />}
+            >
+              <Tooltip title="Eliminar usuario">
+                <Button 
+                  type="text" 
+                  icon={<DeleteOutlined />} 
+                  size="small"
+                  danger
+                />
+              </Tooltip>
+            </Popconfirm>
+          )}
+        </Space>
+      ),
     },
   ];
 
-  // Si el usuario no tiene permiso para esta sección, mostramos mensaje
   if (!tieneAcceso) {
     return (
-      <div style={{ padding: "2rem", textAlign: "center" }}>
-        <Title level={3}>Acceso Restringido</Title>
-        <Text>No tienes permisos para acceder a la gestión de usuarios.</Text>
+      <div style={{ 
+        padding: "4rem", 
+        textAlign: "center",
+        minHeight: "60vh",
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+        alignItems: "center"
+      }}>
+        <div style={{ 
+          padding: "2rem",
+          backgroundColor: "#fafafa",
+          borderRadius: "12px",
+          maxWidth: "400px"
+        }}>
+          <ExclamationCircleOutlined style={{ fontSize: "48px", color: "#faad14", marginBottom: "1rem" }} />
+          <Title level={3}>Acceso Restringido</Title>
+          <Text>No tienes permisos para acceder a la gestión de usuarios.</Text>
+        </div>
       </div>
     );
   }
 
-  // Renderizado principal con Card, Spinner y Tabla
+  const estadisticas = getEstadisticas();
+
   return (
-    <div style={{ padding: 24 }}>
+    <div style={{ padding: "24px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
+      {/* Header con estadísticas */}
+      <div style={{ marginBottom: "24px" }}>
+        <Row gutter={[16, 16]}>
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ textAlign: 'center', borderRadius: '8px' }}>
+              <Statistic
+                title="Total Usuarios"
+                value={estadisticas.total}
+                prefix={<TeamOutlined />}
+                valueStyle={{ color: '#1890ff' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ textAlign: 'center', borderRadius: '8px' }}>
+              <Statistic
+                title="Administradores"
+                value={estadisticas.porRol.find(r => r.id === 1)?.cantidad || 0}
+                prefix={<CrownOutlined />}
+                valueStyle={{ color: '#722ed1' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ textAlign: 'center', borderRadius: '8px' }}>
+              <Statistic
+                title="Usuarios Activos"
+                value={estadisticas.total - estadisticas.sinRol}
+                prefix={<UserOutlined />}
+                valueStyle={{ color: '#52c41a' }}
+              />
+            </Card>
+          </Col>
+          <Col xs={24} sm={6}>
+            <Card size="small" style={{ textAlign: 'center', borderRadius: '8px' }}>
+              <Statistic
+                title="Sin Rol"
+                value={estadisticas.sinRol}
+                prefix={<ExclamationCircleOutlined />}
+                valueStyle={{ color: '#ff4d4f' }}
+              />
+            </Card>
+          </Col>
+        </Row>
+      </div>
+
+      {/* Tarjeta principal */}
       <Card
-        title={
-          <Space>
-            <Title level={4} style={{ margin: 0 }}>
-              Gestión de Usuarios
-            </Title>
-            {Object.keys(cambiosPendientes).length > 0 && (
-              <Tag color="orange">
-                {Object.keys(cambiosPendientes).length} cambios pendientes
-              </Tag>
-            )}
-          </Space>
-        }
-        bordered={false}
         style={{
-          borderRadius: 16,
-          boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-          width: "100%",
+          borderRadius: "16px",
+          boxShadow: "0 4px 16px rgba(0,0,0,0.08)",
+          border: "1px solid #e8e8e8"
         }}
-        extra={
-          Object.keys(cambiosPendientes).length > 0 && (
-            <Popconfirm
-              title="¿Guardar todos los cambios?"
-              icon={<ExclamationCircleOutlined style={{ color: "#faad14" }} />}
-              onConfirm={guardarCambios}
-              okText="Sí, guardar"
-              cancelText="Cancelar"
-            >
-              <Button
-                type="primary"
-                icon={saving ? <LoadingOutlined /> : <SaveOutlined />}
-                loading={saving}
-                style={{ borderRadius: 6 }}
-              >
-                Guardar cambios
-              </Button>
-            </Popconfirm>
-          )
-        }
       >
-        {/* Spinner mientras se cargan usuarios */}
-        <Spin spinning={loading} tip="Cargando usuarios...">
-          <Table
-            columns={columns}
-            dataSource={usuarios}
-            rowKey="id"
-            pagination={{ pageSize: 8 }}
-            scroll={{ x: "max-content" }}
-            bordered
-            size="middle"
-            locale={{
-              emptyText: "No hay usuarios registrados",
-            }}
-            style={{ width: "100%" }}
-          />
+        {/* Header de la tabla */}
+        <div style={{ marginBottom: "24px" }}>
+          <Row justify="space-between" align="middle" gutter={[16, 16]}>
+            <Col>
+              <Space align="center">
+                <Title level={4} style={{ margin: 0, color: '#262626' }}>
+                  Gestión de Usuarios
+                </Title>
+                {Object.keys(cambiosPendientes).length > 0 && (
+                  <Badge 
+                    count={Object.keys(cambiosPendientes).length} 
+                    style={{ backgroundColor: '#fa8c16' }}
+                  >
+                    <Tag color="orange" style={{ borderRadius: '6px', padding: '4px 8px' }}>
+                      cambios pendientes
+                    </Tag>
+                  </Badge>
+                )}
+              </Space>
+            </Col>
+            <Col>
+              {Object.keys(cambiosPendientes).length > 0 && (
+                <Popconfirm
+                  title="¿Guardar todos los cambios?"
+                  description="Esta acción aplicará todos los cambios de roles pendientes."
+                  icon={<ExclamationCircleOutlined style={{ color: "#faad14" }} />}
+                  onConfirm={guardarCambios}
+                  okText="Sí, guardar"
+                  cancelText="Cancelar"
+                  okType="primary"
+                >
+                  <Button
+                    type="primary"
+                    icon={saving ? <LoadingOutlined /> : <SaveOutlined />}
+                    loading={saving}
+                    size="middle"
+                    style={{ 
+                      borderRadius: "8px",
+                      height: "40px",
+                      fontWeight: "500"
+                    }}
+                  >
+                    Guardar cambios
+                  </Button>
+                </Popconfirm>
+              )}
+            </Col>
+          </Row>
+
+          <Divider style={{ margin: '16px 0' }} />
+
+          {/* Filtros */}
+          <Row gutter={[16, 16]} align="middle">
+            <Col xs={24} sm={12} md={8}>
+              <Search
+                placeholder="Buscar por nombre o email..."
+                allowClear
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                style={{ width: '100%' }}
+                prefix={<SearchOutlined style={{ color: '#bfbfbf' }} />}
+              />
+            </Col>
+            <Col xs={24} sm={12} md={6}>
+              <Select
+                placeholder="Filtrar por rol"
+                allowClear
+                value={filtroRol}
+                onChange={setFiltroRol}
+                style={{ width: '100%' }}
+                suffixIcon={<FilterOutlined />}
+              >
+                {rolesDisponibles.map(rol => (
+                  <Option key={rol.id} value={rol.id}>
+                    <Space>
+                      <span style={{ color: rol.color }}>{rol.icon}</span>
+                      {rol.nombre}
+                    </Space>
+                  </Option>
+                ))}
+              </Select>
+            </Col>
+            <Col xs={24} sm={24} md={10}>
+              <Text type="secondary" style={{ fontSize: '13px' }}>
+                Mostrando {usuariosFiltrados.length} de {usuarios.length} usuarios
+              </Text>
+            </Col>
+          </Row>
+        </div>
+
+        {/* Tabla */}
+        <Spin spinning={loading} tip="Cargando usuarios..." size="large">
+          <div className="custom-table-container">
+            <Table
+              columns={columns}
+              dataSource={usuariosFiltrados}
+              rowKey="id"
+              pagination={{
+                pageSize: 10,
+                showSizeChanger: true,
+                showQuickJumper: true,
+                showTotal: (total, range) => 
+                  `${range[0]}-${range[1]} de ${total} usuarios`,
+                style: { marginTop: '16px' }
+              }}
+              scroll={{ x: 800 }}
+              size="middle"
+              locale={{
+                emptyText: searchTerm || filtroRol 
+                  ? "No se encontraron usuarios con los filtros aplicados" 
+                  : "No hay usuarios registrados",
+              }}
+              rowClassName={(record) => 
+                cambiosPendientes[record.id] ? 'row-with-changes' : ''
+              }
+            />
+          </div>
         </Spin>
       </Card>
+
+      {/* Estilos CSS */}
+      <style>{`
+        .custom-table-container .ant-table-thead > tr > th {
+          background-color: #fafafa !important;
+          font-weight: 600 !important;
+          color: #262626 !important;
+          border-bottom: 2px solid #e8e8e8 !important;
+        }
+        
+        .custom-table-container .ant-table-tbody > tr:hover > td {
+          background-color: #f0f8ff !important;
+        }
+        
+        .custom-table-container .row-with-changes {
+          background-color: #fff7e6 !important;
+        }
+        
+        .custom-table-container .row-with-changes:hover {
+          background-color: #fff1d6 !important;
+        }
+      `}</style>
     </div>
   );
 };
