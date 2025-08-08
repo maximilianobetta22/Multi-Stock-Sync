@@ -22,6 +22,12 @@ interface ProductoML {
   date_created?: string;
   permalink?: string;
   sku?: string;
+   variations?: {
+    variation_id: string | number;
+    seller_custom_field?: string;
+    available_quantity?: number;
+    attribute_combinations?: { name: string; value_name: string }[];
+  }[];
 }
 
 interface Props {
@@ -159,15 +165,33 @@ export const TablaProductos = ({
         </span>
       ),
     },
-    {
-      title: "SKU",
-      dataIndex: "sku",
-      render: (sku) => (
-        <span style={{ fontFamily: "monospace", fontSize: "12px" }}>
-          {sku || "No disponible"}
-        </span>
-      ),
-    },
+{
+  title: "SKU",
+  render: (record: any) => {
+    const skuPrincipal = record.seller_custom_field || record.sku || "No disponible";
+    const variations = Array.isArray(record.variations) ? record.variations : [];
+
+    return (
+      <div style={{ fontFamily: "monospace", fontSize: "12px" }}>
+        <div><strong>Principal:</strong> {skuPrincipal}</div>
+        {variations.length > 0 && (
+          <ul style={{ paddingLeft: 20, marginTop: 4 }}>
+            {variations.map((v: any) => (
+              <li key={v.variation_id}>
+                {(v.attribute_combinations || [])
+                  .map((a: any) => `${a.name}: ${a.value_name}`)
+                  .join(", ")}
+                {" – SKU: "}
+                {v.seller_custom_field || "No disponible"}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    );
+  },
+},
+
     {
       title: "Título",
       dataIndex: "title",

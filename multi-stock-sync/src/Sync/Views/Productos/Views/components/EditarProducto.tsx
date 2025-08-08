@@ -62,6 +62,12 @@ interface ProductoML {
   date_created?: string;
   sold_quantity?: number;
   user_product_id?: string;
+   variations?: {
+    variation_id: string | number;
+    seller_custom_field?: string;
+    available_quantity?: number;
+    attribute_combinations?: { name: string; value_name: string }[];
+  }[];
 }
 
 const EditarProductos = () => {
