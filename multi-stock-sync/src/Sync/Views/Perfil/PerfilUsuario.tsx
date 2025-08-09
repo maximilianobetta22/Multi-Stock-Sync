@@ -49,30 +49,46 @@ const PerfilUsuario: React.FC = () => {
     const lastInitial = apellidos?.charAt(0).toUpperCase() || '';
     return firstInitial + lastInitial;
   };
-
-  // Función para formatear teléfono
-  const formatPhone = (phone: string | undefined) => {
-    if (!phone) return 'No especificado';
-    // Remover cualquier caracter que no sea número
-    const cleaned = phone.replace(/\D/g, '');
-    
-    // Si empieza con 569, formatear como +56 9 XXXX XXXX
-    if (cleaned.startsWith('569') && cleaned.length === 11) {
-      return `+56 9 ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
-    }
-    // Si empieza con 56, formatear como +56 X XXXX XXXX
-    else if (cleaned.startsWith('56') && cleaned.length >= 10) {
-      return `+56 ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
-    }
-    // Si es un número chileno sin código de país
-    else if (cleaned.length === 9 && cleaned.startsWith('9')) {
+// Función para formatear teléfono chileno mejorada
+const formatPhone = (phone: string | undefined) => {
+  if (!phone) return 'No especificado';
+  
+  // Remover cualquier caracter que no sea número
+  const cleaned = phone.replace(/\D/g, '');
+  
+  // Si ya empieza con 569 y tiene 11 dígitos (código país + móvil completo)
+  if (cleaned.startsWith('569') && cleaned.length === 11) {
+    return `+56 9 ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
+  }
+  // Si empieza con 56 pero no es móvil
+  else if (cleaned.startsWith('56') && cleaned.length >= 10) {
+    return `+56 ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
+  }
+  // Si es un número móvil chileno que ya empieza con 9 (9 dígitos)
+  else if (cleaned.length === 9 && cleaned.startsWith('9')) {
+    return `+56 9 ${cleaned.slice(1, 5)} ${cleaned.slice(5)}`;
+  }
+  // Si es un número de 8 dígitos (típico número chileno sin el 9 inicial)
+  else if (cleaned.length === 8) {
+    return `+56 9 ${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
+  }
+  // Si es un número de 7 dígitos, agregar el 9 y formatear
+  else if (cleaned.length === 7) {
+    return `+56 9 ${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+  }
+  // Para números que ya tienen el formato correcto de 10 dígitos empezando con código de área
+  else if (cleaned.length === 10 && !cleaned.startsWith('56')) {
+    if (cleaned.startsWith('9')) {
       return `+56 9 ${cleaned.slice(1, 5)} ${cleaned.slice(5)}`;
     }
-    // Formato por defecto
-    else {
-      return phone;
-    }
-  };
+    // Si no empieza con 9, agregar el 9
+    return `+56 9 ${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
+  }
+  // Formato por defecto para casos no contemplados
+  else {
+    return `+56 9 ${phone}`;
+  }
+};
 
   return (
     <div style={{ 

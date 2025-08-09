@@ -39,7 +39,7 @@ const HomeSync: React.FC = () => {
     }
   }, [navigate]);
 
-  // Paleta diversa manteniendo la identidad de Crazy Family
+  // Paleta colores de Crazy Family
   const modules: Module[] = [
     { 
       title: 'Gestión de Productos', 
@@ -60,7 +60,7 @@ const HomeSync: React.FC = () => {
       description: 'Administra y monitorea todos tus envíos desde un solo lugar. Consulta envíos del día, próximos despachos y estado de tránsito.', 
       icon: <CarOutlined style={{ fontSize: 48, color: '#FFFFFF' }} />, 
       link: '/sync/envios',
-      color: '#27ae60' // Verde éxito
+      color: '#27ae60' // Verde 
     },
     { 
       title: 'Configuración', 
