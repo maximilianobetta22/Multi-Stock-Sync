@@ -470,5 +470,70 @@ export const WooCommerceService = {
     await axiosInstance.put(`${API_BASE_URL}/woocommerce/woo/${storeId}/product/${productId}`, updatedData, {
       timeout: 30000,
     })
-  }
-}
+  },
+
+
+  async createProductAllStores(productData: any): Promise<any> {
+    try {
+      if (!productData?.name?.trim()) throw new Error("El nombre del producto es obligatorio");
+      if (!productData?.sku?.trim()) throw new Error("El SKU del producto es obligatorio");
+      if (!productData?.regular_price) throw new Error("El precio regular es obligatorio");
+
+      const toStr = (v: any) => {
+        if (v === null || v === undefined || v === "") return undefined;
+        const n = parseFloat(v);
+        return isNaN(n) ? undefined : n.toString();
+      };
+
+      const cleaned: any = {
+        name: productData.name.trim(),
+        regular_price: toStr(productData.regular_price) ?? "0",
+        description: productData.description || "",
+        short_description: productData.short_description || "",
+        sku: productData.sku.trim(),
+        featured: Boolean(productData.featured),
+        manage_stock: Boolean(productData.manage_stock),
+        stock_quantity: productData.manage_stock ? Number(productData.stock_quantity ?? 0) : undefined,
+        images: Array.isArray(productData.images) ? productData.images : [],
+      };
+      Object.keys(cleaned).forEach((k) => cleaned[k] === undefined && delete cleaned[k]);
+
+      const url = `${API_BASE_URL}/woocommerce/woo/create-product-all-stores`;
+      const token = localStorage.getItem("access_token") || localStorage.getItem("token");
+      if (!token) throw new Error("No se encontró token de autenticación. Inicia sesión nuevamente.");
+
+      const { data } = await axiosInstance.post(url, cleaned, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        timeout: 30000,
+      });
+      return data;
+    } catch (error: any) {
+      if (error.code === "ECONNABORTED") throw new Error("Timeout: La petición tardó demasiado (30s).");
+      if (error.response) {
+        const s = error.response.status;
+        const msg = error.response.data?.message || error.message || "Error";
+        if (s === 422 && error.response.data?.errors) {
+          const det = Object.entries(error.response.data.errors)
+            .map(([f, m]: any) => `${f}: ${Array.isArray(m) ? m.join(", ") : m}`)
+            .join("\n");
+          throw new Error(`Errores de validación del servidor:\n${det}`);
+        }
+        if (s === 401) throw new Error("No autorizado. Inicia sesión nuevamente.");
+        if (s === 500) throw new Error(`Error del servidor: ${msg}`);
+        throw new Error(`Error ${s}: ${msg}`);
+      }
+      if (error.request) throw new Error("No se pudo conectar con el servidor. Revisa tu conexión.");
+      throw new Error(error.message || "Error desconocido al crear en todas las tiendas.");
+    }
+  },
+};
+
+
+
+
+
+  
