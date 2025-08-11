@@ -3,6 +3,8 @@ import { useState, useEffect } from "react"
 import { MoreOutlined, EditOutlined, PlusOutlined, FilePdfOutlined, FileExcelOutlined } from "@ant-design/icons"
 import EditarProductoModal from "./EditarProductoModal"
 import CrearProductoWooModal from "./CrearProductoWooModal"
+import CrearProductoWooAllStoresModal from "./CrearProductoWooAllStoresModal"
+
 import {
   Dropdown,
   Menu,
@@ -37,6 +39,7 @@ import {
   CloseCircleOutlined,
   BugOutlined,
   InfoCircleOutlined,
+  ArrowRightOutlined,
 } from "@ant-design/icons"
 import type { ColumnsType } from "antd/es/table"
 import useWooCommerceProducts from "../hook/useWooCommerceProducts"
@@ -65,93 +68,18 @@ const WooCommerceProductsList: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<WooCommerceProduct | null>(null)
   const [isEditModalVisible, setIsEditModalVisible] = useState(false)
   
-  // Estados para crear producto
+  // Estados para crear producto (una tienda)
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false)
   const [creatingProduct, setCreatingProduct] = useState(false)
+
+  // Estados para crear producto (todas las tiendas)
+  const [openAllStores, setOpenAllStores] = useState(false)
+  const [creatingAllStores, setCreatingAllStores] = useState(false)
 
   const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
   const [pdfUrl, setPdfUrl] = useState<string | null>(null);
 
-  const handleEditClick = (product: WooCommerceProduct) => {
-    setEditingProduct(product)
-    setIsEditModalVisible (true)
-  }
-
-  const handleCloseModal = () => {
-    setIsEditModalVisible(false)
-    setEditingProduct(null)
-  }
-
-  const handleCloseCreateModal = () => {
-    setIsCreateModalVisible(false)
-  }
-
-  const handleSaveProduct = async (updatedValues: any) => {
-    if (!editingProduct || !mappedStoreId) return
-
-    try {
-      await WooCommerceService.updateProduct({
-        storeId: mappedStoreId,
-        productId: editingProduct.id,
-        updatedData: updatedValues,
-      })
-      message.success("Producto actualizado correctamente")
-      handleCloseModal()
-      loadProducts(currentPage, pageSize)
-    } catch (error) {
-      console.error(error)
-      message.error("Error al actualizar el producto")
-    }
-  }
-
-  // FUNCIÓN MEJORADA: Crear producto
-  const handleCreateProduct = async (productData: any) => {
-    console.log(" Iniciando creación de producto...");
-    console.log(" Datos del producto:", productData);
-    console.log(" Store ID mapeado:", mappedStoreId);
-
-    if (!mappedStoreId) {
-      console.error("❌ No hay Store ID mapeado");
-      message.error("No se ha seleccionado una tienda válida")
-      return
-    }
-
-    setCreatingProduct(true)
-    try {
-      console.log(" Enviando petición al backend...");
-      
-      const response = await WooCommerceService.createProduct({
-        storeId: mappedStoreId,
-        productData: productData,
-      })
-      
-      console.log("✅ Respuesta del backend:", response);
-      message.success("¡Producto creado correctamente en WooCommerce!")
-      
-      // Cerrar modal y recargar productos
-      handleCloseCreateModal()
-      console.log("🔄 Recargando lista de productos...");
-      await loadProducts(currentPage, pageSize)
-      console.log("✅ Lista de productos recargada");
-      
-    } catch (error: any) {
-      console.error("❌ Error al crear producto:", error)
-      console.error("❌ Error completo:", error.response?.data || error.message);
-      
-      // Mostrar error más específico al usuario
-      if (error.message.includes('Errores de validación:')) {
-        message.error({
-          content: error.message,
-          duration: 8,
-        });
-      } else {
-        message.error(error.message || "Error al crear el producto")
-      }
-    } finally {
-      setCreatingProduct(false)
-    }
-  }
-
+  // Hook de productos (DEBE estar a nivel de componente, no dentro de funciones)
   const {
     products,
     totalProducts,
@@ -168,7 +96,101 @@ const WooCommerceProductsList: React.FC = () => {
     setPageSize,
   } = useWooCommerceProducts({ autoLoad: false })
 
-  // Funciones de exportqacion
+  const handleEditClick = (product: WooCommerceProduct) => {
+    setEditingProduct(product)
+    setIsEditModalVisible(true)
+  }
+
+  const handleCloseModal = () => {
+    setIsEditModalVisible(false)
+    setEditingProduct(null)
+  }
+
+  const handleCloseCreateModal = () => {
+    setIsCreateModalVisible(false)
+  }
+
+  const handleSaveProduct = async (updatedValues: any) => {
+    if (!editingProduct || !mappedStoreId) return
+    try {
+      await WooCommerceService.updateProduct({
+        storeId: mappedStoreId,
+        productId: editingProduct.id,
+        updatedData: updatedValues,
+      })
+      message.success("Producto actualizado correctamente")
+      handleCloseModal()
+      loadProducts(currentPage, pageSize)
+    } catch (error) {
+      console.error(error)
+      message.error("Error al actualizar el producto")
+    }
+  }
+
+  // Crear producto en una tienda
+  const handleCreateProduct = async (productData: any) => {
+    if (!mappedStoreId) {
+      message.error("No se ha seleccionado una tienda válida")
+      return
+    }
+    setCreatingProduct(true)
+    try {
+      const response = await WooCommerceService.createProduct({
+        storeId: mappedStoreId,
+        productData: productData,
+      })
+      console.log("✅ Respuesta del backend:", response);
+      message.success("¡Producto creado correctamente en WooCommerce!")
+      handleCloseCreateModal()
+      await loadProducts(currentPage, pageSize)
+    } catch (error: any) {
+      console.error("❌ Error al crear producto:", error)
+      if (error.message?.includes('Errores de validación:')) {
+        message.error({ content: error.message, duration: 8 })
+      } else {
+        message.error(error.message || "Error al crear el producto")
+      }
+    } finally {
+      setCreatingProduct(false)
+    }
+  }
+
+  // Crear producto en TODAS las tiendas
+ const handleCreateProductAllStores = async (payload: any) => {
+  console.log("[WooList] handleCreateProductAllStores payload:", payload);
+
+  // Feedback visual persistente mientras se envía
+  const loadingKey = "creatingAllStores";
+  message.loading({ key: loadingKey, content: "Creando en todas las tiendas...", duration: 0 });
+
+  try {
+    setCreatingAllStores(true);
+
+    const res = await WooCommerceService.createProductAllStores(payload);
+
+    console.log("[WooList] createProductAllStores OK:", res);
+    message.success({ key: loadingKey, content: "Producto creado en todas las tiendas." });
+
+    setOpenAllStores(false);
+
+    if (mappedStoreId) {
+      await loadProducts(currentPage, pageSize);
+    }
+  } catch (err: any) {
+    console.error("[WooList] Error create all stores:", err);
+    // Muestra el error, aunque venga raro
+    const msg =
+      err?.response?.data?.message ||
+      err?.message ||
+      (typeof err === "string" ? err : "Error al crear en todas las tiendas");
+    message.error({ key: loadingKey, content: msg, duration: 6 });
+  } finally {
+    setCreatingAllStores(false);
+  }
+};
+
+  // Exportar a Excel
+  const displayProducts = searchTerm ? filteredProducts : products
   const exportToExcel = () => {
     if (displayProducts.length === 0) {
       message.warning("No hay productos para exportar.");
@@ -188,6 +210,7 @@ const WooCommerceProductsList: React.FC = () => {
     XLSX.writeFile(wb, "productos_woocommerce.xlsx");
   };
 
+  // Exportar a PDF
   const exportToPDF = () => {
     if (displayProducts.length === 0) {
       message.warning("No hay productos para exportar.");
@@ -229,79 +252,58 @@ const WooCommerceProductsList: React.FC = () => {
     setPdfPreviewVisible(false);
   }
 
-  // FUNCIÓN PARA MANEJAR CAMBIO DE TIENDA
+  // Cambio de tienda
   const handleStoreChange = (value: string) => {
     const store = WooCommerceService.getAvailableStores().find(
       (s) => s.nickname === value
     )
     if (store) {
-      // Guardar la nueva conexión
       localStorage.setItem(
         "conexionSeleccionada",
         JSON.stringify({ nickname: store.nickname, storeId: store.id })
       )
-      
-      // Actualizar estado local inmediatamente
       setMappedStoreId(store.id);
-      console.log("🔄 Cambiando a tienda:", store.name, "ID:", store.id);
-      
-      // Limpiar búsqueda y productos actuales
       setSearchTerm("");
       setFilteredProducts([]);
-      
-      // Cargar productos de la nueva tienda
       loadProducts(1, pageSize);
       setCurrentPage(1);
-      
       message.success(`Cambiado a tienda: ${store.name}`);
     }
   }
 
-  // Obtener el ID mapeado cuando cambia la conexión Y cargar productos automáticamente
+  // Mapear store y cargar productos cuando cambia la conexión
   useEffect(() => {
     if (connectionInfo) {
       const storeId = WooCommerceService.getCurrentWooCommerceStoreId()
       setMappedStoreId(storeId)
-      console.log("🔗 Store ID mapeado:", storeId);
-      
-      // NUEVO: Cargar productos automáticamente cuando cambia la tienda
       if (storeId) {
-        console.log("🔄 Cargando productos automáticamente para nueva tienda...");
-        loadProducts(1, pageSize);
-        setCurrentPage(1);
+        loadProducts(1, pageSize)
+        setCurrentPage(1)
       }
     }
   }, [connectionInfo, loadProducts, pageSize, setCurrentPage])
 
-  // Probar diferentes IDs para debug
+  // Probar IDs
   const testDifferentIds = async () => {
     if (!connectionInfo) return
-
     setTestingIds(true)
     const availableStores = WooCommerceService.getAvailableStores()
-
-    console.log("Probando tiendas disponibles:", availableStores)
-
     for (const store of availableStores) {
       const works = await WooCommerceService.testConnectionWithId(store.id)
-      console.log(`Tienda ${store.name} (ID ${store.id}): ${works ? "✅ Funciona" : "❌ No funciona"}`)
-
       if (works) {
         message.success(`Tienda "${store.name}" (ID ${store.id}) funciona correctamente`)
       }
     }
-
     setTestingIds(false)
   }
 
-  // Filtrar productos por término de búsqueda
+  // Buscar
   const handleSearch = (value: string) => {
     setSearchTerm(value)
     if (!value) {
       setFilteredProducts(products)
       return
     }
-
     const filtered = products.filter(
       (product) =>
         product.name.toLowerCase().includes(value.toLowerCase()) ||
@@ -310,7 +312,7 @@ const WooCommerceProductsList: React.FC = () => {
     setFilteredProducts(filtered)
   }
 
-  // Actualizar productos filtrados cuando cambian los productos
+  // Sincronizar filtrados
   useEffect(() => {
     if (searchTerm) {
       handleSearch(searchTerm)
@@ -319,7 +321,7 @@ const WooCommerceProductsList: React.FC = () => {
     }
   }, [products, searchTerm])
 
-  // Columnas de la tabla
+  // Columnas
   const columns: ColumnsType<WooCommerceProduct> = [
     {
       title: "Nombre",
@@ -426,11 +428,9 @@ const WooCommerceProductsList: React.FC = () => {
           const slug = attr.slug?.toLowerCase().trim()
           return nombre?.includes("talla") || slug?.includes("talla")
         })
-
         if (!tallaAttr || !tallaAttr.options || tallaAttr.options.length === 0) {
           return <Text type="secondary">-</Text>
         }
-
         return tallaAttr.options.join(", ")
       }
     },
@@ -467,7 +467,6 @@ const WooCommerceProductsList: React.FC = () => {
             </Menu.Item>
           </Menu>
         )
-
         return (
           <Dropdown overlay={menu} trigger={["click"]}>
             <Button shape="circle" icon={<MoreOutlined />} />
@@ -477,131 +476,125 @@ const WooCommerceProductsList: React.FC = () => {
     }
   ]
 
-  // Productos a mostrar (filtrados o todos)
-  const displayProducts = searchTerm ? filteredProducts : products
-
   return (
     <div style={{ 
-      padding: "40px", 
-      backgroundColor: "#f8f9fa", 
-      minHeight: "100vh",
-      fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'
+      backgroundColor: '#f5f5f5',
+      minHeight: '100vh',
+      padding: '2rem 1rem',
+      backgroundImage: `
+        radial-gradient(circle at 20% 20%, rgba(231, 76, 60, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(52, 152, 219, 0.05) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(39, 174, 96, 0.03) 0%, transparent 50%)
+      `
     }}>
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+      <div style={{ maxWidth: 1400, margin: '0 auto' }}>
         
         {/* Header Principal */}
-        <div style={{
-          background: "linear-gradient(135deg, #003a8e 0%, #003a8e 100%)",
-          borderRadius: "16px",
-          padding: "32px 40px",
-          marginBottom: "32px",
-          color: "white",
-          boxShadow: "0 8px 32px rgba(255, 107, 53, 0.2)"
-        }}>
-          <Row justify="space-between" align="middle">
-            <Col>
+        <div style={{ marginBottom: '3rem' }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '1.5rem',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "16px",
-                marginBottom: "8px"
+                width: 48,
+                height: 48,
+                borderRadius: '12px',
+                backgroundColor: '#e74c3c',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
               }}>
-                <div style={{
-                  width: "56px",
-                  height: "56px",
-                  backgroundColor: "rgba(255, 255, 255, 0.15)",
-                  borderRadius: "16px",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "24px"
-                }}>
-                  <ShopOutlined />
-                </div>
-                <div>
-                  <Title level={1} style={{ 
-                    margin: 0, 
-                    color: "white", 
-                    fontSize: "32px",
-                    fontWeight: "700"
-                  }}>
-                    Productos WooCommerce
-                  </Title>
-                  <Text style={{ 
-                    color: "rgba(255, 255, 255, 0.9)", 
-                    fontSize: "16px",
-                    fontWeight: "400"
-                  }}>
-                    Gestión y edición de productos sincronizados
-                  </Text>
-                </div>
+                <ShopOutlined style={{ fontSize: 24, color: '#ffffff' }} />
               </div>
-            </Col>
-            <Col>
-              <Space size="large">
-                <Button
-                  type="primary"
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsCreateModalVisible(true)}
-                  disabled={!mappedStoreId}
-                  size="large"
-                  style={{ 
-                    backgroundColor: mappedStoreId ? "#52c41a" : "rgba(255, 255, 255, 0.2)",
-                    borderColor: mappedStoreId ? "#52c41a" : "rgba(255, 255, 255, 0.3)",
-                    color: mappedStoreId ? "white" : "rgba(255, 255, 255, 0.7)",
-                    height: "48px",
-                    paddingLeft: "24px",
-                    paddingRight: "24px",
-                    fontSize: "16px",
-                    fontWeight: "600",
-                    borderRadius: "12px"
-                  }}
-                >
-                  Crear Producto
-                </Button>
-                <Button
-                  icon={<ReloadOutlined />}
-                  onClick={() => loadProducts()}
-                  loading={loading}
-                  disabled={!mappedStoreId}
-                  size="large"
-                  style={{
-                    backgroundColor: "rgba(255, 255, 255, 0.15)",
-                    borderColor: "rgba(255, 255, 255, 0.3)",
-                    color: "white",
-                    height: "48px",
-                    paddingLeft: "24px",
-                    paddingRight: "24px",
-                    fontSize: "16px",
-                    fontWeight: "500",
-                    borderRadius: "12px"
-                  }}
-                >
-                  Actualizar
-                </Button>
-              </Space>
-            </Col>
-          </Row>
-          
-          {/* Mostrar información del estado de creación */}
+              <div>
+                <Title level={2} style={{ 
+                  margin: 0, 
+                  color: '#2c3e50',
+                  fontSize: 28,
+                  fontWeight: 700
+                }}>
+                  Productos WooCommerce
+                </Title>
+                <Text style={{ 
+                  color: '#7f8c8d',
+                  fontSize: 16
+                }}>
+                  Gestión y edición de productos sincronizados
+                </Text>
+              </div>
+            </div>
+
+            <Space size="middle">
+              <Button
+                type="primary"
+                icon={<PlusOutlined />}
+                onClick={() => setIsCreateModalVisible(true)}
+                disabled={!mappedStoreId}
+                size="large"
+                style={{ 
+                  backgroundColor: mappedStoreId ? '#27ae60' : '#bdc3c7',
+                  borderColor: mappedStoreId ? '#27ae60' : '#bdc3c7',
+                  borderRadius: '8px',
+                  fontWeight: 600
+                }}
+              >
+                Crear Producto
+              </Button>
+
+              <Button
+                icon={<PlusOutlined />}
+                onClick={() => setOpenAllStores(true)}
+                disabled={!hasSelectedConnection()}
+                size="large"
+                style={{
+                  backgroundColor: '#3498db',
+                  borderColor: '#3498db',
+                  color: '#ffffff',
+                  borderRadius: '8px',
+                  fontWeight: 600
+                }}
+              >
+                Crear en todas las tiendas
+              </Button>
+
+              <Button
+                icon={<ReloadOutlined />}
+                onClick={() => loadProducts()}
+                loading={loading}
+                disabled={!mappedStoreId}
+                size="large"
+                style={{
+                  borderRadius: '8px',
+                  fontWeight: 500
+                }}
+              >
+                Actualizar
+              </Button>
+            </Space>
+          </div>
+
+          {/* Aviso botón Crear deshabilitado */}
           {!mappedStoreId && connectionInfo && (
             <div style={{
-              backgroundColor: "rgba(255, 255, 255, 0.1)",
-              border: "1px solid rgba(255, 255, 255, 0.2)",
-              borderRadius: "12px",
-              padding: "16px 20px",
-              marginTop: "24px",
-              display: "flex",
-              alignItems: "center",
-              gap: "12px"
+              backgroundColor: '#fff3cd',
+              border: '1px solid #ffeaa7',
+              borderRadius: '12px',
+              padding: '16px 20px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '12px'
             }}>
-              <InfoCircleOutlined style={{ fontSize: "18px", color: "rgba(255, 255, 255, 0.9)" }} />
+              <InfoCircleOutlined style={{ fontSize: '18px', color: '#f39c12' }} />
               <div>
-                <Text style={{ color: "white", fontWeight: "600" }}>
+                <Text style={{ color: '#2c3e50', fontWeight: 600 }}>
                   Botón Crear Producto deshabilitado
                 </Text>
                 <br />
-                <Text style={{ color: "rgba(255, 255, 255, 0.8)" }}>
+                <Text style={{ color: '#7f8c8d' }}>
                   No se ha mapeado esta conexión a una tienda WooCommerce. Contacta al administrador.
                 </Text>
               </div>
@@ -609,51 +602,50 @@ const WooCommerceProductsList: React.FC = () => {
           )}
         </div>
 
-        {/* Card de Conexión - Estilo mejorado */}
+        {/* Card de Conexión */}
         {connectionInfo && (
           <Card style={{ 
-            marginBottom: "32px", 
-            borderRadius: "16px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+            marginBottom: '2rem', 
+            borderRadius: '12px',
+            border: '1px solid #ecf0f1',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            background: '#ffffff'
           }}>
             <Row align="middle" justify="space-between">
               <Col span={16}>
-                <Space size="large">
-                  <div
-                    style={{
-                      width: "56px",
-                      height: "56px",
-                      borderRadius: "16px",
-                      backgroundColor: mappedStoreId ? "#f6ffed" : "#fff2f0",
-                      border: `2px solid ${mappedStoreId ? "#b7eb8f" : "#ffccc7"}`,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1rem' }}>
+                  <div style={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: '12px',
+                    backgroundColor: mappedStoreId ? '#eafaf1' : '#ffeaea',
+                    border: `2px solid ${mappedStoreId ? '#27ae60' : '#e74c3c'}`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                  }}>
                     {mappedStoreId ? (
-                      <CheckCircleOutlined style={{ color: "#52c41a", fontSize: "24px" }} />
+                      <CheckCircleOutlined style={{ color: '#27ae60', fontSize: 24 }} />
                     ) : (
-                      <CloseCircleOutlined style={{ color: "#ff4d4f", fontSize: "24px" }} />
+                      <CloseCircleOutlined style={{ color: '#e74c3c', fontSize: 24 }} />
                     )}
                   </div>
                   <div>
-                    <Text strong style={{ display: "block", fontSize: "18px", marginBottom: "4px" }}>
+                    <Text strong style={{ fontSize: 18, color: '#2c3e50' }}>
                       {connectionInfo.nickname || "Conexión WooCommerce"}
                     </Text>
                     {mappedStoreId && (
-                      <div style={{ marginTop: "8px" }}>
-                        <Text type="secondary" style={{ marginRight: "8px" }}>WooCommerce Store ID:</Text>
-                        <Tag color="green" style={{ borderRadius: "8px" }}>{mappedStoreId}</Tag>
+                      <div style={{ marginTop: 8 }}>
+                        <Text style={{ color: '#7f8c8d', marginRight: 8 }}>WooCommerce Store ID:</Text>
+                        <Tag color="green" style={{ borderRadius: 8 }}>{mappedStoreId}</Tag>
                       </div>
                     )}
                   </div>
-                </Space>
+                </div>
 
-                {/* Selector visual de tienda */}
-                <div style={{ marginTop: "20px" }}>
-                  <Text strong style={{ display: "block", marginBottom: "8px" }}>
+                {/* Selector de tienda */}
+                <div>
+                  <Text strong style={{ display: 'block', marginBottom: 8, color: '#2c3e50' }}>
                     Seleccionar tienda WooCommerce:
                   </Text>
                   <Select
@@ -670,7 +662,7 @@ const WooCommerceProductsList: React.FC = () => {
                 </div>
               </Col>
 
-              <Col span={8} style={{ textAlign: "right" }}>
+              <Col span={8} style={{ textAlign: 'right' }}>
                 <Space direction="vertical" size="middle">
                   <Button
                     type="primary"
@@ -680,9 +672,11 @@ const WooCommerceProductsList: React.FC = () => {
                     disabled={!mappedStoreId}
                     size="large"
                     style={{ 
-                      minWidth: "160px",
-                      borderRadius: "12px",
-                      fontWeight: "600"
+                      minWidth: 160,
+                      borderRadius: 8,
+                      backgroundColor: '#e74c3c',
+                      borderColor: '#e74c3c',
+                      fontWeight: 600
                     }}
                   >
                     Cargar Productos
@@ -693,9 +687,7 @@ const WooCommerceProductsList: React.FC = () => {
                     onClick={testDifferentIds}
                     loading={testingIds}
                     disabled={!hasSelectedConnection()}
-                    style={{
-                      borderRadius: "12px"
-                    }}
+                    style={{ borderRadius: 8 }}
                   >
                     Probar Tiendas
                   </Button>
@@ -705,25 +697,25 @@ const WooCommerceProductsList: React.FC = () => {
           </Card>
         )}
 
-        {/* Alertas - Estilo mejorado */}
+        {/* Alertas */}
         {!hasSelectedConnection() && (
           <div style={{
-            backgroundColor: "#fff7e6",
-            border: "1px solid #ffd591",
-            borderRadius: "16px",
-            padding: "20px 24px",
-            marginBottom: "32px",
-            display: "flex",
-            alignItems: "center",
-            gap: "16px"
+            backgroundColor: '#fff3cd',
+            border: '1px solid #ffeaa7',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '16px'
           }}>
-            <InfoCircleOutlined style={{ fontSize: "20px", color: "#d46b08" }} />
+            <InfoCircleOutlined style={{ fontSize: 20, color: '#f39c12' }} />
             <div>
-              <Text strong style={{ color: "#d46b08", fontSize: "16px" }}>
+              <Text strong style={{ color: '#2c3e50', fontSize: 16 }}>
                 No hay conexión seleccionada
               </Text>
               <br />
-              <Text style={{ color: "#d46b08" }}>
+              <Text style={{ color: '#7f8c8d' }}>
                 Selecciona una conexión WooCommerce para ver los productos.
               </Text>
             </div>
@@ -732,23 +724,23 @@ const WooCommerceProductsList: React.FC = () => {
 
         {hasSelectedConnection() && !mappedStoreId && (
           <div style={{
-            backgroundColor: "#fff2f0",
-            border: "1px solid #ffccc7",
-            borderRadius: "16px",
-            padding: "20px 24px",
-            marginBottom: "32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
+            backgroundColor: '#ffeaea',
+            border: '1px solid #ffccc7',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <CloseCircleOutlined style={{ fontSize: "20px", color: "#cf1322" }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <CloseCircleOutlined style={{ fontSize: 20, color: '#e74c3c' }} />
               <div>
-                <Text strong style={{ color: "#cf1322", fontSize: "16px" }}>
+                <Text strong style={{ color: '#2c3e50', fontSize: 16 }}>
                   Conexión no mapeada
                 </Text>
                 <br />
-                <Text style={{ color: "#cf1322" }}>
+                <Text style={{ color: '#7f8c8d' }}>
                   La conexión "{connectionInfo?.nickname}" no está mapeada a ninguna tienda WooCommerce. Contacta al administrador para agregar el mapeo.
                 </Text>
               </div>
@@ -757,7 +749,7 @@ const WooCommerceProductsList: React.FC = () => {
               icon={<InfoCircleOutlined />} 
               onClick={testDifferentIds} 
               loading={testingIds}
-              style={{ borderRadius: "8px" }}
+              style={{ borderRadius: 8 }}
             >
               Ver Tiendas Disponibles
             </Button>
@@ -767,10 +759,11 @@ const WooCommerceProductsList: React.FC = () => {
         {/* Búsqueda */}
         {hasSelectedConnection() && mappedStoreId && (
           <Card style={{ 
-            marginBottom: "32px", 
-            borderRadius: "16px",
-            border: "1px solid #e8ecf0",
-            boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+            marginBottom: '2rem', 
+            borderRadius: '12px',
+            border: '1px solid #ecf0f1',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+            background: '#ffffff'
           }}>
             <Row gutter={[16, 16]} align="middle" justify="space-between">
               <Col xs={24} md={12}>
@@ -784,7 +777,6 @@ const WooCommerceProductsList: React.FC = () => {
                   allowClear
                 />
               </Col>
-              {/* Exportacion a Excel y PDF */}
               <Col xs={24} md={12} style={{ textAlign: 'right' }}>
                 <Space>
                   <Button
@@ -792,6 +784,11 @@ const WooCommerceProductsList: React.FC = () => {
                     icon={<FileExcelOutlined />}
                     onClick={exportToExcel}
                     size="large"
+                    style={{
+                      backgroundColor: '#27ae60',
+                      borderColor: '#27ae60',
+                      borderRadius: 8
+                    }}
                   >
                     Exportar Excel
                   </Button>
@@ -800,6 +797,11 @@ const WooCommerceProductsList: React.FC = () => {
                     icon={<FilePdfOutlined />}
                     onClick={exportToPDF}
                     size="large"
+                    style={{
+                      backgroundColor: '#e74c3c',
+                      borderColor: '#e74c3c',
+                      borderRadius: 8
+                    }}
                   >
                     Exportar PDF
                   </Button>
@@ -809,43 +811,46 @@ const WooCommerceProductsList: React.FC = () => {
           </Card>
         )}
 
-        {/* Estadísticas - Estilo mejorado */}
+        {/* Stats */}
         {products.length > 0 && (
-          <Row gutter={[24, 24]} style={{ marginBottom: "32px" }}>
+          <Row gutter={[24, 24]} style={{ marginBottom: '2rem' }}>
             <Col xs={12} sm={8}>
               <Card style={{
-                borderRadius: "16px",
-                border: "1px solid #e8ecf0",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+                borderRadius: '12px',
+                border: '1px solid #ecf0f1',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                background: '#ffffff'
               }}>
                 <Statistic
                   title="Total productos"
                   value={totalProducts}
-                  prefix={<InboxOutlined style={{ color: "#1890ff" }} />}
-                  valueStyle={{ color: "#1890ff", fontWeight: "700" }}
+                  prefix={<InboxOutlined style={{ color: '#3498db' }} />}
+                  valueStyle={{ color: '#3498db', fontWeight: 700 }}
                   suffix={<Tooltip title="Cantidad total de productos sincronizados"><InfoCircleOutlined /></Tooltip>}
                 />
               </Card>
             </Col>
             <Col xs={12} sm={8}>
               <Card style={{
-                borderRadius: "16px",
-                border: "1px solid #e8ecf0",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+                borderRadius: '12px',
+                border: '1px solid #ecf0f1',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                background: '#ffffff'
               }}>
                 <Statistic
                   title="Productos Mostrados"
                   value={displayProducts.length}
-                  prefix={<EyeOutlined style={{ color: "#52c41a" }} />}
-                  valueStyle={{ color: "#52c41a", fontWeight: "700" }}
+                  prefix={<EyeOutlined style={{ color: '#27ae60' }} />}
+                  valueStyle={{ color: '#27ae60', fontWeight: 700 }}
                 />
               </Card>
             </Col>
             <Col xs={24} sm={8}>
               <Card style={{
-                borderRadius: "16px",
-                border: "1px solid #e8ecf0",
-                boxShadow: "0 4px 20px rgba(0, 0, 0, 0.06)"
+                borderRadius: '12px',
+                border: '1px solid #ecf0f1',
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+                background: '#ffffff'
               }}>
                 <Statistic
                   title="Valor Total"
@@ -854,34 +859,34 @@ const WooCommerceProductsList: React.FC = () => {
                     return isNaN(price) ? sum : sum + price
                   }, 0)}
                   precision={2}
-                  prefix={<DollarOutlined style={{ color: "#722ed1" }} />}
-                  valueStyle={{ color: "#722ed1", fontWeight: "700" }}
+                  prefix={<DollarOutlined style={{ color: '#9b59b6' }} />}
+                  valueStyle={{ color: '#9b59b6', fontWeight: 700 }}
                 />
               </Card>
             </Col>
           </Row>
         )}
 
-        {/* Error - Estilo mejorado */}
+        {/* Error */}
         {error && (
           <div style={{
-            backgroundColor: "#fff2f0",
-            border: "1px solid #ffccc7",
-            borderRadius: "16px",
-            padding: "20px 24px",
-            marginBottom: "32px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between"
+            backgroundColor: '#ffeaea',
+            border: '1px solid #ffccc7',
+            borderRadius: '12px',
+            padding: '20px 24px',
+            marginBottom: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-              <CloseCircleOutlined style={{ fontSize: "20px", color: "#cf1322" }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+              <CloseCircleOutlined style={{ fontSize: 20, color: '#e74c3c' }} />
               <div>
-                <Text strong style={{ color: "#cf1322", fontSize: "16px" }}>
+                <Text strong style={{ color: '#2c3e50', fontSize: 16 }}>
                   Error al cargar productos
                 </Text>
                 <br />
-                <Text style={{ color: "#cf1322" }}>
+                <Text style={{ color: '#7f8c8d' }}>
                   {error}
                 </Text>
               </div>
@@ -890,14 +895,14 @@ const WooCommerceProductsList: React.FC = () => {
               <Button 
                 onClick={testDifferentIds} 
                 loading={testingIds}
-                style={{ borderRadius: "8px" }}
+                style={{ borderRadius: 8 }}
               >
                 Probar Tiendas
               </Button>
               <Button 
                 type="text" 
                 onClick={clearError}
-                style={{ borderRadius: "8px" }}
+                style={{ borderRadius: 8 }}
               >
                 ✕
               </Button>
@@ -905,17 +910,18 @@ const WooCommerceProductsList: React.FC = () => {
           </div>
         )}
 
-        {/* Tabla de productos - Estilo mejorado */}
+        {/* Tabla */}
         <Card style={{ 
-          borderRadius: "16px", 
-          boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-          border: "1px solid #e8ecf0"
+          borderRadius: '12px', 
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08)',
+          border: '1px solid #ecf0f1',
+          background: '#ffffff'
         }}>
           {!hasSelectedConnection() ? (
-            <div style={{ textAlign: "center", padding: "80px 0" }}>
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
               <Empty
                 description={
-                  <Text style={{ fontSize: "16px", color: "#8c8c8c" }}>
+                  <Text style={{ fontSize: 16, color: '#8c8c8c' }}>
                     Selecciona una conexión WooCommerce para ver los productos
                   </Text>
                 }
@@ -923,10 +929,10 @@ const WooCommerceProductsList: React.FC = () => {
               />
             </div>
           ) : !mappedStoreId ? (
-            <div style={{ textAlign: "center", padding: "80px 0" }}>
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
               <Empty
                 description={
-                  <Text style={{ fontSize: "16px", color: "#8c8c8c" }}>
+                  <Text style={{ fontSize: 16, color: '#8c8c8c' }}>
                     Esta conexión no está mapeada a ninguna tienda WooCommerce
                   </Text>
                 }
@@ -934,18 +940,18 @@ const WooCommerceProductsList: React.FC = () => {
               />
             </div>
           ) : loading ? (
-            <div style={{ textAlign: "center", padding: "80px 0" }}>
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
               <Spin size="large" tip={
-                <Text style={{ fontSize: "16px", marginTop: "16px" }}>
+                <Text style={{ fontSize: 16, marginTop: 16 }}>
                   Cargando productos...
                 </Text>
               } />
             </div>
           ) : products.length === 0 ? (
-            <div style={{ textAlign: "center", padding: "80px 0" }}>
+            <div style={{ textAlign: 'center', padding: '80px 0' }}>
               <Empty
                 description={
-                  <Text style={{ fontSize: "16px", color: "#8c8c8c" }}>
+                  <Text style={{ fontSize: 16, color: '#8c8c8c' }}>
                     {searchTerm
                       ? "No se encontraron productos que coincidan con la búsqueda"
                       : "No hay productos disponibles en esta tienda"}
@@ -956,32 +962,32 @@ const WooCommerceProductsList: React.FC = () => {
             </div>
           ) : (
             <>
-              <div style={{ marginBottom: "20px", padding: "0 4px" }}>
-                <Space size="large" style={{ width: "100%", justifyContent: "space-between" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ marginBottom: 20, padding: '0 4px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <Badge 
                       count={displayProducts.length} 
                       style={{ 
-                        backgroundColor: "#1890ff",
-                        fontSize: "12px",
-                        fontWeight: "600"
+                        backgroundColor: '#e74c3c',
+                        fontSize: 12,
+                        fontWeight: 600
                       }} 
                     />
-                    <Text style={{ fontSize: "16px", fontWeight: "500" }}>
+                    <Text style={{ fontSize: 16, fontWeight: 500, color: '#2c3e50' }}>
                       {searchTerm
                         ? `Resultados para "${searchTerm}"`
                         : `Mostrando ${displayProducts.length} de ${totalProducts} productos`}
                     </Text>
                   </div>
                   {userEmail && (
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                      <UserOutlined style={{ color: "#8c8c8c" }} />
-                      <Text type="secondary" style={{ fontSize: "14px" }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <UserOutlined style={{ color: '#7f8c8d' }} />
+                      <Text style={{ fontSize: 14, color: '#7f8c8d' }}>
                         {userEmail}
                       </Text>
                     </div>
                   )}
-                </Space>
+                </div>
               </div>
 
               <Table
@@ -1001,21 +1007,67 @@ const WooCommerceProductsList: React.FC = () => {
                     setPageSize(size)
                     loadProducts(page, size)
                   },
-                  showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} productos`,
-                  position: ["bottomRight"],
-                  style: {
-                    marginTop: "24px"
+                  showTotal: (total, range) => (
+                    <Text style={{ color: '#7f8c8d', fontSize: 14 }}>
+                      Mostrando {range[0]}-{range[1]} de {total} productos
+                    </Text>
+                  ),
+                  position: ["bottomCenter"],
+                  style: { 
+                    marginTop: 24,
+                    textAlign: 'center'
+                  },
+                  itemRender: (current, type, originalElement) => {
+                    if (type === 'prev') {
+                      return (
+                        <Button 
+                          style={{ 
+                            borderRadius: 8,
+                            border: '1px solid #e74c3c',
+                            color: '#e74c3c'
+                          }}
+                        >
+                          Anterior
+                        </Button>
+                      );
+                    }
+                    if (type === 'next') {
+                      return (
+                        <Button 
+                          style={{ 
+                            borderRadius: 8,
+                            border: '1px solid #e74c3c',
+                            color: '#e74c3c'
+                          }}
+                        >
+                          Siguiente
+                        </Button>
+                      );
+                    }
+                    if (type === 'page') {
+                      return (
+                        <Button 
+                          style={{ 
+                            borderRadius: 8,
+                            border: current === currentPage ? '1px solid #e74c3c' : '1px solid #d9d9d9',
+                            backgroundColor: current === currentPage ? '#e74c3c' : '#ffffff',
+                            color: current === currentPage ? '#ffffff' : '#595959'
+                          }}
+                        >
+                          {current}
+                        </Button>
+                      );
+                    }
+                    return originalElement;
                   }
                 }}
-                style={{
-                  borderRadius: "12px"
-                }}
+                style={{ borderRadius: 12 }}
               />
             </>
           )}
         </Card>
 
-        {/* Modal para editar producto */}
+        {/* Modales */}
         <EditarProductoModal
           visible={isEditModalVisible}
           product={editingProduct}
@@ -1023,14 +1075,21 @@ const WooCommerceProductsList: React.FC = () => {
           onSave={handleSaveProduct}
         />
 
-        {/* MODAL PARA CREAR PRODUCTO - MEJORADO */}
         <CrearProductoWooModal
           visible={isCreateModalVisible}
           onClose={handleCloseCreateModal}
           onSave={handleCreateProduct}
           loading={creatingProduct}
         />
-      {/* Previsualizacion del PDF */}
+
+        <CrearProductoWooAllStoresModal
+          visible={openAllStores}
+          loading={creatingAllStores}
+          onClose={() => setOpenAllStores(false)}
+          onSave={handleCreateProductAllStores}
+        />
+
+        {/* Previsualización PDF */}
         <Modal
           title="Vista Previa del PDF"
           open={pdfPreviewVisible}
@@ -1045,6 +1104,10 @@ const WooCommerceProductsList: React.FC = () => {
               type="primary" 
               icon={<FilePdfOutlined />}
               onClick={handleDownloadPDF}
+              style={{
+                backgroundColor: '#e74c3c',
+                borderColor: '#e74c3c'
+              }}
             >
               Descargar PDF
             </Button>,
@@ -1065,4 +1128,4 @@ const WooCommerceProductsList: React.FC = () => {
   )
 }
 
-export default WooCommerceProductsList;
+export default WooCommerceProductsList
