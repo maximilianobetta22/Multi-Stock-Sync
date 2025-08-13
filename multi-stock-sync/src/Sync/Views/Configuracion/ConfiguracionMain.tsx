@@ -17,12 +17,14 @@ export default function ConfiguracionMain() {
   const storedUser = localStorage.getItem("user");
   const currentUser = storedUser ? JSON.parse(storedUser) : null;
 
-  // Colores del tema (usando los mismos del login)
+  // Colores del tema Crazy Family
   const brandColors = {
-    primary: "rgb(0, 58, 142)",
-    primaryDark: "#D84315",
-    secondary: "#6e75b4",
-    accent: "#FFC107",
+    primary: "#1e5091",      // Azul del navbar de Crazy Family
+    primaryDark: "#164075",   // Azul más oscuro
+    secondary: "#ff6b35",     // Naranja complementario
+    accent: "#ffc107",        // Amarillo de acento
+    danger: "#dc3545",        // Rojo para elementos de seguridad
+    lightBlue: "#e3f2fd",     // Azul claro para fondos
   };
 
   // Función para obtener las iniciales
@@ -49,7 +51,7 @@ export default function ConfiguracionMain() {
       minHeight: '100vh'
     }}>
       
-      {/* Elementos animados de fondo */}
+      {/* Elementos animados de fondo con colores Crazy Family */}
       <div
         style={{
           position: "fixed",
@@ -105,7 +107,7 @@ export default function ConfiguracionMain() {
         }}
       />
 
-      {/* Partículas flotantes */}
+      {/* Partículas flotantes con colores Crazy Family */}
       <div
         style={{
           position: "fixed",
@@ -151,14 +153,14 @@ export default function ConfiguracionMain() {
 
       {/* Contenido principal con z-index mayor */}
       <div style={{ position: 'relative', zIndex: 1 }}>
-        {/* Header */}
+        {/* Header con gradiente azul de Crazy Family */}
         <Card 
           style={{ 
             marginBottom: '24px',
-            background: 'linear-gradient(135deg, #dc143c 0%,rgb(146, 32, 32) 100%)',
+            background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.primaryDark} 100%)`,
             border: 'none',
             borderRadius: '16px',
-            boxShadow: '0 8px 32px rgba(220, 20, 60, 0.15)'
+            boxShadow: `0 8px 32px ${brandColors.primary}20`
           }}
           bodyStyle={{ padding: '32px 24px' }}
         >
@@ -168,7 +170,7 @@ export default function ConfiguracionMain() {
                 size={80} 
                 style={{ 
                   backgroundColor: "#fff", 
-                  color: "#000000",
+                  color: brandColors.primary,
                   fontSize: '32px',
                   fontWeight: 'bold',
                   border: '3px solid rgba(255,255,255,0.3)',
@@ -194,15 +196,16 @@ export default function ConfiguracionMain() {
         <Card 
           title={
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <SettingOutlined style={{ marginRight: '8px', color: '#dc143c' }} />
-              Opciones de Cuenta
+              <SettingOutlined style={{ marginRight: '8px', color: brandColors.primary }} />
+              <span style={{ color: brandColors.primary }}>Opciones de Cuenta</span>
             </div>
           }
           style={{ 
             borderRadius: '16px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
             background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${brandColors.lightBlue}`
           }}
         >
           <Space direction="vertical" style={{ width: "100%" }} size="large">
@@ -211,21 +214,21 @@ export default function ConfiguracionMain() {
             <div 
               style={{
                 padding: '20px',
-                background: 'rgba(248, 249, 250, 0.8)',
+                background: brandColors.lightBlue,
                 borderRadius: '12px',
-                border: '1px solid #e9ecef',
+                border: `1px solid ${brandColors.primary}20`,
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 backdropFilter: 'blur(5px)'
               }}
               onClick={irACambiarPassword}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(233, 236, 239, 0.9)';
+                e.currentTarget.style.background = '#bbdefb';
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${brandColors.primary}20`;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(248, 249, 250, 0.8)';
+                e.currentTarget.style.background = brandColors.lightBlue;
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
@@ -233,18 +236,18 @@ export default function ConfiguracionMain() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{
-                    background: 'linear-gradient(135deg, #dc143c 0%, #b71c1c 100%)',
+                    background: `linear-gradient(135deg, ${brandColors.danger} 0%, #c82333 100%)`,
                     borderRadius: '8px',
                     padding: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(220, 20, 60, 0.3)'
+                    boxShadow: `0 2px 8px ${brandColors.danger}30`
                   }}>
                     <LockOutlined style={{ color: 'white', fontSize: '18px' }} />
                   </div>
                   <div>
-                    <Text strong style={{ fontSize: '16px', color: '#333' }}>
+                    <Text strong style={{ fontSize: '16px', color: brandColors.primaryDark }}>
                       Cambiar Contraseña
                     </Text>
                     <br />
@@ -253,7 +256,7 @@ export default function ConfiguracionMain() {
                     </Text>
                   </div>
                 </div>
-                <ArrowRightOutlined style={{ color: '#dc143c', fontSize: '16px' }} />
+                <ArrowRightOutlined style={{ color: brandColors.primary, fontSize: '16px' }} />
               </div>
             </div>
 
@@ -261,21 +264,21 @@ export default function ConfiguracionMain() {
             <div 
               style={{
                 padding: '20px',
-                background: 'rgba(248, 249, 250, 0.8)',
+                background: brandColors.lightBlue,
                 borderRadius: '12px',
-                border: '1px solid #e9ecef',
+                border: `1px solid ${brandColors.primary}20`,
                 cursor: 'pointer',
                 transition: 'all 0.3s ease',
                 backdropFilter: 'blur(5px)'
               }}
               onClick={irAPerfil}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(233, 236, 239, 0.9)';
+                e.currentTarget.style.background = '#bbdefb';
                 e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)';
+                e.currentTarget.style.boxShadow = `0 4px 12px ${brandColors.primary}20`;
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(248, 249, 250, 0.8)';
+                e.currentTarget.style.background = brandColors.lightBlue;
                 e.currentTarget.style.transform = 'translateY(0)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
@@ -283,18 +286,18 @@ export default function ConfiguracionMain() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <div style={{
-                    background: 'linear-gradient(135deg, #dc143c 0%, #b71c1c 100%)',
+                    background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.primaryDark} 100%)`,
                     borderRadius: '8px',
                     padding: '8px',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 2px 8px rgba(220, 20, 60, 0.3)'
+                    boxShadow: `0 2px 8px ${brandColors.primary}30`
                   }}>
                     <UserOutlined style={{ color: 'white', fontSize: '18px' }} />
                   </div>
                   <div>
-                    <Text strong style={{ fontSize: '16px', color: '#333' }}>
+                    <Text strong style={{ fontSize: '16px', color: brandColors.primaryDark }}>
                       Ver/Editar Perfil
                     </Text>
                     <br />
@@ -303,7 +306,7 @@ export default function ConfiguracionMain() {
                     </Text>
                   </div>
                 </div>
-                <ArrowRightOutlined style={{ color: '#dc143c', fontSize: '16px' }} />
+                <ArrowRightOutlined style={{ color: brandColors.primary, fontSize: '16px' }} />
               </div>
             </div>
 
@@ -313,13 +316,13 @@ export default function ConfiguracionMain() {
           <div style={{ 
             marginTop: '32px', 
             padding: '16px', 
-            background: 'rgba(227, 242, 253, 0.8)', 
+            background: '#f0f9ff', 
             borderRadius: '12px',
-            border: '1px solid #bbdefb',
+            border: `1px solid ${brandColors.primary}30`,
             backdropFilter: 'blur(5px)'
           }}>
-            <Text type="secondary" style={{ fontSize: '14px', display: 'block', textAlign: 'center' }}>
-              💡 <strong>Tip:</strong> Mantén tu información actualizada y cambia tu contraseña periódicamente para mayor seguridad.
+            <Text type="secondary" style={{ fontSize: '14px', display: 'block', textAlign: 'center', color: brandColors.primaryDark }}>
+               <strong>Tip:</strong> Mantén tu información actualizada y cambia tu contraseña periódicamente para mayor seguridad.
             </Text>
           </div>
         </Card>

@@ -17,12 +17,14 @@ const PerfilUsuario: React.FC = () => {
 
   const { usuario, loading, error } = usePerfilManagement(userId);
 
-  // Colores del tema (usando los mismos del login)
+  // Colores del tema Crazy Family
   const brandColors = {
-    primary: "rgb(0, 58, 142)",
-    primaryDark: "#D84315",
-    secondary: "#6e75b4",
-    accent: "#FFC107",
+    primary: "#1e5091",      // Azul del navbar de Crazy Family
+    primaryDark: "#164075",   // Azul más oscuro
+    secondary: "#ff6b35",     // Naranja complementario
+    accent: "#ffc107",        // Amarillo de acento
+    success: "#28a745",       // Verde para botones positivos
+    lightBlue: "#e3f2fd",     // Azul claro para fondos
   };
 
   if (loading) return (
@@ -36,10 +38,10 @@ const PerfilUsuario: React.FC = () => {
   // Función para obtener color del rol
   const getRoleColor = (role: string | undefined) => {
     switch (role?.toLowerCase()) {
-      case 'admin': return '#8b0000';
-      case 'manager': return '#108ee9';
-      case 'user': return '#87d068';
-      default: return '#666';
+      case 'admin': return '#dc3545';
+      case 'manager': return '#007bff';
+      case 'user': return '#28a745';
+      default: return '#6c757d';
     }
   };
 
@@ -49,46 +51,47 @@ const PerfilUsuario: React.FC = () => {
     const lastInitial = apellidos?.charAt(0).toUpperCase() || '';
     return firstInitial + lastInitial;
   };
-// Función para formatear teléfono chileno mejorada
-const formatPhone = (phone: string | undefined) => {
-  if (!phone) return 'No especificado';
-  
-  // Remover cualquier caracter que no sea número
-  const cleaned = phone.replace(/\D/g, '');
-  
-  // Si ya empieza con 569 y tiene 11 dígitos (código país + móvil completo)
-  if (cleaned.startsWith('569') && cleaned.length === 11) {
-    return `+56 9 ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
-  }
-  // Si empieza con 56 pero no es móvil
-  else if (cleaned.startsWith('56') && cleaned.length >= 10) {
-    return `+56 ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
-  }
-  // Si es un número móvil chileno que ya empieza con 9 (9 dígitos)
-  else if (cleaned.length === 9 && cleaned.startsWith('9')) {
-    return `+56 9 ${cleaned.slice(1, 5)} ${cleaned.slice(5)}`;
-  }
-  // Si es un número de 8 dígitos (típico número chileno sin el 9 inicial)
-  else if (cleaned.length === 8) {
-    return `+56 9 ${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
-  }
-  // Si es un número de 7 dígitos, agregar el 9 y formatear
-  else if (cleaned.length === 7) {
-    return `+56 9 ${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
-  }
-  // Para números que ya tienen el formato correcto de 10 dígitos empezando con código de área
-  else if (cleaned.length === 10 && !cleaned.startsWith('56')) {
-    if (cleaned.startsWith('9')) {
+
+  // Función para formatear teléfono chileno mejorada
+  const formatPhone = (phone: string | undefined) => {
+    if (!phone) return 'No especificado';
+    
+    // Remover cualquier caracter que no sea número
+    const cleaned = phone.replace(/\D/g, '');
+    
+    // Si ya empieza con 569 y tiene 11 dígitos (código país + móvil completo)
+    if (cleaned.startsWith('569') && cleaned.length === 11) {
+      return `+56 9 ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
+    }
+    // Si empieza con 56 pero no es móvil
+    else if (cleaned.startsWith('56') && cleaned.length >= 10) {
+      return `+56 ${cleaned.slice(2, 3)} ${cleaned.slice(3, 7)} ${cleaned.slice(7)}`;
+    }
+    // Si es un número móvil chileno que ya empieza con 9 (9 dígitos)
+    else if (cleaned.length === 9 && cleaned.startsWith('9')) {
       return `+56 9 ${cleaned.slice(1, 5)} ${cleaned.slice(5)}`;
     }
-    // Si no empieza con 9, agregar el 9
-    return `+56 9 ${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
-  }
-  // Formato por defecto para casos no contemplados
-  else {
-    return `+56 9 ${phone}`;
-  }
-};
+    // Si es un número de 8 dígitos (típico número chileno sin el 9 inicial)
+    else if (cleaned.length === 8) {
+      return `+56 9 ${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
+    }
+    // Si es un número de 7 dígitos, agregar el 9 y formatear
+    else if (cleaned.length === 7) {
+      return `+56 9 ${cleaned.slice(0, 3)} ${cleaned.slice(3)}`;
+    }
+    // Para números que ya tienen el formato correcto de 10 dígitos empezando con código de área
+    else if (cleaned.length === 10 && !cleaned.startsWith('56')) {
+      if (cleaned.startsWith('9')) {
+        return `+56 9 ${cleaned.slice(1, 5)} ${cleaned.slice(5)}`;
+      }
+      // Si no empieza con 9, agregar el 9
+      return `+56 9 ${cleaned.slice(0, 4)} ${cleaned.slice(4)}`;
+    }
+    // Formato por defecto para casos no contemplados
+    else {
+      return `+56 9 ${phone}`;
+    }
+  };
 
   return (
     <div style={{ 
@@ -99,7 +102,7 @@ const formatPhone = (phone: string | undefined) => {
       minHeight: '100vh'
     }}>
       
-      {/* Elementos animados de fondo */}
+      {/* Elementos animados de fondo con colores Crazy Family */}
       <div
         style={{
           position: "fixed",
@@ -155,7 +158,7 @@ const formatPhone = (phone: string | undefined) => {
         }}
       />
 
-      {/* Partículas flotantes */}
+      {/* Partículas flotantes con colores Crazy Family */}
       <div
         style={{
           position: "fixed",
@@ -201,10 +204,11 @@ const formatPhone = (phone: string | undefined) => {
 
       {/* Contenido principal con z-index mayor */}
       <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Card principal con gradiente azul de Crazy Family */}
         <Card 
           style={{ 
             marginBottom: '24px',
-            background: 'linear-gradient(135deg,rgb(100, 27, 152) 0%,rgb(208, 142, 255) 100%)',
+            background: `linear-gradient(135deg, ${brandColors.primary} 0%, ${brandColors.primaryDark} 100%)`,
             border: 'none',
             borderRadius: '16px'
           }}
@@ -215,7 +219,7 @@ const formatPhone = (phone: string | undefined) => {
               size={120} 
               style={{ 
                 backgroundColor: "#fff", 
-                color: "#000",
+                color: brandColors.primary,
                 fontSize: '48px',
                 fontWeight: 'bold',
                 marginBottom: '16px',
@@ -249,15 +253,16 @@ const formatPhone = (phone: string | undefined) => {
         <Card 
           title={
             <div style={{ display: 'flex', alignItems: 'center' }}>
-              <UserOutlined style={{ marginRight: '8px', color: '#1e8449' }} />
-              Información Personal
+              <UserOutlined style={{ marginRight: '8px', color: brandColors.primary }} />
+              <span style={{ color: brandColors.primary }}>Información Personal</span>
             </div>
           }
           style={{ 
             borderRadius: '16px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
             background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(10px)'
+            backdropFilter: 'blur(10px)',
+            border: `1px solid ${brandColors.lightBlue}`
           }}
           extra={
             <Button 
@@ -266,8 +271,9 @@ const formatPhone = (phone: string | undefined) => {
               onClick={() => navigate("/sync/perfil/editar")}
               style={{ 
                 borderRadius: '8px',
-                background: 'linear-gradient(135deg, #145a32  0%, #1e8449 100%)',
-                border: 'none'
+                backgroundColor: brandColors.success,
+                borderColor: brandColors.success,
+                boxShadow: '0 2px 8px rgba(40, 167, 69, 0.3)'
               }}
             >
               Editar Perfil
@@ -276,10 +282,15 @@ const formatPhone = (phone: string | undefined) => {
         >
           <Row gutter={[24, 24]}>
             <Col xs={24} sm={12}>
-              <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
+              <div style={{ 
+                padding: '16px', 
+                background: brandColors.lightBlue, 
+                borderRadius: '12px',
+                border: `1px solid ${brandColors.primary}20`
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <UserOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
-                  <Text strong style={{ color: '#666' }}>Nombre Completo</Text>
+                  <UserOutlined style={{ color: brandColors.primary, marginRight: '8px' }} />
+                  <Text strong style={{ color: brandColors.primaryDark }}>Nombre Completo</Text>
                 </div>
                 <Text style={{ fontSize: '16px', color: '#333' }}>
                   {usuario?.nombre} {usuario?.apellidos}
@@ -288,10 +299,15 @@ const formatPhone = (phone: string | undefined) => {
             </Col>
 
             <Col xs={24} sm={12}>
-              <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
+              <div style={{ 
+                padding: '16px', 
+                background: brandColors.lightBlue, 
+                borderRadius: '12px',
+                border: `1px solid ${brandColors.primary}20`
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <MailOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
-                  <Text strong style={{ color: '#666' }}>Correo Electrónico</Text>
+                  <MailOutlined style={{ color: brandColors.primary, marginRight: '8px' }} />
+                  <Text strong style={{ color: brandColors.primaryDark }}>Correo Electrónico</Text>
                 </div>
                 <Text style={{ fontSize: '16px', color: '#333' }}>
                   {usuario?.email}
@@ -300,10 +316,15 @@ const formatPhone = (phone: string | undefined) => {
             </Col>
 
             <Col xs={24} sm={12}>
-              <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
+              <div style={{ 
+                padding: '16px', 
+                background: brandColors.lightBlue, 
+                borderRadius: '12px',
+                border: `1px solid ${brandColors.primary}20`
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <PhoneOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
-                  <Text strong style={{ color: '#666' }}>Teléfono</Text>
+                  <PhoneOutlined style={{ color: brandColors.primary, marginRight: '8px' }} />
+                  <Text strong style={{ color: brandColors.primaryDark }}>Teléfono</Text>
                 </div>
                 <Text style={{ fontSize: '16px', color: '#333' }}>
                   {formatPhone(usuario?.telefono)}
@@ -312,10 +333,15 @@ const formatPhone = (phone: string | undefined) => {
             </Col>
 
             <Col xs={24} sm={12}>
-              <div style={{ padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
+              <div style={{ 
+                padding: '16px', 
+                background: brandColors.lightBlue, 
+                borderRadius: '12px',
+                border: `1px solid ${brandColors.primary}20`
+              }}>
                 <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px' }}>
-                  <CrownOutlined style={{ color: '#8b0000', marginRight: '8px' }} />
-                  <Text strong style={{ color: '#666' }}>Rol del Sistema</Text>
+                  <CrownOutlined style={{ color: brandColors.primary, marginRight: '8px' }} />
+                  <Text strong style={{ color: brandColors.primaryDark }}>Rol del Sistema</Text>
                 </div>
                 <Tag 
                   color={getRoleColor(usuario?.role)}
@@ -331,7 +357,7 @@ const formatPhone = (phone: string | undefined) => {
             </Col>
           </Row>
 
-          <Divider style={{ margin: '32px 0' }} />
+          <Divider style={{ margin: '32px 0', borderColor: brandColors.primary }} />
 
           <div style={{ textAlign: 'center' }}>
             <Space size="large">
@@ -339,7 +365,9 @@ const formatPhone = (phone: string | undefined) => {
                 size="large"
                 style={{ 
                   borderRadius: '8px',
-                  minWidth: '120px'
+                  minWidth: '120px',
+                  borderColor: brandColors.primary,
+                  color: brandColors.primary
                 }}
                 onClick={() => navigate("/sync/configuracion")}
               >
