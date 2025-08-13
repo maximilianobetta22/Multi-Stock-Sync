@@ -7,7 +7,6 @@ import { Button, Avatar, Dropdown, Space } from "antd"
 import { UserOutlined, LogoutOutlined, SettingOutlined } from "@ant-design/icons"
 import type { MenuProps } from "antd"
 
-
 const Navbar = () => {
   const userContext = useContext(UserContext)
   if (!userContext) {
@@ -57,6 +56,52 @@ const Navbar = () => {
     zIndex: 1000,
     padding: "0",
     height: "70px",
+    overflow: "hidden", // Para contener los puntos
+  }
+
+  const dotsContainerStyle: React.CSSProperties = {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    opacity: 0.1,
+    pointerEvents: "none",
+    zIndex: 1,
+  }
+
+  const dotStyle: React.CSSProperties = {
+    position: "absolute",
+    width: "3px",
+    height: "3px",
+    backgroundColor: "white",
+    borderRadius: "50%",
+  }
+
+  // Generar posiciones aleatorias para los puntos
+  const generateDots = () => {
+    const dots = []
+    const numberOfDots = 40 // Reducido para que sea más sutil
+    
+    for (let i = 0; i < numberOfDots; i++) {
+      const left = Math.random() * 100
+      const top = Math.random() * 100
+      const delay = Math.random() * 4
+      
+      dots.push(
+        <div
+          key={i}
+          style={{
+            ...dotStyle,
+            left: `${left}%`,
+            top: `${top}%`,
+            animationDelay: `${delay}s`,
+          }}
+          className="navbar-dot"
+        />
+      )
+    }
+    return dots
   }
 
   const containerStyle: React.CSSProperties = {
@@ -68,6 +113,8 @@ const Navbar = () => {
     maxWidth: "1400px",
     margin: "0 auto",
     width: "100%",
+    position: "relative",
+    zIndex: 2, // Por encima de los puntos
   }
 
   const logoContainerStyle: React.CSSProperties = {
@@ -126,6 +173,11 @@ const Navbar = () => {
 
   return (
     <nav style={navbarStyle}>
+      {/* Contenedor de puntos decorativos */}
+      <div style={dotsContainerStyle}>
+        {generateDots()}
+      </div>
+
       <div style={containerStyle}>
         {/* Logo Section */}
         <Link to="/sync/home" style={{ textDecoration: "none" }}>
@@ -227,8 +279,23 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Responsive Styles */}
+      {/* Responsive Styles + Animación de puntos */}
       <style>{`
+        @keyframes navbar-twinkle {
+          0%, 100% { 
+            opacity: 0.1; 
+            transform: scale(1); 
+          }
+          50% { 
+            opacity: 0.3; 
+            transform: scale(1.5); 
+          }
+        }
+        
+        .navbar-dot {
+          animation: navbar-twinkle 4s infinite ease-in-out;
+        }
+        
         @media (min-width: 768px) {
           .brand-text {
             display: block !important;
@@ -251,4 +318,4 @@ const Navbar = () => {
   )
 }
 
-export default Navbar;
+export default Navbar
