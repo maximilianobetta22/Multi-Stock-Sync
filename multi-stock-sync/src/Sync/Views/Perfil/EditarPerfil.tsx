@@ -277,7 +277,6 @@ console.log(userContext)
                   }}
                   placeholder="Ej: +56 9 1234 5678"
                   maxLength={15}
-                  showCount
                 />
               </Form.Item>
             </Col>

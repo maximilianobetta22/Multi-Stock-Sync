@@ -325,7 +325,7 @@ const Register: React.FC = () => {
                           <Input.Password
                             size="large"
                             prefix={<LockOutlined style={{ color: brand.primary }} />}
-                            placeholder="Confirmar"
+                            placeholder="Confirmar Contraseña"
                             value={passwordConfirmation}
                             onChange={(e) => setPasswordConfirmation(e.target.value)}
                             required
