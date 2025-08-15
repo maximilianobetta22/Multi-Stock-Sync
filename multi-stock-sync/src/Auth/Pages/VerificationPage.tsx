@@ -497,7 +497,7 @@ export default function VerificationPage() {
           }}
         >
           <Text style={{ fontSize: '13px', color: '#666' }}>
-            💡 Consejo: Revisa también tu carpeta de spam o correo no deseado
+             Consejo: Revisa también tu carpeta de spam o correo no deseado
           </Text>
         </div>
       </Card>
