@@ -6,6 +6,8 @@ import EditarProducto from "../Views/components/EditarProducto"; // ✅ faltaba
 import MercadoLibreCategorySelector from "../Views/components/MercadoLibreCategorySelector";
 import WooCommerceProductsList from "../Views/components/WooCommerceProductsList";
 import Pagina404 from "../../Error/Pagina404";
+import EditarMasivo from "../Views/components/EditarMasivo";
+import WooCommerceMassiveEdit from "../Views/components/WooCommerceMassiveEdit";
 
 const RouterProducto = () => {
   return (
@@ -16,6 +18,8 @@ const RouterProducto = () => {
       <Route path="/plantillas-mercadolibre" element={<MercadoLibreCategorySelector />} />
       <Route path="/woocommerce" element={<WooCommerceProductsList />} />
       <Route path="/editar" element={<EditarProducto />} />
+      <Route path="/editar-masivo" element={<EditarMasivo />} />
+      <Route path="/editar-masivo-woocomerce" element={<WooCommerceMassiveEdit />} />
       <Route path="*" element={<Pagina404 />} />
     </Routes>
   );
