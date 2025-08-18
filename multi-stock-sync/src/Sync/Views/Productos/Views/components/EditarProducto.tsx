@@ -75,7 +75,7 @@ const EditarProductos = () => {
   const [productoEditando, setProductoEditando] = useState<ProductoML | null>(null);
   const [modalVisible, setModalVisible] = useState(false);
   const [pdfPreviewVisible, setPdfPreviewVisible] = useState(false);
-  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [pdfUrl] = useState<string | null>(null);
   
   // Estados para funcionalidad de duplicados
   const [duplicadosVisible, setDuplicadosVisible] = useState(false);
@@ -252,29 +252,6 @@ const EditarProductos = () => {
     XLSX.utils.book_append_sheet(wb, ws, "Productos");
     XLSX.writeFile(wb, "gestion_productos.xlsx");
     message.success("Archivo Excel exportado exitosamente");
-  };
-
-  const exportToPDF = () => {
-    if (productos.length === 0) {
-      message.warning("No hay productos para exportar.");
-      return;
-    }
-    const doc = new jsPDF();
-    doc.text("Gestión de Productos", 14, 15);
-    doc.autoTable({
-      head: [["ID", "Título", "Precio", "Stock", "Estado"]],
-      body: productos.map((p) => [
-        p.id,
-        p.title,
-        `$${p.price.toLocaleString("es-CL")}`,
-        p.available_quantity,
-        p.status
-      ]),
-      startY: 20,
-    });
-    const blob = doc.output("blob");
-    setPdfUrl(URL.createObjectURL(blob));
-    setPdfPreviewVisible(true);
   };
   
   const handleDownloadPDF = () => {

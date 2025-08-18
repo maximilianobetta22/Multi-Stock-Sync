@@ -65,6 +65,22 @@ const GestionProducto: React.FC = () => {
       color: "#f39c12",
       bgColor: "#fef9e7"
     },
+    {
+      icon: <AppstoreOutlined style={{ fontSize: 40, color: "#FFFFFF" }} />,
+      titulo: "Editor de productos masivos",
+      descripcion: "Edita productos publicados en Mercado Libre.",
+      ruta: "/sync/productos/editar-masivo",
+      color: "#ca7e04ff",
+      bgColor: "#fef9e7"
+    },
+    {
+      icon: <AppstoreOutlined style={{ fontSize: 40, color: "#FFFFFF" }} />,
+      titulo: "Editor de productos masivos",
+      descripcion: "Edita productos publicados en Woocomerce.",
+      ruta: "/sync/productos/editar-masivo-woocomerce",
+      color: "#2c60f0ff",
+      bgColor: "#fef9e7"
+    },
   ];
 
   return (
