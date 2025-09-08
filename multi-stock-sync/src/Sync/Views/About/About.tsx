@@ -49,7 +49,7 @@ const teamMembers = [
   },
   {
     name: "Kiara Rubio",
-    role: "Desarrolladora Back-end.",
+    role: "Desarrolladora FullStack.",
     img: "https://github.com/Ki4ra1109.png",
   },
   {
