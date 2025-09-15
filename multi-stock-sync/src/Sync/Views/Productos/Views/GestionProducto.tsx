@@ -65,6 +65,15 @@ const GestionProducto: React.FC = () => {
       color: "#f39c12",
       bgColor: "#fef9e7"
     },
+    {
+     icon: <FileExcelOutlined style={{ fontSize: 40, color: "#FFFFFF" }} />,
+     titulo: "Crear planilla de productos",
+     descripcion: "Agrega productos en un formulario y genera un Excel listo para exportar.",
+     ruta: "/sync/productos/planilla",
+     color: "#e67e22",   // color distintivo
+     bgColor: "#fdf3e6"
+    },
+
   ];
 
   return (
