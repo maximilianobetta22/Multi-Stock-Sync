@@ -3,10 +3,11 @@ import * as XLSX from "xlsx";
 
 export interface Product {
   id: number; // ID interno para manejo local
-  category_id: string;
+  category: string;
+  subcategory: string;
   title: string;
   sku: string;
-  attributes: Record<string, string>; // ej: { BRAND: "Marca X", GENDER: "Hombre" }
+  attributes: Record<string, any>; // atributos dinámicos según categoría
   price: number;
   currency_id: string;
   quantity: number;
@@ -26,17 +27,29 @@ export const useProductSheet = () => {
     setProducts((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const updateProduct = (id: number, field: keyof Product, value: any) => {
-    setProducts((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, [field]: value } : p))
-    );
-  };
-
   const getTotal = () =>
     products.reduce((sum, p) => sum + p.price * p.quantity, 0);
 
   const exportToExcel = () => {
-    const data = products.map(({ id, ...p }) => p); // eliminamos ID local
+    const data = products.map(({ id, attributes, images, ...p }) => {
+      const attrWithUnits: Record<string, any> = {};
+
+      Object.keys(attributes).forEach((key) => {
+        // Si es peso, le agregamos " KG"
+        if (key.toLowerCase() === "peso") {
+          attrWithUnits[key] = `${attributes[key]} `;
+        } else {
+          attrWithUnits[key] = attributes[key];
+        }
+      });
+
+      return {
+        ...p,
+        images: images.join(", "), // unimos URLs en una sola celda
+        ...attrWithUnits,
+      };
+    });
+
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Productos");
@@ -47,9 +60,7 @@ export const useProductSheet = () => {
     products,
     addProduct,
     removeProduct,
-    updateProduct,
     getTotal,
     exportToExcel,
   };
 };
-
