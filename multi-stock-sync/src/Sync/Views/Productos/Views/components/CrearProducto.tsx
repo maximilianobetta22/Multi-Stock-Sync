@@ -18,6 +18,7 @@ import {
 } from "antd"
 import { PlusOutlined, DeleteOutlined, InfoCircleOutlined, UploadOutlined } from "@ant-design/icons"
 import { useCrearProducto } from "../hook/useCrearProducto"
+import { useState, useMemo } from "react"
 
 const { Title } = Typography
 const { TextArea } = Input
@@ -117,10 +118,23 @@ const CrearProducto: React.FC = () => {
 
   const sizeGridRequired = sizeGridAttr && (sizeGridAttr.tags?.required || sizeGridAttr.tags?.catalog_required) 
 
+  const [taxPercent, setTaxPercent] = useState<number>(0)
+  const [marginPercent, setMarginPercent] = useState<number>(0)
+  const [discountPercent, setDiscountPercent] = useState<number>(0)
+  const [basePrice, setBasePrice] = useState<number>(0)
+
+  // Calcula el precio final en tiempo real
+  const finalPrice = useMemo(() => {
+    let price = basePrice
+    price += price * (taxPercent / 100)
+    price += price * (marginPercent / 100)
+    price -= price * (discountPercent / 100)
+    return Math.max(0, Math.round(price))
+  }, [basePrice, taxPercent, marginPercent, discountPercent])
+
   return (
     <Card style={{ maxWidth: 900, margin: "0 auto" }}>
       <Title level={3}>Subir Producto a Mercado Libre</Title>
-
       <Form layout="vertical" form={form} onFinish={onFinish}>
         {!catalogProductId && (
           <Form.Item name="title" label="Título" rules={[{ required: true }]} help={''} status="" hasFeedback={false} validateTrigger="none">
@@ -196,16 +210,70 @@ const CrearProducto: React.FC = () => {
 
         <Row gutter={16}>
           <Col span={12}>
-            <Form.Item name="price" label="Precio" rules={[{ required: true }]} help={''}  status=""  hasFeedback={false} validateTrigger="none"> 
-              <InputNumber min={0} style={{ width: "100%" }} />
+            <Form.Item name="price" label="Precio base" rules={[{ required: true }]} help={''} status="" hasFeedback={false} validateTrigger="none">
+              <InputNumber
+                min={0}
+                style={{ width: "100%" }}
+                value={basePrice}
+                onChange={(v) => setBasePrice(v || 0)}
+              />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item name="currency_id" label="Moneda" rules={[{ required: true }]} help={''}  status=""  hasFeedback={false} validateTrigger="none">
+            <Form.Item name="currency_id" label="Moneda" rules={[{ required: true }]} help={''} status="" hasFeedback={false} validateTrigger="none">
               <Select>
                 <Select.Option value="CLP">CLP</Select.Option>
                 <Select.Option value="USD">USD</Select.Option>
               </Select>
+            </Form.Item>
+          </Col>
+        </Row>
+
+        {/* NUEVOS CAMPOS DE CÁLCULO */}
+        <Row gutter={16}>
+          <Col span={8}>
+            <Form.Item label="Impuesto (%)">
+              <InputNumber
+                min={0}
+                max={100}
+                value={taxPercent}
+                onChange={(v) => setTaxPercent(v || 0)}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item label="Margen (%)">
+              <InputNumber
+                min={0}
+                max={100}
+                value={marginPercent}
+                onChange={(v) => setMarginPercent(v || 0)}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+          </Col>
+          <Col span={8}>
+            <Form.Item label="Descuento (%)">
+              <InputNumber
+                min={0}
+                max={100}
+                value={discountPercent}
+                onChange={(v) => setDiscountPercent(v || 0)}
+                style={{ width: "100%" }}
+              />
+            </Form.Item>
+          </Col>
+        </Row>
+        <Row gutter={16}>
+          <Col span={12}>
+            <Form.Item label="Precio final calculado">
+              <InputNumber
+                value={finalPrice}
+                readOnly
+                style={{ width: "100%", background: "#f6ffed" }}
+                formatter={v => `$ ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+              />
             </Form.Item>
           </Col>
         </Row>
