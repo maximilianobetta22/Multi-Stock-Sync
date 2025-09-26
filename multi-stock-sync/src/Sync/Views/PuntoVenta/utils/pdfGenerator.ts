@@ -1,6 +1,8 @@
+// PuntoVenta/utils/pdfGenerator.ts
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import bwipjs from 'bwip-js';
+
+// Importar interfaces necesarias
 import { VentaResponse } from '../Types/ventaTypes';
 import { ClienteAPI } from '../Hooks/ClientesVenta';
 
@@ -13,186 +15,132 @@ interface ParsedSaleItem {
     total: number;
 }
 
-export const generateSaleDocumentPdf = async (
+/**
+ * Genera un PDF de Boleta o Factura para una venta con diseño mejorado.
+ * Utiliza los datos completos de VentaResponse y ClienteAPI.
+ * @param sale - Los datos completos de la venta (VentaResponse).
+ * @param documentType - El tipo de documento a generar ('boleta' o 'factura').
+ * @param cliente - Los datos del cliente asociado (ClienteAPI | undefined).
+ * @param items - Los ítems de la venta parseados (ParsedSaleItem[]).
+ * @param facturaData - Datos adicionales para facturas (razonSocial, rut).
+ * @returns Una Promise que resuelve con un Blob que contiene el PDF generado.
+ */
+export const generateSaleDocumentPdf = async ( 
     sale: VentaResponse,
     documentType: 'boleta' | 'factura',
     cliente: ClienteAPI | undefined,
     items: ParsedSaleItem[],
     facturaData?: { razonSocial: string; rut: string }
-): Promise<Blob> => {
+): Promise<Blob> => { // Especificar que devuelve una Promise<Blob>
     const doc = new jsPDF('p', 'pt', 'a4');
-    const pageWidth = doc.internal.pageSize.getWidth();
-    const pageHeight = doc.internal.pageSize.getHeight();
+
+    if (documentType === 'factura' && facturaData) {
+        console.log('Generando factura con datos:', facturaData);
+        // Puedes usar facturaData para agregar información al PDF
+        doc.setFontSize(10);
+        doc.text(`Razón Social: ${facturaData.razonSocial}`, 40, 100);
+        doc.text(`RUT: ${facturaData.rut}`, 40, 120);
+    }
+
     const margin = 40;
-    let y = margin;
+    let y = margin; // Start Y position below top margin
+    const lineHeight = 16;
+    const largeLineHeight = 20;
+    const pageHeight = doc.internal.pageSize.getHeight();
+    const pageWidth = doc.internal.pageSize.getWidth();
 
-    // --- BOLETA SII COMPACTA ---
-  if (documentType === 'boleta') {
-        // Caja principal
-        const boxWidth = 340;
-        const boxX = (pageWidth - boxWidth) / 2;
-        let boxY = y;
-        doc.setDrawColor(0);
-        doc.setLineWidth(1.2);
-        doc.rect(boxX, boxY, boxWidth, 90);
+    const drawLine = (startY: number, length: number = pageWidth - 2 * margin, startX: number = margin) => {
+        doc.line(startX, startY, startX + length, startY);
+    };
 
-        let yBox = boxY + 22;
-        doc.setFontSize(12);
+    // --- Cabecera del documento ---
+
+    // Bloque de Información de la Empresa (Izquierda)
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.text('COMERCIALIZADORA OFERTAS IMPERDIBLES SPA.', margin, y);
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    y += lineHeight;
+    doc.text(`RUT: [77913512-8]`, margin, y);
+    y += lineHeight;
+    doc.text(`Dirección: [JOSE JOAQUÍN PRIETO 6242]`, margin, y);
+    y += lineHeight;
+    doc.text(`Comuna: [San Miguel] - Región: [Metropolitana]`, margin, y);
+    y += lineHeight;
+    doc.text(`Teléfono: [+56 9 7702 2449]`, margin, y);
+    y += lineHeight;
+    doc.text(`Email: [ventas@ofertasimperdibles.cl]`, margin, y);
+    // y is now after the company info block
+
+    // Bloque de Título del Documento y Folio (Derecha)
+    const docTitle = documentType === 'boleta' ? 'BOLETA ELECTRÓNICA' : 'FACTURA ELECTRÓNICA';
+    doc.setFontSize(16);
+    doc.setFont('helvetica', 'bold');
+    // Positioned relative to top-right margin, independent of 'y' flow on the left
+    doc.text(docTitle, pageWidth - margin, margin, { align: 'right' });
+
+    // Folio del documento (Debajo del título, a la derecha)
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`N° ${sale.id}`, pageWidth - margin, margin + largeLineHeight * 0.8, { align: 'right' });
+
+
+    // Advance y to be below the lowest element in the header section
+    y = Math.max(y, margin + largeLineHeight * 2); // Ensure y is at least below the right-aligned title block
+    drawLine(y); // Line after header
+    y += largeLineHeight;
+
+
+    // --- Detalles de la Venta y Cliente ---
+
+    // Detalles de la Venta (Fecha)
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Fecha Emisión:', margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${sale.created_at ? new Date(sale.created_at).toLocaleDateString() : 'N/A'}`, margin + 90, y);
+    y += lineHeight * 1.5;
+
+
+    // Detalles del Cliente (Usando datos de ClienteAPI)
+    doc.setFont('helvetica', 'bold');
+    doc.text('Detalles del Cliente:', margin, y);
+    y += largeLineHeight;
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+
+    const clientName = cliente?.nombres && cliente?.apellidos
+        ? `${cliente.nombres} ${cliente.apellidos}`
+        : (cliente?.razon_social || 'N/A');
+    const clientIdentifierLabel = documentType === 'factura' ? 'Razón Social:' : 'Nombre:';
+    const clientIdentifierValue = documentType === 'factura' ? cliente?.razon_social || 'N/A' : clientName;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text(clientIdentifierLabel, margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${clientIdentifierValue}`, margin + 90, y);
+    y += lineHeight;
+
+    doc.setFont('helvetica', 'bold');
+    doc.text('RUT:', margin, y);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${cliente?.rut || 'N/A'}`, margin + 90, y);
+    y += lineHeight;
+
+    if (cliente?.direccion || cliente?.comuna || cliente?.ciudad || cliente?.region) {
         doc.setFont('helvetica', 'bold');
-        doc.text('R.U.T.: 77913512-8', boxX + boxWidth / 2, yBox, { align: 'center' });
-        yBox += 18;
-        doc.text('BOLETA ELECTRÓNICA', boxX + boxWidth / 2, yBox, { align: 'center' });
-        yBox += 18;
-        doc.setFontSize(11);
-        doc.text(`N° ${sale.id}`, boxX + boxWidth / 2, yBox, { align: 'center' });
-
-        // --- SII, ciudad, fecha ---
-        y = boxY + 100;
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'bold');
-        doc.text('S.I.I. - SANTIAGO', pageWidth / 2, y, { align: 'center' });
-        y += 14;
+        doc.text('Dirección:', margin, y);
         doc.setFont('helvetica', 'normal');
-        doc.text(`Emisión : ${sale.created_at ? new Date(sale.created_at).toLocaleDateString('es-CL') : 'N/A'}`, pageWidth / 2, y, { align: 'center' });
+        const fullAddress = `${cliente.direccion || ''}${cliente.direccion && (cliente.comuna || cliente.ciudad || cliente.region) ? ', ' : ''}${cliente.comuna || ''}${cliente.comuna && (cliente.ciudad || cliente.region) ? ', ' : ''}${cliente.ciudad || ''}${cliente.ciudad && cliente.region ? ', ' : ''}${cliente.region || ''}`;
+        doc.text(fullAddress || 'N/A', margin + 90, y);
+        y += lineHeight;
+    }
 
-        // --- Empresa y cliente ---
-        y += 18;
-        doc.setFontSize(10);
+    if (documentType === 'factura' && cliente?.giro) {
         doc.setFont('helvetica', 'bold');
-        doc.text('COMERCIALIZADORA OFERTAS IMPERDIBLES SPA.', pageWidth / 2, y, { align: 'center' });
-        y += 13;
-        doc.setFont('helvetica', 'normal');
-        doc.text('GIRO: VENTA AL POR MENOR', pageWidth / 2, y, { align: 'center' });
-        y += 13;
-        doc.text('DIRECCIÓN: JOSE JOAQUÍN PRIETO 6242, San Miguel, Metropolitana', pageWidth / 2, y, { align: 'center' });
-        y += 13;
-        doc.text('TELÉFONO: +56 9 7702 2449', pageWidth / 2, y, { align: 'center' });
-
-        // --- Tabla productos centrada ---
-        y += 18;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(10);
-        // Usar boxX como base para centrar columnas
-        doc.text('Item', boxX + 10, y);
-        doc.text('P. unitario', boxX + 120, y);
-        doc.text('Cant.', boxX + 210, y);
-        doc.text('Total item', boxX + 280, y);
-
-        y += 8;
-        doc.setDrawColor(0);
-        doc.setLineWidth(0.5);
-        doc.line(boxX + 10, y, boxX + boxWidth - 10, y);
-
-        doc.setFont('helvetica', 'normal');
-        doc.setFontSize(10);
-        y += 15;
-        items.forEach((item) => {
-            doc.text(item.nombre, boxX + 10, y);
-            doc.text(`${Number(item.precioUnitario).toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, boxX + 120, y, { align: 'left' });
-            doc.text(`${item.cantidad}`, boxX + 210, y, { align: 'left' });
-            doc.text(`${Number(item.total).toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, boxX + 280, y, { align: 'left' });
-            y += 15;
-        });
-
-        // --- Total centrado (solo sale.price_final, no suma de la tabla) ---
-        y += 8;
-        doc.setDrawColor(0);
-        doc.setLineWidth(0.5);
-        doc.line(boxX + 10, y, boxX + boxWidth - 10, y);
-
-        y += 18;
-        doc.setFont('helvetica', 'bold');
-        doc.setFontSize(12);
-        doc.text(`Total $ : ${Number(sale.price_final ?? 0).toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth / 2, y, { align: 'center' });
-
-        // --- Código PDF417 ---
-        y += 30;
-        try {
-            const dataForPdf417 = `RUT_EMPRESA=77913512-8|FOLIO=${sale.id}|FECHA=${sale.created_at ? new Date(sale.created_at).toISOString().split('T')[0] : ''}|MONTO=${sale.price_final ?? 0}`;
-            const canvas = document.createElement('canvas');
-            bwipjs.toCanvas(canvas, {
-                bcid: 'pdf417',
-                text: dataForPdf417,
-                scale: 2,
-                height: 20,
-                includetext: false
-            });
-            const pdf417DataUrl = canvas.toDataURL('image/png');
-            const pdf417Height = 70;
-            const pdf417Width = 300;
-            doc.addImage(
-                pdf417DataUrl,
-                'PNG',
-                (pageWidth - pdf417Width) / 2,
-                y,
-                pdf417Width,
-                pdf417Height
-            );
-            y += pdf417Height + 10;
-        } catch (error) {
-            console.error("Error al generar el código PDF417:", error);
-        }
-
-        // --- Timbre y resolución ---
-        doc.setFontSize(9);
-        doc.setFont('helvetica', 'normal');
-        doc.text('Timbre Electrónico SII', pageWidth / 2, y, { align: 'center' });
-        y += 12;
-        doc.text('Resolución 0 de 2019', pageWidth / 2, y, { align: 'center' });
-        y += 12;
-        doc.text('Verifique documento: desarrollo.libredte.cl/boletas', pageWidth / 2, y, { align: 'center' });
-
-    } else {
-        // --- FACTURA ESTILO SII ---
-        // Caja principal
-        const boxWidth = pageWidth - margin * 2;
-        let yBox = margin;
-        doc.setDrawColor(0);
-        doc.setLineWidth(1.2);
-        doc.rect(margin, yBox, boxWidth, pageHeight - margin * 2);
-
-        // Encabezado superior derecho (RUT, tipo, folio)
-        doc.setDrawColor(0);
-        doc.setLineWidth(1.2);
-        doc.rect(pageWidth - margin - 180, yBox, 180, 70);
-
-        doc.setFontSize(11);
-        doc.setFont('helvetica', 'bold');
-        doc.setTextColor(200, 0, 0);
-        doc.text('R.U.T.: 77913512-8', pageWidth - margin - 90, yBox + 18, { align: 'center' });
-        doc.text('FACTURA ELECTRONICA', pageWidth - margin - 90, yBox + 36, { align: 'center' });
-        doc.text(`N° ${sale.id}`, pageWidth - margin - 90, yBox + 54, { align: 'center' });
-        doc.setTextColor(0, 0, 0);
-
-        // Logo y datos empresa
-        doc.setFontSize(13);
-        doc.setFont('helvetica', 'bold');
-        doc.text('COMERCIALIZADORA OFERTAS IMPERDIBLES SPA.', margin, yBox + 18);
-        doc.setFontSize(10);
-        doc.setFont('helvetica', 'normal');
-        doc.text('GIRO: VENTA AL POR MENOR', margin, yBox + 34);
-        doc.text('DIRECCIÓN: JOSE JOAQUÍN PRIETO 6242, San Miguel, Metropolitana', margin, yBox + 48);
-        doc.text('TELÉFONO: +56 9 7702 2449', margin, yBox + 62);
-
-        // Datos cliente
-        let yCliente = yBox + 80;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Señores:', margin, yCliente);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${facturaData?.razonSocial || cliente?.razon_social || ''}`, margin + 70, yCliente);
-        yCliente += 14;
-        doc.setFont('helvetica', 'bold');
-        doc.text('RUT:', margin, yCliente);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${facturaData?.rut || cliente?.rut || ''}`, margin + 70, yCliente);
-        yCliente += 14;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Giro:', margin, yCliente);
-        doc.setFont('helvetica', 'normal');
-        doc.text(`${cliente?.giro || ''}`, margin + 70, yCliente);
-        yCliente += 14;
-        doc.setFont('helvetica', 'bold');
-        doc.text('Dirección:', margin, yCliente);
+        doc.text('Giro:', margin, y);
         doc.setFont('helvetica', 'normal');
         const dir = [cliente?.direccion, cliente?.comuna, cliente?.ciudad, cliente?.region].filter(Boolean).join(', ');
         doc.text(dir, margin + 70, yCliente);
@@ -272,6 +220,87 @@ export const generateSaleDocumentPdf = async (
         doc.setFontSize(12);
         doc.text('TOTAL $', pageWidth - margin - 120, yTotales, { align: 'left' });
         doc.text(`$${total.toLocaleString('es-CL', { minimumFractionDigits: 0 })}`, pageWidth - margin, yTotales, { align: 'right' });
+        doc.text(`${cliente.giro}`, margin + 90, y);
+        y += lineHeight;
+    }
+
+    y += largeLineHeight;
+
+    drawLine(y); 
+    y += lineHeight;
+
+
+    // --- Tabla de Ítems ---
+    const tableColumns = [
+        { header: 'Producto', dataKey: 'nombre' },
+        { header: 'Cantidad', dataKey: 'cantidad' },
+        { header: 'P. Unitario', dataKey: 'precioUnitario' },
+        { header: 'Total', dataKey: 'total' },
+    ];
+
+    const tableRows = items.map(item => ({
+        nombre: item.nombre,
+        cantidad: item.cantidad,
+        precioUnitario: item.precioUnitario,
+        total: item.total,
+    }));
+
+    const autoTableOptions: any = {
+        startY: y,
+        theme: 'grid',
+        styles: {
+            overflow: 'linebreak',
+            fontSize: 9,
+            cellPadding: 6,
+            lineColor: [0, 0, 0],
+            lineWidth: 0.5
+        },
+        headStyles: {
+            fillColor: [230, 230, 230],
+            textColor: [0, 0, 0],
+            fontStyle: 'bold',
+            halign: 'center',
+            valign: 'middle'
+        },
+        margin: { top: margin, right: margin, bottom: margin, left: margin },
+        columnStyles: {
+            cantidad: { halign: 'right', cellWidth: 60 },
+            precioUnitario: { halign: 'right', cellWidth: 80, format: (value: number) => `$${value?.toFixed(2).replace(/\.00$/, '') || '0'}` },
+            total: { halign: 'right', cellWidth: 80, format: (value: number) => `$${value?.toFixed(2).replace(/\.00$/, '') || '0'}` },
+            nombre: { cellWidth: 'auto' }
+        },
+        bodyStyles: {
+            halign: 'left',
+            fontSize: 9,
+        },
+        didDrawPage: (data: any) => {
+            doc.setFontSize(8);
+            doc.setFont('helvetica', 'normal');
+            const pageNumber = data.pageNumber;
+            const footerY = pageHeight - margin / 2;
+            doc.text('[Resolución Exenta N°11  / Comercializadora SPA]', margin, footerY); // TODO: Añadir info real
+            doc.text(`Página ${pageNumber}`, pageWidth - margin, footerY, { align: 'right' });
+        },
+    };
+
+
+    (doc as any).autoTable(tableColumns, tableRows, autoTableOptions);
+    y = (doc as any).autoTable.previous.finalY || y;
+
+
+    let yAfterTable = y + largeLineHeight;
+
+
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Subtotal:`, pageWidth - margin - 100, yAfterTable, { align: 'left' });
+    doc.text(`$${sale.price_subtotal?.toFixed(2).replace(/\.00$/, '') || '0'}`, pageWidth - margin, yAfterTable, { align: 'right' });
+    yAfterTable += lineHeight;
+
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text(`TOTAL:`, pageWidth - margin - 100, yAfterTable + lineHeight * 0.5, { align: 'left' });
+    doc.text(`$${sale.price_final?.toFixed(2).replace(/\.00$/, '') || '0'}`, pageWidth - margin, yAfterTable + lineHeight * 0.5, { align: 'right' });
 
         // Código PDF417
         let yCode = yTotales + 30;
@@ -305,7 +334,17 @@ export const generateSaleDocumentPdf = async (
 
         // Timbre y resolución
         const centerX = margin + (boxWidth / 2);
+
+    y = yAfterTable + largeLineHeight;
+
+
+    // --- Observaciones ---
+
+    if (sale.observation) {
         doc.setFontSize(9);
+        doc.setFont('helvetica', 'italic');
+        
+        doc.text('Observaciones:', margin, y);
         doc.setFont('helvetica', 'normal');
         doc.text('Timbre Electrónico SII', centerX, yCode, { align: 'center' });
         yCode += 12;
@@ -315,6 +354,21 @@ export const generateSaleDocumentPdf = async (
         const boxBottom = pageHeight - margin;
         let yPie = boxBottom - 80; 
 
+        const observationText = doc.splitTextToSize(sale.observation, pageWidth - 2 * margin - 100); 
+    
+        doc.text(observationText, margin + 90, y);
+
+        y += lineHeight * observationText.length + largeLineHeight;
+    } else {
+      
+    }
+
+
+    // --- Sección de Firma / Sello (Opcional) ---
+    let ySignature = y + largeLineHeight;
+   
+    if (ySignature < pageHeight - margin - largeLineHeight * 3) {
+        drawLine(ySignature, 150, pageWidth - margin - 150); 
         doc.setFontSize(8);
         doc.text('NOMBRE: ______________________   R.U.T.: _______________   FECHA: ___________   RECINTO: ___________', margin, yPie);
        
@@ -325,10 +379,18 @@ export const generateSaleDocumentPdf = async (
         doc.setTextColor(200, 0, 0);
         doc.text('CEDIBLE', pageWidth - 10, pageHeight - 10, { align: 'right' });
         doc.setTextColor(0, 0, 0);
+        doc.setFont('helvetica', 'normal');
+        doc.text('Firma y Sello Autorizado', pageWidth - margin - 150 + 75, ySignature + lineHeight, { align: 'center' }); 
+      
+        y = ySignature + largeLineHeight * 2;
+    } else {
+        // aca deberia ir else por lo de la firma pero no esta hecho xdd
     }
 
-    // --- Descargar y retornar Blob ---
+    // Generar el Blob y retornarlo
     const pdfBlob = doc.output('blob');
+
+    // Opcional: Si quieres que también se descargue automáticamente AL MISMO TIEMPO que se sube:
     const fileName = `${documentType.toUpperCase()}_${sale.id}_${sale.created_at ? new Date(sale.created_at).toLocaleDateString().replace(/\//g, '-') : 'sin-fecha'}.pdf`;
     const url = window.URL.createObjectURL(pdfBlob);
     const link = document.createElement('a');
@@ -336,8 +398,9 @@ export const generateSaleDocumentPdf = async (
     link.setAttribute('download', fileName);
     document.body.appendChild(link);
     link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+     document.body.removeChild(link);
+     window.URL.revokeObjectURL(url);
 
-    return pdfBlob;
+
+    return pdfBlob; 
 };

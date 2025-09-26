@@ -1,888 +1,381 @@
-import type React from "react"
-import { useState, useMemo, useEffect } from "react"
-import {
-  Typography,
-  Row,
-  Col,
-  Input,
-  Button,
-  Card,
-  Spin,
-  Alert,
-  Divider,
-  Table,
-  message,
-  Radio,
-  Form,
-  Space,
-  Badge,
-  Statistic,
-  Descriptions,
-  Empty,
-  Tooltip,
-  Grid,
-} from "antd"
-import {
-  FileTextOutlined,
-  UserOutlined,
-  ShopOutlined,
-  CalendarOutlined,
-  SearchOutlined,
-  ReloadOutlined,
-  EyeOutlined,
-  CheckCircleOutlined,
-  DollarOutlined,
-} from "@ant-design/icons"
-import useObtenerListaVentasPorEmpresa from "../Hooks/useObtenerListaVentasPorEmpresa"
-import { SaleService } from "../Services/saleService"
-import { DocumentSaleService } from "../Services/documentoSaleService"
-import useClientes, { type ClienteAPI } from "../Hooks/ClientesVenta"
-import { generateSaleDocumentPdf } from "../utils/pdfGenerator"
-import type { Products, VentaResponse } from "../Types/ventaTypes"
+import React, { useState, useMemo, useEffect} from 'react';
+import { Typography, Row, Col, Input, Button, Card, Spin, Alert, Divider, Table, message, Radio, Form } from 'antd';
+import { SearchOutlined, LoadingOutlined } from '@ant-design/icons';
+import useFetchSaleById from '../Hooks/useIdVenta'; 
+import { SaleService } from '../Services/saleService'; 
+import { DocumentSaleService } from '../Services/documentoSaleService'; 
+import { ColumnsType } from 'antd/es/table';
+import useClientes from '../Hooks/ClientesVenta'; 
+import { ClienteAPI } from '../Hooks/ClientesVenta'; 
+import { generateSaleDocumentPdf } from '../utils/pdfGenerator';
 
-const { Title, Text } = Typography
-const { useBreakpoint } = Grid
 
-// Props que recibe el componente principal
+const { Title } = Typography;
+const { Search } = Input;
+
+interface ParsedSaleItem {
+    key: string;
+    id?: string | number;
+    nombre: string;
+    cantidad: number;
+    precioUnitario: number;
+    total: number;
+}
+
 interface EmitirDocumentoProps {
   companyId: string | number | null
 }
 
 const EmitirDocumento: React.FC<EmitirDocumentoProps> = ({ companyId }) => {
-  // Detecta tamaño de pantalla
-  const screens = useBreakpoint()
+    const [folioBusqueda, setFolioBusqueda] = useState('');
+    const { sale, cargandoVenta, errorVenta, fetchSale, clearSale } = useFetchSaleById(companyId);
+    const { clientes, cargandoClientes } = useClientes(); 
 
-  // Hook para obtener lista de ventas y funciones relacionadas
-  const { listaVentas, cargandoListaVentas, errorListaVentas, obtenerListaVentas, limpiarListaVentas } =
-    useObtenerListaVentasPorEmpresa(companyId)
+    const [documentType, setDocumentType] = useState<'boleta' | 'factura' | null>(null);
+    const [facturaData, setFacturaData] = useState({
+        razonSocial: '',
+        rut: '',
+    });
 
-  // Estados para filtro de búsqueda y venta seleccionada
-  const [filtroFolioCliente, setFiltroFolioCliente] = useState("")
-  const [selectedSaleId, setSelectedSaleId] = useState<string | number | null>(null)
+    const [cargandoEmision, setCargandoEmision] = useState(false);
+    const [errorEmision, setErrorEmision] = useState<string | undefined>(undefined);
+    const [cargandoSubidaPdf, setCargandoSubidaPdf] = useState(false); 
 
-  // Estados para los detalles de la venta seleccionada
-  const [selectedSaleDetails, setSelectedSaleDetails] = useState<VentaResponse | null>(null)
-  const [cargandoSelectedSale, setCargandoSelectedSale] = useState(false)
-  const [errorSelectedSale, setErrorSelectedSale] = useState<string | undefined>(undefined)
 
-  // Hook para obtener clientes
-  const { clientes, cargandoClientes } = useClientes()
+    const clienteAsociado = useMemo(() => {
+        if (sale && clientes && !cargandoClientes) {
+            // Busca el cliente por client_id de la venta
+            return clientes.find((c: ClienteAPI) => String(c.id) === String(sale.client_id));
+        }
+        return undefined;
+    }, [sale, clientes, cargandoClientes]);
 
-  // Estados para tipo de documento y datos de factura
-  const [documentType, setDocumentType] = useState<"boleta" | "factura" | null>(null)
-  const [facturaData, setFacturaData] = useState({ razonSocial: "", rut: "" })
-
-  // Estados para loading y errores al emitir/subir PDF
-  const [cargandoEmision, setCargandoEmision] = useState(false)
-  const [errorEmision, setErrorEmision] = useState<string | undefined>(undefined)
-  const [cargandoSubidaPdf, setCargandoSubidaPdf] = useState(false)
-
-  // Función para obtener detalles de la venta usando SaleService original
-  const fetchSelectedSaleDetails = async (saleId: string | number) => {
-    if (!companyId) return
-
-    setCargandoSelectedSale(true)
-    setErrorSelectedSale(undefined)
-    setSelectedSaleDetails(null)
-
-    try {
-      console.log("Fetching sale details using SaleService.getSaleById for saleId:", saleId)
-
-      // Usar el servicio original que funciona correctamente
-      const saleData = await SaleService.getSaleById(saleId, companyId)
-      console.log("SaleService.getSaleById response:", saleData)
-      console.log("Products in response:", saleData.products)
-
-      if (saleData) {
-        setSelectedSaleDetails(saleData)
-      } else {
-        throw new Error(`No se encontró la venta con ID ${saleId}`)
-      }
-    } catch (error: any) {
-      console.error("Error fetching sale details:", error)
-      setErrorSelectedSale(error.message || "Error al cargar los detalles de la venta")
-    } finally {
-      setCargandoSelectedSale(false)
-    }
-  }
-
-  // Función para limpiar la venta seleccionada
-  const clearSelectedSaleDetails = () => {
-    setSelectedSaleDetails(null)
-    setErrorSelectedSale(undefined)
-    setCargandoSelectedSale(false)
-  }
-
-  // Cuando cambia la venta seleccionada, carga sus detalles o limpia si no hay selección
-  useEffect(() => {
-    if (selectedSaleId && companyId) {
-      fetchSelectedSaleDetails(selectedSaleId)
-    } else {
-      clearSelectedSaleDetails()
-      setDocumentType(null)
-      setFacturaData({ razonSocial: "", rut: "" })
-      setCargandoEmision(false)
-      setErrorEmision(undefined)
-      setCargandoSubidaPdf(false)
-    }
-  }, [selectedSaleId, companyId])
-
-  // Busca el cliente asociado a la venta seleccionada
-  const clienteAsociado = useMemo(() => {
-    if (selectedSaleDetails && clientes && !cargandoClientes) {
-      return clientes.find((c: ClienteAPI) => String(c.id) === String(selectedSaleDetails.client_id))
-    }
-    return undefined
-  }, [selectedSaleDetails, clientes, cargandoClientes])
-
-  // Cuando se cargan los detalles de la venta, setea tipo de documento y datos de factura
-  useEffect(() => {
-    if (selectedSaleDetails) {
-      console.log("Selected sale details loaded:", selectedSaleDetails)
-      console.log("Products in selected sale:", selectedSaleDetails.products)
-
-      if (selectedSaleDetails.type_emission === "Boleta" || selectedSaleDetails.type_emission === "Factura") {
-        setDocumentType(selectedSaleDetails.type_emission === "Factura" ? "factura" : "boleta")
-      } else {
-        setDocumentType(null)
-      }
-      if (clienteAsociado) {
-        setFacturaData({
-          razonSocial: clienteAsociado.razon_social || "",
-          rut: clienteAsociado.rut || "",
-        })
-      } else {
-        setFacturaData({ razonSocial: "", rut: "" })
-      }
-      setCargandoEmision(false)
-      setErrorEmision(undefined)
-      setCargandoSubidaPdf(false)
-    } else {
-      setDocumentType(null)
-      setFacturaData({ razonSocial: "", rut: "" })
-      setCargandoEmision(false)
-      setErrorEmision(undefined)
-      setCargandoSubidaPdf(false)
-    }
-  }, [selectedSaleDetails, clienteAsociado])
-
-  // Procesa los productos de la venta seleccionada
-  const productosVenta = useMemo((): Products[] => {
-    if (selectedSaleDetails && selectedSaleDetails.products) {
-      console.log("Processing products:", selectedSaleDetails.products)
-
-      // Asegurar que los productos tengan el formato correcto
-      const productos = Array.isArray(selectedSaleDetails.products) ? selectedSaleDetails.products : []
-
-      // Convertir price_unit y subtotal de string a number si es necesario
-      return productos.map((producto) => ({
-        ...producto,
-        price_unit:
-          typeof producto.price_unit === "string" ? Number.parseFloat(producto.price_unit) : producto.price_unit,
-        subtotal: typeof producto.subtotal === "string" ? Number.parseFloat(producto.subtotal) : producto.subtotal,
-      }))
-    }
-    return []
-  }, [selectedSaleDetails])
-
-  // Convierte Products a formato para el generador de PDF (compatibilidad)
-  const itemsParaPdf = useMemo(() => {
-    return productosVenta.map((producto, index) => ({
-      key: String(producto.product_id || index),
-      id: producto.product_id,
-      nombre: producto.product_name,
-      cantidad: producto.quantity,
-      precioUnitario: producto.price_unit,
-      total: producto.subtotal,
-    }))
-  }, [productosVenta])
-
-  // Esta función se ejecuta al hacer click en "Emitir Documento"
-  const handleEmitirDocumento = async () => {
-    // Validaciones básicas antes de emitir
-    if (!selectedSaleDetails) {
-      message.error("Primero debes seleccionar y cargar una venta.")
-      return
-    }
-    if (selectedSaleDetails.status_sale === "Emitido") {
-      message.warning(`La venta ${selectedSaleDetails.id} ya ha sido emitida.`)
-      return
-    }
-    if (selectedSaleDetails.status_sale !== "Finalizado") {
-      message.warning(
-        `La venta ${selectedSaleDetails.id} no puede ser emitida en su estado actual (${selectedSaleDetails.status_sale}). Solo se pueden emitir ventas "Finalizado".`,
-      )
-      return
-    }
-    if (!documentType) {
-      message.error("Debes seleccionar el tipo de documento a emitir (Boleta o Factura).")
-      return
-    }
-    if (documentType === "factura") {
-      if (!facturaData.razonSocial || !facturaData.rut) {
-        message.error("Debes completar la Razón Social y el RUT para emitir una Factura.")
-        return
-      }
-    }
-    if (!companyId) {
-      message.error("No se pudo obtener el ID de la empresa para emitir el documento.")
-      return
-    }
-
-    setCargandoEmision(true)
-    setErrorEmision(undefined)
-    setCargandoSubidaPdf(false)
-
-    try {
-      // Marca la venta como emitida en el backend
-      await SaleService.emitSaleDocument(
-        selectedSaleDetails.id,
-        documentType,
-        documentType === "factura" ? facturaData : undefined,
-        companyId,
-        selectedSaleDetails.observation ?? null,
-      )
-      message.success(`Venta ${selectedSaleDetails.id} marcada como 'Emitido' correctamente.`)
-
-      // Genera el PDF localmente
-      const pdfBlob = await generateSaleDocumentPdf(
-        selectedSaleDetails,
-        documentType,
-        clienteAsociado,
-        itemsParaPdf,
-        documentType === "factura" ? facturaData : undefined,
-      )
-      if (!pdfBlob) {
-        throw new Error("Error al generar el archivo PDF localmente.")
-      }
-
-      // Sube el PDF al backend
-      setCargandoSubidaPdf(true)
-      await DocumentSaleService.uploadDocument(selectedSaleDetails.id, pdfBlob)
-      message.success(`PDF del documento para venta ${selectedSaleDetails.id} subido y guardado.`)
-
-      // Refresca la lista y limpia la selección
-      setSelectedSaleId(null)
-      obtenerListaVentas()
-    } catch (error: any) {
-      // Si algo falla, muestra el error
-      const errorMessage =
-        error instanceof Error ? error.message : error?.message || "Error desconocido en el proceso de emisión."
-      setErrorEmision(errorMessage)
-      message.error(errorMessage)
-    } finally {
-      setCargandoEmision(false)
-      setCargandoSubidaPdf(false)
-    }
-  }
-
-  // Calcula si el botón de emitir debe estar deshabilitado (por validaciones o loading)
-  const isEmitButtonDisabled = useMemo(() => {
-    return (
-      cargandoEmision ||
-      cargandoSubidaPdf ||
-      !selectedSaleDetails ||
-      selectedSaleDetails.status_sale === "Emitido" ||
-      selectedSaleDetails.status_sale !== "Finalizado" ||
-      !documentType ||
-      (documentType === "factura" && (!facturaData.razonSocial || !facturaData.rut))
-    )
-  }, [cargandoEmision, cargandoSubidaPdf, selectedSaleDetails, documentType, facturaData])
-
-  const ventasFiltradas = useMemo(() => {
-    if (!listaVentas) return []
-    const filtro = filtroFolioCliente.toLowerCase()
-    return listaVentas.filter((venta) => {
-      const nombreCompleto = `${venta.nombres} ${venta.apellidos}`.toLowerCase()
-      return (
-        String(venta.id_folio).toLowerCase().includes(filtro) ||
-        venta.nombres.toLowerCase().includes(filtro) ||
-        venta.apellidos.toLowerCase().includes(filtro) ||
-        nombreCompleto.includes(filtro)
-      )
-    })
-  }, [listaVentas, filtroFolioCliente])
-
-  const columnasVentas = useMemo(
-    () => [
-      {
-        title: "Folio",
-        dataIndex: "id_folio",
-        key: "id_folio",
-        render: (text: any) => (
-          <Text strong style={{ color: "#1890ff" }}>
-            #{text}
-          </Text>
-        ),
-        sorter: (a: any, b: any) => Number(a.id_folio) - Number(b.id_folio),
-        width: 80,
-      },
-      {
-        title: "Cliente",
-        key: "client_name",
-        render: (_: any, record: any) => (
-          <div>
-            <Text strong>{`${record.nombres} ${record.apellidos}`}</Text>
-            <br />
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              {record.warehouse_name}
-            </Text>
-          </div>
-        ),
-        ellipsis: true,
-      },
-      {
-        title: "Estado",
-        dataIndex: "status_sale",
-        key: "status_sale",
-        render: (status: string) => {
-          const getStatusStyle = (status: string) => {
-            switch (status) {
-              case "Finalizado":
-                return {
-                  backgroundColor: "#52c41a",
-                  color: "white",
-                }
-              case "Emitido":
-                return {
-                  backgroundColor: "#1890ff",
-                  color: "white",
-                }
-              default:
-                return {
-                  backgroundColor: "#faad14",
-                  color: "white",
-                }
+    // Efecto para poblar los datos de factura si se carga una venta con cliente asociado
+    useEffect(() => {
+        console.log('EmitirDocumento: useEffect triggered due to sale or clienteAsociado change.');
+        if (sale) {
+            // Setear el tipo de emisión si ya está definido en la venta
+            if (sale.type_emission === 'Boleta' || sale.type_emission === 'Factura') {
+                setDocumentType(sale.type_emission === 'Factura' ? 'factura' : 'boleta');
+            } else {
+                setDocumentType(null); // O dejarlo como estaba si no hay type_emission
             }
-          }
-          return (
-            <span
-              style={{
-                ...getStatusStyle(status),
-                padding: "4px 8px",
-                borderRadius: "4px",
-                fontSize: "12px",
-                fontWeight: "500",
-                display: "inline-block",
-                minWidth: "70px",
-                textAlign: "center",
-              }}
-            >
-              {status}
-            </span>
-          )
-        },
-        width: 100,
-      },
-      {
-        title: "Acción",
-        key: "action",
-        render: (_: any, record: any) => (
-          <Tooltip title={selectedSaleId === record.id_folio ? "Seleccionado" : "Ver detalles"}>
-            <Button
-              type={selectedSaleId === record.id_folio ? "default" : "primary"}
-              size="small"
-              icon={selectedSaleId === record.id_folio ? <CheckCircleOutlined /> : <EyeOutlined />}
-              onClick={(e) => {
-                e.stopPropagation()
-                setSelectedSaleId(record.id_folio)
-              }}
-              disabled={selectedSaleId === record.id_folio}
-              style={{
-                ...(selectedSaleId === record.id_folio
-                  ? {
-                      backgroundColor: "#f6ffed",
-                      borderColor: "#b7eb8f",
-                      color: "#52c41a",
-                    }
-                  : {}),
-              }}
-            >
-              {screens.md && (selectedSaleId === record.id_folio ? "Seleccionado" : "Ver Detalles")}
-            </Button>
-          </Tooltip>
-        ),
-        width: screens.md ? 130 : 60,
-      },
-    ],
-    [selectedSaleId, screens],
-  )
 
-  const columnasItems = useMemo(
-    () => [
-      {
-        title: "Producto",
-        dataIndex: "product_name",
-        key: "product_name",
-        render: (text: string) => <Text strong>{text}</Text>,
-        ellipsis: true,
-      },
-      {
-        title: "Cantidad",
-        dataIndex: "quantity",
-        key: "quantity",
-        width: 80,
-        align: "center" as const,
-        render: (text: any) => (
-          <span
-            style={{
-              backgroundColor: "#f0f0f0",
-              padding: "2px 8px",
-              borderRadius: "12px",
-              fontSize: "12px",
-              fontWeight: "500",
-            }}
-          >
-            {text}
-          </span>
-        ),
-      },
-      {
-        title: "P. Unitario",
-        dataIndex: "price_unit",
-        key: "price_unit",
-        render: (text: any) => (
-          <Text strong style={{ color: "#3f8600" }}>
-            ${text?.toFixed(2).replace(/\.00$/, "") || "0"}
-          </Text>
-        ),
-        align: "right" as const,
-        width: 110,
-      },
-      {
-        title: "Subtotal",
-        dataIndex: "subtotal",
-        key: "subtotal",
-        render: (text: any) => (
-          <Text strong style={{ color: "#1890ff" }}>
-            ${text?.toFixed(2).replace(/\.00$/, "") || "0"}
-          </Text>
-        ),
-        align: "right" as const,
-        width: 100,
-      },
-    ],
-    [],
-  )
+            // Si hay cliente asociado, poblar los datos de factura
+            if (clienteAsociado) {
+                setFacturaData({
+                    razonSocial: clienteAsociado.razon_social || '',
+                    rut: clienteAsociado.rut || '',
+                });
+            } else {
+                 // Si no hay cliente asociado o la venta no tiene client_id, limpiar datos de factura
+                setFacturaData({ razonSocial: '', rut: '' });
+            }
+             // Limpiar estados de carga y error al cargar una nueva venta
+            setCargandoEmision(false);
+            setErrorEmision(undefined);
+            setCargandoSubidaPdf(false);
 
-  return (
-    <div style={{ padding: "24px", backgroundColor: "#f5f5f5", minHeight: "100vh" }}>
-      <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
-        {/* HEADER MEJORADO */}
-        <Card style={{ marginBottom: 24, borderRadius: 12, boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}>
-          <Row align="middle" justify="space-between">
-            <Col>
-              <Title level={2} style={{ margin: 0, color: "#1890ff" }}>
-                <FileTextOutlined style={{ marginRight: 12 }} />
-                Emitir Documento Tributario
-              </Title>
-            </Col>
-          </Row>
-        </Card>
 
-        {/* Muestra error solo una vez */}
-        {errorEmision && (
-          <Alert
-            message="Error al emitir documento"
-            description={errorEmision}
-            type="error"
-            showIcon
-            style={{ marginBottom: "24px", borderRadius: "8px" }}
-            onClose={() => setErrorEmision(undefined)}
-            closable
-          />
-        )}
+        } else {
+            // Si no hay venta cargada, resetear estados
+            setDocumentType(null);
+            setFacturaData({ razonSocial: '', rut: '' });
+            setCargandoEmision(false);
+            setErrorEmision(undefined);
+            setCargandoSubidaPdf(false);
+        }
+    }, [sale, clienteAsociado]); // Depende de sale y clienteAsociado
 
-        <Row gutter={[24, 24]}>
-          {/* Columna izquierda: Tabla de ventas */}
-          <Col xs={24} lg={14}>
-            <Card
-              title={
-                <Space>
-                  <FileTextOutlined style={{ color: "#1890ff" }} />
-                  <span>Notas de Venta Disponibles</span>
-                  {ventasFiltradas.length > 0 && (
-                    <Badge count={ventasFiltradas.length} style={{ backgroundColor: "#52c41a" }} />
-                  )}
-                </Space>
-              }
-              style={{ marginBottom: 24, borderRadius: "12px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}
-            >
-              <Space direction="vertical" size="middle" style={{ width: "100%" }}>
-                <Row gutter={[16, 16]} align="middle">
-                  <Col span={16}>
-                    <Input
-                      prefix={<SearchOutlined />}
-                      placeholder="Buscar por folio o nombre del cliente..."
-                      value={filtroFolioCliente}
-                      onChange={(e) => setFiltroFolioCliente(e.target.value)}
-                      disabled={cargandoListaVentas || !companyId}
-                      allowClear
-                      size="large"
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Button
-                      icon={<ReloadOutlined />}
-                      onClick={obtenerListaVentas}
-                      loading={cargandoListaVentas}
-                      disabled={!companyId}
-                      style={{ width: "100%" }}
-                      size="large"
-                    >
-                      Refrescar
-                    </Button>
-                  </Col>
+    const handleBuscarVenta = () => {
+        console.log('EmitirDocumento: handleBuscarVenta called with folio:', folioBusqueda);
+        if (!companyId) {
+            message.error('No se pudo obtener el ID de la empresa para realizar la búsqueda.');
+            console.error('EmitirDocumento: companyId is null or undefined.');
+            return;
+        }
+
+        if (folioBusqueda) {
+            console.log('EmitirDocumento: Folio is not empty, calling fetchSale...');
+            fetchSale(folioBusqueda); // Llama al hook para buscar la venta
+        } else {
+            console.log('EmitirDocumento: Folio is empty, clearing sale...');
+            clearSale(); // Llama al hook para limpiar la venta
+            message.warning('Por favor, ingresa un número de folio para buscar.');
+        }
+    };
+
+    const handleSearchButtonClick = (value: string) => {
+        console.log('EmitirDocumento: Ant Design Search onSearch triggered. Value:', value);
+        handleBuscarVenta(); // Usa la función interna para manejar la búsqueda
+    };
+
+    // Columnas para la tabla de ítems de la venta
+    const columnasItems: ColumnsType<ParsedSaleItem> = useMemo(() => {
+        return [
+            { title: 'Producto', dataIndex: 'nombre', key: 'nombre' },
+            { title: 'Cantidad', dataIndex: 'cantidad', key: 'cantidad' },
+            { title: 'P. Unitario', dataIndex: 'precioUnitario', key: 'precioUnitario', render: (text: number | null | undefined) => `$${text?.toFixed(2).replace(/\.00$/, '') || '0'}` },
+            { title: 'Total Línea', dataIndex: 'total', key: 'total', render: (text: number | null | undefined) => `$${text?.toFixed(2).replace(/\.00$/, '') || '0'}` },
+        ];
+    }, []); // No depende de estados o props
+
+    // Parsear los ítems de la venta (si vienen como string JSON)
+    const itemsVentaParseados = useMemo(() => {
+        if (sale && sale.products && typeof sale.products === 'string') {
+            try {
+                const parsedItems = JSON.parse(sale.products);
+                if (Array.isArray(parsedItems)) {
+                    return parsedItems.map((item, index) => ({
+                        ...item,
+                        key: item.id ? String(item.id) : index.toString(), // Usar id si existe, sino index
+                        cantidad: parseFloat(String(item.cantidad)) || 0,
+                        precioUnitario: parseFloat(String(item.precioUnitario)) || 0,
+                        total: parseFloat(String(item.total)) || 0,
+                        nombre: String(item.nombre),
+                        id: item.id // Mantener el id original si es necesario
+                    })) as ParsedSaleItem[];
+                }
+            } catch (e) {
+                console.error("Error parsing sale products JSON string:", e);
+                message.error('Error al procesar los productos de la venta.');
+            }
+        }
+        return []; // Retornar array vacío si no hay sale o products no es un string válido
+    }, [sale]); // Depende de sale
+
+    // --- Función para Emitir Documento y Subir PDF ---
+    const handleEmitirDocumento = async () => {
+        if (!sale) {
+            message.error('Primero debes cargar una venta.');
+            return;
+        }
+        // Verificar si la venta ya está emitida o no está finalizada
+        if (sale.status_sale === 'Emitido') {
+             message.warning(`La venta ${sale.id} ya ha sido emitida.`);
+             return;
+        }
+         if (sale.status_sale !== 'Finalizado') {
+            message.warning(`La venta ${sale.id} no puede ser emitida en su estado actual (${sale.status_sale}). Solo se pueden emitir ventas "Finalizado".`);
+            return;
+        }
+
+
+        if (!documentType) {
+            message.error('Debes seleccionar el tipo de documento a emitir (Boleta o Factura).');
+            return;
+        }
+
+        // Validar datos de factura si el tipo es factura
+        if (documentType === 'factura') {
+            if (!facturaData.razonSocial || !facturaData.rut) {
+                message.error('Debes completar la Razón Social y el RUT para emitir una Factura.');
+                return;
+            }
+        }
+         if (!companyId) {
+             message.error('No se pudo obtener el ID de la empresa para emitir el documento.');
+             return;
+         }
+
+
+        setCargandoEmision(true); // Iniciar carga para la emisión
+        setErrorEmision(undefined); // Limpiar error previo
+        setCargandoSubidaPdf(false); // Asegurarse que la carga de subida esté en false inicialmente
+
+
+        try {
+            // 1. Llamar al servicio para marcar la venta como 'Emitido' en el backend
+            console.log(`EmitirDocumento: Llamando a SaleService.emitSaleDocument para venta ${sale.id}...`);
+            await SaleService.emitSaleDocument(
+                sale.id, // ID de la venta (folio)
+                documentType, // 'boleta' o 'factura'
+                documentType === 'factura' ? facturaData : undefined, // Datos de factura si aplica
+                companyId, // companyId
+                sale.observation ?? null // Observaciones de la venta
+            );
+            console.log(`EmitirDocumento: Venta ${sale.id} marcada como 'Emitido' en backend.`);
+            message.success(`Venta ${sale.id} marcada como 'Emitido' correctamente.`);
+
+
+            // 2. Generar el PDF localmente (esta función debe devolver un Blob o File)
+            console.log("EmitirDocumento: Generando PDF localmente...");
+            // generateSaleDocumentPdf debe ser modificado para retornar el Blob o File
+            const pdfBlob = await generateSaleDocumentPdf(sale, documentType, clienteAsociado, itemsVentaParseados, documentType === 'factura' ? facturaData : undefined);
+            console.log("EmitirDocumento: PDF generado localmente.", pdfBlob);
+
+            if (!pdfBlob) {
+                 throw new Error("Error al generar el archivo PDF localmente.");
+            }
+
+            // 3. Subir el PDF generado al backend
+            setCargandoSubidaPdf(true); // Iniciar carga para la subida del PDF
+            console.log(`EmitirDocumento: Subiendo PDF para folio ${sale.id} a backend...`);
+            await DocumentSaleService.uploadDocument(sale.id, pdfBlob);
+            console.log(`EmitirDocumento: PDF para folio ${sale.id} subido con éxito.`);
+            message.success(`PDF del documento para venta ${sale.id} subido y guardado.`);
+
+
+            // Opcional: Refrescar los datos de la venta después de la emisión y subida
+            fetchSale(sale.id);
+
+        } catch (error: any) { // Captura cualquier error en el proceso (emisión o subida)
+            console.error("EmitirDocumento: Error en el proceso de emisión/subida:", error);
+            const errorMessage = error instanceof Error ? error.message : (error?.message || "Error desconocido en el proceso de emisión.");
+            setErrorEmision(errorMessage); // Mostrar error
+            // message.error(errorMessage); // Mostrar mensaje de error con Ant Design
+
+        } finally {
+            console.log("EmitirDocumento: Proceso de emisión/subida finalizado.");
+            setCargandoEmision(false); // Finalizar carga de emisión
+            setCargandoSubidaPdf(false); // Finalizar carga de subida
+        }
+    };
+
+    // Determinar si el botón de emitir debe estar deshabilitado
+    const isEmitButtonDisabled = useMemo(() => {
+         return cargandoEmision || cargandoSubidaPdf || !sale || sale.status_sale === 'Emitido' || sale.status_sale !== 'Finalizado' || !documentType || (documentType === 'factura' && (!facturaData.razonSocial || !facturaData.rut));
+    }, [cargandoEmision, cargandoSubidaPdf, sale, documentType, facturaData]);
+
+
+    return (
+        <div style={{ padding: "20px" }}>
+            <Title level={3}>Emitir Documento Tributario</Title>
+
+            <Card title="Buscar Nota de Venta por Folio">
+                <Row gutter={16}>
+                    <Col flex="auto">
+                        <Search
+                            placeholder="Ingresa el número de folio de la nota de venta"
+                            value={folioBusqueda}
+                            onChange={(e) => setFolioBusqueda(e.target.value)}
+                            onPressEnter={handleBuscarVenta}
+                            onSearch={handleSearchButtonClick}
+                            loading={cargandoVenta}
+                            disabled={cargandoVenta || !companyId}
+                            enterButton={<Button type="primary" icon={<SearchOutlined />} loading={cargandoVenta} disabled={cargandoVenta || !folioBusqueda || !companyId}>Buscar</Button>}
+                            allowClear
+                        />
+                         {!companyId && (
+                             <Alert
+                                 message="No se pudo obtener el ID de la empresa. La búsqueda de ventas no está disponible."
+                                 type="warning"
+                                 showIcon
+                                 style={{ marginTop: '10px' }}
+                             />
+                         )}
+                    </Col>
                 </Row>
 
-                {!companyId && (
-                  <Alert
-                    message="Selecciona una empresa para cargar las notas de venta"
-                    type="warning"
-                    showIcon
-                    style={{ borderRadius: "6px" }}
-                  />
+                {cargandoVenta && (
+                    <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                        <Spin indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} tip="Buscando venta..." />
+                    </div>
                 )}
 
-                {errorListaVentas && (
-                  <Alert
-                    message={`Error al cargar ventas: ${errorListaVentas}`}
-                    type="error"
-                    showIcon
-                    style={{ borderRadius: "6px" }}
-                    closable
-                    onClose={limpiarListaVentas}
-                  />
+                {errorVenta && (
+                    <Alert message={`Error al buscar venta: ${errorVenta}`} type="error" showIcon style={{ marginTop: '20px' }} onClose={clearSale} />
                 )}
 
-                {cargandoListaVentas ? (
-                  <div style={{ textAlign: "center", padding: "40px 0" }}>
-                    <Spin size="large" tip="Cargando notas de venta..." />
-                  </div>
-                ) : (
-                  <Table
-                    dataSource={ventasFiltradas}
-                    columns={columnasVentas}
-                    pagination={{
-                      pageSize: 8,
-                      showSizeChanger: false,   
-                      showTotal: (total, range) => `${range[0]}-${range[1]} de ${total} ventas`,
-                    }}
-                    rowKey="id_folio"
-                    size="middle"
-                    locale={{ emptyText: "No hay ventas disponibles para emitir" }}
-                    onRow={(record) => ({
-                      onClick: () => setSelectedSaleId(record.id_folio),
-                      style: {
-                        cursor: "pointer",
-                        backgroundColor: selectedSaleId === record.id_folio ? "#e6f7ff" : "",
-                      },
-                    })}
-                  />
-                )}
-              </Space>
-            </Card>
-          </Col>
-
-          {/* Columna derecha: Detalle y emisión */}
-          <Col xs={24} lg={10}>
-            {selectedSaleId !== null ? (
-              <Card
-                title={
-                  <Space>
-                    <FileTextOutlined style={{ color: "#1890ff" }} />
-                    <span>Detalles y Emisión</span>
-                    {selectedSaleDetails && <Badge status="success" text="Venta cargada" />}
-                  </Space>
-                }
-                style={{ borderRadius: "12px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)" }}
-              >
-                {cargandoSelectedSale ? (
-                  <div style={{ textAlign: "center", padding: "40px 0" }}>
-                    <Spin size="large" tip={`Cargando detalles de la venta ${selectedSaleId}...`} />
-                  </div>
-                ) : errorSelectedSale ? (
-                  <Alert
-                    message={`Error al cargar detalles: ${errorSelectedSale}`}
-                    type="error"
-                    showIcon
-                    style={{ borderRadius: "6px" }}
-                    closable
-                    onClose={clearSelectedSaleDetails}
-                  />
-                ) : selectedSaleDetails ? (
-                  <Space direction="vertical" size="large" style={{ width: "100%" }}>
-                    {/* Información de la venta */}
-                    <Card
-                      size="small"
-                      style={{
-                        background: "#f6ffed",
-                        border: "1px solid #b7eb8f",
-                        borderRadius: "8px",
-                      }}
-                    >
-                      <Row gutter={[16, 16]}>
-                        <Col span={12}>
-                          <Statistic
-                            title={<Text strong>Venta</Text>}
-                            value={`#${selectedSaleDetails.id}`}
-                            valueStyle={{ color: "#1890ff", fontSize: "18px" }}
-                          />
-                        </Col>
-                        <Col span={12}>
-                          <Statistic
-                            title={<Text strong>Total</Text>}
-                            value={selectedSaleDetails.price_final || 0}
-                            precision={0}
-                            prefix="$"
-                            valueStyle={{ color: "#3f8600", fontSize: "18px" }}
-                          />
-                        </Col>
-                      </Row>
-
-                      <Divider style={{ margin: "12px 0" }} />
-
-                      <Descriptions size="small" column={1}>
-                        <Descriptions.Item label={<Text strong>Estado</Text>}>
-                          <span
-                            style={{
-                              padding: "2px 8px",
-                              borderRadius: "4px",
-                              backgroundColor: selectedSaleDetails.status_sale === "Finalizado" ? "#52c41a" : "#1890ff",
-                              color: "white",
-                              fontSize: "12px",
-                              fontWeight: "500",
-                            }}
-                          >
-                            {selectedSaleDetails.status_sale}
-                          </span>
-                        </Descriptions.Item>
-                        <Descriptions.Item
-                          label={
-                            <Text strong>
-                              <CalendarOutlined /> Fecha
-                            </Text>
-                          }
-                        >
-                          {selectedSaleDetails.created_at
-                            ? new Date(selectedSaleDetails.created_at).toLocaleDateString("es-ES")
-                            : "N/A"}
-                        </Descriptions.Item>
-                        <Descriptions.Item
-                          label={
-                            <Text strong>
-                              <ShopOutlined /> Bodega
-                            </Text>
-                          }
-                        >
-                          {selectedSaleDetails.name_companies || `ID: ${selectedSaleDetails.warehouse_id}`}
-                        </Descriptions.Item>
-                        <Descriptions.Item
-                          label={
-                            <Text strong>
-                              <UserOutlined /> Cliente
-                            </Text>
-                          }
-                        >
-                          {clienteAsociado
-                            ? `${clienteAsociado.nombres || clienteAsociado.razon_social} (${clienteAsociado.rut})`
-                            : cargandoClientes
-                              ? "Cargando..."
-                              : "No encontrado"}
-                        </Descriptions.Item>
-                        {selectedSaleDetails.observation && (
-                          <Descriptions.Item label={<Text strong>Observaciones</Text>}>
-                            <Text italic>{selectedSaleDetails.observation}</Text>
-                          </Descriptions.Item>
+                {sale && !cargandoVenta && !errorVenta && (
+                    <div style={{ marginTop: '20px' }}>
+                         {/* Mensaje de estado de venta no emitible */}
+                        {(sale.status_sale === 'Emitido' || sale.status_sale !== 'Finalizado') && (
+                            <Alert
+                                message={`Esta venta no puede ser emitida. Estado actual: ${sale.status_sale}. Solo se pueden emitir ventas con estado "Finalizado" que no hayan sido "Emitido".`}
+                                type="info"
+                                showIcon
+                                style={{ marginBottom: '20px' }}
+                            />
                         )}
-                      </Descriptions>
-                    </Card>
 
-                    {/* Productos */}
-                    <div>
-                      <Card
-                        title={
-                          <Space>
-                            <ShopOutlined style={{ color: "#1890ff" }} />
-                            <span>Productos</span>
-                            {productosVenta.length > 0 && (
-                              <Badge count={productosVenta.length} style={{ backgroundColor: "#1890ff" }} />
-                            )}
-                          </Space>
-                        }
-                        size="small"
-                        style={{ borderRadius: "8px" }}
-                      >
-                        {productosVenta.length > 0 ? (
-                          <Table
-                            dataSource={productosVenta}
+                        <Title level={4}>Detalles de la Venta (Folio: {sale.id})</Title>
+                        <p><strong>Estado:</strong> {sale.status_sale}</p>
+                        <p><strong>Fecha:</strong> {sale.created_at ? new Date(sale.created_at).toLocaleDateString() : 'N/A'}</p>
+                        <p><strong>Bodega ID:</strong> {sale.warehouse_id}</p>
+                        <p><strong>Cliente:</strong> {clienteAsociado ? `${clienteAsociado.nombres || clienteAsociado.razon_social} (${clienteAsociado.rut})` : (cargandoClientes ? 'Cargando cliente...' : 'Cliente no encontrado')}</p>
+                        <p><strong>Observaciones:</strong> {sale.observation || 'Sin observaciones'}</p>
+
+                        <Divider orientation="left">Productos de la Venta</Divider>
+                        <Table
+                            dataSource={itemsVentaParseados}
                             columns={columnasItems}
                             pagination={false}
-                            rowKey={(record, index) => `${record.product_id || index}`}
+                            rowKey="key"
                             size="small"
-                            locale={{ emptyText: "No hay productos en esta venta" }}
-                            style={{ marginBottom: "16px" }}
-                            summary={() => (
-                              <Table.Summary fixed>
-                                <Table.Summary.Row>
-                                  <Table.Summary.Cell index={0} colSpan={3}>
-                                    <Text strong>Total Items: {productosVenta.length}</Text>
-                                  </Table.Summary.Cell>
-                                  <Table.Summary.Cell index={1}>
-                                    <Text strong style={{ color: "#1890ff", fontSize: 16 }}>
-                                      ${selectedSaleDetails.price_final?.toFixed(2).replace(/\.00$/, "")}
-                                    </Text>
-                                  </Table.Summary.Cell>
-                                </Table.Summary.Row>
-                              </Table.Summary>
-                            )}
-                          />
-                        ) : (
-                          <Empty description="No hay productos en esta venta" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-                        )}
-                      </Card>
-                    </div>
+                            locale={{ emptyText: 'No hay productos en esta venta' }}
+                        />
 
-                    {/* Sección de Emisión */}
-                    {selectedSaleDetails.status_sale === "Finalizado" && selectedSaleDetails.type_emission === null && (
-                      <Card
-                        title={
-                          <Space>
-                            <DollarOutlined style={{ color: "#1890ff" }} />
-                            <span>Emitir Documento</span>
-                          </Space>
-                        }
-                        size="small"
-                        style={{ borderRadius: "8px" }}
-                      >
-                        {errorEmision && (
-                          <Alert
-                            message={`Error: ${errorEmision}`}
-                            type="error"
-                            showIcon
-                            style={{ marginBottom: "16px", borderRadius: "6px" }}
-                            closable
-                            onClose={() => setErrorEmision(undefined)}
-                          />
-                        )}
+                        <Divider />
+                        <Row justify="end">
+                            <Col>
+                                <Title level={5}>Subtotal: ${sale.price_subtotal?.toFixed(2).replace(/\.00$/, '') || '0'}</Title>
+                                <Title level={4}>Total: ${sale.price_final?.toFixed(2).replace(/\.00$/, '') || '0'}</Title>
+                            </Col>
+                        </Row>
 
-                        <Form layout="vertical">
-                          <Form.Item label={<Text strong>Tipo de Documento</Text>}>
-                            <Radio.Group
-                              onChange={(e) => setDocumentType(e.target.value as "boleta" | "factura")}
-                              value={documentType}
-                              disabled={cargandoEmision || cargandoSubidaPdf}
-                              style={{ width: "100%" }}
-                            >
-                              <Radio.Button
-                                value="boleta"
-                                style={{
-                                  width: "50%",
-                                  textAlign: "center",
-                                  borderRadius: "6px 0 0 6px",
-                                }}
-                              >
-                                Boleta
-                              </Radio.Button>
-                              <Radio.Button
-                                value="factura"
-                                style={{
-                                  width: "50%",
-                                  textAlign: "center",
-                                  borderRadius: "0 6px 6px 0",
-                                }}
-                              >
-                                Factura
-                              </Radio.Button>
-                            </Radio.Group>
-                          </Form.Item>
+                        <Divider />
 
-                          {documentType === "factura" && (
+                        {/* Sección de Emisión (mostrar solo si la venta es finalizada y no emitida) */}
+                        {sale.status_sale === 'Finalizado' && sale.type_emission === null && (
                             <>
-                              <Form.Item label={<Text strong>Razón Social</Text>} required>
-                                <Input
-                                  value={facturaData.razonSocial}
-                                  onChange={(e) => setFacturaData({ ...facturaData, razonSocial: e.target.value })}
-                                  placeholder="Ingresa la razón social del cliente"
-                                  disabled={cargandoEmision || cargandoSubidaPdf}
-                                />
-                              </Form.Item>
-                              <Form.Item label={<Text strong>RUT</Text>} required>
-                                <Input
-                                  value={facturaData.rut}
-                                  onChange={(e) => setFacturaData({ ...facturaData, rut: e.target.value })}
-                                  placeholder="Ingresa el RUT del cliente"
-                                  disabled={cargandoEmision || cargandoSubidaPdf}
-                                />
-                              </Form.Item>
+                                <Title level={4}>Emitir Documento</Title>
+                                 {/* Mostrar error de emisión/subida si existe */}
+                                {errorEmision && <Alert message={`Error al emitir/subir documento: ${errorEmision}`} type="error" showIcon style={{ marginBottom: '20px' }} onClose={() => setErrorEmision(undefined)} />}
+
+                                <Form layout="vertical">
+                                    <Form.Item label="Tipo de Documento">
+                                        <Radio.Group
+                                            onChange={(e) => setDocumentType(e.target.value as 'boleta' | 'factura')}
+                                            value={documentType}
+                                            disabled={cargandoEmision || cargandoSubidaPdf} // Deshabilitar durante la carga
+                                        >
+                                            <Radio value="boleta">Boleta</Radio>
+                                            <Radio value="factura">Factura</Radio>
+                                        </Radio.Group>
+                                    </Form.Item>
+
+                                    {documentType === 'factura' && (
+                                        <>
+                                            <Form.Item label="Razón Social" required>
+                                                <Input
+                                                    value={facturaData.razonSocial}
+                                                    onChange={(e) => setFacturaData({...facturaData, razonSocial: e.target.value})}
+                                                    placeholder="Ingresa la razón social del cliente"
+                                                    disabled={cargandoEmision || cargandoSubidaPdf} // Deshabilitar durante la carga
+                                                />
+                                            </Form.Item>
+                                            <Form.Item label="RUT" required>
+                                                <Input
+                                                    value={facturaData.rut}
+                                                    onChange={(e) => setFacturaData({...facturaData, rut: e.target.value})}
+                                                    placeholder="Ingresa el RUT del cliente"
+                                                    disabled={cargandoEmision || cargandoSubidaPdf} // Deshabilitar durante la carga
+                                                />
+                                            </Form.Item>
+                                        </>
+                                    )}
+
+                                    <Form.Item>
+                                        <Button
+                                            type="primary"
+                                            size="large"
+                                            onClick={handleEmitirDocumento} // Llama a la función que maneja emisión y subida
+                                            loading={cargandoEmision || cargandoSubidaPdf} // Mostrar loading si cualquiera de los procesos está activo
+                                            disabled={isEmitButtonDisabled} // Usar el estado calculado
+                                        >
+                                            {(cargandoEmision || cargandoSubidaPdf) ? (cargandoSubidaPdf ? 'Subiendo PDF...' : 'Emitiendo...') : `Emitir ${documentType === 'boleta' ? 'Boleta' : documentType === 'factura' ? 'Factura' : 'Documento'}`}
+                                        </Button>
+                                    </Form.Item>
+                                </Form>
                             </>
-                          )}
-
-                          <Form.Item style={{ marginBottom: 0 }}>
-                            <Button
-                              type="primary"
-                              size="large"
-                              icon={<DollarOutlined />}
-                              onClick={handleEmitirDocumento}
-                              loading={cargandoEmision || cargandoSubidaPdf}
-                              disabled={isEmitButtonDisabled}
-                              style={{ width: "100%", borderRadius: "6px" }}
-                            >
-                              {cargandoEmision || cargandoSubidaPdf
-                                ? cargandoSubidaPdf
-                                  ? "Subiendo PDF..."
-                                  : "Emitiendo..."
-                                : `Emitir ${documentType === "boleta" ? "Boleta" : documentType === "factura" ? "Factura" : "Documento"}`}
-                            </Button>
-                          </Form.Item>
-                        </Form>
-                      </Card>
-                    )}
-
-                    {selectedSaleDetails.status_sale === "Emitido" && (
-                      <Alert
-                        message="Esta venta ya ha sido emitida"
-                        description="El documento tributario para esta venta ya fue generado anteriormente."
-                        type="success"
-                        showIcon
-                        style={{ borderRadius: "6px" }}
-                      />
-                    )}
-                  </Space>
-                ) : (
-                  <div style={{ textAlign: "center", padding: "60px 20px" }}>
-                    <FileTextOutlined style={{ fontSize: "48px", color: "#d9d9d9", marginBottom: "16px" }} />
-                    <br />
-                    <Text type="secondary" style={{ fontSize: "16px" }}>
-                      Selecciona una nota de venta de la lista para ver sus detalles y emitir un documento
-                    </Text>
-                  </div>
+                        )}
+                    </div>
                 )}
-              </Card>
-            ) : (
-              <Card
-                style={{
-                  borderRadius: "12px",
-                  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-                  border: "2px dashed #d9d9d9",
-                  textAlign: "center",
-                }}
-                bodyStyle={{ padding: "60px 20px" }}
-              >
-                <FileTextOutlined style={{ fontSize: "64px", color: "#d9d9d9", marginBottom: "20px" }} />
-                <Title level={4} style={{ color: "#8c8c8c", marginBottom: "8px" }}>
-                  Selecciona una Venta
-                </Title>
-                <Text type="secondary" style={{ fontSize: "16px" }}>
-                  Elige una nota de venta de la lista para ver sus detalles y emitir el documento tributario
-                </Text>
-              </Card>
-            )}
-          </Col>
-        </Row>
-      </div>
-    </div>
-  )
-}
 
-export default EmitirDocumento
+            </Card>
+        </div>
+    );
+};
+
+export default EmitirDocumento;
