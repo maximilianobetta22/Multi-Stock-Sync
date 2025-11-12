@@ -18,5 +18,14 @@ export default defineConfig({
         },
       },
     },
-  }
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://teststock.store',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
 });
